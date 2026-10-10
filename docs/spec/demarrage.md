@@ -42,7 +42,7 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
 - **Toucher ou cliquer** n'importe où abrège : le logo se pose aussitôt et
   le fondu commence.
 - Si les données ne sont pas encore prêtes à la fin de la pause (premier
-  lancement lent, migration), le logo reste affiché avec « Chargement… »
+  lancement lent, migration), le logo reste affiché avec « Ouverture de Kairos… »
   dessous, jusqu'à ce qu'elles le soient ; une erreur d'ouverture apparaît
   après le fondu, comme avant.
 - L'accueil du premier lancement (`accueil.md`) n'apparaît qu'une fois le
@@ -62,7 +62,7 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
 - Sans demande explicite, `KairosApp` n'en a pas (tests d'interface,
   auto-test, captures des magasins inchangés).
 - Rendu vérifié à l'œil : captures `desktop-startup-splash*.png` de
-  l'auto-test (aiguille à mi-course ; logo et « Chargement… »).
+  l'auto-test (aiguille à mi-course ; logo et « Ouverture de Kairos… »).
 
 ### Hors périmètre / différé
 
@@ -91,7 +91,7 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
   [360°, 440°] ≡ [0°, 80°] : le logo exact.
 - Puis `delay(400)` ; puis attente de `ready` (`snapshotFlow`) ; puis
   `alpha` 1 → 0 (`tween(500)`) ; puis `onFinished()`.
-- « Chargement… » (`Res.string.loading`, déjà traduit) apparaît sous le
+- « Ouverture de Kairos… » (`Res.string.loading`, déjà traduit) apparaît sous le
   cadran si `ready` est encore faux après la pause.
 - Toucher : `clickable` sans indication (pas de couche d'état sur une page
   qui n'est pas un contrôle) ; il passe `skipped` à vrai, ce qui relance
@@ -140,7 +140,7 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
 
 - `SplashFrame(progress, loading)` est l'image sans état de la page ;
   `SelfTest.kt` la rend à mi-course (`desktop-startup-splash.png`, 900 px)
-  et posée sur le logo avec « Chargement… » (`desktop-startup-splash-loading.png`,
+  et posée sur le logo avec « Ouverture de Kairos… » (`desktop-startup-splash-loading.png`,
   360 px) pour vérifier le dessin à l'œil.
 
 ### Décisions et pièges tracés
