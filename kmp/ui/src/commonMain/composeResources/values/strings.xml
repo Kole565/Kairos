@@ -53,6 +53,7 @@
     <string name="inbox_title">À traiter</string>
     <string name="inbox_help">Donne une priorité et une taille en points à chaque tâche : c’est ce qui permet à Kairos de la classer.</string>
     <string name="inbox_empty">Rien à traiter : tout est déjà clarifié.</string>
+    <string name="inbox_empty_filtered">Aucune tâche à traiter ne correspond au filtre.</string>
     <string name="missing_both">priorité et points manquants</string>
     <string name="missing_priority">priorité manquante</string>
     <string name="missing_points">points manquants</string>
@@ -77,7 +78,6 @@
     <string name="points_21_name">énorme</string>
     <string name="points_badge">%1$d pts</string>
     <string name="deadline_badge">échéance %1$s</string>
-    <string name="minutes_badge">%1$d min</string>
 
     <string name="action_done">Marquer comme fait</string>
     <string name="action_undo">Marquer comme à faire</string>
@@ -189,7 +189,7 @@
     <string name="parents_progress">%1$d/%2$d sous-tâche(s)</string>
     <string name="done_hint">Déjà terminées aujourd’hui.</string>
     <string name="backlog_title">Backlog, sans date</string>
-    <string name="backlog_hint">Tâches sans échéance ni date programmée : ni pour aujourd’hui, ni visibles en vue semaine. Pose une échéance ou une date programmée pour les faire atterrir dans l’agenda.</string>
+    <string name="backlog_hint">Tâches sans échéance ni date programmée : elles comblent les trous de l’agenda selon leur score, mais aucun jour de la semaine ne les affiche. Pose une échéance ou une date programmée pour les attacher à un jour.</string>
     <string name="filter_title">Rechercher / filtrer</string>
     <string name="filter_active">filtre actif</string>
     <string name="filter_search">Recherche</string>
@@ -232,13 +232,14 @@
     <string name="field_subtasks">Nouvelles sous-tâches (une par ligne)</string>
     <string name="field_blockers">Bloquée par</string>
     <string name="field_blockers_hint">Tant qu’un bloqueur coché est encore à faire, cette tâche ne rentre dans aucun tri.</string>
+    <string name="field_blockers_cycle">%1$s (attend déjà cette tâche)</string>
     <string name="field_blockers_none">aucune autre tâche</string>
     <string name="field_day_invalid">Jour attendu entre 1 et 31</string>
 
     <!-- Temps réel et chrono (M3) -->
     <string name="action_timer_start">Démarrer le chrono</string>
     <string name="action_timer_stop">Arrêter le chrono</string>
-    <string name="spent_of_estimate">%1$d min / %2$d</string>
+    <string name="spent_of_estimate">%1$s / %2$s</string>
     <string name="timer_running">Chrono en cours</string>
     <string name="stats_spent_today">temps travaillé aujourd’hui %1$s</string>
     <string name="now_running_label">En ce moment</string>
@@ -285,7 +286,7 @@
     <string name="week_next">Semaine suivante</string>
     <string name="week_title">Semaine du %1$s</string>
     <string name="week_spent">Temps réel cette semaine : %1$s</string>
-    <string name="week_see_day">Voir le détail</string>
+    <string name="week_see_day">Voir le jour</string>
     <string name="week_nothing">—</string>
     <string name="week_block">%1$s (%2$s-%3$s)</string>
     <string name="title_day_other">Jour · %1$s</string>
@@ -294,7 +295,7 @@
     <string name="stats_empty">Aucune donnée à analyser pour l’instant. Crée des tâches, chronomètre ton temps et renseigne points et estimations : les indicateurs se construisent au fil de l’usage.</string>
     <string name="stats_kpi_done">tâche(s) terminée(s) · %1$d sem.</string>
     <string name="stats_kpi_tracked">temps réel suivi</string>
-    <string name="stats_kpi_delay">j délai médian de complétion</string>
+    <string name="stats_kpi_delay">jours pour terminer (médiane)</string>
     <string name="stats_kpi_deadlines">échéances respectées</string>
     <string name="stats_throughput_title">Débit hebdomadaire</string>
     <string name="stats_throughput_hint">Tâches terminées par semaine (points de Fibonacci cumulés = vélocité).</string>
@@ -317,7 +318,7 @@
     <string name="stats_flow_title">Flux et backlog</string>
     <string name="stats_flow_hint">État courant du travail en cours (tout l’ouvert).</string>
     <string name="stats_flow_wip">en cours (WIP)</string>
-    <string name="stats_flow_age">j âge médian</string>
+    <string name="stats_flow_age">jours d’ancienneté (médiane)</string>
     <string name="stats_flow_overdue">en retard</string>
     <string name="stats_flow_stale">qui traînent</string>
     <string name="stats_completeness_title">Complétude des métadonnées</string>

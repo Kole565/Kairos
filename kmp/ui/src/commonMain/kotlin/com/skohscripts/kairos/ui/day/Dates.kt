@@ -82,8 +82,12 @@ internal object Dates {
 
     fun parseDate(text: String): LocalDate? = text.trim().takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
-    /** Une décimale au plus, sans « .0 » (filtre `nombre` de Kairos 2) : « 16 », « 6.2 ». */
+    /**
+     * Une décimale au plus, sans « .0 » (filtre `nombre` de Kairos 2) : « 16 », « 6.2 ». Une valeur positive qui
+     * s'arrondirait à 0 garde deux décimales (« 0.05 » : un score de 1 / 21 n'est pas nul).
+     */
     fun number(value: Double): String {
+        if (value > 0 && value < 0.05) return (round(value * 100) / 100).takeIf { it > 0 }?.toString() ?: "0.01"
         val rounded = round(value * 10) / 10
         val whole = rounded.toLong()
         return if (rounded == whole.toDouble()) whole.toString() else rounded.toString()

@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.skohscripts.kairos.core.model.Task
+import androidx.compose.ui.text.intl.Locale
+import com.skohscripts.kairos.core.model.TaskDependency
 import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.data.Reassignment
@@ -76,6 +78,7 @@ import com.skohscripts.kairos.ui.generated.resources.field_blockers
 import com.skohscripts.kairos.ui.generated.resources.team_count_in_team
 import com.skohscripts.kairos.ui.generated.resources.team_count_in_team_hint
 import com.skohscripts.kairos.ui.settings.SwitchRow
+import com.skohscripts.kairos.ui.generated.resources.field_blockers_cycle
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_hint
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_none
 import com.skohscripts.kairos.ui.generated.resources.field_day_invalid
@@ -124,6 +127,9 @@ internal fun EditTaskDialog(
     taskTypes: List<String>,
     candidates: List<Task>,
     blockerIds: Set<Long>,
+    /** Dépendances existantes et titres de toutes les tâches : libellés et cycles de « Bloquée par » ([BlockerChoices]). */
+    dependencies: List<TaskDependency>,
+    titles: Map<Long, String>,
     estimates: Estimates,
     onDismiss: () -> Unit,
     onSave: (TaskEdit) -> Unit,
@@ -259,7 +265,13 @@ internal fun EditTaskDialog(
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        RecurrenceField(recurrence) { recurrence = it }
+                        RecurrenceField(recurrence) {
+                            recurrence = it
+                            // « Le … du mois » : proposer le jour de l'échéance (sinon du jour affiché) plutôt qu'un champ vide en erreur.
+                            if (it == TaskRecurrence.MONTHLY_ON_DAY && dayOfMonth.isBlank()) {
+                                dayOfMonth = ((Dates.parseDate(deadline) ?: day).day).toString()
+                            }
+                        }
                         if (recurrence == TaskRecurrence.MONTHLY_ON_DAY) {
                             OutlinedTextField(
                                 dayOfMonth,
@@ -309,13 +321,25 @@ internal fun EditTaskDialog(
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(stringResource(Res.string.field_blockers), style = MaterialTheme.typography.labelLarge)
                             Text(stringResource(Res.string.field_blockers_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            val others = candidates.filter { it.id != task.id }
+                            val language = Locale.current.language
+                            val others = remember(task.id, candidates, dependencies, titles, language) {
+                                BlockerChoices.of(task, candidates, dependencies, titles, language)
+                            }
                             if (others.isEmpty()) {
                                 Text(stringResource(Res.string.field_blockers_none), style = MaterialTheme.typography.bodySmall)
                             }
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 others.forEach { other ->
-                                    LabeledCheckbox(other.id in blockers, { checked -> blockers = if (checked) blockers + other.id else blockers - other.id }, other.title)
+                                    val id = other.task.id
+                                    // Cocher une tâche qui attend déjà celle-ci serait refusé à l'enregistrement : la case est grisée
+                                    // et dit pourquoi (une case déjà cochée reste décochable).
+                                    val locked = other.cyclic && id !in blockers
+                                    LabeledCheckbox(
+                                        id in blockers,
+                                        { checked -> blockers = if (checked) blockers + id else blockers - id },
+                                        if (locked) stringResource(Res.string.field_blockers_cycle, other.label) else other.label,
+                                        enabled = !locked,
+                                    )
                                 }
                             }
                         }

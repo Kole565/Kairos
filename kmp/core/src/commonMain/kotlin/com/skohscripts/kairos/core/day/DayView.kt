@@ -167,7 +167,10 @@ data class DayView(
             val children = all.filter { it.parentId != null }.groupBy { it.parentId!! }
             val parents = children.mapNotNull { (parentId, kids) ->
                 val parent = byId[parentId] ?: return@mapNotNull null
-                if (parent.status != TaskStatus.TODO || kids.none { it.status == TaskStatus.TODO } || !filter.matches(parent)) {
+                // Une mère bloquée reste dans « Bloquées » seulement : une tâche ouverte, une seule section.
+                if (parent.status != TaskStatus.TODO || parent.id in blockedIds || kids.none { it.status == TaskStatus.TODO } ||
+                    !filter.matches(parent)
+                ) {
                     return@mapNotNull null
                 }
                 ParentProgress(parent, kids.count { it.status == TaskStatus.DONE }, kids.size)

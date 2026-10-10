@@ -91,6 +91,15 @@ class DayViewTest {
     }
 
     @Test
+    fun a_blocked_parent_is_only_in_blocked() {
+        val tasks = listOf(task(1, title = "Mère"), task(2, parent = 1), task(3, title = "Bloqueuse"))
+        val deps = listOf(TaskDependency(1, taskId = 1, blockerId = 3, createdAt = t0))
+        val view = build(KairosSnapshot(tasks = tasks, dependencies = deps))
+        assertEquals(listOf(1L), view.blocked.map { it.task.id })
+        assertTrue(view.parents.isEmpty())
+    }
+
+    @Test
     fun done_today_uses_local_day_most_recent_first() {
         val tasks = listOf(
             task(1, status = TaskStatus.DONE, updated = Instant.parse("2026-09-28T22:30:00Z")), // 00:30 à Paris le 29

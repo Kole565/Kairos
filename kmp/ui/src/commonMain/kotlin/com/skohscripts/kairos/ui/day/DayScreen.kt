@@ -56,6 +56,8 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.intl.Locale
@@ -87,6 +89,7 @@ import com.skohscripts.kairos.ui.generated.resources.day_back_today
 import com.skohscripts.kairos.ui.generated.resources.done_hint
 import com.skohscripts.kairos.ui.generated.resources.done_title
 import com.skohscripts.kairos.ui.generated.resources.inbox_empty
+import com.skohscripts.kairos.ui.generated.resources.inbox_empty_filtered
 import com.skohscripts.kairos.ui.generated.resources.inbox_help
 import com.skohscripts.kairos.ui.generated.resources.inbox_title
 import com.skohscripts.kairos.ui.generated.resources.later_hint
@@ -203,7 +206,11 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().testTag("day-screen").focusRequester(rootFocus).focusable().onKeyEvent { e ->
+        Modifier.fillMaxSize().testTag("day-screen").focusRequester(rootFocus).focusable()
+            // Un clic dans le vide (texte, fond) rend le focus à l'écran, sinon il n'est plus nulle part et les
+            // raccourcis restent sourds ; les éléments cliquables consomment leur clic avant.
+            .pointerInput(Unit) { detectTapGestures { runCatching { rootFocus.requestFocus() } } }
+            .onKeyEvent { e ->
             // `N` : capture ; `/` : recherche. Un champ de saisie consomme la frappe avant
             // l'écran : les raccourcis sont donc inactifs pendant la saisie (Kairos 2).
             if (e.type != KeyEventType.KeyDown || e.isCtrlPressed || e.isMetaPressed || e.isAltPressed) return@onKeyEvent false
@@ -264,7 +271,9 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 one("inbox-title") { SectionTitle(stringResource(Res.string.inbox_title), view.inbox.size, Modifier.padding(top = KairosListSectionExtra)) }
                 one("inbox-help") {
                     Column {
-                        Hint(stringResource(if (view.inbox.isEmpty()) Res.string.inbox_empty else Res.string.inbox_help))
+                        // Liste vidée par le filtre seulement : ne pas annoncer que tout est clarifié.
+                        val empty = if (view.schedule.toProcess.isEmpty()) Res.string.inbox_empty else Res.string.inbox_empty_filtered
+                        Hint(stringResource(if (view.inbox.isEmpty()) empty else Res.string.inbox_help))
                         InboxHelp(estimates.references)
                     }
                 }
@@ -366,6 +375,8 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 taskTypes = snapshot.settings.taskTypeList,
                 candidates = view.openTasks,
                 blockerIds = view.blockersOf[id].orEmpty().toSet(),
+                dependencies = snapshot.dependencies,
+                titles = remember(snapshot.tasks) { snapshot.tasks.associate { it.id to it.title } },
                 estimates = estimates,
                 onDismiss = { editingId = null },
                 onSave = { edit -> scope.launch { repository.updateTask(id, edit) }; editingId = null },

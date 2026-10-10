@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -55,7 +57,6 @@ import com.skohscripts.kairos.ui.generated.resources.spent_of_estimate
 import com.skohscripts.kairos.ui.generated.resources.action_undo
 import com.skohscripts.kairos.ui.generated.resources.deadline_badge
 import com.skohscripts.kairos.ui.generated.resources.description_expand
-import com.skohscripts.kairos.ui.generated.resources.minutes_badge
 import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.generated.resources.tag_recurring
 import com.skohscripts.kairos.ui.generated.resources.tag_scheduled
@@ -170,6 +171,8 @@ internal fun TaskRow(
                 if (editable) {
                     KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
                 }
+                // Sans bouton en fin de ligne (« Fait », non modifiable), la marge du bord reste celle des autres lignes.
+                if (task.status != TaskStatus.TODO && !editable) Spacer(Modifier.width(12.dp))
             }
             extra()
         }
@@ -205,7 +208,7 @@ private fun TaskTags(task: Task, ctx: RowContext) {
     ReceivedTasks.originOf(task)?.let { ReceivedMark(it, task.originRemoved) }
     if (task.projectTag.isNotEmpty()) Badge(task.projectTag)
     if (task.taskType.isNotEmpty()) Badge(task.taskType)
-    task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(stringResource(Res.string.minutes_badge, it)) }
+    task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(duration(it)) }
     task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language))) }
     task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language))) }
     if (task.recurrence != TaskRecurrence.NONE) {
@@ -296,9 +299,9 @@ private fun TimeSpent(task: Task, ctx: RowContext) {
     if (spent <= 0) return
     val estimate = task.estimatedMinutes?.takeIf { it > 0 }
     when {
-        estimate == null -> Badge(stringResource(Res.string.minutes_badge, spent))
-        spent > estimate -> Badge(stringResource(Res.string.spent_of_estimate, spent, estimate), scheme.errorContainer, scheme.onErrorContainer)
-        else -> Badge(stringResource(Res.string.spent_of_estimate, spent, estimate))
+        estimate == null -> Badge(duration(spent))
+        spent > estimate -> Badge(stringResource(Res.string.spent_of_estimate, duration(spent), duration(estimate)), scheme.errorContainer, scheme.onErrorContainer)
+        else -> Badge(stringResource(Res.string.spent_of_estimate, duration(spent), duration(estimate)))
     }
 }
 

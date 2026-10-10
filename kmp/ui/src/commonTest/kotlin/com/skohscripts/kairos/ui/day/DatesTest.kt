@@ -15,6 +15,15 @@ class DatesTest {
     }
 
     @Test
+    fun smallPositiveNumbersAreNeverShownAsZero() {
+        assertEquals("16", Dates.number(16.0))
+        assertEquals("6.2", Dates.number(6.24))
+        assertEquals("0.05", Dates.number(1.0 / 21))
+        assertEquals("0.01", Dates.number(0.001))
+        assertEquals("0", Dates.number(0.0))
+    }
+
+    @Test
     fun timesPerLanguage() {
         assertEquals("09h05", Dates.time(LocalTime(9, 5), "fr"))
         assertEquals("09:05", Dates.time(LocalTime(9, 5), "en"))

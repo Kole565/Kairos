@@ -41,7 +41,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    manque, qualifiable en un clic par pastilles dont le sens est écrit
    (P0 Critique · P1 Important · P2 Utile ; 1 trivial … 21 énorme).
    Recliquer une valeur la retire. Vide : « Rien à traiter : tout est déjà
-   clarifié ». Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
+   clarifié » ; vidée par un filtre actif seulement : « Aucune tâche à
+   traiter ne correspond au filtre » (ne pas annoncer que tout est clarifié). Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
    qualifier, le sens des priorités (importance, le délai compte à part par
    l'échéance), puis le guide des points (voir **Guide des points**).
 4. **Maintenant** (seul bloc teinté) : « À faire maintenant : » la première
@@ -68,7 +69,9 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    « filtre actif » et « Réinitialiser ». Un filtre actif remonte au-dessus
    de l'agenda. Il réduit les listes, jamais le planning.
 9. **Backlog, sans date** (replié, toujours présent) : tâches à faire sans
-   échéance ni date programmée, non bloquées.
+   échéance ni date programmée, non bloquées. Elles comblent quand même les
+   trous de l'agenda selon leur score (`isEligibleToday`) ; la phrase de rôle
+   le dit, et dit qu'aucun jour de la semaine ne les affiche.
 10. **En ce moment** (chrono en cours) puis **Agenda** (frise) : la journée
     de travail heure par heure, créneaux, tâches placées et rail du temps
     chronométré ; à droite de la liste en largeur bureau, en bas sinon.
@@ -79,7 +82,8 @@ durée, « échéance 30 sept. », « programmée 2 oct. », icône de récurren
 temps passé ou minuteur vivant, « traîne depuis N j ») qui passent à la ligne, puis la description sur une
 ligne, dépliable d'un clic ; colonne « clés » alignée à droite : score (qui
 s'ouvre sur « Pourquoi à cette place ? »), priorité (P0 en rouge), points ;
-actions : chrono et décaler (tâches à faire), modifier. En largeur étroite, la
+actions : chrono et décaler (tâches à faire), modifier (une ligne de « Fait »,
+sans action, garde une marge de 12 dp au bord droit). En largeur étroite, la
 colonne « clés » passe sous le corps. Liseré rouge de 3 dp à gauche pour
 une tâche en retard. Tâche bloquée : fond de surface, contour, titre
 atténué.
@@ -158,6 +162,8 @@ heure, `why` (tâches qualifiées), `buckets`, `staleDays`, `raised`,
 modèles récurrents qui y tombent, par heure), `dayBlocks` (créneaux
 effectifs), `timeline`, `holidays`. Le backlog est trié par priorité (sans
 priorité en dernier) puis titre ; « Fait » par modification décroissante.
+Une tâche mère bloquée n'est que dans `blocked`, pas dans `parents`
+(une tâche ouverte, une seule section).
 Pour un autre jour que celui de l'heure courante, le placement part du
 début de la journée de travail (`Scheduling.buildDaySchedule` n'utilise
 l'heure que si elle tombe ce jour-là, comme Kairos 2).
@@ -185,8 +191,10 @@ posée.
   raccourcis. États d'ouverture des sections : `mutableStateMapOf`, gardés
   tant que l'écran vit.
 - Racine focalisable (`focusRequester` + `focusable` + `onKeyEvent`, marque
-  de test `day-screen`) ; elle reprend le focus après la première image et à
-  la fermeture d'un dialogue. Un champ de saisie consomme la frappe avant
+  de test `day-screen`) ; elle reprend le focus après la première image, à
+  la fermeture d'un dialogue et à tout clic dans le vide (`detectTapGestures`,
+  après les éléments cliquables qui consomment le leur) : sans cela, le focus
+  n'était plus nulle part et `N` / `/` restaient sourds. Un champ de saisie consomme la frappe avant
   elle : les raccourcis sont inactifs pendant une saisie.
 - `TaskRow(tâche, RowContext, heure?, bloquée, modifiable, description,
   before, after, extra)` : `RowContext` porte la vue, la langue, le mode
@@ -223,7 +231,8 @@ posée.
   remplace la durée par `minutesByPoints[palier]`, `TypeField` ne remplit
   qu'une durée vide avec `minutesByType[type]`.
 - `Dates` : « 30 sept. » / « Sep 30 », « 09h15 » / « 09:15 », graduations
-  « 9h » / « 9:00 », nombres à une décimale sans « .0 » ; `duration()` :
+  « 9h » / « 9:00 », nombres à une décimale sans « .0 » (deux pour une valeur positive
+  qui s'arrondirait à 0 : un score de 1/21 s'affiche « 0.05 », jamais « 0 ») ; `duration()` :
   « 1 h 30 », « 2 h », « 45 min » ; `long` : « mardi 29 septembre 2026 »
 (« 1er » le premier du mois) / « Tuesday, September 29, 2026 » ;
 `dayShort` : « mar. 29/09 » / « Tue 9/29 » ; `dayMonth` : « 28/09 » /

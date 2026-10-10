@@ -40,8 +40,8 @@ capture.
     titre = première ligne non vide, description = tout le reste (rien n'est
     perdu, rien n'est inventé). Un message confirme « Tâche créée :
     « … » ». La note est archivée, liée à sa tâche, jamais supprimée.
-  - **Modifier** : dialogue avec le corps ; « Enregistrer » inactif si le
-    corps est vide.
+  - **Modifier** : dialogue avec le corps, focalisé d'emblée, curseur en fin
+    de texte ; « Enregistrer » inactif si le corps est vide.
   - **Archiver** : classée sans suite, conservée.
   - **Supprimer** : définitif, après confirmation.
 - « Traité / archivé (N) », replié, présent s'il y a des notes traitées :

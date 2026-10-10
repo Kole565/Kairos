@@ -50,6 +50,7 @@
     <string name="inbox_title">To process</string>
     <string name="inbox_help">Give each task a priority and a size in points: that is what lets Kairos rank it.</string>
     <string name="inbox_empty">Nothing to process: everything is already clarified.</string>
+    <string name="inbox_empty_filtered">No task to process matches the filter.</string>
     <string name="missing_both">priority and points missing</string>
     <string name="missing_priority">priority missing</string>
     <string name="missing_points">points missing</string>
@@ -74,7 +75,6 @@
     <string name="points_21_name">huge</string>
     <string name="points_badge">%1$d pts</string>
     <string name="deadline_badge">due %1$s</string>
-    <string name="minutes_badge">%1$d min</string>
 
     <string name="action_done">Mark as done</string>
     <string name="action_undo">Mark as to do</string>
@@ -186,7 +186,7 @@
     <string name="parents_progress">%1$d/%2$d subtask(s)</string>
     <string name="done_hint">Already finished today.</string>
     <string name="backlog_title">Backlog, no date</string>
-    <string name="backlog_hint">Tasks with neither a deadline nor a scheduled date: not for today, and not visible in the week view. Give them a deadline or a scheduled date to bring them into the schedule.</string>
+    <string name="backlog_hint">Tasks with neither a deadline nor a scheduled date: they fill the gaps of the schedule by score, but no day of the week view shows them. Give them a deadline or a scheduled date to tie them to a day.</string>
     <string name="filter_title">Search / filter</string>
     <string name="filter_active">filter on</string>
     <string name="filter_search">Search</string>
@@ -229,13 +229,14 @@
     <string name="field_subtasks">New subtasks (one per line)</string>
     <string name="field_blockers">Blocked by</string>
     <string name="field_blockers_hint">While a checked blocker is still to do, this task is not ordered.</string>
+    <string name="field_blockers_cycle">%1$s (already waiting on this task)</string>
     <string name="field_blockers_none">no other task</string>
     <string name="field_day_invalid">Day expected between 1 and 31</string>
 
     <!-- Temps réel et chrono (M3) -->
     <string name="action_timer_start">Start the timer</string>
     <string name="action_timer_stop">Stop the timer</string>
-    <string name="spent_of_estimate">%1$d min / %2$d</string>
+    <string name="spent_of_estimate">%1$s / %2$s</string>
     <string name="timer_running">Timer running</string>
     <string name="stats_spent_today">worked today %1$s</string>
     <string name="now_running_label">Right now</string>

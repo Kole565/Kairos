@@ -35,7 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -147,13 +149,17 @@ internal fun BlockFields(state: BlockFormState) {
 
 /** Case à cocher dont le libellé est aussi cliquable (cible tactile de 48 dp). */
 @Composable
-internal fun LabeledCheckbox(checked: Boolean, onChange: (Boolean) -> Unit, label: String) {
+internal fun LabeledCheckbox(checked: Boolean, onChange: (Boolean) -> Unit, label: String, enabled: Boolean = true) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.heightIn(min = 48.dp).toggleable(checked, role = Role.Checkbox, onValueChange = onChange).padding(end = 8.dp),
+        modifier = Modifier.heightIn(min = 48.dp).toggleable(checked, enabled = enabled, role = Role.Checkbox, onValueChange = onChange).padding(end = 8.dp),
     ) {
-        Checkbox(checked, onCheckedChange = null, modifier = Modifier.padding(horizontal = 12.dp))
-        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Checkbox(checked, onCheckedChange = null, enabled = enabled, modifier = Modifier.padding(horizontal = 12.dp))
+        Text(
+            label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (enabled) Color.Unspecified else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        )
     }
 }
 
@@ -162,10 +168,11 @@ private fun TimeField(value: String, onChange: (String) -> Unit, label: StringRe
     val invalid = value.isNotBlank() && Dates.parseTime(value) == null
     OutlinedTextField(
         value, onChange,
-        label = { Text(stringResource(label)) },
+        // Une ligne : le libellé vide (« Début (HH:MM) ») ne doit pas rendre ce champ plus haut que son voisin.
+        label = { Text(stringResource(label), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         isError = invalid || orderError,
         supportingText = if (invalid) ({ Text(stringResource(Res.string.time_invalid)) }) else null,
-        singleLine = true, modifier = Modifier.width(150.dp),
+        singleLine = true, modifier = Modifier.width(170.dp),
     )
 }
 

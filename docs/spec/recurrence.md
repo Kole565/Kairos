@@ -107,7 +107,9 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 - **Jour du mois limité à 1-31** : Kairos 2 ne le validait pas et un 0
   aurait fait échouer le calcul de la date ; le dialogue refuse
-  l'enregistrement et le dépôt vide une valeur hors bornes.
+  l'enregistrement et le dépôt vide une valeur hors bornes. Choisir
+  « le … du mois » avec un champ vide le pré-remplit du jour de l'échéance
+  (sinon du jour affiché) : pas de champ en erreur avant toute saisie.
 - **L'origine d'un créneau est la date de son début** : un créneau
   récurrent modifié avec une autre date change donc aussi son point de
   départ (comme Kairos 2).
