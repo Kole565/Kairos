@@ -234,7 +234,9 @@ Espace **activé** : l'espace Perso ne change que par les tâches d'équipe
 assignées à « moi », qui y apparaissent marquées « Équipe »
 (`equipe-backlog-suivi.md` § Tâches assignées à moi). Les statistiques
 personnelles les comptent (c'est du temps que je passe) ; aucune autre tâche
-d'équipe n'entre dans un calcul personnel.
+d'équipe n'entre dans un calcul personnel. Dans l'autre sens, les tâches
+perso de « moi » comptent par défaut dans sa charge et ses prévisions
+d'équipe, sans changer d'espace (`equipe-moi.md`).
 
 ### Critères de succès
 
@@ -315,7 +317,8 @@ d'équipe n'entre dans un calcul personnel.
   `startedOn` (date locale), `teamUid` (UUID texte, posé à la création
   d'une tâche d'équipe, sert aux échanges et aux scénarios) ; pour les
   échanges (`equipe-echanges.md`) : `origin` (équipe et manager d'une
-  tâche **reçue**), `originRemoved`, `reportedMinutes`.
+  tâche **reçue**), `originRemoved`, `reportedMinutes` ; pour le travail perso
+  de « moi » (`equipe-moi.md`) : `teamExcluded`.
 - `TeamEvent` (journal), `TeamScenario` : `equipe-backlog-suivi.md` et
   `equipe-simulation.md`.
 - `TeamSnapshot` : la vue d'équipe ci-dessus, entrée de tous les calculs
@@ -351,7 +354,9 @@ d'équipe n'entre dans un calcul personnel.
   - **E5, `4.sqm`** (`user_version` 4 → 5) : `team_scenario` ;
   - **E6, `5.sqm`** (`user_version` 5 → 6) : `task.origin`,
     `task.origin_removed`, `task.reported_minutes`,
-    `team_member.last_report_at` (`equipe-echanges.md`).
+    `team_member.last_report_at` (`equipe-echanges.md`) ;
+  - **`6.sqm`** (`user_version` 6 → 7) : `task.team_excluded`
+    (`equipe-moi.md`).
   Références sans `FOREIGN KEY` (parti pris existant).
 - Une base 2.x importée (`migration-2x.md`) n'a aucune tâche d'équipe :
   `Kairos2Import` n'écrit pas les nouvelles colonnes (défauts SQL).

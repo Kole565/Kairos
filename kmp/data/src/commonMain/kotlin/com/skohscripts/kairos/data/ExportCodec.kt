@@ -192,6 +192,9 @@ private data class TaskJson(
     val origin: String? = null,
     val originRemoved: Boolean? = null,
     val reportedMinutes: Int? = null,
+    // Travail perso de « moi » (docs/spec/equipe-moi.md) : écrit seulement s'il est vrai, mêmes règles ; une tâche
+    // exclue fait de l'export un export d'équipe (`Workspaces.hasTeamData`).
+    val teamExcluded: Boolean? = null,
 ) {
     fun toModel() = Task(
         id = id,
@@ -222,6 +225,7 @@ private data class TaskJson(
         origin = origin,
         originRemoved = originRemoved == true,
         reportedMinutes = reportedMinutes,
+        teamExcluded = teamExcluded == true,
     )
 
     companion object {
@@ -231,7 +235,7 @@ private data class TaskJson(
             t.recurrenceDayOfMonth, t.recurrenceDayOfWeek, t.recurrencePeriod, t.taskType, t.fibonacciPoints,
             t.manualTimeSpentMinutes, t.createdAt.toString(), t.updatedAt.toString(),
             encodeSpace(t.space), t.assigneeId, t.progressPercent, t.startedOn?.toString(), t.teamUid,
-            t.origin, if (t.originRemoved) true else null, t.reportedMinutes,
+            t.origin, if (t.originRemoved) true else null, t.reportedMinutes, if (t.teamExcluded) true else null,
         )
     }
 }

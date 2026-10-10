@@ -54,6 +54,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DateTimeUnit
+import com.skohscripts.kairos.core.model.TaskRecurrence
+import com.skohscripts.kairos.data.TaskEdit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.todayIn
@@ -212,6 +214,17 @@ object SelfTest {
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
         val stats: @Composable () -> Unit = { KairosTheme { Surface { StatsScreen(timed) } } }
         // Les deux dernières, très hautes, montrent toute la vue Jour (agenda, sections, frise).
+        // Fiche de « moi » : ses tâches perso d'exemple comptent dans sa charge (pastille « Perso »), ses créneaux
+        // réduisent sa capacité, et une récurrence hebdomadaire projette ses occurrences (docs/spec/equipe-moi.md).
+        val claireId = members.repository.snapshot.value.members.first { it.isSelf }.id
+        runBlocking {
+            val weekly = members.repository.createTask("Rapport hebdomadaire")!!
+            members.repository.updateTask(
+                weekly,
+                TaskEdit(title = "Rapport hebdomadaire", priority = 1, points = 1, estimatedMinutes = 60, deadline = today.plus(2, DateTimeUnit.DAY), recurrence = TaskRecurrence.WEEKLY, pinDay = today),
+            )
+        }
+        val myLoad: (Dp) -> @Composable () -> Unit = { width -> atWidth(width) { TeamMembersScreen(members, initialSheetMemberId = claireId) } }
         val shots = listOf(
             Shot("wide", 1200, 1000, app),
             Shot("narrow", 420, 1000, app),
@@ -256,6 +269,8 @@ object SelfTest {
             Shot("team-exchanges-narrow", 360, 2300, atWidth(360.dp) { TeamMembersScreen(exchange.manager, nav = exchangesTab) }),
             Shot("team-members", 1200, 1000, membersScreen),
             Shot("team-members-narrow", 360, 1000, membersScreen),
+            Shot("team-my-load", 900, 2200, myLoad(900.dp)),
+            Shot("team-my-load-narrow", 360, 2600, myLoad(360.dp)),
             Shot("team-member-sheet", 900, 1100, sheet(compact = false)),
             Shot("team-member-sheet-narrow", 360, 1100, sheet(compact = true)),
             Shot("team-absence", 900, 900, absenceEditor(compact = false)),

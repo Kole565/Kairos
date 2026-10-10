@@ -70,6 +70,7 @@ internal fun TaskRow.toModel() = Task(
     origin = origin,
     originRemoved = origin_removed != 0L,
     reportedMinutes = reported_minutes?.toInt(),
+    teamExcluded = team_excluded != 0L,
 )
 
 internal fun EventRow.toModel() = TeamEvent(

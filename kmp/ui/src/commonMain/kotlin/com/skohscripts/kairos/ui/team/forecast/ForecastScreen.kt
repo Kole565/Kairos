@@ -45,6 +45,7 @@ import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TeamSettings
 import com.skohscripts.kairos.core.team.TeamMembers
+import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.core.team.forecast.ForecastModel
 import com.skohscripts.kairos.core.team.forecast.ForecastScope
 import com.skohscripts.kairos.core.team.forecast.MonteCarlo
@@ -77,6 +78,7 @@ import com.skohscripts.kairos.ui.generated.resources.forecast_scope_assigned
 import com.skohscripts.kairos.ui.generated.resources.forecast_scope_backlog
 import com.skohscripts.kairos.ui.generated.resources.forecast_scope_category
 import com.skohscripts.kairos.ui.generated.resources.forecast_scope_member
+import com.skohscripts.kairos.ui.generated.resources.forecast_scope_my_work
 import com.skohscripts.kairos.ui.generated.resources.forecast_scope_selection
 import com.skohscripts.kairos.ui.generated.resources.forecast_stop
 import com.skohscripts.kairos.ui.generated.resources.forecast_summary
@@ -135,7 +137,10 @@ fun ForecastScreen(services: AppServices) {
         add(ForecastScope.Assigned to stringResource(Res.string.forecast_scope_assigned))
         add(ForecastScope.AssignedAndBacklog to stringResource(Res.string.forecast_scope_backlog))
         categories.forEach { add(ForecastScope.Category(it) to stringResource(Res.string.forecast_scope_category, categoryName(it))) }
-        members.forEach { add(ForecastScope.Member(it.id) to stringResource(Res.string.forecast_scope_member, it.name)) }
+        // « moi » en tête des membres, sous le nom « Mon travail » : ses tâches perso qui comptent y sont (docs/spec/equipe-moi.md).
+        val self = TeamWork.self(snapshot)
+        if (self != null) add(ForecastScope.Member(self.id) to stringResource(Res.string.forecast_scope_my_work))
+        members.filter { it.id != self?.id }.forEach { add(ForecastScope.Member(it.id) to stringResource(Res.string.forecast_scope_member, it.name)) }
         if (selection.isNotEmpty()) add(ForecastScope.Tasks(selection) to stringResource(Res.string.forecast_scope_selection, selection.size))
     }
 
@@ -349,6 +354,7 @@ internal fun scopeLabel(scope: ForecastScope, names: ForecastNames, snapshot: Ka
     ForecastScope.Assigned -> stringResource(Res.string.forecast_scope_assigned)
     ForecastScope.AssignedAndBacklog -> stringResource(Res.string.forecast_scope_backlog)
     is ForecastScope.Category -> stringResource(Res.string.forecast_scope_category, categoryName(scope.name))
-    is ForecastScope.Member -> stringResource(Res.string.forecast_scope_member, names.member(scope.memberId))
+    is ForecastScope.Member ->
+        if (names.isSelf(scope.memberId)) stringResource(Res.string.forecast_scope_my_work) else stringResource(Res.string.forecast_scope_member, names.member(scope.memberId))
     is ForecastScope.Tasks -> stringResource(Res.string.forecast_scope_selection, scope.taskIds.size)
 }

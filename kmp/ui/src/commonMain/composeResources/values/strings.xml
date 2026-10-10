@@ -1125,4 +1125,12 @@
     <string name="hub_no_report">Aucun rapport reçu</string>
     <string name="hub_awaiting">En attente de son rapport</string>
     <string name="hub_tour">Visite de l’espace Équipe</string>
+    <!-- Travail perso de « moi » dans l’espace Équipe (docs/spec/equipe-moi.md) -->
+    <string name="team_count_in_team">Compter dans l’équipe</string>
+    <string name="team_count_in_team_hint">Ta charge et tes prévisions dans l’espace Équipe en tiennent compte.</string>
+    <string name="team_badge_personal">Perso</string>
+    <string name="team_badge_recurring">Récurrente</string>
+    <string name="member_load_from_elsewhere">Dont %1$s de tâches perso et %2$s de récurrences.</string>
+    <string name="forecast_scope_my_work">Mon travail (perso + équipe)</string>
+    <string name="forecast_task_personal">%1$s · Perso</string>
 </resources>

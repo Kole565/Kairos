@@ -1,0 +1,5 @@
+-- Schéma 6 -> 7 (travail perso de « moi » dans l'espace Équipe, docs/spec/equipe-moi.md) : additive.
+-- Une tâche perso compte par défaut dans la charge et les prévisions de « moi » ; 1 l'en exclut. 0 pour toute
+-- tâche existante : une base migrée se comporte comme avant (et compte tout dès qu'un « moi » existe). Colonne
+-- ajoutée en fin de table, dans l'ordre de Kairos.sq (insertTaskWithId est positionnel).
+ALTER TABLE task ADD COLUMN team_excluded INTEGER NOT NULL DEFAULT 0;

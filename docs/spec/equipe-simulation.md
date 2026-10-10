@@ -270,9 +270,15 @@ une ».
 - Résultat et comparaison gardés en mémoire pour la session
   (`TeamUiState`, dans `AppServices`, jamais en base) avec une
   **empreinte** (`ForecastFingerprint` : jour, membres, absences, tâches
-  d'équipe, leurs dépendances et sessions, journal, réglages ; ni le thème,
-  ni le dernier espace, ni les tâches Perso ni les notes) ; empreinte
-  différente → « périmé », sans recalcul automatique.
+  d'équipe de la vue de calcul — tâches perso de « moi » qui comptent
+  comprises, `equipe-moi.md` —, leurs dépendances et sessions, journal,
+  créneaux quand « moi » existe, réglages ; ni le thème, ni le dernier
+  espace, ni les tâches perso exclues ni les notes) ; empreinte différente →
+  « périmé », sans recalcul automatique.
+- Les données, le plan rejoué et le périmètre lisent la vue de calcul
+  `TeamWork` (`equipe-moi.md`) : travail perso de « moi », occurrences
+  projetées des récurrences (dans le plan, jamais dans le périmètre), temps
+  passé déduit, créneaux de « moi » ; périmètre « Mon travail ».
 
 ### Scénarios (`Scenario.kt`, table `team_scenario`)
 

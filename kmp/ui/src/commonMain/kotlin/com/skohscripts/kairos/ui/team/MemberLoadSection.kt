@@ -2,7 +2,8 @@ package com.skohscripts.kairos.ui.team
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -14,10 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.Task
+import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.team.LoadPlan
 import com.skohscripts.kairos.core.team.MemberLoad
+import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.ui.app.heading
+import com.skohscripts.kairos.ui.day.Badge
 import com.skohscripts.kairos.ui.day.Dates
+import com.skohscripts.kairos.ui.generated.resources.member_load_from_elsewhere
+import com.skohscripts.kairos.ui.generated.resources.team_badge_personal
+import com.skohscripts.kairos.ui.generated.resources.team_badge_recurring
+import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.load_bar_value_plain
 import com.skohscripts.kairos.ui.generated.resources.load_categories_title
@@ -73,6 +81,14 @@ internal fun MemberLoadSection(view: MemberLoadView, today: LocalDate) {
             style = MaterialTheme.typography.bodyLarge,
         )
         LoadBar(load.loadHours, load.capacityHours, load.ratePercent, load.level)
+        // Ce qui vient d'ailleurs que du backlog : tâches perso de « moi » et récurrences projetées (docs/spec/equipe-moi.md).
+        if (load.personalHours > 0.001 || load.recurringHours > 0.001) {
+            Text(
+                stringResource(Res.string.member_load_from_elsewhere, hoursText(load.personalHours), hoursText(load.recurringHours)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         if (load.unestimatedCount > 0) Flag(unestimatedText(load.unestimatedCount), flagged = true)
 
         // --- Par semaine : une barre par semaine de l'horizon, sur une échelle commune ; le repère est la capacité.
@@ -133,6 +149,7 @@ private fun SubTitle(text: String) {
  * prévue après l'échéance) met cette ligne dans un contour avec l'icône `Warning` ; « Hors horizon » et « Attend le
  * backlog » disent pourquoi il n'y a pas de date ; une tâche non estimée porte sa pastille « non estimée ».
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PlannedTaskRow(task: Task?, planned: LoadPlan.PlannedTask, today: LocalDate, language: String) {
     val whenText = when (planned.placement) {
@@ -149,7 +166,16 @@ private fun PlannedTaskRow(task: Task?, planned: LoadPlan.PlannedTask, today: Lo
         modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp).padding(vertical = 4.dp),
     ) {
         Text(task?.title.orEmpty(), style = MaterialTheme.typography.bodyLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
+            // Tâche perso de « moi » qui compte dans l'équipe, ou occurrence projetée d'une récurrence (docs/spec/equipe-moi.md).
+            when {
+                task != null && TeamWork.isProjected(task) -> Badge(stringResource(Res.string.team_badge_recurring), icon = KairosIcons.Repeat)
+                task?.space == TaskSpace.PERSONAL -> Badge(stringResource(Res.string.team_badge_personal), icon = KairosIcons.Person)
+            }
             Flag(line, flagged = planned.late, description = stringResource(Res.string.load_task_at_risk))
         }
         if (planned.unestimated) Flag(stringResource(Res.string.load_task_unestimated), flagged = true)

@@ -107,6 +107,7 @@ import com.skohscripts.kairos.ui.generated.resources.unscheduled_title
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.team.AssignContext
 import com.skohscripts.kairos.ui.team.TeamTaskSheet
+import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.core.team.exchange.ReceivedTasks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -372,6 +373,8 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 // Tâche d'équipe assignée à « moi » : « Assigné à » en lecture seule, le reste comme une tâche perso.
                 team = if (task.space == TaskSpace.TEAM) TeamTaskSheet(AssignContext.of(repository.snapshot.value, day), editable = false, today = day) else null,
                 // Tâche reçue d'un manager : sa marque et l'avancement déclaré par le membre (docs/spec/equipe-echanges.md).
+                // Tâche perso qui peut compter dans l'équipe (« moi » existe) : l'interrupteur « Compter dans l'équipe ».
+                countInTeam = if (TeamWork.countable(task) && TeamWork.self(snapshot) != null) !task.teamExcluded else null,
                 received = ReceivedTasks.originOf(task)?.let { origin ->
                     ReceivedTaskSheet(origin, task.originRemoved, onKeep = { scope.launch { repository.detachOrigin(id) }; editingId = null }) { edit, percent ->
                         scope.launch {

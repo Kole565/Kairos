@@ -264,6 +264,8 @@ class KairosRepository(
                     // La date programmée prime sur le jour affiché : l'heure fixe tombe ce jour-là.
                     pinnedStart = edit.pinTime?.let { (edit.scheduledDate ?: edit.pinDay).atTime(it) },
                     manualTimeSpentMinutes = edit.manualTimeSpentMinutes?.takeIf { it >= 0 },
+                    // « Compter dans l'équipe » ne concerne qu'une tâche perso (docs/spec/equipe-moi.md).
+                    teamExcluded = edit.teamExcluded?.takeIf { task.space == TaskSpace.PERSONAL } ?: task.teamExcluded,
             )
             val reassigned = edit.reassign?.let { reassigned(updated, it.memberId, it.keepInProgress) }
             if (reassigned != null) updated = reassigned
@@ -606,6 +608,8 @@ class KairosRepository(
         queries.deleteSessionsOfTeamTasks()
         queries.deleteTeamTasks()
         queries.unassignAllTasks()
+        // Plus d'équipe, plus d'exclusion : la base redevient une base solo, export compris (docs/spec/equipe-moi.md).
+        queries.clearTeamExclusions()
         queries.deleteAllMemberAbsences()
         queries.deleteAllTeamMembers()
     }
@@ -1094,7 +1098,7 @@ class KairosRepository(
                 t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
                 t.createdAt.store(), t.updatedAt.store(), t.space.code.toLong(), t.assigneeId,
                 t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
-                t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+                t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
             )
         }
         for (m in snapshot.members) {
@@ -1153,7 +1157,7 @@ class KairosRepository(
             t.scheduledDate.store(), t.recurrenceDayOfMonth?.toLong(), t.recurrenceDayOfWeek?.toLong(),
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             now(), now(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
-            t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+            t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
         )
         val id = queries.lastInsertedId().awaitAsOneOrNull()
         if (t.space == TaskSpace.TEAM && id != null) {
@@ -1181,7 +1185,8 @@ class KairosRepository(
             t.scheduledDate.store(), t.recurrenceDayOfMonth?.toLong(), t.recurrenceDayOfWeek?.toLong(),
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             if (touch) now() else t.updatedAt.store(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(),
-            t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), t.id,
+            t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+            if (t.teamExcluded) 1L else 0L, t.id,
         )
     }
 
@@ -1327,6 +1332,11 @@ data class TaskEdit(
      * Mêmes règles que [KairosRepository.assign].
      */
     val reassign: Reassignment? = null,
+    /**
+     * « Compter dans l'équipe » éteint (vrai) ou rallumé (faux) pour une **tâche perso** (docs/spec/equipe-moi.md) ;
+     * `null` = inchangé. Sans effet sur une tâche d'équipe.
+     */
+    val teamExcluded: Boolean? = null,
 )
 
 /** Nouveau titulaire d'une tâche d'équipe : [memberId] `null` = retour au backlog ; [keepInProgress] garde l'état « En cours ». */

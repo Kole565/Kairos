@@ -535,7 +535,10 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
                 MemberLoadView(
                     load = memberLoad,
                     weeks = load.value?.horizonWeeks ?: 0,
-                    tasks = memberLoad?.plan?.tasks?.mapNotNull { p -> snapshot.tasks.firstOrNull { it.id == p.taskId } }?.associateBy { it.id }.orEmpty(),
+                    // Tâches réelles (une tâche perso de « moi » reste perso : sa pastille), puis occurrences projetées (virtuelles).
+                    tasks = memberLoad?.plan?.tasks?.mapNotNull { p ->
+                        snapshot.tasks.firstOrNull { it.id == p.taskId } ?: load.value?.plan?.tasksById?.get(p.taskId)
+                    }?.associateBy { it.id }.orEmpty(),
                     computing = load.computing,
                 )
             },

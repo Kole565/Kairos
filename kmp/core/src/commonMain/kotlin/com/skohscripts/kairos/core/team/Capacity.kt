@@ -56,8 +56,10 @@ object Capacity {
 
     /**
      * Heures de [member] le [day] : 0 hors jour ouvré (week-end ou [holidays]) et
-     * un jour d'absence ; sinon la capacité nominale multipliée par
-     * [todayFraction] (1 sauf pour « moi » aujourd'hui, voir [todayFraction]).
+     * un jour d'absence ; sinon `max(0, heures par jour × quotité − busyHours) ×
+     * focus`, multiplié par [todayFraction] (1 sauf pour « moi » aujourd'hui, voir
+     * [todayFraction]). [busyHours] : créneaux occupés du jour, pour « moi » seulement
+     * (`TeamWork.busyHours`, docs/spec/equipe-moi.md) ; le focus s'applique après eux.
      */
     fun dailyHours(
         member: TeamMember,
@@ -66,16 +68,20 @@ object Capacity {
         absences: List<MemberAbsence>,
         settings: Settings,
         todayFraction: Double = 1.0,
+        busyHours: Double = 0.0,
     ): Double {
         if (!Workdays.isWorkday(day, holidays) || isAbsent(member, day, absences)) return 0.0
-        return nominalDayHours(member, settings) * todayFraction.coerceIn(0.0, 1.0)
+        val available = member.hoursPerDay * member.availabilityPercent / 100.0
+        val free = if (busyHours > 0.0) (available - busyHours).coerceAtLeast(0.0) else available
+        return free * focus(settings) * todayFraction.coerceIn(0.0, 1.0)
     }
 
     /**
      * Capacité de [member] de [start] à [end] inclus. [todayFraction] ne
      * s'applique qu'au jour [today] et seulement si le membre est « moi » (le
      * manager ne connaît pas l'heure des autres) ; [today] `null` = pas de jour
-     * entamé.
+     * entamé. [busy] : heures occupées de « moi » par jour (`TeamWork.selfBusy`),
+     * appliquées au seul membre « moi ».
      */
     fun overRange(
         member: TeamMember,
@@ -86,13 +92,14 @@ object Capacity {
         settings: Settings,
         today: LocalDate? = null,
         todayFraction: Double = 1.0,
+        busy: (LocalDate) -> Double = { 0.0 },
     ): Double {
         val mine = absences.filter { it.memberId == member.id }
         var total = 0.0
         var day = start
         while (day <= end) {
             val fraction = if (member.isSelf && day == today) todayFraction else 1.0
-            total += dailyHours(member, day, holidays, mine, settings, fraction)
+            total += dailyHours(member, day, holidays, mine, settings, fraction, if (member.isSelf) busy(day) else 0.0)
             day = day.plus(DatePeriod(days = 1))
         }
         return total
@@ -108,7 +115,8 @@ object Capacity {
         settings: Settings,
         today: LocalDate? = null,
         todayFraction: Double = 1.0,
-    ): Double = TeamMembers.active(members).sumOf { overRange(it, start, end, holidays, absences, settings, today, todayFraction) }
+        busy: (LocalDate) -> Double = { 0.0 },
+    ): Double = TeamMembers.active(members).sumOf { overRange(it, start, end, holidays, absences, settings, today, todayFraction, busy) }
 
     /**
      * Le membre a au moins un jour ouvré hors absence entre [start] et [end] :

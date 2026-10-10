@@ -48,12 +48,27 @@ object Effort {
         return points * (settings.team ?: TeamSettings()).hoursPerPoint to EffortSource.POINTS_RATE
     }
 
-    /** Effort **restant** : l'effort de base × (1 − avancement) ; `null` si non estimée. */
-    fun remaining(task: Task, calibration: List<Calibration>, settings: Settings): Pair<Double?, EffortSource> {
+    /** Part de l'effort de base sous laquelle le temps passé ne fait jamais descendre l'effort restant. */
+    const val MIN_REMAINING_SHARE = 0.10
+
+    /**
+     * Effort **restant** (docs/spec/equipe-moi.md § Historique et temps passé) : avancement déclaré > 0 → effort de
+     * base × (1 − avancement) ; sinon, temps passé [spentMinutes] > 0 → effort − temps passé, sans descendre sous
+     * [MIN_REMAINING_SHARE] de l'effort (une tâche ouverte n'est jamais finie) ; sinon l'effort. `null` si non estimée.
+     */
+    fun remaining(task: Task, calibration: List<Calibration>, settings: Settings, spentMinutes: Int = 0): Pair<Double?, EffortSource> {
         val (hours, source) = base(task, calibration, settings)
         if (hours == null) return null to source
+        return left(hours, task, spentMinutes) to source
+    }
+
+    private fun left(hours: Double, task: Task, spentMinutes: Int): Double {
         val progress = (task.progressPercent ?: 0).coerceIn(0, 100)
-        return hours * (100 - progress) / 100.0 to source
+        return when {
+            progress > 0 -> hours * (100 - progress) / 100.0
+            spentMinutes > 0 -> maxOf(hours - spentMinutes / 60.0, hours * MIN_REMAINING_SHARE)
+            else -> hours
+        }
     }
 
     /**
@@ -64,22 +79,21 @@ object Effort {
      */
     data class Planned(val hours: Double, val source: EffortSource, val unestimated: Boolean)
 
-    fun planned(task: Task, calibration: List<Calibration>, settings: Settings): Planned {
-        val (hours, source) = remaining(task, calibration, settings)
+    fun planned(task: Task, calibration: List<Calibration>, settings: Settings, spentMinutes: Int = 0): Planned {
+        val (hours, source) = remaining(task, calibration, settings, spentMinutes)
         if (hours != null) return Planned(hours, source, unestimated = false)
         val fallback = settings.defaultFibonacciPoints * (settings.team ?: TeamSettings()).hoursPerPoint
-        val progress = (task.progressPercent ?: 0).coerceIn(0, 100)
-        return Planned(fallback * (100 - progress) / 100.0, EffortSource.NONE, unestimated = true)
+        return Planned(left(fallback, task, spentMinutes), EffortSource.NONE, unestimated = true)
     }
 
     /**
      * Calibration de l'équipe : `TaskStats.fibonacciCalibration` sur les tâches
      * d'équipe **faites**, temps passé = sessions + temps saisi à la main + temps rapporté par le membre
      * (`TimeTracking.spentMinutesByTask`, `Task.reportedMinutes`). Une session ouverte court jusqu'à
-     * [now].
+     * [now]. Lit la vue de calcul (`TeamWork.view`) : les tâches perso faites de « moi » qui comptent y entrent.
      */
     fun teamCalibration(snapshot: KairosSnapshot, now: Instant): List<Calibration> {
-        val done = snapshot.tasks.filter { it.space == TaskSpace.TEAM && it.status == TaskStatus.DONE }
+        val done = TeamWork.view(snapshot).tasks.filter { it.space == TaskSpace.TEAM && it.status == TaskStatus.DONE }
         val spent = TimeTracking.spentMinutesByTask(snapshot.workSessions, now, done)
         return TaskStats.fibonacciCalibration(done, spent)
     }

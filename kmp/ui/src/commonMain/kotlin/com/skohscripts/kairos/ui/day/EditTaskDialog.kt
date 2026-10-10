@@ -73,6 +73,9 @@ import com.skohscripts.kairos.ui.generated.resources.field_category
 import com.skohscripts.kairos.ui.generated.resources.field_type_none
 import com.skohscripts.kairos.ui.generated.resources.edit_advanced
 import com.skohscripts.kairos.ui.generated.resources.field_blockers
+import com.skohscripts.kairos.ui.generated.resources.team_count_in_team
+import com.skohscripts.kairos.ui.generated.resources.team_count_in_team_hint
+import com.skohscripts.kairos.ui.settings.SwitchRow
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_hint
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_none
 import com.skohscripts.kairos.ui.generated.resources.field_day_invalid
@@ -129,6 +132,11 @@ internal fun EditTaskDialog(
     team: TeamTaskSheet? = null,
     /** Tâche reçue d'un manager (docs/spec/equipe-echanges.md) : sa marque, une phrase d'aide et le curseur d'avancement ; `null` sinon. */
     received: ReceivedTaskSheet? = null,
+    /**
+     * Interrupteur « Compter dans l'équipe » (docs/spec/equipe-moi.md) : sa valeur initiale pour une tâche perso qui peut
+     * compter (gestion d'équipe activée, « moi » existe) ; `null` le masque.
+     */
+    countInTeam: Boolean? = null,
 ) {
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
@@ -155,6 +163,7 @@ internal fun EditTaskDialog(
     var tab by remember { mutableStateOf(if (team?.initialHistory == true) 1 else 0) }
     val teamEditing = team?.editable == true
     var receivedProgress by remember { mutableStateOf((task.progressPercent ?: 0).toFloat()) }
+    var counted by remember { mutableStateOf(countInTeam ?: true) }
 
     val parsedDeadline = Dates.parseDate(deadline)
     val deadlineInvalid = deadline.isNotBlank() && parsedDeadline == null
@@ -287,6 +296,16 @@ internal fun EditTaskDialog(
                             minLines = 2,
                             modifier = Modifier.fillMaxWidth(),
                         )
+                        if (countInTeam != null) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                SwitchRow(counted, stringResource(Res.string.team_count_in_team)) { counted = it }
+                                Text(
+                                    stringResource(Res.string.team_count_in_team_hint),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(stringResource(Res.string.field_blockers), style = MaterialTheme.typography.labelLarge)
                             Text(stringResource(Res.string.field_blockers_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -334,6 +353,7 @@ internal fun EditTaskDialog(
                                     newSubtasks = subtasks,
                                     blockerIds = blockers,
                                     reassign = if (teamEditing && assignee != task.assigneeId) Reassignment(assignee, keepInProgress) else null,
+                                    teamExcluded = if (countInTeam != null && counted != countInTeam) !counted else null,
                                 )
                             if (team != null && teamEditing) {
                                 val percent = progress.roundToInt()

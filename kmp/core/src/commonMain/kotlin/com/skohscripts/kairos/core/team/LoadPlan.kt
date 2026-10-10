@@ -113,12 +113,17 @@ object LoadPlan {
         val plannedHours: Double get() = loadHours + assumedHours
     }
 
-    /** Résultat : [horizonStart] = jour du plan, [horizonEnd] = dimanche de la dernière semaine. */
+    /**
+     * Résultat : [horizonStart] = jour du plan, [horizonEnd] = dimanche de la dernière semaine. [tasksById] : les
+     * tâches posées telles que le plan les a lues (tâches perso de « moi » converties, occurrences projetées à
+     * identifiant négatif comprises, docs/spec/equipe-moi.md), pour que l'interface affiche une occurrence virtuelle.
+     */
     data class Result(
         val day: LocalDate,
         val horizonEnd: LocalDate,
         val members: List<MemberPlan>,
         val tasks: List<PlannedTask>,
+        val tasksById: Map<Long, Task> = emptyMap(),
     ) {
         private val byMember = members.associateBy { it.memberId }
         private val byTask = tasks.associateBy { it.taskId }
@@ -143,6 +148,12 @@ object LoadPlan {
      * à la place de `Effort.planned` (une tâche absente garde son effort).
      * @param capacity **surcharge** : heures d'un membre un jour donné, à la
      * place de `Capacity.dailyHours`.
+     * @param spent temps passé (minutes) par tâche, déduit de l'effort restant
+     * sans avancement déclaré (`Effort.remaining`, `TeamWork.spentMinutes`).
+     * @param busy heures occupées de « moi » par jour (`TeamWork.selfBusy`).
+     *
+     * Le posage lit [snapshot] tel quel : pour y voir les tâches perso de « moi » et les occurrences projetées,
+     * l'appelant passe `TeamWork.planInput` (docs/spec/equipe-moi.md).
      */
     fun build(
         snapshot: KairosSnapshot,
@@ -152,7 +163,23 @@ object LoadPlan {
         todayFraction: Double = 1.0,
         efforts: Map<Long, Double>? = null,
         capacity: ((TeamMember, LocalDate) -> Double)? = null,
-    ): Result = prepare(snapshot, day, calibration, horizonWeeks, todayFraction).run(efforts, capacity)
+        spent: Map<Long, Int> = emptyMap(),
+        busy: (LocalDate) -> Double = NO_BUSY,
+    ): Result = prepare(snapshot, day, calibration, horizonWeeks, todayFraction, spent, busy).run(efforts, capacity)
+
+    /** Aucune heure occupée (défaut) : la capacité de « moi » est celle des autres membres. */
+    val NO_BUSY: (LocalDate) -> Double = { 0.0 }
+
+    /**
+     * Premier jour où [task] est posable, en décalage depuis [day] (0 au plus tôt) : une tâche programmée plus tard
+     * n'est disponible qu'à partir de min(date programmée, échéance), la règle « cachée » de la vue Jour
+     * (`Scheduling`) ; une occurrence projetée a sa date programmée à son échéance.
+     */
+    fun availableOffset(task: Task, day: LocalDate): Int {
+        val scheduled = task.scheduledDate ?: return 0
+        val from = task.deadline?.let { minOf(it, scheduled) } ?: scheduled
+        return day.daysUntil(from).coerceAtLeast(0)
+    }
 
     /**
      * Tout ce qui ne dépend ni des efforts ni de la capacité surchargés : membres,
@@ -168,6 +195,8 @@ object LoadPlan {
         calibration: List<Calibration> = emptyList(),
         horizonWeeks: Int = (snapshot.settings.team ?: TeamSettings()).horizonWeeks,
         todayFraction: Double = 1.0,
+        spent: Map<Long, Int> = emptyMap(),
+        busy: (LocalDate) -> Double = NO_BUSY,
     ): Prepared {
         val settings = snapshot.settings
         val holidays = Workdays.holidaysFor(day, settings.holidaysFr, settings.extraHolidays)
@@ -178,7 +207,11 @@ object LoadPlan {
         // Capacité d'un membre un jour : le calcul de Capacity (absences du membre pré-filtrées).
         val absencesOf = members.associate { m -> m.id to snapshot.absences.filter { it.memberId == m.id } }
         val defaultCapacity: (TeamMember, LocalDate) -> Double = { m, d ->
-            Capacity.dailyHours(m, d, holidays, absencesOf.getValue(m.id), settings, if (m.isSelf && d == day) todayFraction else 1.0)
+            Capacity.dailyHours(
+                m, d, holidays, absencesOf.getValue(m.id), settings,
+                if (m.isSelf && d == day) todayFraction else 1.0,
+                if (m.isSelf) busy(d) else 0.0,
+            )
         }
 
         // Tâches et dépendances d'équipe (cycles neutralisés comme dans la vue Jour).
@@ -211,7 +244,7 @@ object LoadPlan {
             }
         } while (changed)
 
-        val efforts0 = assigned.associate { it.id to Effort.planned(it, calibration, settings) }
+        val efforts0 = assigned.associate { it.id to Effort.planned(it, calibration, settings, spent[it.id] ?: 0) }
 
         // Ordre de chaque membre : clé effective (urgence héritée), tâches posables seulement.
         val order = members.associate { m ->
@@ -269,6 +302,10 @@ object LoadPlan {
             pending.getValue(members[m].id).map { taskIndex.getValue(it) }.toIntArray()
         }
         private val unestimated = BooleanArray(taskIds.size) { efforts0.getValue(taskIds[it]).unestimated }
+
+        /** Premier jour posable de chaque tâche (décalage), `availableOffset`. */
+        private val availableFrom = IntArray(taskIds.size) { availableOffset(assigned[it], day) }
+        private val tasksById: Map<Long, Task> = assigned.associateBy { it.id }
         private val weekday = Workdays.weekday(day)
         private val monday = day.minus(DatePeriod(days = weekday))
         private val horizonOffset = day.daysUntil(horizonEnd)
@@ -342,14 +379,20 @@ object LoadPlan {
                         var id = current[m]
                         if (id < 0) {
                             var index = -1
+                            var waitsOnBlocker = false
                             for (q in 0 until queueSize[m]) {
-                                if (startable(queue[q], m, offset, blockers, endOn)) {
+                                val candidate = queue[q]
+                                // Pas encore disponible (programmée plus tard, occurrence à venir) : on passe, sans attendre.
+                                if (offset < availableFrom[candidate]) continue
+                                if (startable(candidate, m, offset, blockers, endOn)) {
                                     index = q
                                     break
                                 }
+                                waitsOnBlocker = true
                             }
                             if (index < 0) {
-                                if (queueSize[m] > 0) waited[m] += cap
+                                // Attente = capacité perdue faute de bloqueur fini ; rien de disponible n'est pas de l'attente.
+                                if (waitsOnBlocker) waited[m] += cap
                                 break
                             }
                             id = queue[index]
@@ -437,7 +480,7 @@ object LoadPlan {
                     waitHours = waited[mi],
                 )
             }
-            return Result(day, horizonEnd, memberPlans, memberPlans.flatMap { it.tasks })
+            return Result(day, horizonEnd, memberPlans, memberPlans.flatMap { it.tasks }, tasksById)
         }
 
         /**

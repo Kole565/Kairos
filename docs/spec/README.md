@@ -58,6 +58,7 @@ document ses impacts sur les specs ci-dessus, reportés. Skills Claude Code asso
 | [`equipe-backlog-suivi.md`](equipe-backlog-suivi.md) | Backlog d'équipe, catégories (types), assignation, réaffectation, états et avancement, tableau de suivi, signaux, journal, tâches assignées à moi. | E3 |
 | [`equipe-charge.md`](equipe-charge.md) | Capacité, effort restant, charge individuelle, globale et par catégorie, plan de charge, suggestion de répartition. | E4 |
 | [`equipe-simulation.md`](equipe-simulation.md) | Prévisions Monte Carlo (effort, débit), percentiles, échéances, criticité, goulot, issue la plus probable, scénarios « Et si… ? ». | E5 |
+| [`equipe-moi.md`](equipe-moi.md) | Travail perso de « moi » dans la charge et les prévisions (compter, exclure), récurrences projetées, créneaux de « moi », historique perso, temps passé déduit, périmètre « Mon travail ». | après 3.2.0 |
 | [`equipe-echanges.md`](equipe-echanges.md) | Paquets de tâches (manager → membre), rapports d'avancement (membre → manager), fusion ciblée par fichier. | E6 |
 
 ## Références transverses

@@ -35,6 +35,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.KairosSnapshot
+import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.core.team.TeamWork
+import com.skohscripts.kairos.ui.generated.resources.forecast_task_personal
 import com.skohscripts.kairos.core.team.forecast.DeadlineOutlook
 import com.skohscripts.kairos.core.team.forecast.ForecastModel
 import com.skohscripts.kairos.core.team.forecast.ForecastResult
@@ -118,12 +121,20 @@ import org.jetbrains.compose.resources.stringResource
 /** Noms des tâches et des membres d'un résultat, lus dans la base courante (une tâche supprimée depuis est dite telle). */
 internal class ForecastNames(private val snapshot: KairosSnapshot) {
     private val tasks = snapshot.tasks.associateBy { it.id }
+    private val self = TeamWork.self(snapshot)?.id
 
+    /** Titre d'une tâche ; une tâche perso de « moi » (docs/spec/equipe-moi.md) est marquée « · Perso ». */
     @Composable
-    fun task(id: Long): String = tasks[id]?.title ?: stringResource(Res.string.forecast_task_gone)
+    fun task(id: Long): String {
+        val task = tasks[id] ?: return stringResource(Res.string.forecast_task_gone)
+        return if (task.space == TaskSpace.PERSONAL) stringResource(Res.string.forecast_task_personal, task.title) else task.title
+    }
 
+    /** Nom d'un membre ; « moi » se lit « Mon travail (perso + équipe) » dans un périmètre. */
     @Composable
     fun member(id: Long): String = snapshot.members.firstOrNull { it.id == id }?.name ?: stringResource(Res.string.member_unknown)
+
+    fun isSelf(id: Long): Boolean = id == self
 }
 
 /** Une mention à contour avec une icône : la forme dit l'état, jamais une teinte (pas d'ambre). */

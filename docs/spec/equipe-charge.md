@@ -42,6 +42,10 @@ backlog.
 - Aujourd'hui compte pour sa part restante seulement si le membre est
   « moi » et que la journée de travail est entamée ; sinon il compte en
   entier (le manager ne connaît pas l'heure des autres).
+- Pour « moi » seulement, les créneaux occupés de la vue Jour sont retirés
+  des heures du jour avant le focus (`equipe-moi.md` § Créneaux de « moi ») ;
+  ses tâches perso qui comptent dans l'équipe et les occurrences à venir
+  des tâches récurrentes entrent dans le plan (`equipe-moi.md`).
 
 #### Effort restant d'une tâche
 
@@ -51,7 +55,9 @@ backlog.
      sur les tâches d'équipe faites (`equipe-simulation.md` § Données), si
      elle est fiable (au moins 3 tâches) ;
   3. sinon, `points × teamHoursPerPoint` (2 h par point par défaut).
-- Effort **restant** = effort de base × (1 − avancement).
+- Effort **restant** = effort de base × (1 − avancement) ; sans avancement
+  déclaré, effort de base − temps passé, sans descendre sous 10 % de
+  l'effort (`equipe-moi.md` § Historique et temps passé).
 - Une tâche sans points ni durée est **non estimée** : elle n'est jamais
   comptée pour zéro en silence ; elle est comptée à part (« + 3 tâches non
   estimées ») et signalée (contour + icône).

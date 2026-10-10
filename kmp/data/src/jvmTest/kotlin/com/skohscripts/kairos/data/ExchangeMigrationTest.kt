@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.data
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.skohscripts.kairos.data.db.KairosDatabase
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.core.model.TaskSpace
 import kotlinx.coroutines.test.runTest
@@ -17,7 +18,10 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-/** Espace Équipe, jalon E6 : migration 5 -> 6 (`5.sqm`), sans perte, et chaîne complète 1 -> 6. */
+/**
+ * Espace Équipe, jalon E6 : migration 5 -> 6 (`5.sqm`), sans perte, et chaîne complète depuis 1 (jusqu'à la
+ * version courante : `6.sqm` a suivi, docs/spec/equipe-moi.md).
+ */
 class ExchangeMigrationTest {
     private val now = Instant.parse("2026-09-28T07:00:00Z")
     private val clock = object : Clock {
@@ -108,7 +112,7 @@ class ExchangeMigrationTest {
         val file = databaseFrom(schemaV5)
         val opened = KairosStore.open(driver(file))
         assertFalse(opened.created)
-        assertEquals(6, userVersion(file))
+        assertEquals(KairosDatabase.Schema.version.toInt(), userVersion(file))
         val repo = KairosRepository.open(opened, examples, clock, timeZone = TimeZone.UTC)
 
         val all = repo.snapshot.value
@@ -153,7 +157,8 @@ class ExchangeMigrationTest {
         for (table in listOf("task", "team_member", "team_event", "member_absence", "team_scenario")) {
             assertEquals(columns(fresh, table), columns(migrated, table), table)
         }
-        assertEquals(listOf("origin", "origin_removed", "reported_minutes"), columns(fresh, "task").takeLast(3))
+        // Les colonnes du jalon E6, suivies de `team_excluded` (6.sqm).
+        assertEquals(listOf("origin", "origin_removed", "reported_minutes", "team_excluded"), columns(fresh, "task").takeLast(4))
         assertEquals("last_report_at", columns(fresh, "team_member").last())
         migrated.delete()
         fresh.delete()
@@ -191,7 +196,7 @@ class ExchangeMigrationTest {
         )
         val file = databaseFrom(v1)
         val repo = KairosRepository.open(KairosStore.open(driver(file)), examples, clock, timeZone = TimeZone.UTC)
-        assertEquals(6, userVersion(file))
+        assertEquals(KairosDatabase.Schema.version.toInt(), userVersion(file))
         val all = repo.snapshot.value
         assertEquals(listOf(1L), all.tasks.map { it.id })
         assertTrue(all.members.isEmpty() && all.teamEvents.isEmpty() && all.teamScenarios.isEmpty())

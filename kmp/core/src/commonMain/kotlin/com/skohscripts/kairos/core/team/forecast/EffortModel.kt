@@ -44,11 +44,15 @@ internal class EffortModel(
     private val capacityRandomness: Boolean,
     private val seed: Long,
     private val scopeIds: LongArray,
+    /** Temps passé par tâche (`TeamWork.spentMinutes`), déduit de l'effort restant. */
+    private val spent: Map<Long, Int> = emptyMap(),
+    /** Heures occupées de « moi » par jour (`TeamWork.selfBusy`). */
+    private val busy: (LocalDate) -> Double = LoadPlan.NO_BUSY,
 ) : DrawEngine {
     private val settings = snapshot.settings
 
     // Le posage (ordres, dépendances, tâches inatteignables) est préparé une fois ; chaque tirage le rejoue.
-    private val prepared = LoadPlan.prepare(snapshot, day, calibration, 1, todayFraction)
+    private val prepared = LoadPlan.prepare(snapshot, day, calibration, 1, todayFraction, spent, busy)
     private val members = prepared.members
     private val planTasks: Map<Long, Task> = snapshot.tasks.associateBy { it.id }
     private val taskCount = prepared.taskIds.size
@@ -73,7 +77,11 @@ internal class EffortModel(
             val mine = snapshot.absences.filter { it.memberId == member.id }
             DoubleArray(spanDays) { offset ->
                 val d = LocalDate.fromEpochDays(dayEpoch + offset)
-                Capacity.dailyHours(member, d, holidays, mine, settings, if (member.isSelf && offset == 0) todayFraction else 1.0)
+                Capacity.dailyHours(
+                    member, d, holidays, mine, settings,
+                    if (member.isSelf && offset == 0) todayFraction else 1.0,
+                    if (member.isSelf) busy(d) else 0.0,
+                )
             }
         }
         randomMembers = BooleanArray(members.size) { capacityRandomness && data.hasCapacityHistory(members[it].id) }

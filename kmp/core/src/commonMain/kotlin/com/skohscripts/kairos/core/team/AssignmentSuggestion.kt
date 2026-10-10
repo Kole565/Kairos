@@ -125,6 +125,9 @@ object AssignmentSuggestion {
         val activeIds = active.mapTo(HashSet()) { it.id }
         val archived = snapshot.members.count { it.archived }
         val candidates = active.filter { Capacity.isAvailableDuring(it, day, horizonEnd, holidays, snapshot.absences, settings) }
+        // Le plan de chaque essai voit le travail perso de « moi », les récurrences projetées, le temps passé et les
+        // créneaux (docs/spec/equipe-moi.md) : la suggestion ne confie pas à « moi » ce que son agenda ne permet pas.
+        val input = TeamWork.planInput(snapshot, day, now, horizonEnd)
 
         // Tâches du backlog concernées, dans l'ordre (urgence héritée des dépendances).
         val open = snapshot.tasks.filter { it.space == TaskSpace.TEAM && it.status == TaskStatus.TODO }
@@ -154,12 +157,12 @@ object AssignmentSuggestion {
             doneCount[key] = (doneCount[key] ?: 0) + 1
         }
 
-        var working = snapshot
+        var working = input.snapshot
         val suggestions = ArrayList<Suggestion>()
         for (task in ready) {
             val trials = candidates.map { m ->
                 val trial = working.copy(tasks = working.tasks.map { if (it.id == task.id) it.copy(assigneeId = m.id) else it })
-                val plan = LoadPlan.build(trial, day, cal, weeks, fraction)
+                val plan = LoadPlan.build(trial, day, cal, weeks, fraction, spent = input.spent, busy = input.busy)
                 val end = plan.task(task.id)?.end
                 val queueEnd = end?.let { e -> (plan.of(m.id)?.tasks.orEmpty().mapNotNull { it.end } + e).max() }
                 Trial(m, trial, end, queueEnd, plan.of(m.id)?.plannedHours ?: 0.0)
