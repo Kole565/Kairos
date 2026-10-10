@@ -3,6 +3,8 @@ package com.skohscripts.kairos.ui.navigation
 import com.skohscripts.kairos.ui.theme.KairosFilterChip
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +34,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -261,24 +264,20 @@ fun AppShell(
         GuideDialog(kind, onOpen = { target -> guide = null; openTarget(target) }, onDismiss = { guide = null })
     }
 
-    when (layout) {
-        NavigationLayout.RAIL -> Row(Modifier.fillMaxSize()) {
-            KairosNavigationRail(entries, selected, onSelect, selector)
-            Scaffold(topBar = topBar, snackbarHost = { SnackbarHost(snackbar) }) { padding -> content(Modifier.padding(padding)) }
-        }
-        NavigationLayout.BOTTOM_BAR -> Scaffold(
-            topBar = topBar,
-            snackbarHost = { SnackbarHost(snackbar) },
-            bottomBar = { KairosNavigationBar(entries, selected, onSelect) },
-        ) { padding -> content(Modifier.padding(padding)) }
-        NavigationLayout.TOP_BAR -> Scaffold(
+    // Une seule arborescence pour les trois mises en page : le contenu garde sa place dans la composition quand la
+    // fenêtre franchit 600 dp, donc l'état des écrans (dialogue d'édition ouvert, saisie en cours, défilement) survit
+    // au redimensionnement. Trois branches `when` distinctes recréaient l'écran et fermaient ses dialogues.
+    Row(Modifier.fillMaxSize()) {
+        if (layout == NavigationLayout.RAIL) KairosNavigationRail(entries, selected, onSelect, selector)
+        Scaffold(
             topBar = {
                 Column {
                     topBar()
-                    KairosTopNavigation(entries, selected, onSelect)
+                    if (layout == NavigationLayout.TOP_BAR) KairosTopNavigation(entries, selected, onSelect)
                 }
             },
             snackbarHost = { SnackbarHost(snackbar) },
+            bottomBar = { if (layout == NavigationLayout.BOTTOM_BAR) KairosNavigationBar(entries, selected, onSelect) },
         ) { padding -> content(Modifier.padding(padding)) }
     }
 }
@@ -350,9 +349,14 @@ private fun KairosTopNavigation(entries: List<NavEntry>, selected: NavEntry?, on
         ) {
             entries.forEach { dest ->
                 val isSelected = dest == selected
+                // Bandeau plus large que l'écran (360 dp, cinq destinations) : l'onglet actif revient toujours en vue,
+                // y compris quand on y arrive autrement que par lui (Accueil, visite guidée, raccourci).
+                val bring = remember { BringIntoViewRequester() }
+                LaunchedEffect(isSelected) { if (isSelected) bring.bringIntoView() }
                 KairosFilterChip(
                     selected = isSelected,
                     onClick = { onNavigate(dest) },
+                    modifier = Modifier.bringIntoViewRequester(bring),
                     label = { Text(stringResource(dest.label)) },
                     leadingIcon = {
                         Icon(

@@ -78,7 +78,10 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - La barre basse n'apparaît jamais sur le bureau ni sur le web, quelle que
   soit la largeur (test `NavigationLayoutTest`).
 - Aucun débordement horizontal à 360 dp : la barre du haut défile, le texte
-  passe à la ligne.
+  passe à la ligne ; l'onglet actif y est toujours visible.
+- Redimensionner la fenêtre au travers de 600 dp (rail ↔ barre du haut) ne
+  change rien à l'écran affiché : un dialogue ouvert, une saisie en cours
+  restent en place (test `ShellResizeUiTest`).
 - Couleurs, formes et typographie conformes à `docs/DESIGN_SYSTEM.md` : un
   seul thème clair, Roboto embarquée (aucune police distante), icônes
   Material Symbols Outlined 400, variante pleine pour la destination active.
@@ -191,12 +194,18 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
     d'équipe activée), le cœur (sauf avec ce sélecteur, `soutien.md`), le « ? » (s'il y a un sujet d'aide : ni
     l'Accueil ni « À propos »), puis la roue crantée `onOpenSettings`
     (aucun écran secondaire ouvert).
+  - Une seule arborescence `Row { rail? ; Scaffold }` pour les trois formes :
+    seuls le rail, la rangée de pastilles et la barre basse sont conditionnels,
+    le contenu garde sa place dans la composition.
   - `RAIL` : `NavigationRail` (en-tête : logo 34 dp + « Kairos ») à gauche
-    d'un `Scaffold`.
-  - `BOTTOM_BAR` : `Scaffold` avec `NavigationBar`.
+    du `Scaffold`.
+  - `BOTTOM_BAR` : `NavigationBar` en `bottomBar` du `Scaffold`.
   - `TOP_BAR` : barre d'application puis une rangée défilante de `FilterChip`
     (icône + libellé ; sélection en `secondaryContainer`, rôle MD3 par défaut
-    des puces sélectionnées).
+    des puces sélectionnées). La pastille active se ramène en vue
+    (`BringIntoViewRequester`) dès qu'elle devient active : à 360 dp, les
+    cinq pastilles ne tiennent pas, et l'on peut arriver sur Stats depuis
+    l'Accueil ou la visite.
   - Quand un écran secondaire est ouvert, aucune destination n'est marquée active.
   - `SnackbarHost` dans chaque `Scaffold` ; `LocalMessages` fournit aux
     écrans une fonction qui y affiche un message.
@@ -258,5 +267,12 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - **Navigation par état plutôt que par bibliothèque** : cinq destinations de
   premier niveau et deux écrans secondaires (Réglages, « À propos »). À réévaluer si des écrans
   imbriqués apparaissent (détail d'une tâche en plein écran, par exemple).
+- **Une arborescence, pas trois branches** (2026-10-10, test exploratoire) :
+  une branche `when (layout)` par forme de navigation recomposait l'écran à
+  neuf au franchissement de 600 dp, ce qui fermait le dialogue d'édition et
+  perdait la saisie. Les éléments de navigation sont conditionnels, le
+  `Scaffold` et son contenu ne le sont pas. Écarté : `movableContentOf`
+  (le contenu capture l'état de la coquille, il faudrait tout passer en
+  paramètres).
 - **Retour** : `org.jetbrains.compose.ui:ui-backhandler` doit être déclaré
   explicitement (absent des dépendances transitives de `compose.ui` en 1.12).

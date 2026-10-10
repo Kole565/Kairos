@@ -189,7 +189,9 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
   de la destination ou des Réglages, pas le titre du jour affiché),
   `HelpTopic.body`, puis deux `ListItem` cliquables (« Accueil de Kairos »,
   icône `Home`, qui ouvre la destination Accueil de l'espace courant ;
-  visite de l'espace courant d'après `space`), bouton « Fermer ».
+  visite de l'espace courant d'après `space`), bouton « Fermer ». Le
+  contenu défile (`verticalScroll`), comme ceux de `GuideDialog` et du dialogue
+  d'accueil : sur un écran bas (téléphone en paysage), rien n'est coupé.
 - **`HelpTopic`** (`ui/guide/GuideContent.kt`) : un sujet par écran, avec
   son titre (`NOTES`, `DAY`, `WEEK`, `STATS`, `SETTINGS`, `TEAM_BOARD`,
   `TEAM_BACKLOG`, `TEAM_MEMBERS`, `TEAM_EXCHANGES`, `TEAM_FORECAST`) ;

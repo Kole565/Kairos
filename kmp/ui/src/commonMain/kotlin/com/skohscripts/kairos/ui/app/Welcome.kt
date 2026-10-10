@@ -4,6 +4,8 @@ import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +50,8 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
         icon = { Image(KairosLogo, contentDescription = null, modifier = Modifier.size(48.dp)) },
         title = { Text(stringResource(Res.string.welcome_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Défile sur un écran bas (téléphone en paysage, fenêtre réduite) : rien n’est coupé.
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(Res.string.welcome_body), style = MaterialTheme.typography.bodyMedium)
                 when {
                     migrated != null -> Text(

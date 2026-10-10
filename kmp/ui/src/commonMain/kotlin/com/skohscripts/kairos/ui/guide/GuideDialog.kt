@@ -2,6 +2,8 @@ package com.skohscripts.kairos.ui.guide
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -43,7 +45,8 @@ fun GuideDialog(kind: GuideKind, onOpen: (GuideTarget) -> Unit, onDismiss: () ->
         icon = { Icon(step.icon(), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp)) },
         title = { Text(stringResource(step.title), modifier = Modifier.heading()) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Défile sur un écran bas (téléphone en paysage, fenêtre réduite) : rien n’est coupé.
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     stringResource(Res.string.guide_step_counter, index + 1, steps.size),
                     style = MaterialTheme.typography.labelMedium,
