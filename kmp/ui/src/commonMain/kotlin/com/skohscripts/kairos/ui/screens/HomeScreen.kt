@@ -132,7 +132,7 @@ fun HomeScreen(teamEnabled: Boolean, onOpen: (GuideTarget) -> Unit, onTour: (Gui
                     Text(stringResource(Res.string.home_team_manager), style = MaterialTheme.typography.bodyMedium)
                     Text(stringResource(Res.string.home_team_member), style = MaterialTheme.typography.bodyMedium)
                     KairosOutlinedButton(onClick = {
-                        onOpen(if (teamEnabled) GuideTarget.Team(TeamDestination.START) else GuideTarget.Personal(Destination.SETTINGS))
+                        onOpen(if (teamEnabled) GuideTarget.Team(TeamDestination.START) else GuideTarget.Settings)
                     }) {
                         Text(stringResource(if (teamEnabled) Res.string.home_team_open_team else Res.string.home_team_open_settings))
                     }

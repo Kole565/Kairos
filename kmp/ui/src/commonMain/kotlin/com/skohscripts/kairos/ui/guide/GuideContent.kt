@@ -36,6 +36,15 @@ import com.skohscripts.kairos.ui.generated.resources.help_team_exchanges
 import com.skohscripts.kairos.ui.generated.resources.help_team_forecast
 import com.skohscripts.kairos.ui.generated.resources.help_team_members
 import com.skohscripts.kairos.ui.generated.resources.help_week
+import com.skohscripts.kairos.ui.generated.resources.title_day
+import com.skohscripts.kairos.ui.generated.resources.title_notes
+import com.skohscripts.kairos.ui.generated.resources.title_settings
+import com.skohscripts.kairos.ui.generated.resources.title_stats
+import com.skohscripts.kairos.ui.generated.resources.title_team_backlog
+import com.skohscripts.kairos.ui.generated.resources.title_team_board
+import com.skohscripts.kairos.ui.generated.resources.title_team_forecast
+import com.skohscripts.kairos.ui.generated.resources.title_team_members
+import com.skohscripts.kairos.ui.generated.resources.title_week
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.navigation.NavEntry
@@ -48,11 +57,13 @@ enum class GuideKind { PERSONAL, TEAM }
 /**
  * Écran qu'ouvre « Voir l’écran » (et les boutons « Ouvrir » de l'Accueil). La coquille change d'espace au besoin :
  * une cible d'équipe ouvre l'espace Équipe, une cible Perso l'espace Perso. [Team.exchanges] ouvre l'onglet « Échanges »
- * de l'écran Équipe (`NavState.exchangesTab`).
+ * de l'écran Équipe (`NavState.exchangesTab`). [Settings] ouvre les Réglages (écran secondaire, les mêmes dans les deux
+ * espaces) sans changer d'espace.
  */
 sealed interface GuideTarget {
     data class Personal(val destination: Destination) : GuideTarget
     data class Team(val destination: TeamDestination, val exchanges: Boolean = false) : GuideTarget
+    data object Settings : GuideTarget
 }
 
 /** Une étape de la visite guidée (docs/spec/accueil.md § La visite guidée). */
@@ -75,7 +86,7 @@ object GuideSteps {
         GuideStep({ KairosIcons.Today }, Res.string.guide_you_do_title, Res.string.guide_you_do_body, GuideTarget.Personal(Destination.DAY)),
         GuideStep({ KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY)),
         GuideStep({ KairosIcons.BarChart }, Res.string.guide_you_stats_title, Res.string.guide_you_stats_body, GuideTarget.Personal(Destination.STATS)),
-        GuideStep({ KairosIcons.Settings }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Personal(Destination.SETTINGS)),
+        GuideStep({ KairosIcons.Settings }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings),
     )
 
     private val TEAM = listOf(
@@ -89,30 +100,37 @@ object GuideSteps {
 }
 
 /**
- * Texte d'aide d'un écran (« ? » de la barre du haut). Un sujet par écran ; les Réglages sont les mêmes dans les deux
- * espaces, l'écran Équipe a un sujet par onglet.
+ * Texte d'aide d'un écran (« ? » de la barre du haut). Un sujet par écran ; les Réglages (écran secondaire) sont les
+ * mêmes dans les deux espaces, l'écran Équipe a un sujet par onglet. L'Accueil n'en a pas : la page est elle-même l'aide.
  */
-enum class HelpTopic(val body: StringResource) {
-    NOTES(Res.string.help_notes),
-    DAY(Res.string.help_day),
-    WEEK(Res.string.help_week),
-    STATS(Res.string.help_stats),
-    SETTINGS(Res.string.help_settings),
-    TEAM_BOARD(Res.string.help_team_board),
-    TEAM_BACKLOG(Res.string.help_team_backlog),
-    TEAM_MEMBERS(Res.string.help_team_members),
-    TEAM_EXCHANGES(Res.string.help_team_exchanges),
-    TEAM_FORECAST(Res.string.help_team_forecast),
+enum class HelpTopic(
+    /** Titre de l'écran dans « Aide : <écran> » : celui de la destination, pas le titre du jour affiché. */
+    val screen: StringResource,
+    val body: StringResource,
+) {
+    NOTES(Res.string.title_notes, Res.string.help_notes),
+    DAY(Res.string.title_day, Res.string.help_day),
+    WEEK(Res.string.title_week, Res.string.help_week),
+    STATS(Res.string.title_stats, Res.string.help_stats),
+    SETTINGS(Res.string.title_settings, Res.string.help_settings),
+    TEAM_BOARD(Res.string.title_team_board, Res.string.help_team_board),
+    TEAM_BACKLOG(Res.string.title_team_backlog, Res.string.help_team_backlog),
+    TEAM_MEMBERS(Res.string.title_team_members, Res.string.help_team_members),
+    TEAM_EXCHANGES(Res.string.title_team_members, Res.string.help_team_exchanges),
+    TEAM_FORECAST(Res.string.title_team_forecast, Res.string.help_team_forecast),
     ;
 
     companion object {
-        /** Sujet d'aide de [entry] ; [exchanges] : l'onglet « Échanges » de l'écran Équipe est ouvert. */
-        fun of(entry: NavEntry, exchanges: Boolean): HelpTopic = when (entry) {
+        /**
+         * Sujet d'aide de [entry] ; [exchanges] : l'onglet « Échanges » de l'écran Équipe est ouvert. `null` pour
+         * l'Accueil, où le « ? » n'apparaît pas.
+         */
+        fun of(entry: NavEntry, exchanges: Boolean): HelpTopic? = when (entry) {
+            Destination.HOME, TeamDestination.HOME -> null
             Destination.NOTES -> NOTES
             Destination.DAY -> DAY
             Destination.WEEK -> WEEK
             Destination.STATS -> STATS
-            Destination.SETTINGS, TeamDestination.SETTINGS -> SETTINGS
             TeamDestination.BOARD -> TEAM_BOARD
             TeamDestination.BACKLOG -> TEAM_BACKLOG
             TeamDestination.MEMBERS -> if (exchanges) TEAM_EXCHANGES else TEAM_MEMBERS

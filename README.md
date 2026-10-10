@@ -192,11 +192,14 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 ### S’y retrouver
 
+- Kairos s’ouvre sur la page **Accueil**, premier onglet de la navigation :
+  elle rappelle à quoi sert Kairos et ce qu’il sait faire, avec un accès
+  direct à chaque écran ; elle explique aussi comment travailler avec un
+  manager ou une équipe.
+- Les **Réglages** s’ouvrent par la roue crantée, en haut à droite de chaque
+  écran.
 - Un bouton **« ? »** en haut de chaque écran : l’aide de l’écran où tu te
   trouves, l’accès à l’Accueil et à la visite guidée.
-- La page **Accueil** rappelle à quoi sert Kairos et ce qu’il sait faire,
-  avec un accès direct à chaque écran ; elle explique aussi comment
-  travailler avec un manager ou une équipe.
 - Une **visite guidée** pas à pas (six étapes), proposée au premier
   lancement et à revoir quand on veut ; une seconde visite présente l’espace
   Équipe quand il est activé.

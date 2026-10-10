@@ -79,8 +79,9 @@ Tests d'isolation à garder verts à chaque jalon :
 - Pas de dépendance entre une tâche `TEAM` et une tâche `PERSONAL`.
 - Alertes par la **forme** (contour + icône), jamais d'ambre ; dépassement
   de charge en `error` (seul rouge permis ici, avec P0).
-- Cinq destinations dans l'espace Équipe (Suivi, Backlog, Équipe,
-  Prévisions, Réglages) ; `Destination` de l'espace Perso inchangée.
+- Cinq destinations dans l'espace Équipe (Accueil, Suivi, Backlog, Équipe,
+  Prévisions) ; les Réglages, communs aux deux espaces, sont dans la barre du
+  haut (écran secondaire).
 
 ## Déroulé d'un jalon
 

@@ -23,6 +23,8 @@ import com.skohscripts.kairos.core.model.TeamSettings
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.BackupStore
@@ -112,7 +114,7 @@ class TeamMembersUiTest {
     @Test
     fun anEmptyTeamExplainsMembersAndOffersTheSameButton() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         waitText("Team members")
         assertEquals(1, count("Add a member"))
@@ -124,7 +126,7 @@ class TeamMembersUiTest {
     fun addingThenEditingAMemberValidatesEachField() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
 
         onNodeWithText("Add a member").performClick()
@@ -178,7 +180,7 @@ class TeamMembersUiTest {
             second = it.createMember("Bruno", "", 100, 7.0, false)!!
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         waitText("Claire")
         // « moi » : une seule marque, sur la première carte.
@@ -202,7 +204,7 @@ class TeamMembersUiTest {
     fun anAbsenceAddedInTheSheetAppearsOnTheCard() = runComposeUiTest {
         val services = services { it.createMember("Alex", "", 100, 7.0, false) }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         waitText("Alex")
         assertEquals(0, count("Away", substring = true))
@@ -247,7 +249,7 @@ class TeamMembersUiTest {
             )
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         onNodeWithText("Alex").performClick()
         waitText("Member")
@@ -289,7 +291,7 @@ class TeamMembersUiTest {
     fun aMemberWhoNeverHadATaskCanBeDeletedAfterConfirmation() = runComposeUiTest {
         val services = services { it.createMember("Alex", "", 100, 7.0, false) }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         onNodeWithText("Alex").performClick()
         waitText("Member")
@@ -307,8 +309,9 @@ class TeamMembersUiTest {
         waitText("Team members")
     }
 
-    private fun ComposeUiTest.openSettings() {
-        onAllNodesWithText("Settings").onFirst().performClick()
+    /** Réglages (roue crantée de la barre du haut), formulaire chargé. */
+    private fun ComposeUiTest.openSettingsPage() {
+        openSettings()
         waitText("Appearance")
     }
 
@@ -327,9 +330,9 @@ class TeamMembersUiTest {
     fun deletingTheTeamDataBacksUpFirstThenEmptiesTheTeam() = runComposeUiTest {
         val services = services { teamData(it) }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Tracking")
-        openSettings()
+        openSettingsPage()
 
         onNodeWithText("Delete team data…").performScrollTo().performClick()
         waitText("Delete team data?")
@@ -366,9 +369,9 @@ class TeamMembersUiTest {
         failBackups = true
         val services = services { teamData(it) }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Tracking")
-        openSettings()
+        openSettingsPage()
         onNodeWithText("Delete team data…").performScrollTo().performClick()
         waitText("Delete team data?")
         onNodeWithText("Delete").performClick()

@@ -7,6 +7,7 @@
     <string name="app_name">Kairos</string>
     <string name="app_tagline">Le bon moment pour chaque tâche</string>
 
+    <string name="nav_home">Accueil</string>
     <string name="nav_notes">Notes</string>
     <string name="nav_day">Jour</string>
     <string name="nav_week">Semaine</string>
@@ -483,12 +484,10 @@
     <string name="nav_team_backlog">Backlog</string>
     <string name="nav_team_members">Équipe</string>
     <string name="nav_team_forecast">Prévisions</string>
-    <string name="nav_team_settings">Réglages</string>
     <string name="title_team_board">Suivi</string>
     <string name="title_team_backlog">Backlog</string>
     <string name="title_team_members">Équipe</string>
     <string name="title_team_forecast">Prévisions</string>
-    <string name="title_team_settings">Réglages</string>
     <string name="title_team_named">%1$s · %2$s</string>
     <string name="team_board_empty_title">Suivi de l’équipe</string>
     <string name="team_board_empty_body">Ajoutez des membres dans l’onglet Équipe, puis assignez-leur des tâches du backlog : le tableau de suivi s’affichera ici.</string>

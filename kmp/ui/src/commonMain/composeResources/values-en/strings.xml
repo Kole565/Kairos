@@ -4,6 +4,7 @@
     <string name="app_name">Kairos</string>
     <string name="app_tagline">The right time for every task</string>
 
+    <string name="nav_home">Home</string>
     <string name="nav_notes">Notes</string>
     <string name="nav_day">Day</string>
     <string name="nav_week">Week</string>
@@ -480,12 +481,10 @@
     <string name="nav_team_backlog">Backlog</string>
     <string name="nav_team_members">Team</string>
     <string name="nav_team_forecast">Forecast</string>
-    <string name="nav_team_settings">Settings</string>
     <string name="title_team_board">Tracking</string>
     <string name="title_team_backlog">Backlog</string>
     <string name="title_team_members">Team</string>
     <string name="title_team_forecast">Forecast</string>
-    <string name="title_team_settings">Settings</string>
     <string name="title_team_named">%1$s · %2$s</string>
     <string name="team_board_empty_title">Team tracking</string>
     <string name="team_board_empty_body">Add members in the Team tab, then assign them backlog tasks: the tracking board will show up here.</string>

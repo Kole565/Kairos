@@ -13,6 +13,7 @@ import androidx.compose.ui.ImageComposeScene
 import com.skohscripts.kairos.ui.app.SplashFrame
 import com.skohscripts.kairos.ui.guide.GuideDialog
 import com.skohscripts.kairos.ui.navigation.Destination
+import com.skohscripts.kairos.ui.navigation.TeamDestination
 import com.skohscripts.kairos.ui.guide.GuideKind
 import com.skohscripts.kairos.ui.guide.HelpDialog
 import com.skohscripts.kairos.ui.guide.HelpTopic
@@ -77,7 +78,9 @@ object SelfTest {
         val output = args.firstOrNull { it.startsWith("--self-test=") }?.substringAfter('=')?.let(::File)
         // Base en mémoire avec les exemples : le rendu montre une vraie journée.
         val services = runBlocking { DesktopServices.open(dataDir, inMemory = true) }
-        val app: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { services } }
+        // L'application s'ouvre sur l'Accueil ; les captures de la vue Jour la demandent explicitement.
+        val app: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { services } }
+        val launch: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { services } }
         val settings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(services) {} } } }
         val about: @Composable () -> Unit = { KairosTheme { Surface { AboutScreen() } } }
         // Seconde base avec un chrono en marche sur la première tâche qualifiée.
@@ -86,7 +89,7 @@ object SelfTest {
                 s.repository.snapshot.value.tasks.firstOrNull { !it.needsProcessing }?.let { s.repository.startTimer(it.id) }
             }
         }
-        val chrono: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { timed } }
+        val chrono: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { timed } }
         // Troisième base : gestion d'équipe activée, ouverte dans l'espace Équipe (docs/spec/equipe.md).
         val team = runBlocking {
             DesktopServices.open(dataDir, inMemory = true).also { s ->
@@ -201,9 +204,9 @@ object SelfTest {
             }
         }
         val exchangesTab = NavState().apply { exchangesTab = true }
-        val memberApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { exchange.member } }
+        val memberApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { exchange.member } }
         val memberSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(exchange.member) {} } } }
-        val teamApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { team } }
+        val teamApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, initialTeamDestination = TeamDestination.BOARD) { team } }
         val teamSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(team) {} } } }
         val notes: @Composable () -> Unit = { KairosTheme { Surface { NotesScreen(services) {} } } }
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
@@ -212,6 +215,9 @@ object SelfTest {
         val shots = listOf(
             Shot("wide", 1200, 1000, app),
             Shot("narrow", 420, 1000, app),
+            // Ouverture réelle : l'Accueil, première destination ; Réglages dans la barre du haut (docs/spec/navigation-theme.md).
+            Shot("launch", 1200, 1000, launch),
+            Shot("launch-narrow", 360, 800, launch),
             Shot("settings", 900, 1000, settings),
             Shot("settings-full", 900, 4800, settings),
             Shot("about", 900, 1000, about),
@@ -245,7 +251,7 @@ object SelfTest {
             Shot("home-team", 900, 1500, atWidth(900.dp) { HomeScreen(teamEnabled = true, onOpen = {}, onTour = {}, onAbout = {}) }),
             Shot("guide-step", 900, 700, overScrim { GuideDialog(GuideKind.PERSONAL, onOpen = {}, onDismiss = {}) }),
             Shot("guide-step-narrow", 360, 800, overScrim { GuideDialog(GuideKind.TEAM, onOpen = {}, onDismiss = {}) }),
-            Shot("help", 900, 700, overScrim { HelpDialog(Destination.DAY, HelpTopic.DAY, team = false, onOpenHome = {}, onStartTour = {}, onDismiss = {}) }),
+            Shot("help", 900, 700, overScrim { HelpDialog(HelpTopic.DAY, team = false, onOpenHome = {}, onStartTour = {}, onDismiss = {}) }),
             Shot("team-exchanges", 900, 1500, atWidth(900.dp) { TeamMembersScreen(exchange.manager, nav = exchangesTab) }),
             Shot("team-exchanges-narrow", 360, 2300, atWidth(360.dp) { TeamMembersScreen(exchange.manager, nav = exchangesTab) }),
             Shot("team-members", 1200, 1000, membersScreen),

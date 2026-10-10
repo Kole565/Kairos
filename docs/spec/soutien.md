@@ -17,9 +17,12 @@ Kairos reprend le principe, mais ouvre directement la page de don commune
 
 ### Comportement attendu
 
-- Une icône **cœur** (« Soutenir Kairos ») à droite de la barre du haut, à côté
-  du « ? », visible sur tous les écrans, y compris « Accueil » et « À propos et
-  guide » (là où le « ? » disparaît).
+- Une icône **cœur** (« Soutenir Kairos ») à droite de la barre du haut, avant
+  le « ? » et la roue crantée des Réglages, visible sur tous les écrans, y
+  compris « Accueil » et « À propos et guide » (là où le « ? » disparaît).
+  Exception : quand le sélecteur d'espace est dans la barre du haut (gestion
+  d'équipe activée, fenêtre sans rail), le cœur lui laisse la place ; le
+  bouton de « À propos et guide » reste.
 - Un bouton **« Soutenir Kairos »** (icône cœur) dans « À propos et guide », sous
   « Code source ».
 - Les deux ouvrent `https://skohscripts.github.io/donate.github.io/` dans le
@@ -45,13 +48,21 @@ Kairos reprend le principe, mais ouvre directement la page de don commune
   l'adresse ; l'appel est `LocalUriHandler.openUri`, enveloppé de `runCatching`
   (un environnement sans navigateur ne doit pas faire planter l'application).
 - `AppShell` : `IconButton` avec `KairosIcons.Favorite` dans `actions` de la
-  `TopAppBar`, **avant** le « ? » et hors de la condition `secondary == null`.
+  `TopAppBar`, **avant** le « ? », hors de la condition `secondary == null`,
+  sauf si `selectorInBar` (sélecteur d'espace dans la barre).
 - `AboutScreen` : `KairosOutlinedButton` icône + texte, comme « Code source ».
 - Icône générée par `make_icons.py` (`Favorite`, contour, sans variante pleine).
 - Chaînes `donate_action` en français (« Soutenir Kairos ») et en anglais
   (« Support Kairos »), servant de libellé visible et de description d'accessibilité.
 
 ### Décisions
+
+- **Le cœur cède sa place au sélecteur d'espace** (2026-10-10) : avec la roue
+  crantée des Réglages en plus, la barre d'un téléphone en mode équipe
+  (sélecteur, cœur, « ? », roue) ne laissait au titre qu'une centaine de dp,
+  coupé en plein mot. Sans le cœur, la barre compte autant d'éléments
+  qu'avant. Écartés : retirer le logo (titre toujours coupé), un menu de
+  débordement (nouveau composant pour une icône).
 
 - **Racine de la page GitHub Pages**, pas `donate/redirect.html` : la racine
   redirige déjà, et le chemin interne reste libre d'évoluer.

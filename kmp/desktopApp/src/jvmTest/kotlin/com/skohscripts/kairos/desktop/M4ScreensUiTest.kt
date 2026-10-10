@@ -21,6 +21,8 @@ import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.TaskEdit
 import kotlinx.datetime.LocalDate
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -70,7 +72,7 @@ class M4ScreensUiTest {
     fun noteIsCapturedThenTurnedIntoATask() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Notes")
         onAllNodesWithText("Notes").onFirst().performClick()
         waitText("Nothing waiting.")
@@ -99,7 +101,7 @@ class M4ScreensUiTest {
             val due = LocalDate.parse("2026-10-01")
             services.repository.updateTask(id, TaskEdit("Quarterly review", priority = 1, points = 2, deadline = due, pinDay = due))
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Week")
         onAllNodesWithText("Week").onFirst().performClick()
         waitText("Week · from Monday, September 28, 2026")
@@ -124,7 +126,7 @@ class M4ScreensUiTest {
     fun statsShowWhatWasDoneAndTimed() = runComposeUiTest {
         val services = services()
         runBlocking { timedDone(services.repository, "Fix the invoice", points = 3, minutes = 40) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Stats")
         onAllNodesWithText("Stats").onFirst().performClick()
         waitText("Weekly throughput")
@@ -142,7 +144,7 @@ class M4ScreensUiTest {
             repository.setPriority(id, 2)
             repository.setPoints(id, 1)
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Delta", substring = true)
         onAllNodesWithContentDescription("Edit").onFirst().performClick()
         waitText("Edit task")

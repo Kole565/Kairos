@@ -22,6 +22,8 @@ import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.TaskEdit
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -134,7 +136,7 @@ class TeamLoadUiTest {
     @Test
     fun theTeamScreenShowsTheLoadOfEveryoneWithTheOverloadedMemberFlagged() = runComposeUiTest {
         val services = services { loadedTeam(it, Crew()) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
 
         // L'horizon des réglages (1 semaine) est choisi au départ ; les quatre chiffres clés arrivent hors composition.
@@ -166,7 +168,7 @@ class TeamLoadUiTest {
     @Test
     fun theHorizonSelectorRecomputesTheLoadAndKeepsTheOldFiguresMeanwhile() = runComposeUiTest {
         val services = services { loadedTeam(it, Crew()) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         waitText("76.8 h")
 
@@ -180,7 +182,7 @@ class TeamLoadUiTest {
     @Test
     fun theMemberSheetShowsTheCapacityTheWeeklyLoadAndTheTaskInDanger() = runComposeUiTest {
         val services = services { loadedTeam(it, Crew()) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMembers()
         waitText("30 h / 25.6 h · 117%")
 
@@ -198,7 +200,7 @@ class TeamLoadUiTest {
     @Test
     fun theAssignMenuShowsTheLoadOfEachMember() = runComposeUiTest {
         val services = services { loadedTeam(it, Crew()) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("Backlog bare")
         onAllNodesWithContentDescription("Task actions").onFirst().performClick()
@@ -229,7 +231,7 @@ class TeamLoadUiTest {
         val names = repository.snapshot.value.members.associate { it.id to it.name }
         val other = names.keys.first { it != suggestedTwo }
 
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("Suggest a distribution")
         onNodeWithText("Suggest a distribution").performClick()
@@ -263,7 +265,7 @@ class TeamLoadUiTest {
             task(r, "Line one", 4)
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("Suggest a distribution")
         onNodeWithText("Suggest a distribution").performClick()
@@ -285,7 +287,7 @@ class TeamLoadUiTest {
             ids["points"] = points
             ids["bare"] = r.createTeamTask("Bare")!!
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         // Le Backlog est une liste paresseuse : on filtre pour que la ligne soit à l'écran.
         fun open(title: String) {
@@ -315,9 +317,8 @@ class TeamLoadUiTest {
     fun theTeamCardOfTheSettingsOffersTheFiveLoadSettingsAndRefusesAFocusAboveOne() = runComposeUiTest {
         val services = services { }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Settings").fetchSemanticsNodes().isNotEmpty() }
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Appearance")
         listOf("Load horizon (weeks)", "Focus rate", "Hours per point", "Load alert from (%)", "Affinity tolerance (working days)").forEach {
             onNodeWithText(it).performScrollTo().assertExists()

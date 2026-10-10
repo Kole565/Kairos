@@ -27,18 +27,16 @@ import com.skohscripts.kairos.ui.generated.resources.help_open_tour
 import com.skohscripts.kairos.ui.generated.resources.help_open_tour_hint
 import com.skohscripts.kairos.ui.generated.resources.help_title
 import com.skohscripts.kairos.ui.icons.KairosIcons
-import com.skohscripts.kairos.ui.navigation.NavEntry
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Aide de l'écran courant [screen] (bouton « ? » de la barre du haut, docs/spec/accueil.md § Le bouton « ? ») : le texte du
+ * Aide de l'écran courant (bouton « ? » de la barre du haut, docs/spec/accueil.md § Le bouton « ? ») : le texte du
  * sujet [topic], puis l'accès à l'Accueil et à la visite de l'espace [team] courant. Choisir une entrée ferme l'aide
  * avant d'agir ([onDismiss] est appelé d'abord par l'appelant).
  */
 @Composable
 fun HelpDialog(
-    screen: NavEntry,
     topic: HelpTopic,
     team: Boolean,
     onOpenHome: () -> Unit,
@@ -48,11 +46,11 @@ fun HelpDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(KairosIcons.Help, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-        title = { Text(stringResource(Res.string.help_title, stringResource(screen.title)), modifier = Modifier.heading()) },
+        title = { Text(stringResource(Res.string.help_title, stringResource(topic.screen)), modifier = Modifier.heading()) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(topic.body), style = MaterialTheme.typography.bodyMedium)
-                HelpEntry(KairosIcons.Info, Res.string.help_open_home, Res.string.help_open_home_hint, onOpenHome)
+                HelpEntry(KairosIcons.Home, Res.string.help_open_home, Res.string.help_open_home_hint, onOpenHome)
                 if (team) {
                     HelpEntry(KairosIcons.PlayArrow, Res.string.help_open_team_tour, Res.string.help_open_team_tour_hint, onStartTour)
                 } else {

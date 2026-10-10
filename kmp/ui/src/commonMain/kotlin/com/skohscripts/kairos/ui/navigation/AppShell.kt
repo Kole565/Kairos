@@ -61,7 +61,8 @@ import com.skohscripts.kairos.ui.generated.resources.app_name
 import com.skohscripts.kairos.ui.generated.resources.donate_action
 import com.skohscripts.kairos.ui.generated.resources.help_action
 import com.skohscripts.kairos.ui.generated.resources.nav_navigation
-import com.skohscripts.kairos.ui.generated.resources.title_home
+import com.skohscripts.kairos.ui.generated.resources.nav_settings
+import com.skohscripts.kairos.ui.generated.resources.title_settings
 import com.skohscripts.kairos.ui.generated.resources.title_about
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.icons.KairosLogo
@@ -73,6 +74,7 @@ import com.skohscripts.kairos.ui.guide.HelpTopic
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.screens.DONATE_URL
 import com.skohscripts.kairos.ui.screens.HomeScreen
+import com.skohscripts.kairos.ui.settings.SettingsScreen
 import com.skohscripts.kairos.ui.screens.DestinationScreen
 import com.skohscripts.kairos.ui.screens.TeamDestinationScreen
 import com.skohscripts.kairos.ui.team.SpaceSelector
@@ -106,18 +108,18 @@ fun AppShell(
     teamModeEnabled: Boolean,
     /** Nom de l'équipe (éventuellement vide), préfixe du titre dans l'espace Équipe. */
     teamName: String,
-    /** Écran secondaire ouvert (Accueil ou « À propos et guide »), `null` = une destination. */
+    /** Écran secondaire ouvert (Réglages ou « À propos et guide »), `null` = une destination. */
     secondary: Secondary?,
     nav: NavState,
     onNavigate: (Destination) -> Unit,
     onNavigateTeam: (TeamDestination) -> Unit,
     onSpaceChange: (Space) -> Unit,
     onOpenDay: (LocalDate?) -> Unit,
-    onOpenHome: () -> Unit,
+    onOpenSettings: () -> Unit,
     onOpenAbout: () -> Unit,
     onCloseSecondary: () -> Unit,
 ) {
-    // Retour système (Android) ou Échap (bureau, web) : ferme l'écran secondaire (Accueil ou « À propos »).
+    // Retour système (Android) ou Échap (bureau, web) : ferme l'écran secondaire (Réglages ou « À propos »).
     BackHandler(enabled = secondary != null) { onCloseSecondary() }
     // Aide de l'écran courant (« ? ») et visite guidée en cours : états de la coquille, rien n'est mémorisé au-delà.
     var helpOpen by rememberSaveable { mutableStateOf(false) }
@@ -161,8 +163,11 @@ fun AppShell(
                 nav.exchangesTab = target.exchanges
                 onNavigateTeam(target.destination)
             }
+            GuideTarget.Settings -> onOpenSettings()
         }
     }
+    // L'Accueil de l'espace courant (destination de tête, la même page dans les deux espaces).
+    val openHome: () -> Unit = { if (team) onNavigateTeam(TeamDestination.HOME) else onNavigate(Destination.HOME) }
     val selector: (@Composable () -> Unit)? = if (teamModeEnabled) {
         { SpaceSelector(space, onSpaceChange) }
     } else {
@@ -170,13 +175,19 @@ fun AppShell(
     }
     // Titre fidèle à ce qui est affiché : « Aujourd'hui » seulement si c'est vrai (Kairos 2).
     val title = when {
-        secondary == Secondary.HOME -> stringResource(Res.string.title_home)
+        secondary == Secondary.SETTINGS -> stringResource(Res.string.title_settings)
         secondary == Secondary.ABOUT -> stringResource(Res.string.title_about)
         team && teamName.isNotBlank() -> stringResource(Res.string.title_team_named, teamName, stringResource(current.title))
         team -> stringResource(current.title)
         destination == Destination.DAY && day != null && day != today -> stringResource(Res.string.title_day_other, Dates.long(day, language))
         destination == Destination.WEEK -> stringResource(Res.string.title_week_of, Dates.long(TaskStats.monday(nav.week ?: today), language))
         else -> stringResource(destination.title)
+    }
+    // Sujet d'aide de ce qui est affiché ; `null` = pas de « ? » (Accueil, « À propos »).
+    val helpTopic: HelpTopic? = when (secondary) {
+        Secondary.SETTINGS -> HelpTopic.SETTINGS
+        Secondary.ABOUT -> null
+        null -> HelpTopic.of(current, nav.exchangesTab)
     }
     val topBar: @Composable () -> Unit = {
         TopAppBar(
@@ -194,14 +205,25 @@ fun AppShell(
             },
             // Sans rail, le sélecteur d'espace est à droite du titre ; avec un rail, il est dans son en-tête.
             actions = {
-                if (layout != NavigationLayout.RAIL) selector?.invoke()
-                // Sur l'Accueil et « À propos », l'aide est déjà la page elle-même.
-                IconButton(onClick = { runCatching { uriHandler.openUri(DONATE_URL) } }) {
-                    Icon(KairosIcons.Favorite, contentDescription = stringResource(Res.string.donate_action))
+                val selectorInBar = layout != NavigationLayout.RAIL && selector != null
+                if (selectorInBar) selector?.invoke()
+                // Sélecteur d'espace dans la barre : le cœur lui laisse la place (titre illisible sinon à 360 dp) ;
+                // « Soutenir Kairos » reste dans « À propos et guide » (docs/spec/soutien.md).
+                if (!selectorInBar) {
+                    IconButton(onClick = { runCatching { uriHandler.openUri(DONATE_URL) } }) {
+                        Icon(KairosIcons.Favorite, contentDescription = stringResource(Res.string.donate_action))
+                    }
                 }
-                if (secondary == null) {
+                // Sur l'Accueil et « À propos », l'aide est déjà la page elle-même ; les Réglages gardent la leur.
+                if (helpTopic != null) {
                     IconButton(onClick = { helpOpen = true }) {
                         Icon(KairosIcons.Help, contentDescription = stringResource(Res.string.help_action))
+                    }
+                }
+                // Réglages : à droite, de partout sauf depuis eux-mêmes et « À propos » (qu'ils ouvrent).
+                if (secondary == null) {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(KairosIcons.Settings, contentDescription = stringResource(Res.string.nav_settings))
                     }
                 }
             },
@@ -213,11 +235,12 @@ fun AppShell(
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 CompositionLocalProvider(LocalMessages provides showMessage) {
+                    val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout) }
                     when {
-                        secondary == Secondary.HOME -> HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout)
+                        secondary == Secondary.SETTINGS -> SettingsScreen(services, onOpenAbout)
                         secondary == Secondary.ABOUT -> AboutScreen()
-                        team -> TeamDestinationScreen(teamDestination, services, nav, onOpenAbout, onTour = { guide = GuideKind.TEAM })
-                        else -> DestinationScreen(destination, services, nav, onOpenDay, onNavigate, onOpenAbout)
+                        team -> TeamDestinationScreen(teamDestination, services, nav, onTour = { guide = GuideKind.TEAM }, home = home)
+                        else -> DestinationScreen(destination, services, nav, onOpenDay, onNavigate, home)
                     }
                 }
                 AlertBanners(alerts, Modifier.align(Alignment.BottomCenter))
@@ -225,12 +248,11 @@ fun AppShell(
         }
     }
 
-    if (helpOpen) {
+    if (helpOpen && helpTopic != null) {
         HelpDialog(
-            screen = current,
-            topic = HelpTopic.of(current, nav.exchangesTab),
+            topic = helpTopic,
             team = team,
-            onOpenHome = { helpOpen = false; onOpenHome() },
+            onOpenHome = { helpOpen = false; openHome() },
             onStartTour = { helpOpen = false; guide = if (team) GuideKind.TEAM else GuideKind.PERSONAL },
             onDismiss = { helpOpen = false },
         )

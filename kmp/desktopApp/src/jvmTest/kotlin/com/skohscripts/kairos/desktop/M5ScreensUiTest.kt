@@ -29,6 +29,8 @@ import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -110,9 +112,8 @@ class M5ScreensUiTest {
     fun anInvalidFieldBlocksSavingThenAValidFormIsSaved() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitText("Settings")
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Working day")
 
         // Un champ hors bornes : message sous le champ, rien d'enregistré.
@@ -149,9 +150,8 @@ class M5ScreensUiTest {
     fun aChosenColorThemesTheWholeInterfaceOnceSaved() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitText("Settings")
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Appearance")
         // Le fond de l'écran est la surface du schéma : celle du miel, puis celle de la graine choisie.
         val honey = ThemeColors.schemeFor(Settings.DEFAULT_THEME_COLOR, null)
@@ -180,7 +180,7 @@ class M5ScreensUiTest {
     @Test
     fun theWelcomeShowsOnceOnFirstLaunch() = runComposeUiTest {
         val services = services(firstLaunch = true)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Welcome to Kairos")
         onNodeWithText("[Example]", substring = true).assertExists()
         onNodeWithText("Get started").performClick()
@@ -190,7 +190,7 @@ class M5ScreensUiTest {
     @Test
     fun aKairos2DatabaseFoundAtFirstLaunchIsImportedAfterABackup() = runComposeUiTest {
         val services = services(firstLaunch = true, legacy = kairos2)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("A Kairos 2 database was found", substring = true)
         onNodeWithText("Import the Kairos 2 database").performClick()
         waitText("Import the Kairos 2 database?")
@@ -205,9 +205,8 @@ class M5ScreensUiTest {
     @Test
     fun settingsImportAKairos2Database() = runComposeUiTest {
         val services = services(legacy = kairos2)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitText("Settings")
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Import a Kairos 2.x database")
         onNodeWithText("Import a Kairos 2.x database").performScrollTo().performClick()
         waitText("Import the Kairos 2 database?")
@@ -227,7 +226,7 @@ class M5ScreensUiTest {
             override fun dismiss(version: String) { dismissed.value = version }
         }
         val services = services().let { s -> AppServices(s.repository, s.files, s.backups, clock = clock, updates = updates) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Kairos 3.0.1 is available", substring = true)
         onNodeWithText("Later").performClick()
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Kairos 3.0.1 is available", substring = true).fetchSemanticsNodes().isEmpty() }
@@ -248,7 +247,7 @@ class M5ScreensUiTest {
     fun aPortableCopyProposesItsShortcutUntilCreatedOrDeclined() = runComposeUiTest {
         val shortcuts = FakeShortcuts()
         val services = services().let { s -> AppServices(s.repository, s.files, s.backups, clock = clock, shortcuts = shortcuts) }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Add Kairos to the applications menu, with its icon?")
         // Le bandeau est en tête, avant le « Add » de la capture de la vue Jour.
         onAllNodesWithText("Add").onFirst().performClick()
@@ -256,7 +255,7 @@ class M5ScreensUiTest {
         waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Add Kairos to the applications menu", substring = true).fetchSemanticsNodes().isEmpty() }
 
         // Réglages → Raccourci : l'état, puis « Retirer » ; le bandeau revient.
-        onAllNodesWithText("Settings").onFirst().performClick()
+        openSettings()
         waitText("Shortcut created for this copy.")
         onNodeWithText("Remove the shortcut").performScrollTo().performClick()
         waitText("No shortcut.")
@@ -273,9 +272,8 @@ class M5ScreensUiTest {
     @Test
     fun anInstalledCopyHasNoShortcutCard() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitText("Settings")
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Working day")
         assertEquals(0, onAllNodesWithText("Shortcut").fetchSemanticsNodes().size)
     }
@@ -283,7 +281,7 @@ class M5ScreensUiTest {
     @Test
     fun disclosuresAreSpokenAsButtonsWithTheirState() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Search / filter")
         val header = hasText("Search / filter") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
         onNode(header and SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "collapsed")).assertExists().performClick()

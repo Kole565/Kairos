@@ -119,19 +119,26 @@ rien changer pour qui ne l'active pas.
   le sélecteur dans les Réglages ; il est revenu en haut, **conditionné à
   l'activation**, ce qui protège aussi l'utilisateur solo tout en gardant
   la bascule à un toucher pour le manager.
-- L'espace **Perso** garde exactement ses cinq destinations (Notes, Jour,
-  Semaine, Stats, Réglages).
+- L'espace **Perso** garde ses cinq destinations (Accueil, Notes, Jour,
+  Semaine, Stats ; Réglages dans la barre du haut depuis le 2026-10-10,
+  `navigation-theme.md`).
 - L'espace **Équipe** a ses cinq destinations :
-  1. **Suivi** : le tableau de l'équipe, par membre et par état
-     (`equipe-backlog-suivi.md`) ; destination d'ouverture de l'espace ;
-  2. **Backlog** : les tâches d'équipe non assignées, triées par score,
+  1. **Accueil** : la même page que dans l'espace Perso (`accueil.md`) ; en
+     tête de la barre, et écran d'ouverture de l'application quand on l'a
+     quittée dans l'espace Équipe ;
+  2. **Suivi** : le tableau de l'équipe, par membre et par état
+     (`equipe-backlog-suivi.md`) ; destination ouverte quand on passe dans
+     l'espace ;
+  3. **Backlog** : les tâches d'équipe non assignées, triées par score,
      et leur distribution ;
-  3. **Équipe** : les membres, leur capacité et leur charge, la charge
+  4. **Équipe** : les membres, leur capacité et leur charge, la charge
      globale et par catégorie (`equipe-charge.md`) ;
-  4. **Prévisions** : simulations et scénarios (`equipe-simulation.md`) ;
-  5. **Réglages** : le même écran que dans l'espace Perso.
-- Changer d'espace ouvre la première destination de l'autre espace (Jour
-  ou Suivi). L'espace courant est retenu d'une session à l'autre.
+  5. **Prévisions** : simulations et scénarios (`equipe-simulation.md`).
+  Les **Réglages**, le même écran que dans l'espace Perso, s'ouvrent par la
+  roue crantée de la barre du haut.
+- Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou
+  Suivi), pas son Accueil. L'espace courant est retenu d'une session à
+  l'autre.
 - Dans l'espace Équipe, le titre de la barre d'application est préfixé du
   nom de l'équipe s'il est renseigné (« Équipe Plateforme · Suivi »).
 
@@ -403,9 +410,10 @@ aussi son événement de journal dans la même transaction,
 ### Interface (`ui/team/`, `ui/navigation/`)
 
 - `NavEntry` (interface scellée : libellé, titre, icône, icône pleine),
-  implémentée par `Destination` (inchangée, cinq entrées) et par
-  `TeamDestination` (`BOARD`, `BACKLOG`, `MEMBERS`, `FORECAST`, `SETTINGS`,
-  `START = BOARD`) ; `Space` (`PERSONAL`, `TEAM`), `navigation/Space.kt`.
+  implémentée par `Destination` (cinq entrées, `navigation-theme.md`) et par
+  `TeamDestination` (`HOME`, `BOARD`, `BACKLOG`, `MEMBERS`, `FORECAST` ;
+  `START = BOARD`, destination du passage dans l'espace ; à l'ouverture de
+  l'application, `HOME`) ; `Space` (`PERSONAL`, `TEAM`), `navigation/Space.kt`.
   `AppShell` affiche les entrées de l'espace courant (paramètres `space`,
   `teamDestination`, `teamModeEnabled`, `teamName`, `onNavigateTeam`,
   `onSpaceChange`) ; en espace Perso, son rendu est celui d'avant (captures
@@ -439,11 +447,11 @@ aussi son événement de journal dans la même transaction,
   « Annuler ») avant d'écrire ; « Annuler » n'écrit rien et laisse le
   formulaire modifié. Le message « Réglages enregistrés. » est émis avant
   l'écriture, l'écran quittant la composition dès que le mode tombe.
-- `TeamScreens.kt` (`ui/team/`) : `TeamDestinationScreen` aiguille vers
-  `TeamBoardScreen`, `TeamBacklogScreen`, `TeamMembersScreen`,
-  `ForecastScreen` (jalon E1 : état vide centré, 720 dp au plus : icône,
-  titre, phrase de ce que fera l'écran, « Disponible dans une prochaine
-  version. ») ou `SettingsScreen` (le même qu'en espace Perso).
+- `TeamDestinationScreen` (`ui/screens/DestinationScreen.kt`) aiguille vers
+  l'Accueil (`home`, le même qu'en espace Perso), `TeamBoardScreen`,
+  `TeamBacklogScreen`, `TeamMembersScreen` ou `ForecastScreen` ; les
+  Réglages (`SettingsScreen`, le même qu'en espace Perso) sont l'écran
+  secondaire de la roue crantée.
 - Lecteurs : `DayScreen`, `WeekScreen`, `NotesScreen`, `StatsScreen`,
   `ChronoWatcher` et `ChronoSync` (Android) lisent `personalSnapshot` ;
   restent sur `snapshot` le thème (`KairosApp`), `Replace.kt`,

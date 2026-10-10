@@ -28,6 +28,7 @@ import com.skohscripts.kairos.ui.app.ChronoNotifier
 import com.skohscripts.kairos.ui.app.FileService
 import com.skohscripts.kairos.ui.app.NotifyState
 import com.skohscripts.kairos.ui.navigation.Destination
+import com.skohscripts.kairos.ui.navigation.Secondary
 import com.skohscripts.kairos.ui.navigation.TeamDestination
 import com.skohscripts.kairos.ui.team.forecast.ForecastRun
 import com.skohscripts.kairos.ui.team.forecast.ForecastSpec
@@ -64,8 +65,11 @@ object StoreScreenshots {
     private val today = LocalDate(2026, 10, 6) // un mardi
     private val now: Instant = LocalDateTime(today, LocalTime(10, 12)).toInstant(TimeZone.UTC)
 
-    /** Captures 1 à 5 : l'espace Perso, sur la base du mode solo. */
-    private val shots = listOf(Destination.DAY, Destination.WEEK, Destination.STATS, Destination.NOTES, Destination.SETTINGS)
+    /**
+     * Captures 1 à 5 : l'espace Perso, sur la base du mode solo. `null` = les Réglages, écran secondaire ouvert
+     * par-dessus la vue Jour (ils ne sont plus une destination, docs/spec/navigation-theme.md).
+     */
+    private val shots = listOf(Destination.DAY, Destination.WEEK, Destination.STATS, Destination.NOTES, null)
 
     /** Captures 6 à 8 : l'espace Équipe, sur une seconde base (gestion d'équipe activée, [StoreTeam]). */
     private val teamShots = listOf(TeamDestination.BOARD, TeamDestination.MEMBERS, TeamDestination.FORECAST)
@@ -78,7 +82,13 @@ object StoreScreenshots {
             val out = File(metadataDir, "$folder/images/phoneScreenshots").apply { mkdirs() }
             shots.forEachIndexed { i, destination ->
                 val services = runBlocking { services(locale.language) }
-                val png = render { KairosApp(Platform.ANDROID, destination) { services } }
+                val png = render {
+                    if (destination != null) {
+                        KairosApp(Platform.ANDROID, destination) { services }
+                    } else {
+                        KairosApp(Platform.ANDROID, Destination.DAY, initialSecondary = Secondary.SETTINGS) { services }
+                    }
+                }
                 File(out, "${i + 1}.png").writeBytes(png)
             }
             teamShots.forEachIndexed { i, destination ->

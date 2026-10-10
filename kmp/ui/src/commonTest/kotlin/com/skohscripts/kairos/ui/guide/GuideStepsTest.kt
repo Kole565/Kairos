@@ -17,7 +17,9 @@ class GuideStepsTest {
 
     @Test
     fun theKairosTourOnlyOpensPersonalScreensAndTheTeamTourOnlyTeamScreens() {
-        assertTrue(GuideSteps.of(GuideKind.PERSONAL).all { it.target is GuideTarget.Personal })
+        // Les Réglages (dernière étape) sont communs aux deux espaces et ne changent pas d'espace.
+        assertTrue(GuideSteps.of(GuideKind.PERSONAL).all { it.target is GuideTarget.Personal || it.target == GuideTarget.Settings })
+        assertEquals(GuideTarget.Settings, GuideSteps.of(GuideKind.PERSONAL).last().target)
         assertTrue(GuideSteps.of(GuideKind.TEAM).all { it.target is GuideTarget.Team })
     }
 
@@ -39,9 +41,12 @@ class GuideStepsTest {
     }
 
     @Test
-    fun everyScreenHasAHelpTopicAndEveryTopicIsReachable() {
+    fun everyScreenButHomeHasAHelpTopicAndEveryTopicIsReachable() {
         val entries: List<NavEntry> = Destination.entries + TeamDestination.entries
-        val reached = entries.map { HelpTopic.of(it, exchanges = false) }.toSet() + HelpTopic.of(TeamDestination.MEMBERS, exchanges = true)
+        // L'Accueil n'a pas de « ? » ; les Réglages (écran secondaire) ont leur sujet, choisi par la coquille.
+        assertEquals(listOf<NavEntry>(Destination.HOME, TeamDestination.HOME), entries.filter { HelpTopic.of(it, exchanges = false) == null })
+        val reached = entries.mapNotNull { HelpTopic.of(it, exchanges = false) }.toSet() +
+            HelpTopic.of(TeamDestination.MEMBERS, exchanges = true) + HelpTopic.SETTINGS
         assertEquals(HelpTopic.entries.toSet(), reached)
     }
 
@@ -49,8 +54,7 @@ class GuideStepsTest {
     fun theExchangesTabHasItsOwnHelpAndOnlyOnTheTeamScreen() {
         assertEquals(HelpTopic.TEAM_MEMBERS, HelpTopic.of(TeamDestination.MEMBERS, exchanges = false))
         assertEquals(HelpTopic.TEAM_EXCHANGES, HelpTopic.of(TeamDestination.MEMBERS, exchanges = true))
-        // L'onglet n'a pas d'effet ailleurs, et les Réglages sont les mêmes dans les deux espaces.
+        // L'onglet n'a pas d'effet ailleurs.
         assertEquals(HelpTopic.DAY, HelpTopic.of(Destination.DAY, exchanges = true))
-        assertEquals(HelpTopic.of(Destination.SETTINGS, false), HelpTopic.of(TeamDestination.SETTINGS, false))
     }
 }

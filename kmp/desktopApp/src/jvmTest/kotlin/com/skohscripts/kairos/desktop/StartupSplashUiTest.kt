@@ -69,7 +69,8 @@ class StartupSplashUiTest {
         mainClock.advanceTimeBy(1_000)
         assertTrue(!splashShown(), "la page a disparu après ≈ 3,1 s")
         mainClock.autoAdvance = true
-        waitText("Today")
+        // L'application ouverte sur l'Accueil (docs/spec/accueil.md).
+        waitText("What is Kairos for?")
     }
 
     @Test
