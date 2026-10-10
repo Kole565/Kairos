@@ -126,6 +126,15 @@ montrer. Sur un poste verrouillé, c'est pourtant la seule version possible
 
 ### Décisions et pièges tracés
 
+- **Texte de la snackbar lu avant de créer le raccourci** (2026-10-10) : le
+  raccourci créé fait disparaître le bandeau, donc annule la coroutine de son
+  bouton ; la lecture du texte « Raccourci créé. » (`getString`, suspendue)
+  faite après coup pouvait être interrompue, et la snackbar ne jamais
+  s'afficher (échec intermittent de
+  `M5ScreensUiTest.aPortableCopyProposesItsShortcutUntilCreatedOrDeclined` en
+  CI). `rememberShortcutAction` lit le texte d'abord ; l'envoi lui-même
+  (`LocalMessages`) part dans la portée de la coquille, qui survit au bandeau.
+
 - **Marqueur plutôt que chemin d'installation** : deviner une copie
   installée à son chemin (`/opt/kairos`, `%LOCALAPPDATA%`) casse dès qu'on
   dézippe au même endroit ; le marqueur écrit par la release est explicite.
