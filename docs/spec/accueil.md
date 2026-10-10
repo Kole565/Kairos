@@ -45,6 +45,8 @@ le travail en cours.
     supprimer), « Commencer » ou « À propos et guide ».
 - Il ne revient jamais : ni aux lancements suivants, ni quand la fenêtre
   change de taille.
+- Il attend la fin de la page de démarrage (`demarrage.md`) : jamais
+  par-dessus le cadran animé.
 - Dans le cas des exemples, le second bouton est **« Visite guidée »** (et non
   plus « À propos et guide ») : il ferme l'accueil et lance la visite.
 

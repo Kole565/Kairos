@@ -247,6 +247,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   thème en est dérivé (Material Design 3), contrastes compris.
 - Sur **Android 12 et plus**, « Couleurs du système » suit les couleurs du
   fond d’écran (Material You).
+- Au lancement, une **page de démarrage** (Android, bureau, web) : l’aiguille
+  du cadran solaire fait un tour et se pose sur le logo, puis l’application
+  apparaît en fondu. Un toucher l’abrège.
 
 ## Réglages
 

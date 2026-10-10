@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.TeamSettings
 import com.skohscripts.kairos.ui.app.AppServices
+import com.skohscripts.kairos.ui.app.LocalStartupSplash
+import com.skohscripts.kairos.ui.app.StartupSplash
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.error_open_title
 import com.skohscripts.kairos.ui.generated.resources.loading
@@ -63,6 +66,8 @@ fun KairosApp(
     initialTeamDestination: TeamDestination = TeamDestination.START,
     /** Couleurs du système (Android 12 et plus), `null` ailleurs (docs/spec/apparence.md). */
     systemColorScheme: ColorScheme? = null,
+    /** Page de démarrage (docs/spec/demarrage.md) : les points d'entrée seulement, jamais les tests ni les captures. */
+    splash: Boolean = false,
     openServices: suspend () -> AppServices,
 ) {
     KairosTheme {
@@ -73,15 +78,24 @@ fun KairosApp(
                 runCatching { openServices() }.onSuccess { services = it }.onFailure { failure = it }
             }
             val ready = services
-            when {
-                ready != null -> {
-                    // Thème des réglages dès qu'ils sont lus ; le miel de la charte pendant le chargement.
-                    val themeColor = ready.repository.snapshot.collectAsState().value.settings.themeColor
-                    val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
-                    KairosTheme(scheme) { KairosShell(platform, ready, initialDestination, initialTeamDestination) }
+            // Sauvegardé : une rotation ne rejoue pas l'animation, un nouveau lancement si.
+            var splashDone by rememberSaveable { mutableStateOf(!splash) }
+            // L'application se compose sous la page de démarrage : le fondu la révèle déjà prête.
+            Box(Modifier.fillMaxSize()) {
+                CompositionLocalProvider(LocalStartupSplash provides !splashDone) {
+                    when {
+                        ready != null -> {
+                            // Thème des réglages dès qu'ils sont lus ; le miel de la charte pendant le chargement.
+                            val themeColor = ready.repository.snapshot.collectAsState().value.settings.themeColor
+                            val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
+                            KairosTheme(scheme) { KairosShell(platform, ready, initialDestination, initialTeamDestination) }
+                        }
+                        failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
+                        else -> Status(stringResource(Res.string.loading), null, progress = true)
+                    }
                 }
-                failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
-                else -> Status(stringResource(Res.string.loading), null, progress = true)
+                // Dans le thème miel par défaut, pas celui des réglages : même fond que les relais natifs.
+                if (!splashDone) StartupSplash(ready = ready != null || failure != null, onFinished = { splashDone = true })
             }
         }
     }

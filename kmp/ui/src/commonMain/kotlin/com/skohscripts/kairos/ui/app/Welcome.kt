@@ -39,7 +39,8 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(services.firstLaunch) }
     val legacy = rememberLegacyImport(services)
     LegacyImportDialog(legacy)
-    if (!open) return
+    // Un dialogue passe au-dessus de tout : il attend la fin de la page de démarrage (docs/spec/demarrage.md).
+    if (!open || LocalStartupSplash.current) return
     val migrated = services.migrated
     val found = services.legacy?.found.takeIf { migrated == null }
     AlertDialog(

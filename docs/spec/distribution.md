@@ -121,10 +121,10 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   (activité, alarme, redémarrage).
 - Thème de fenêtre `Theme.Kairos` (reprise de Kairos 2) :
   `forceDarkAllowed=false` ; avant l'API 31, `windowBackground` =
-  `kairos_launch_background` (fond `#FFF8F4` + logo centré 288 dp) ; API 31+
-  (`values-v31`), écran de démarrage système avec l'icône animée
-  `kairos_splash_icon` (700 ms). L'interface Compose s'affiche dès la première
-  image : plus d'écran de démarrage applicatif.
+  `kairos_launch_background` (fond `#FFF8F4` + cadran vide
+  `kairos_splash_dial` centré 288 dp) ; API 31+ (`values-v31`), écran de
+  démarrage système avec ce même cadran, statique. Ce ne sont que les relais
+  de la page de démarrage Compose (`demarrage.md`), qui anime l'aiguille.
 - Icône adaptative `mipmap-anydpi/ic_launcher.xml` (fond `#FFEEDC`, premier
   plan `ic_launcher_foreground`), ressources reprises de Kairos 2.
 - Release : R8 (`isMinifyEnabled`, `isShrinkResources`) ; signature par les
@@ -214,7 +214,8 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   `globalThis.KairosWeb`) **avant** `kairos.js`. La distribution contient
   aussi `kairos-sqljs.worker.js`, `sql-wasm.js` et `sql-wasm.wasm` (copiés par
   `webpack.config.d/sqljs.js`).
-- `index.html` : fond `#FFF8F4`, favicon, bloc `#kairos-loading` (logo +
+- `index.html` : fond `#FFF8F4`, favicon, bloc `#kairos-loading` (cadran
+  vide en SVG, relais de la page de démarrage, `demarrage.md`, +
   « Chargement de Kairos… ») retiré par `main()` au démarrage. Un test
   `WebAssembly.validate` d'un module WasmGC minimal remplace le texte par
   « navigateur trop ancien » (bilingue) si WasmGC manque (Chrome ou Edge avant

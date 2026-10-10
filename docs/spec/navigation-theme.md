@@ -154,11 +154,13 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - `NavigationLayout.choose(platform, largeur)` : `RAIL` si largeur ≥ 600 dp
   (`COMPACT_WIDTH_LIMIT`), sinon `BOTTOM_BAR` sur Android, `TOP_BAR` ailleurs.
 - `KairosApp(platform, initialDestination = Destination.START,
-  systemColorScheme = null, openServices)` : `KairosTheme` par défaut, puis
+  systemColorScheme = null, splash = false, openServices)` : `KairosTheme` par défaut, puis
   celui de `Settings.themeColor` dès les services prêts (`apparence.md`) ;
   appelle
   `openServices()` une fois (`LaunchedEffect`) : indicateur de progression
-  pendant l'attente, titre d'erreur et détail en cas d'échec. Puis
+  pendant l'attente, titre d'erreur et détail en cas d'échec ; avec
+  `splash = true` (points d'entrée seulement), la page de démarrage couvre
+  le tout jusqu'à son fondu (`demarrage.md`). Puis
   `KairosShell` : état `destination` (initialisé à `initialDestination`,
   que seules les captures des magasins changent, `publication.md`) et
   `secondary: Secondary?` (`rememberSaveable` ; `HOME` ou `ABOUT`),

@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.ImageComposeScene
+import com.skohscripts.kairos.ui.app.SplashFrame
 import com.skohscripts.kairos.ui.guide.GuideDialog
 import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.guide.GuideKind
@@ -214,6 +215,9 @@ object SelfTest {
             Shot("settings", 900, 1000, settings),
             Shot("settings-full", 900, 4800, settings),
             Shot("about", 900, 1000, about),
+            // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).
+            Shot("startup-splash", 900, 700) { KairosTheme { SplashFrame(progress = 0.5f) } },
+            Shot("startup-splash-loading", 360, 700) { KairosTheme { SplashFrame(progress = 1f, loading = true) } },
             Shot("day-full", 1200, 3000, app),
             Shot("day-full-narrow", 420, 5000, app),
             Shot("day-chrono", 1200, 1000, chrono),
