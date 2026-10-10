@@ -83,6 +83,29 @@ class TeamWorkTest {
     }
 
     @Test
+    fun myPersonalTasksNeverReachTheBacklogTheTrackingOrAPack() {
+        // Une tâche perso qui compte, une tâche d'équipe au backlog et une assignée à l'autre membre (paquet possible).
+        val backlog = task(2, assignee = null).copy(teamUid = "uid-2")
+        val forOther = task(3, assignee = other.id).copy(teamUid = "uid-3")
+        val s = snapshot(listOf(personal(1), backlog, forOther), listOf(me, other)).let {
+            it.copy(settings = it.settings.copy(team = it.settings.team!!.copy(identity = "team-1")))
+        }
+        // Même en lisant par erreur la vue de calcul, elle n'est ni au backlog (elle est à « moi ») ni dans un paquet (pas de teamUid).
+        for (source in listOf(s, TeamWork.view(s))) {
+            val board = TeamBoard.build(source, monday, kotlinx.datetime.TimeZone.UTC)
+            assertTrue((board.toQualify + board.ready).none { it.task.id == 1L })
+            for (m in listOf(me, other)) {
+                val pack = com.skohscripts.kairos.core.team.exchange.PackBuilder.build(source, m.id, "p", mondayMorning)
+                assertTrue(pack == null || pack.tasks.none { it.title == "T1" }, "paquet de ${m.name}")
+            }
+        }
+        // Le Suivi lit la base telle quelle : la tâche perso n'est sur aucune ligne.
+        assertTrue(TeamBoard.build(s, monday, kotlinx.datetime.TimeZone.UTC).lanes.none { lane ->
+            (lane.todo + lane.inProgress + lane.done).any { it.task.id == 1L }
+        })
+    }
+
+    @Test
     fun theViewIsIdempotentAndLeavesTeamTasksAlone() {
         val s = snapshot(listOf(personal(1), task(2, assignee = other.id)), listOf(me, other))
         val once = TeamWork.view(s)

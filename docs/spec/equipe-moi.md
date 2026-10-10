@@ -125,6 +125,10 @@ qu'elles ne pourraient l'être.
   (`TeamWorkTest.myDonePersonalTasksFeedTheTeamCalibration`,
   `TeamWorkForecastTest.myDonePersonalTasksCountInMyThroughput`,
   `myPersonalTasksAreInMyWorkScopeAndDelayMyTeamTask`).
+- Une tâche perso n'arrive jamais au Backlog, dans le Suivi ni dans un
+  paquet envoyé à un membre, même si un calcul lisait par erreur la vue de
+  calcul (elle y est assignée à « moi » et n'a pas de `teamUid`)
+  (`TeamWorkTest.myPersonalTasksNeverReachTheBacklogTheTrackingOrAPack`).
 - Stockage : migration 6 → 7 sans perte, exclusion enregistrée pour une
   tâche perso seulement, export 2 avec `teamExcluded` (et export solo
   inchangé), nettoyage par « Supprimer les données d'équipe »
