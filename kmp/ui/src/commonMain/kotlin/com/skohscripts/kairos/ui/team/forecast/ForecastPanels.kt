@@ -181,7 +181,8 @@ internal fun HonestyNote(result: ForecastResult, computedAt: kotlin.time.Instant
         HorizontalDivider()
         Text(
             stringResource(Res.string.forecast_honesty_draws, groupedNumber(result.runs, language)) + " · " +
-                stringResource(Res.string.forecast_honesty_seed, result.seed.toString()),
+                // Non signée : une graine tirée sur 64 bits s'affichait « -3284359446655896974 » (les tests fixent des graines positives, inchangées).
+                stringResource(Res.string.forecast_honesty_seed, result.seed.toULong().toString()),
             style = MaterialTheme.typography.bodySmall,
         )
         Text(sourceText(result.source, result.model), style = MaterialTheme.typography.bodySmall)

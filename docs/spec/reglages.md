@@ -59,7 +59,11 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   « Réglages non enregistrés », et **rien** n'est enregistré. Corriger un
   champ efface son erreur. Les règles entre champs (début de journée avant
   la fin ; début ≤ creux le plus profond ≤ fin) s'affichent dans un bandeau
-  en tête, une fois chaque champ valide.
+  en tête, une fois chaque champ valide. Un enregistrement refusé **défile**
+  jusqu'au premier champ fautif (sinon jusqu'au bandeau) : à 360 dp, le champ
+  est trois cartes plus bas et le message « Réglages non enregistrés » ne disait
+  pas où regarder (`ErrorReveal` : un `BringIntoViewRequester` par clé, fourni par
+  `LocalErrorReveal`).
 - Une décimale s'écrit avec une virgule ou un point ; en français, le
   formulaire l'affiche à la virgule (« 0,8 », comme son aide).
 - Les réglages valent aussitôt partout (planning, score, alertes, stats).

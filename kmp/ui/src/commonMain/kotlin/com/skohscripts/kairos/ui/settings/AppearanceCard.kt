@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +76,7 @@ internal fun AppearanceCard(value: String, error: FieldError?, onChange: (String
                 Text(if (error != null) stringResource(Res.string.settings_error_color, error.bound.orEmpty()) else stringResource(Res.string.theme_custom_help))
             },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().bringIntoViewRequester(LocalErrorReveal.current.requester("themeColor")),
         )
     }
 }

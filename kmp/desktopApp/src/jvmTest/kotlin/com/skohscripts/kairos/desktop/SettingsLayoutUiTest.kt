@@ -13,6 +13,10 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -100,5 +104,21 @@ class SettingsLayoutUiTest {
     fun aFreeTextFieldKeepsTheFullWidthOfItsCard() = runComposeUiTest {
         settingsAt(1000.dp)
         field("Types offered when editing").assertWidthIsAtLeast(400.dp)
+    }
+
+    @Test
+    fun aRefusedSaveScrollsToTheFlaggedField() = runComposeUiTest {
+        val services = services()
+        // Fenêtre basse : le champ fautif (en bas de page) n'est pas à l'écran avant l'enregistrement.
+        setContent { KairosTheme { Box(Modifier.width(400.dp).height(500.dp)) { SettingsScreen(services) {} } } }
+        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Working day").fetchSemanticsNodes().isNotEmpty() }
+        field("Statistics window (weeks)").performScrollTo().performTextReplacement("abc")
+        // Remonter en tête, puis enregistrer : la page doit redescendre vers l'erreur.
+        onNodeWithText("Working day").performScrollTo()
+        onNodeWithText("Save").performClick()
+        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("A whole number is expected.").fetchSemanticsNodes().isNotEmpty() }
+        waitUntil(timeoutMillis = 15_000) {
+            runCatching { field("Statistics window (weeks)").assertIsDisplayed() }.isSuccess
+        }
     }
 }

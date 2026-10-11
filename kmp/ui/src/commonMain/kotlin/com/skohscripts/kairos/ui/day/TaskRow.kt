@@ -97,7 +97,8 @@ internal class RowContext(
  * étiquettes, description] [score, priorité, points] [décaler, modifier]. Le
  * corps grandit vers le bas, jamais vers la droite : les colonnes de droite
  * restent alignées d'une ligne à l'autre. En largeur étroite, la colonne
- * « clés » passe sous le corps ; coche et actions ne bougent pas.
+ * « clés » passe sous le corps et les actions la rejoignent sur une même ligne ;
+ * la coche ne bouge pas.
  *
  * [before] : étiquettes propres à la section (épinglée, deep work, chemin
  * critique…) ; [after] : notes de placement (repoussée, creux, conflit).
@@ -153,29 +154,42 @@ internal fun TaskRow(
                         after()
                     }
                     if (showDescription && !done) Description(task, ctx)
-                    if (ctx.compact) KeyBadges(task, ctx)
+                    // Étroit : les clés et les actions partagent une ligne sous le corps, le titre garde la largeur (à 400 dp,
+                    // trois boutons à droite ne lui laissaient que 175 px : trois ou quatre lignes par titre).
+                    if (ctx.compact) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f)) { KeyBadges(task, ctx) }
+                            RowActions(task, ctx, editable)
+                        }
+                    }
                 }
                 if (!ctx.compact) {
                     Row(Modifier.padding(top = 10.dp, start = 8.dp)) { KeyBadges(task, ctx) }
+                    RowActions(task, ctx, editable)
                 }
-                if (task.status == TaskStatus.TODO) {
-                    val running = ctx.view.running?.taskId == task.id
-                    KairosRowIconButton(
-                        if (running) KairosIcons.Stop else KairosIcons.PlayArrow,
-                        stringResource(if (running) Res.string.action_timer_stop else Res.string.action_timer_start),
-                        onClick = { ctx.onToggleTimer(task) },
-                        tint = if (running) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                    )
-                    KairosRowIconButton(KairosIcons.Redo, stringResource(Res.string.action_snooze), onClick = { ctx.onSnooze(task) })
-                }
-                if (editable) {
-                    KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
-                }
-                // Sans bouton en fin de ligne (« Fait », non modifiable), la marge du bord reste celle des autres lignes.
-                if (task.status != TaskStatus.TODO && !editable) Spacer(Modifier.width(12.dp))
+                // Sans bouton en fin de ligne (étroit, ou « Fait » non modifiable), la marge du bord reste celle des autres lignes.
+                if (ctx.compact || (task.status != TaskStatus.TODO && !editable)) Spacer(Modifier.width(12.dp))
             }
             extra()
         }
+    }
+}
+
+/** Chrono, décaler (tâche à faire) et modifier : à droite du corps en largeur bureau, sous lui en largeur étroite. */
+@Composable
+private fun RowActions(task: Task, ctx: RowContext, editable: Boolean) {
+    if (task.status == TaskStatus.TODO) {
+        val running = ctx.view.running?.taskId == task.id
+        KairosRowIconButton(
+            if (running) KairosIcons.Stop else KairosIcons.PlayArrow,
+            stringResource(if (running) Res.string.action_timer_stop else Res.string.action_timer_start),
+            onClick = { ctx.onToggleTimer(task) },
+            tint = if (running) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+        )
+        KairosRowIconButton(KairosIcons.Redo, stringResource(Res.string.action_snooze), onClick = { ctx.onSnooze(task) })
+    }
+    if (editable) {
+        KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
     }
 }
 

@@ -67,7 +67,8 @@ de décider.
   - **Issue la plus probable** : distribution du nombre de retards et
     ensemble le plus fréquent.
 - **Honnêteté** (règle des statistiques) : chaque résultat affiche le nombre
-  de tirages, la graine, la source des données (« historique : 38 tâches
+  de tirages, la graine (entier **non signé** : une graine tirée sur 64 bits
+  s'affichait « -3284359446655896974 »), la source des données (« historique : 38 tâches
   faites sur 12 semaines » ou « hypothèse par défaut ») et est marqué
   « peu fiable » si l'historique est sous le minimum (§ Données). Aucune
   date n'est jamais affichée seule, sans sa fourchette.

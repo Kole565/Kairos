@@ -83,8 +83,12 @@ temps passé ou minuteur vivant, « traîne depuis N j ») qui passent à la lig
 ligne, dépliable d'un clic ; colonne « clés » alignée à droite : score (qui
 s'ouvre sur « Pourquoi à cette place ? »), priorité (P0 en rouge), points ;
 actions : chrono et décaler (tâches à faire), modifier (une ligne de « Fait »,
-sans action, garde une marge de 12 dp au bord droit). En largeur étroite, la
-colonne « clés » passe sous le corps. Liseré rouge de 3 dp à gauche pour
+sans action, garde une marge de 12 dp au bord droit). En largeur étroite
+(< 600 dp), la colonne « clés » passe sous le corps **et les actions la
+rejoignent** sur une même ligne (clés à gauche, actions à droite, `RowActions`) :
+à 400 dp, trois boutons à droite ne laissaient au titre que 175 px, soit trois
+ou quatre lignes par titre (test exploratoire du 2026-10-11) ; la coche ne bouge
+pas. Liseré rouge de 3 dp à gauche pour
 une tâche en retard. Tâche bloquée : fond de surface, contour, titre
 atténué.
 

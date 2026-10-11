@@ -18,6 +18,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -245,10 +248,31 @@ internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, 
     }
 }
 
+/**
+ * Où défiler après un enregistrement refusé : chaque champ s'y inscrit sous sa clé (`themeColor`, `team.name`…),
+ * le bandeau des règles entre champs sous [GENERAL]. Sans cela, l'erreur pouvait être hors de l'écran (à 360 dp, le
+ * bandeau est en tête de page, le champ fautif trois cartes plus bas) et le message « Réglages non enregistrés » ne
+ * disait pas où regarder.
+ */
+internal class ErrorReveal {
+    private val requesters = HashMap<String, BringIntoViewRequester>()
+
+    fun requester(key: String): BringIntoViewRequester = requesters.getOrPut(key) { BringIntoViewRequester() }
+
+    suspend fun reveal(key: String) = requester(key).bringIntoView()
+
+    companion object {
+        const val GENERAL = "_general"
+    }
+}
+
+internal val LocalErrorReveal = compositionLocalOf { ErrorReveal() }
+
 /** Un réglage : interrupteur pour un booléen, champ de texte sinon. */
 @Composable
 internal fun SettingInput(key: String, value: String, error: FieldError?, onChange: (String) -> Unit) {
     val field = SettingsForm.field(key)
+    val reveal = LocalErrorReveal.current.requester(key)
     val text = TEXTS.getValue(key)
     if (field.kind == FieldKind.BOOL) {
         SwitchRow(value == "true", stringResource(text.label)) { onChange(it.toString()) }
@@ -273,7 +297,7 @@ internal fun SettingInput(key: String, value: String, error: FieldError?, onChan
             Modifier.widthIn(max = NUMBER_FIELD_MAX_WIDTH).fillMaxWidth()
         } else {
             Modifier.fillMaxWidth()
-        },
+        }.bringIntoViewRequester(reveal),
     )
 }
 

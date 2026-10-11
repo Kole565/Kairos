@@ -350,6 +350,12 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 - **Réaffecter remet à « À faire » (sur confirmation)** : le temps passé
   appartient à l'ancien titulaire, le nouvel assigné n'a pas commencé ;
   mais le manager peut garder « En cours » (passation d'un travail entamé).
+  **Rouvert le 2026-10-11 (test exploratoire), décision maintenue** : répondre
+  « Non » remet à « À faire » mais **garde l'avancement** (une tâche à 100 %
+  « À faire » intriguait). L'avancement dit ce qui est déjà fait, utile au
+  nouveau titulaire ; pour repartir de zéro, le manager pose 0 % (curseur de
+  la carte). Le vrai trou était ailleurs : une tâche à 100 % ne pouvait pas
+  être terminée depuis le Suivi, d'où « Terminer » dans le menu de la carte.
 - **Journal écrit par le dépôt** : c'est la seule façon de garantir le
   « suivi complet » demandé, y compris pour les modifications faites depuis
   la vue Jour.
