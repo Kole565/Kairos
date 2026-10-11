@@ -151,7 +151,7 @@ class ForecastUiTest {
         onNodeWithText("95% chance by ${text(finish.p95!!)}").assertExists()
         // Honnêteté : tirages, graine, source des données, date du calcul.
         onNodeWithText("500 draws · seed 42").assertExists()
-        onNodeWithText("History: ${expected.source.samples} finished tasks over 12 weeks").assertExists()
+        onNodeWithText("History: ${expected.source.samples} finished task(s) over 12 weeks").assertExists()
         assertTrue(count("Computed on", substring = true) >= 1)
         assertEquals(expected, services.teamUi.forecast!!.result)
         // Les panneaux par tâche du modèle par effort.

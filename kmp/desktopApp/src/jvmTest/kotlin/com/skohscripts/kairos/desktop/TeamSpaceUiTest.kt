@@ -159,7 +159,7 @@ class TeamSpaceUiTest {
         teamDestinations.forEach { assertTrue(count(it) >= 1, it) }
         listOf("Notes", "Week", "Stats").forEach { assertEquals(0, count(it), it) }
         // Jalon E3 : sans membre, le Suivi explique comment le remplir (plus de « disponible dans une prochaine version »).
-        onNodeWithText("Add members in the Team tab", substring = true).assertExists()
+        onNodeWithText("Add members in Team (Members tab)", substring = true).assertExists()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.settings.team!!.lastSpace == TeamSettings.SPACE_TEAM }
 
         // Backlog (E3) : capture en tête, sections vides ; Prévisions (E5) propose de lancer une simulation ; Réglages est le même écran qu'en Perso.

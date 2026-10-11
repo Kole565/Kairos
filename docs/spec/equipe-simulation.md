@@ -268,7 +268,9 @@ une ».
   sûr, quelle que soit la vitesse de la machine (piège tracé : « Stop » est
   visible dès la préparation, où cliquer ne produit pas de résultat).
 - Résultat et comparaison gardés en mémoire pour la session
-  (`TeamUiState`, dans `AppServices`, jamais en base) avec une
+  (`TeamUiState`, dans `AppServices`, jamais en base ; `reset()` après
+  « Supprimer les données d'équipe » et après un import qui remplace tout,
+  sinon l'ancienne prévision restait affichée sur « Membre inconnu ») avec une
   **empreinte** (`ForecastFingerprint` : jour, membres, absences, tâches
   d'équipe de la vue de calcul — tâches perso de « moi » qui comptent
   comprises, `equipe-moi.md` —, leurs dépendances et sessions, journal,

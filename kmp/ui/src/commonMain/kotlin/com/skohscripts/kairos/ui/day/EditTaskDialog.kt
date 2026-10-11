@@ -35,6 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -189,9 +192,17 @@ internal fun EditTaskDialog(
             shadowElevation = 6.dp,
             modifier = Modifier.padding(16.dp).widthIn(max = 640.dp),
         ) {
+            // Fiche à onglets (tâche d'équipe) : la hauteur ne redescend jamais d'un onglet à l'autre, sinon l'en-tête
+            // sautait et le clic suivant tombait sur le fond, qui ferme la fiche.
+            val density = LocalDensity.current
+            var tallest by remember { mutableStateOf(0.dp) }
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.verticalScroll(rememberScrollState()).padding(24.dp),
+                modifier = Modifier
+                    .heightIn(min = if (team != null && teamEditing) tallest else 0.dp)
+                    .onSizeChanged { size -> with(density) { size.height.toDp() }.let { if (it > tallest) tallest = it } }
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
             ) {
                 Text(stringResource(Res.string.edit_title), style = MaterialTheme.typography.headlineSmall)
                 if (team != null && teamEditing) TeamTaskTabs(tab, team.history.size) { tab = it }

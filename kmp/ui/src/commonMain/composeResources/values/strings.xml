@@ -492,7 +492,7 @@
     <string name="title_team_forecast">Prévisions</string>
     <string name="title_team_named">%1$s · %2$s</string>
     <string name="team_board_empty_title">Suivi de l’équipe</string>
-    <string name="team_board_empty_body">Ajoutez des membres dans l’onglet Équipe, puis assignez-leur des tâches du backlog : le tableau de suivi s’affichera ici.</string>
+    <string name="team_board_empty_body">Ajoutez des membres dans Équipe (onglet Membres), puis assignez-leur des tâches du backlog : le tableau de suivi s’affichera ici.</string>
     <string name="team_members_empty_title">Membres de l’équipe</string>
     <string name="team_members_empty_body">Ajoutez les personnes de votre équipe : leur quotité, leurs heures par jour et leurs absences serviront à répartir le travail. Cochez « C’est moi » sur votre propre fiche pour retrouver vos tâches d’équipe dans votre journée.</string>
     <!-- Espace Équipe : prévisions et scénarios (jalon E5) -->
@@ -543,8 +543,8 @@
     <string name="forecast_nothing_qualify">%1$d tâches du backlog sont à qualifier (ni priorité ni points) et ne sont pas comptées.</string>
     <string name="forecast_honesty_draws">%1$s tirages</string>
     <string name="forecast_honesty_seed">graine %1$s</string>
-    <string name="forecast_source_history">Historique : %1$d tâches faites sur %2$d semaines</string>
-    <string name="forecast_source_mixed">Historique insuffisant : %1$d tâches faites sur %2$d semaines (minimum %3$d), complété par l’hypothèse par défaut : 0,8 à 2 fois l’estimation, le plus souvent 1</string>
+    <string name="forecast_source_history">Historique : %1$d tâche(s) faite(s) sur %2$d semaines</string>
+    <string name="forecast_source_mixed">Historique insuffisant : %1$d tâche(s) faite(s) sur %2$d semaines (minimum %3$d), complété par l’hypothèse par défaut : 0,8 à 2 fois l’estimation, le plus souvent 1</string>
     <string name="forecast_source_default">Hypothèse par défaut : 0,8 à 2 fois l’estimation, le plus souvent 1</string>
     <string name="forecast_throughput_history">Historique : %1$d tâches finies sur %2$d semaines</string>
     <string name="forecast_throughput_mixed">Historique insuffisant : %1$d tâches finies sur %2$d semaines (minimum %3$d semaines actives)</string>
@@ -797,6 +797,8 @@
     <string name="board_blocked">Bloquée</string>
     <string name="board_card_actions">Actions de « %1$s »</string>
     <string name="board_card_start">Commencer</string>
+    <string name="board_card_done">Terminer</string>
+    <string name="board_card_reopen">Rouvrir</string>
     <string name="board_card_reassign">Réaffecter à…</string>
     <string name="board_card_progress">Avancement %1$s</string>
     <string name="progress_percent">%1$d %</string>
@@ -1025,7 +1027,7 @@
     <string name="exchange_report_refused_wrong_team">Ce rapport est adressé à une autre équipe.</string>
     <string name="exchange_report_refused_unknown_member">Le membre de ce rapport ne fait plus partie de l’équipe.</string>
     <string name="exchange_report_refused_older">Ce rapport est plus ancien que celui du %1$s déjà intégré.</string>
-    <string name="exchange_report_done_summary">Rapport de %1$s intégré : %2$d tâches mises à jour, %3$d sous-tâches ajoutées.</string>
+    <string name="exchange_report_done_summary">Rapport de %1$s intégré : %2$d tâche(s) mise(s) à jour, %3$d sous-tâche(s) ajoutée(s).</string>
     <string name="exchange_report_not_applied">Le rapport n’a pas été intégré.</string>
     <string name="received_mark">de %1$s</string>
     <string name="received_mark_description">tâche reçue de %1$s</string>

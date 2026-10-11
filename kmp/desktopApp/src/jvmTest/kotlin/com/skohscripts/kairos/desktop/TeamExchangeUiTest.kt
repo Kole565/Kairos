@@ -320,7 +320,7 @@ class TeamExchangeUiTest {
 
         onNodeWithText("Integrate").performClick()
         waitUntil(timeoutMillis = 5_000) { manager.snap.tasks.single { it.id == manager.migration }.progressPercent == 70 }
-        waitText("Report from Léa integrated: 1 tasks updated, 1 subtasks added.")
+        waitText("Report from Léa integrated: 1 task(s) updated, 1 subtask(s) added.")
         assertNotNull(manager.snap.members.single { it.id == manager.lea }.lastReportAt)
         assertTrue(manager.snap.tasks.any { it.title == "Écrire la recette" })
         assertEquals(1, backups.keys.count { it.startsWith("avant-integration-rapport-") })

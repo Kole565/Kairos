@@ -168,6 +168,18 @@ class TeamUiState(
 
     /** Scénarios cochés pour la comparaison. */
     var compared: Set<Long> by mutableStateOf(emptySet())
+
+    /**
+     * Oublie tout : les données d'équipe ont été supprimées ou remplacées (import). Sans cela, la prévision d'avant
+     * restait affichée (« Membre : Membre inconnu », « Résultat périmé »).
+     */
+    fun reset() {
+        backlogSelection = emptySet()
+        spec = ForecastSpec()
+        forecast = null
+        comparison = null
+        compared = emptySet()
+    }
 }
 
 /** Où en est un calcul : rien, préparation (périmètre, répartition du backlog), tirages (« 3 200 / 5 000 »). */

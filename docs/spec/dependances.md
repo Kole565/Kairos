@@ -99,7 +99,9 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
 - **Boucle annoncée avant l'enregistrement** (2026-10-10, test exploratoire) :
   la case était proposée puis silencieusement oubliée, sans retour.
   `BlockerChoices.of(tâche, candidats, dépendances, titres, langue)` (`ui/day`)
-  rend libellé et `cyclic` (`wouldCreateCycle`) ; une case `cyclic` non cochée
+  rend libellé et `cyclic` (`wouldCreateCycle`), et écarte les tâches d'un
+  autre espace (une tâche d'équipe de « moi » visible dans l'espace Perso
+  était proposée à une tâche perso, puis refusée sans un mot par le dépôt) ; une case `cyclic` non cochée
   est désactivée (une case déjà cochée reste décochable). Doublons de libellé :
   « (15 oct.) » d'après l'échéance, sinon la date programmée, sinon
   « (#id) ».

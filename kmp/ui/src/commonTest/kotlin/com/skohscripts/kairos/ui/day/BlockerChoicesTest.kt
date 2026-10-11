@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui.day
 
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskDependency
+import com.skohscripts.kairos.core.model.TaskSpace
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,5 +37,13 @@ class BlockerChoicesTest {
         val choices = BlockerChoices.of(c, listOf(a, b, c), deps, emptyMap(), "fr")
         assertEquals(listOf(1L to true, 2L to true), choices.map { it.task.id to it.cyclic })
         assertEquals(listOf(false, false), BlockerChoices.of(a, listOf(a, b, c), deps, emptyMap(), "fr").map { it.cyclic })
+    }
+
+    @Test
+    fun aTaskOfAnotherSpaceIsNeverOffered() {
+        val team = Task(2, "Refonte API", space = TaskSpace.TEAM, createdAt = t0, updatedAt = t0)
+        val personal = task(3, "Impôts")
+        assertEquals(listOf(3L), BlockerChoices.of(task(1, "Perso"), listOf(team, personal), emptyList(), emptyMap(), "fr").map { it.task.id })
+        assertEquals(emptyList(), BlockerChoices.of(team.copy(id = 4), listOf(team, personal), emptyList(), emptyMap(), "fr").map { it.task.id })
     }
 }

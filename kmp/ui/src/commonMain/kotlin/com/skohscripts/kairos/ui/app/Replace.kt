@@ -71,6 +71,7 @@ suspend fun saveBackup(services: AppServices, prefix: String, messages: (String)
 suspend fun replaceWithBackup(services: AppServices, snapshot: KairosSnapshot, messages: (String) -> Unit): Boolean {
     if (!saveBackup(services, "avant-import", messages)) return false
     services.repository.replaceAll(snapshot)
+    services.teamUi.reset()
     return true
 }
 
@@ -83,6 +84,7 @@ suspend fun replaceWithBackup(services: AppServices, snapshot: KairosSnapshot, m
 suspend fun clearTeamDataWithBackup(services: AppServices, messages: (String) -> Unit): Boolean {
     if (!saveBackup(services, "avant-suppression-equipe", messages)) return false
     services.repository.clearTeamData()
+    services.teamUi.reset()
     return true
 }
 

@@ -310,7 +310,10 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
   signaux en badge contour + icône + **texte court** (En retard, Traîne,
   Sans avancement, Ballottée, Bloquée), lisibles sans l'icône et par le
   lecteur d'écran. Menu de carte : Commencer, curseur d'avancement,
-  Réaffecter à…
+  Terminer, Réaffecter à… ; sur une carte faite, Rouvrir. Les deux passent
+  par `toggleDone` (avancement 100 %, journal `done` / `reopened`) : sans
+  eux, la tâche d'un autre membre ne pouvait être finie qu'en la réaffectant
+  à « moi » (test exploratoire du 2026-10-11).
 - Fiche : `EditTaskDialog` reçoit `team: TeamTaskSheet?` (`TeamTaskSheet.kt`,
   `TeamTaskDialog.kt`) : onglets Détails / Historique (`TaskHistory`,
   phrases du journal), « Assigné à » (menu), « Catégorie », curseur 0-100 %

@@ -489,7 +489,7 @@
     <string name="title_team_forecast">Forecast</string>
     <string name="title_team_named">%1$s · %2$s</string>
     <string name="team_board_empty_title">Team tracking</string>
-    <string name="team_board_empty_body">Add members in the Team tab, then assign them backlog tasks: the tracking board will show up here.</string>
+    <string name="team_board_empty_body">Add members in Team (Members tab), then assign them backlog tasks: the tracking board will show up here.</string>
     <string name="team_members_empty_title">Team members</string>
     <string name="team_members_empty_body">Add the people on your team: their availability, hours per day and absences will be used to share out the work. Tick “This is me” on your own profile to find your team tasks in your day.</string>
     <!-- Espace Équipe : prévisions et scénarios (jalon E5) -->
@@ -540,8 +540,8 @@
     <string name="forecast_nothing_qualify">%1$d backlog tasks still need qualifying (no priority or points) and are not counted.</string>
     <string name="forecast_honesty_draws">%1$s draws</string>
     <string name="forecast_honesty_seed">seed %1$s</string>
-    <string name="forecast_source_history">History: %1$d finished tasks over %2$d weeks</string>
-    <string name="forecast_source_mixed">Insufficient history: %1$d finished tasks over %2$d weeks (minimum %3$d), completed with the default assumption: 0.8 to 2 times the estimate, most often 1</string>
+    <string name="forecast_source_history">History: %1$d finished task(s) over %2$d weeks</string>
+    <string name="forecast_source_mixed">Insufficient history: %1$d finished task(s) over %2$d weeks (minimum %3$d), completed with the default assumption: 0.8 to 2 times the estimate, most often 1</string>
     <string name="forecast_source_default">Default assumption: 0.8 to 2 times the estimate, most often 1</string>
     <string name="forecast_throughput_history">History: %1$d tasks finished over %2$d weeks</string>
     <string name="forecast_throughput_mixed">Insufficient history: %1$d tasks finished over %2$d weeks (minimum %3$d active weeks)</string>
@@ -793,6 +793,8 @@
     <string name="board_blocked">Blocked</string>
     <string name="board_card_actions">Actions for “%1$s”</string>
     <string name="board_card_start">Start</string>
+    <string name="board_card_done">Mark as done</string>
+    <string name="board_card_reopen">Reopen</string>
     <string name="board_card_reassign">Reassign to…</string>
     <string name="board_card_progress">Progress %1$s</string>
     <string name="progress_percent">%1$d%</string>
@@ -1021,7 +1023,7 @@
     <string name="exchange_report_refused_wrong_team">This report is addressed to another team.</string>
     <string name="exchange_report_refused_unknown_member">The member of this report is no longer part of the team.</string>
     <string name="exchange_report_refused_older">This report is older than the one of %1$s already integrated.</string>
-    <string name="exchange_report_done_summary">Report from %1$s integrated: %2$d tasks updated, %3$d subtasks added.</string>
+    <string name="exchange_report_done_summary">Report from %1$s integrated: %2$d task(s) updated, %3$d subtask(s) added.</string>
     <string name="exchange_report_not_applied">The report was not integrated.</string>
     <string name="received_mark">from %1$s</string>
     <string name="received_mark_description">task received from %1$s</string>

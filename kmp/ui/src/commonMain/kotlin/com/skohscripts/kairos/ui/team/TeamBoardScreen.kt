@@ -72,7 +72,9 @@ import com.skohscripts.kairos.ui.generated.resources.backlog_no_category
 import com.skohscripts.kairos.ui.generated.resources.board_blocked
 import com.skohscripts.kairos.ui.generated.resources.board_card_actions
 import com.skohscripts.kairos.ui.generated.resources.board_card_progress
+import com.skohscripts.kairos.ui.generated.resources.board_card_done
 import com.skohscripts.kairos.ui.generated.resources.board_card_reassign
+import com.skohscripts.kairos.ui.generated.resources.board_card_reopen
 import com.skohscripts.kairos.ui.generated.resources.board_card_start
 import com.skohscripts.kairos.ui.generated.resources.team_board_empty_body
 import com.skohscripts.kairos.ui.generated.resources.board_filter_member
@@ -270,7 +272,7 @@ private fun LaneCard(
             ) {
                 Text(member.name, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (member.isSelf) SelfBadge()
-                Muted(stringResource(Res.string.member_summary, member.availabilityPercent, com.skohscripts.kairos.core.team.MemberForm.formatHours(member.hoursPerDay)))
+                Muted(stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, Locale.current.language)))
                 Muted(stringResource(Res.string.board_lane_count, lane.inProgressCount))
                 if (lane.wipExceeded) WarnBadge(stringResource(Res.string.board_lane_wip, lane.inProgressCount, wipLimit))
             }
@@ -354,7 +356,7 @@ private fun TaskCard(
         Column(
             Modifier
                 .drawBehind { if (task.priority == 0 && open) drawRect(errorColor, size = Size(3.dp.toPx(), size.height)) }
-                .padding(start = 12.dp, top = 4.dp, bottom = 8.dp, end = if (open) 0.dp else 12.dp),
+                .padding(start = 12.dp, top = 4.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Row(verticalAlignment = Alignment.Top) {
@@ -365,10 +367,19 @@ private fun TaskCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f).padding(top = 8.dp),
                 )
-                if (open) {
-                    Box {
-                        KairosRowIconButton(KairosIcons.MoreVert, stringResource(Res.string.board_card_actions, task.title), onClick = { menu = true })
-                        DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                // Menu de la carte, faites comprises : terminer et rouvrir sont les gestes de l'espace Perso
+                // (docs/spec/equipe-backlog-suivi.md § États) ; sans eux, une tâche d'un autre membre ne pouvait pas être finie.
+                Box {
+                    KairosRowIconButton(KairosIcons.MoreVert, stringResource(Res.string.board_card_actions, task.title), onClick = { menu = true })
+                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        if (!open) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.board_card_reopen)) },
+                                leadingIcon = { Icon(KairosIcons.Refresh, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                                onClick = { menu = false; onLaunch { repository.toggleDone(task.id) } },
+                            )
+                        }
+                        if (open) {
                             if (card.state == TeamState.TODO) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(Res.string.board_card_start)) },
@@ -377,6 +388,11 @@ private fun TaskCard(
                                 )
                             }
                             ProgressMenuItem(percent) { picked -> onLaunch { repository.setProgress(task.id, picked) } }
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.board_card_done)) },
+                                leadingIcon = { Icon(KairosIcons.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                                onClick = { menu = false; onLaunch { repository.toggleDone(task.id) } },
+                            )
                             HorizontalDivider()
                             DropdownMenuItem(
                                 text = { Text(stringResource(Res.string.board_card_reassign)) },
@@ -384,8 +400,8 @@ private fun TaskCard(
                                 onClick = { menu = false; reassign = true },
                             )
                         }
-                        AssignMenu(reassign, { reassign = false }, context, currentId = memberId, showBacklog = true) { reassigner.request(task, it) }
                     }
+                    if (open) AssignMenu(reassign, { reassign = false }, context, currentId = memberId, showBacklog = true) { reassigner.request(task, it) }
                 }
             }
             FlowRow(

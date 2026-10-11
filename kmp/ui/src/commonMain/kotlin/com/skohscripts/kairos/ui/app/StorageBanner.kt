@@ -146,6 +146,7 @@ fun StorageBanner(services: AppServices, showWhenLinked: Boolean) {
                     scope.launch {
                         if (storage.adoptOpened()) {
                             services.repository.replaceAll(snapshot)
+                            services.teamUi.reset()
                             messages(getString(Res.string.import_done, snapshot.tasks.size))
                         }
                     }
