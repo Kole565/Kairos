@@ -528,6 +528,7 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
                 }
             },
             onClose = onDismiss,
+            takenNames = snapshot.members.filter { it.id != member?.id }.map { it.name },
             onArchive = { member?.let { m -> scope.launch { repository.archiveMember(m.id); onDismiss() } } },
             onRestore = { member?.let { m -> scope.launch { repository.restoreMember(m.id); onDismiss() } } },
             onDelete = { member?.let { m -> scope.launch { repository.deleteMember(m.id); onDismiss() } } },

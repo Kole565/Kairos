@@ -144,7 +144,12 @@ rien changer pour qui ne l'active pas.
 
 #### Membres
 
-- Destination Équipe → « Ajouter un membre » : **nom** (obligatoire),
+- Destination Équipe → « Ajouter un membre » : **nom** (obligatoire, 60 caractères
+  au plus, différent de celui de tout autre membre, archivés compris, sans
+  tenir compte de la casse : deux « Bob » ne se distinguent plus dans les menus
+  d'assignation ni dans la charge ; un doublon déjà en base, venu d'un import,
+  ne bloque pas la modification d'un autre champ, seul un changement de nom est
+  vérifié),
   **rôle** (texte libre, facultatif), **quotité** (en %, 100 par défaut,
   de 1 à 100), **heures par jour** (défaut : journée de travail des
   Réglages, `workdayEndHour − workdayStartHour` moins une heure, bornée à
@@ -487,7 +492,9 @@ aussi son événement de journal dans la même transaction,
   (partagé avec `replaceWithBackup`, comportement inchangé) et
   `clearTeamDataWithBackup`. Les écrans d'équipe lisent `snapshot` (base
   complète). Calcul pur : `core/team/MemberForm` (validation par champ,
-  `FieldError` des Réglages réutilisé, heures par jour par défaut),
+  `FieldError` des Réglages réutilisé, heures par jour par défaut ; nom :
+  `MAX_NAME` et `validate(saisie, nomsPris)` → `TOO_LARGE` / `DUPLICATE`, les
+  noms pris étant ceux des autres membres, passés par `MemberSheet`),
   `TeamMembers` (ordre, actifs, archivés, prochaine absence,
   `hasHadTask`, tâches ouvertes), `MemberAbsence`. Accords au singulier et
   au pluriel par des clés `_one` / `_many` (le dépôt n'a pas de ressources

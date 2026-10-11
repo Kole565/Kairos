@@ -719,6 +719,8 @@
     <string name="member_field_self">C’est moi</string>
     <string name="member_field_self_help">Les tâches d’équipe qui vous sont assignées apparaîtront dans votre journée. Un seul membre peut être vous.</string>
     <string name="member_error_name">Le nom est obligatoire.</string>
+    <string name="member_error_name_long">Le nom tient en %1$s caractères au plus.</string>
+    <string name="member_error_name_taken">Un membre s’appelle déjà « %1$s » : choisis un autre nom (une initiale, un rôle).</string>
     <string name="member_absences_title">Absences</string>
     <string name="member_absences_help">Les jours d’absence sont retirés de la capacité du membre. Chaque absence est enregistrée aussitôt.</string>
     <string name="member_absences_empty">Aucune absence enregistrée.</string>
@@ -1027,6 +1029,7 @@
     <string name="exchange_report_refused_wrong_team">Ce rapport est adressé à une autre équipe.</string>
     <string name="exchange_report_refused_unknown_member">Le membre de ce rapport ne fait plus partie de l’équipe.</string>
     <string name="exchange_report_refused_older">Ce rapport est plus ancien que celui du %1$s déjà intégré.</string>
+    <string name="exchange_report_refused_future">Ce rapport est daté du futur : vérifie l’horloge de l’appareil qui l’a écrit, puis demande-lui de le renvoyer.</string>
     <string name="exchange_report_done_summary">Rapport de %1$s intégré : %2$d tâche(s) mise(s) à jour, %3$d sous-tâche(s) ajoutée(s).</string>
     <string name="exchange_report_not_applied">Le rapport n’a pas été intégré.</string>
     <string name="received_mark">de %1$s</string>

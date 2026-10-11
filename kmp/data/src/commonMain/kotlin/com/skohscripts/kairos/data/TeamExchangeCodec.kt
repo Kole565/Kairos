@@ -223,6 +223,8 @@ private data class ReportFile(
     fun toModel(): TeamReport {
         team.uid.requireText("team.uid")
         member.uid.requireText("member.uid")
+        // Un temps passé négatif ou de plus de 10 000 h sur une seule tâche n'est pas un rapport (« 1666666 h 39 » aperçus).
+        require(tasks.all { it.spentMinutes in 0..MAX_SPENT_MINUTES }) { "temps passé" }
         return TeamReport(
             reportedAt = Instant.parse(reportedAt),
             teamUid = team.uid,
@@ -244,6 +246,8 @@ private data class ReportFile(
     }
 
     companion object {
+        const val MAX_SPENT_MINUTES = 600_000
+
         /** « done » ou « todo » : un rapport ne dit rien d'autre ; un code inconnu se lit « à faire ». */
         private fun status(code: String) = if (code == TaskStatus.DONE.code) TaskStatus.DONE else TaskStatus.TODO
 

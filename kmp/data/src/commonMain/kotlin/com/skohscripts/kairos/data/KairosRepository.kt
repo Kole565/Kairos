@@ -776,7 +776,7 @@ class KairosRepository(
      * Côté manager : aperçu de l'intégration d'un rapport, **sans rien écrire** (de → vers, lignes ignorées, refus).
      * @throws ImportException si le texte n'est pas un rapport lisible.
      */
-    fun previewReport(text: String): ReportMergePlan = ReportMerge.plan(state.value, TeamExchangeCodec.decodeReport(text), timeZone)
+    fun previewReport(text: String): ReportMergePlan = ReportMerge.plan(state.value, TeamExchangeCodec.decodeReport(text), timeZone, clock.now())
 
     /**
      * Côté manager : intègre un rapport, en **une** transaction (la sauvegarde préalable est faite par l'interface).
@@ -791,7 +791,7 @@ class KairosRepository(
         val report = TeamExchangeCodec.decodeReport(text)
         var planned: ReportMergePlan? = null
         write {
-            val plan = ReportMerge.plan(state.value, report, timeZone)
+            val plan = ReportMerge.plan(state.value, report, timeZone, clock.now())
             planned = plan
             if (!plan.accepted) return@write
             val member = checkNotNull(plan.member)

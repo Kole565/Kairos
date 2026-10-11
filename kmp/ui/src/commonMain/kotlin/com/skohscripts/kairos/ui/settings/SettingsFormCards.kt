@@ -306,4 +306,6 @@ private fun errorMessage(error: FieldError, minExclusive: Boolean): String = whe
     FieldErrorKind.TOO_LARGE -> stringResource(Res.string.settings_error_max, error.bound.orEmpty())
     FieldErrorKind.INVALID_DATE -> stringResource(Res.string.settings_error_date, error.bound.orEmpty())
     FieldErrorKind.INVALID_COLOR -> stringResource(Res.string.settings_error_color, error.bound.orEmpty())
+    // Sans objet pour les Réglages (noms de membres).
+    FieldErrorKind.DUPLICATE -> stringResource(Res.string.settings_error_required)
 }

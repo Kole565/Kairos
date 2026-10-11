@@ -17,6 +17,9 @@ object MemberForm {
     const val AVAILABILITY = "availabilityPercent"
     const val HOURS = "hoursPerDay"
 
+    /** Longueur maximale d'un nom : au-delà, la carte du membre et les menus d'assignation ne le montrent plus. */
+    const val MAX_NAME = 60
+
     const val MIN_AVAILABILITY = 1
     const val MAX_AVAILABILITY = 100
     const val MIN_HOURS = 1.0
@@ -62,10 +65,18 @@ object MemberForm {
     /** « 7 » plutôt que « 7.0 », « 7.5 » sinon. */
     fun formatHours(hours: Double): String = SettingsForm.formatDecimal(hours)
 
-    fun validate(input: Input): Result {
+    /**
+     * [takenNames] : les noms des **autres** membres, archivés compris. Deux membres de même nom (sans tenir compte de
+     * la casse) ne se distinguent plus dans les menus d'assignation ni dans la charge : refusé ([FieldErrorKind.DUPLICATE]).
+     */
+    fun validate(input: Input, takenNames: Collection<String> = emptyList()): Result {
         val errors = LinkedHashMap<String, FieldError>()
         val name = input.name.trim()
-        if (name.isEmpty()) errors[NAME] = FieldError(FieldErrorKind.REQUIRED)
+        when {
+            name.isEmpty() -> errors[NAME] = FieldError(FieldErrorKind.REQUIRED)
+            name.length > MAX_NAME -> errors[NAME] = FieldError(FieldErrorKind.TOO_LARGE, MAX_NAME.toString())
+            takenNames.any { it.trim().equals(name, ignoreCase = true) } -> errors[NAME] = FieldError(FieldErrorKind.DUPLICATE, name)
+        }
 
         var availability = 0
         val availabilityText = input.availabilityPercent.trim()

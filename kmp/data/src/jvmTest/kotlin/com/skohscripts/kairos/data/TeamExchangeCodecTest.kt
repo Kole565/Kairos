@@ -180,6 +180,9 @@ class TeamExchangeCodecTest {
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("2026-10-02", "n'importe quoi")) })
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("2026-10-03T16:00:00Z", "demain")) })
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": \"beaucoup\"")) })
+        // Temps passé aberrant (négatif, ou plus de 10 000 h sur une tâche) : illisible, jamais aperçu.
+        assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": 99999999")) })
+        assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": -5")) })
     }
 
     @Test

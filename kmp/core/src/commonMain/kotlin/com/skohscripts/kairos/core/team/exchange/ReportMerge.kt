@@ -20,6 +20,12 @@ enum class ReportRefusal {
 
     /** Le rapport n'est pas plus récent que le dernier intégré pour ce membre ([ReportMergePlan.lastReportAt]). */
     OLDER,
+
+    /**
+     * Le rapport est daté de plus d'un jour dans l'avenir (horloge déréglée, fichier fabriqué) : l'intégrer poserait
+     * `lastReportAt` dans le futur et ferait refuser tous les vrais rapports suivants du membre.
+     */
+    FROM_THE_FUTURE,
 }
 
 /** Pourquoi une ligne du rapport est ignorée. */
@@ -105,13 +111,18 @@ data class ReportMergePlan(
  * (titre, priorité, assigné, échéance…) ne bougent pas.
  */
 object ReportMerge {
-    fun plan(snapshot: KairosSnapshot, report: TeamReport, timeZone: TimeZone): ReportMergePlan {
+    /** Tolérance entre l'horloge du membre et celle du manager (fuseaux, décalages) avant de dire « dans le futur ». */
+    val FUTURE_TOLERANCE = kotlin.time.Duration.parse("1d")
+
+    /** [now] : l'instant courant du manager ; `null` : pas de contrôle de la date du rapport. */
+    fun plan(snapshot: KairosSnapshot, report: TeamReport, timeZone: TimeZone, now: Instant? = null): ReportMergePlan {
         fun refused(reason: ReportRefusal, member: TeamMember? = null) =
             ReportMergePlan(reason, report.reportedAt, member, lastReportAt = member?.lastReportAt)
 
         val identity = snapshot.settings.team?.identity.orEmpty()
         if (identity.isEmpty() || identity != report.teamUid) return refused(ReportRefusal.WRONG_TEAM)
         val member = snapshot.members.firstOrNull { it.uid == report.member.uid } ?: return refused(ReportRefusal.UNKNOWN_MEMBER)
+        if (now != null && report.reportedAt > now + FUTURE_TOLERANCE) return refused(ReportRefusal.FROM_THE_FUTURE, member)
         val last = member.lastReportAt
         if (last != null && report.reportedAt <= last) return refused(ReportRefusal.OLDER, member)
 

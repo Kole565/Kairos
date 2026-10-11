@@ -120,6 +120,19 @@ class ReportMergeTest {
     }
 
     @Test
+    fun aReportFromTheFutureIsRefusedSoItNeverBlocksTheRealOnes() {
+        val s = managerSnapshot(listOf(teamTask(10, assignee = 1)), listOf(lea, marc))
+        val now = Instant.parse("2026-10-02T12:00:00Z")
+        val tomorrow = ReportMerge.plan(s, report(listOf(line("t10", progress = 90)), at = Instant.parse("2026-10-03T11:00:00Z")), utc, now)
+        assertTrue(tomorrow.accepted) // moins d'un jour d'avance : décalage d'horloge toléré
+        val future = ReportMerge.plan(s, report(listOf(line("t10", progress = 90)), at = Instant.parse("2026-12-24T12:00:00Z")), utc, now)
+        assertEquals(ReportRefusal.FROM_THE_FUTURE, future.refusal)
+        assertTrue(future.updates.isEmpty())
+        // Sans horloge, aucun contrôle (aperçus purs des tests).
+        assertTrue(ReportMerge.plan(s, report(listOf(line("t10", progress = 90)), at = Instant.parse("2026-12-24T12:00:00Z")), utc).accepted)
+    }
+
+    @Test
     fun anOlderOrEqualReportIsRefused() {
         val last = Instant.parse("2026-09-28T10:00:00Z")
         val s = managerSnapshot(listOf(teamTask(10, assignee = 1)), listOf(member(1, uid = "member-lea", lastReportAt = last)))
