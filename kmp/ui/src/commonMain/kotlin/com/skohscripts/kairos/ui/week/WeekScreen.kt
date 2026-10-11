@@ -125,8 +125,8 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                 projects, snapshot.settings.taskTypeList, remember { FocusRequester() }, LocalPlatform.current != Platform.ANDROID,
             )
             BacklogList(backlog.map { it.title }, backlogOpen) { backlogOpen = !backlogOpen }
-            // Sept colonnes égales quand elles tiennent (140 dp chacune au moins),
-            // sinon des cartes de 184 dp qui passent à la ligne (mobile).
+            // Sept colonnes égales quand elles tiennent (140 dp chacune au moins), sinon autant de colonnes égales de
+            // 160 dp au moins que la largeur en permet : les cartes remplissent la ligne, sans moitié droite vide.
             BoxWithConstraints(Modifier.fillMaxWidth()) {
                 if (maxWidth >= 140.dp * 7 + 8.dp * 6) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.height(IntrinsicSize.Max)) {
@@ -135,8 +135,14 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                         }
                     }
                 } else {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        week.days.forEach { day -> DayCard(day, day.date == today, language, Modifier.width(184.dp)) { onOpenDay(day.date) } }
+                    val columns = ((maxWidth + 8.dp) / (160.dp + 8.dp)).toInt().coerceIn(1, 7)
+                    val cardWidth = (maxWidth - 8.dp * (columns - 1)) / columns
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = columns,
+                    ) {
+                        week.days.forEach { day -> DayCard(day, day.date == today, language, Modifier.width(cardWidth)) { onOpenDay(day.date) } }
                     }
                 }
             }

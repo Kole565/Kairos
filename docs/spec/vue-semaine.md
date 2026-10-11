@@ -42,7 +42,8 @@ un autre jour.
   « Voir le jour », qui ouvre la vue Jour de ce jour (`vue-jour.md` § Un
   autre jour).
 - Largeur bureau : sept colonnes égales, de même hauteur. Largeur étroite :
-  cartes de 184 dp qui passent à la ligne, sans défilement horizontal.
+  cartes de largeur égale (160 dp au moins) qui remplissent chaque ligne et
+  passent à la ligne, sans défilement horizontal ni moitié de ligne vide.
 - Quitter la destination et y revenir ramène à la semaine courante.
 
 ### Critères de succès
@@ -86,8 +87,10 @@ Depuis le jalon E1 de l'espace Équipe, l'écran de la vue Semaine lit `reposito
   ligne) ; `FilterCard` et backlog de la
   vue Jour (`DayView.build(...).backlog` d'aujourd'hui) ; grille :
   `BoxWithConstraints`, `Row` à cartes `weight(1f)` et hauteur
-  intrinsèque si 7 × 140 dp + 6 × 8 dp tiennent, sinon `FlowRow` de cartes
-  de 184 dp. `DayCard` : `Surface` `surfaceContainerLow` (aujourd'hui :
+  intrinsèque si 7 × 140 dp + 6 × 8 dp tiennent, sinon `FlowRow`
+  (`maxItemsInEachRow` = colonnes) de cartes de largeur égale, autant de
+  colonnes de 160 dp au moins que la largeur en permet (une seule carte de
+  184 dp laissait la moitié droite vide à 380 dp). `DayCard` : `Surface` `surfaceContainerLow` (aujourd'hui :
   `secondaryContainer` et contour `secondary`), titres sur une ligne avec
   points de suspension, `Badge` des créneaux, `PriorityBadge`, coche
   `CheckCircleFilled` en vert « ok ».

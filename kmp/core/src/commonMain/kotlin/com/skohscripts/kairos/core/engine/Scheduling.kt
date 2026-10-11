@@ -276,7 +276,13 @@ object Scheduling {
         val buffer = settings.meetingBufferMinutes
         val inWindow = busyBlocks.filter { it.start < workdayEnd && it.end > workdayStart }
         val dayBlocks = inWindow.filter { it.kind != BlockKind.DEEPWORK }
-        val deepworkBlocks = inWindow.filter { it.kind == BlockKind.DEEPWORK }.sortedBy { it.start }
+        // Fenêtres de deep work rognées à maintenant (aujourd'hui) : leur part passée n'accueille plus de tâche, une
+        // fenêtre déjà finie disparaît (écart volontaire avec Kairos 2, qui remplissait la fenêtre entière, passé compris).
+        val nowToday = now?.takeIf { it.date == day }
+        val deepworkBlocks = inWindow.filter { it.kind == BlockKind.DEEPWORK }
+            .map { b -> if (nowToday != null && nowToday > b.start) b.copy(start = nowToday) else b }
+            .filter { it.start < it.end && it.start < workdayEnd }
+            .sortedBy { it.start }
 
         val scheduled = mutableListOf<ScheduledTask>()
         val unscheduled = mutableListOf<Task>()

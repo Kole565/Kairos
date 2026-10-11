@@ -2289,17 +2289,6 @@
    ],
    "scheduled": [
     {
-     "id": 8,
-     "start": "2026-08-21T08:30",
-     "duration": 60,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
      "id": 7,
      "start": "2026-08-21T12:15",
      "duration": 45,
@@ -2311,8 +2300,19 @@
      "dip": false
     },
     {
-     "id": 10,
+     "id": 8,
      "start": "2026-08-21T15:12",
+     "duration": 60,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 10,
+     "start": "2026-08-21T16:12",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
@@ -2323,7 +2323,7 @@
     },
     {
      "id": 6,
-     "start": "2026-08-21T15:27",
+     "start": "2026-08-21T16:27",
      "duration": 30,
      "pinned": false,
      "pushedAfter": null,
@@ -2334,19 +2334,8 @@
     },
     {
      "id": 11,
-     "start": "2026-08-21T15:57",
-     "duration": 60,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": false,
-     "dip": false
-    },
-    {
-     "id": 4,
      "start": "2026-08-21T16:57",
-     "duration": 240,
+     "duration": 60,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -2355,7 +2344,9 @@
      "dip": false
     }
    ],
-   "unscheduled": [],
+   "unscheduled": [
+    4
+   ],
    "later": [],
    "toProcess": [
     2,
@@ -2373,12 +2364,6 @@
      "height": 60
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 8",
-     "top": 30,
-     "height": 60
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 2",
      "top": 180,
@@ -2392,25 +2377,25 @@
     },
     {
      "kind": "WORK",
-     "title": "Tests 10",
+     "title": "Mail 8",
      "top": 432,
+     "height": 60
+    },
+    {
+     "kind": "WORK",
+     "title": "Tests 10",
+     "top": 492,
      "height": 15
     },
     {
      "kind": "WORK",
      "title": "Audit 6",
-     "top": 447,
+     "top": 507,
      "height": 30
     },
     {
      "kind": "WORK",
      "title": "Bug 11",
-     "top": 477,
-     "height": 60
-    },
-    {
-     "kind": "WORK",
-     "title": "Mail 4",
      "top": 537,
      "height": 3
     }
@@ -4223,18 +4208,18 @@
     },
     {
      "id": 9,
-     "start": "2027-01-06T14:15",
+     "start": "2027-01-06T16:09",
      "duration": 90,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 3,
-     "start": "2027-01-06T16:09",
+     "start": "2027-01-06T17:39",
      "duration": 60,
      "pinned": false,
      "pushedAfter": null,
@@ -4260,16 +4245,16 @@
      "height": 90
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Bug 9",
-     "top": 315,
+     "top": 429,
      "height": 90
     },
     {
      "kind": "WORK",
      "title": "Tests 3",
-     "top": 429,
-     "height": 60
+     "top": 519,
+     "height": 21
     }
    ],
    "scores": {
@@ -12280,13 +12265,13 @@
    "scheduled": [
     {
      "id": 7,
-     "start": "2026-10-02T08:45",
+     "start": "2026-10-02T13:00",
      "duration": 20,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
@@ -12319,16 +12304,16 @@
      "height": 105
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Réunion 7",
-     "top": 0,
-     "height": 5
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 0",
      "top": 75,
      "height": 45
+    },
+    {
+     "kind": "WORK",
+     "title": "Réunion 7",
+     "top": 240,
+     "height": 20
     },
     {
      "kind": "BUSY",
@@ -13922,31 +13907,10 @@
    "raised": [
     10
    ],
-   "scheduled": [
-    {
-     "id": 3,
-     "start": "2026-11-12T08:00",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 10,
-     "start": "2026-11-12T15:15",
-     "duration": 90,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    3,
+    10,
     9
    ],
    "later": [
@@ -13965,20 +13929,8 @@
      "height": 60
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Client 3",
-     "top": 0,
-     "height": 30
-    },
-    {
      "kind": "DEEPWORK",
      "title": "Créneau 3",
-     "top": 435,
-     "height": 90
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Démo 10",
      "top": 435,
      "height": 90
     },
@@ -14299,52 +14251,30 @@
    "scheduled": [
     {
      "id": 13,
-     "start": "2027-05-22T08:15",
+     "start": "2027-05-22T16:00",
      "duration": 90,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 7,
-     "start": "2027-05-22T09:45",
+     "start": "2027-05-22T17:30",
      "duration": 20,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 4,
-     "start": "2027-05-22T16:00",
+     "start": "2027-05-22T17:50",
      "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": false,
-     "dip": false
-    },
-    {
-     "id": 16,
-     "start": "2027-05-22T16:15",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": false,
-     "dip": false
-    },
-    {
-     "id": 11,
-     "start": "2027-05-22T17:00",
-     "duration": 60,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -14354,6 +14284,8 @@
     }
    ],
    "unscheduled": [
+    16,
+    11,
     9
    ],
    "later": [],
@@ -14376,40 +14308,28 @@
      "height": 120
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 13",
-     "top": 15,
-     "height": 90
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 1",
      "top": 75,
      "height": 15
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
+     "title": "Mail 13",
+     "top": 480,
+     "height": 90
+    },
+    {
+     "kind": "WORK",
      "title": "Bug 7",
-     "top": 105,
+     "top": 570,
      "height": 20
     },
     {
      "kind": "WORK",
      "title": "Tests 4",
-     "top": 480,
-     "height": 15
-    },
-    {
-     "kind": "WORK",
-     "title": "Revue 16",
-     "top": 495,
-     "height": 45
-    },
-    {
-     "kind": "WORK",
-     "title": "Revue 11",
-     "top": 540,
-     "height": 60
+     "top": 590,
+     "height": 10
     }
    ],
    "scores": {
@@ -19603,20 +19523,9 @@
     2,
     7
    ],
-   "scheduled": [
-    {
-     "id": 7,
-     "start": "2027-05-24T17:30",
-     "duration": 60,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    7,
     11
    ],
    "later": [],
@@ -19653,12 +19562,6 @@
     {
      "kind": "DEEPWORK",
      "title": "Créneau 2",
-     "top": 570,
-     "height": 30
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Rapport 7",
      "top": 570,
      "height": 30
     }
@@ -22407,31 +22310,10 @@
    "raised": [
     9
    ],
-   "scheduled": [
-    {
-     "id": 9,
-     "start": "2027-07-14T08:45",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 2,
-     "start": "2027-07-14T09:00",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    9,
+    2,
     8,
     11
    ],
@@ -22446,12 +22328,6 @@
     {
      "kind": "DEEPWORK",
      "title": "Créneau 0",
-     "top": 0,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Budget 2",
      "top": 0,
      "height": 15
     },
@@ -25717,20 +25593,9 @@
   "expected": {
    "blocked": [],
    "raised": [],
-   "scheduled": [
-    {
-     "id": 4,
-     "start": "2027-12-29T08:30",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    4,
     2
    ],
    "later": [
@@ -30226,20 +30091,10 @@
    "raised": [
     4
    ],
-   "scheduled": [
-    {
-     "id": 5,
-     "start": "2026-02-23T08:00",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
+   "scheduled": [],
+   "unscheduled": [
+    5
    ],
-   "unscheduled": [],
    "later": [],
    "toProcess": [
     4
@@ -30459,18 +30314,18 @@
    "scheduled": [
     {
      "id": 2,
-     "start": "2026-10-12T08:00",
+     "start": "2026-10-12T12:01",
      "duration": 45,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 7,
-     "start": "2026-10-12T12:01",
+     "start": "2026-10-12T12:46",
      "duration": 120,
      "pinned": false,
      "pushedAfter": null,
@@ -30496,12 +30351,6 @@
      "height": 60
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 2",
-     "top": 0,
-     "height": 45
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 2",
      "top": 150,
@@ -30509,8 +30358,14 @@
     },
     {
      "kind": "WORK",
-     "title": "Revue 7",
+     "title": "Mail 2",
      "top": 241,
+     "height": 45
+    },
+    {
+     "kind": "WORK",
+     "title": "Revue 7",
+     "top": 286,
      "height": 120
     }
    ],
@@ -36466,13 +36321,13 @@
    "scheduled": [
     {
      "id": 1,
-     "start": "2026-03-14T11:15",
+     "start": "2026-03-14T13:15",
      "duration": 60,
      "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
+     "pushedAfter": "Créneau 1",
+     "pushedAfterKind": "PINNED",
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
@@ -36506,9 +36361,9 @@
      "height": 120
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Bug 1",
-     "top": 135,
+     "top": 255,
      "height": 60
     },
     {
@@ -38227,46 +38082,46 @@
    "scheduled": [
     {
      "id": 12,
-     "start": "2027-05-15T10:00",
+     "start": "2027-05-15T13:02",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 3,
-     "start": "2027-05-15T10:15",
+     "start": "2027-05-15T13:17",
      "duration": 30,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 9,
-     "start": "2027-05-15T10:45",
+     "start": "2027-05-15T13:47",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 11,
-     "start": "2027-05-15T11:00",
+     "start": "2027-05-15T14:02",
      "duration": 30,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     }
    ],
@@ -38293,27 +38148,27 @@
      "height": 120
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Budget 12",
-     "top": 120,
+     "top": 302,
      "height": 15
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Client 3",
-     "top": 135,
+     "top": 317,
      "height": 30
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Plan 9",
-     "top": 165,
+     "top": 347,
      "height": 15
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Client 11",
-     "top": 180,
+     "top": 362,
      "height": 30
     }
    ],
@@ -45518,22 +45373,22 @@
    "scheduled": [
     {
      "id": 1,
-     "start": "2026-12-17T15:00",
+     "start": "2026-12-17T16:30",
      "duration": 20,
      "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
+     "pushedAfter": "Créneau 2",
+     "pushedAfterKind": "PINNED",
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 3,
-     "start": "2026-12-17T16:30",
+     "start": "2026-12-17T16:50",
      "duration": 90,
      "pinned": false,
-     "pushedAfter": "Créneau 2",
-     "pushedAfterKind": "PINNED",
+     "pushedAfter": null,
+     "pushedAfterKind": null,
      "conflictWith": null,
      "deepwork": false,
      "dip": false
@@ -45568,16 +45423,16 @@
      "height": 90
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Plan 1",
-     "top": 360,
+     "top": 450,
      "height": 20
     },
     {
      "kind": "WORK",
      "title": "Réunion 3",
-     "top": 450,
-     "height": 30
+     "top": 470,
+     "height": 10
     }
    ],
    "scores": {
@@ -46788,30 +46643,8 @@
    "scheduled": [
     {
      "id": 2,
-     "start": "2027-06-25T10:45",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 7,
-     "start": "2027-06-25T11:30",
-     "duration": 60,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 3,
      "start": "2027-06-25T17:40",
-     "duration": 60,
+     "duration": 45,
      "pinned": false,
      "pushedAfter": "Créneau 4",
      "pushedAfterKind": "BUSY",
@@ -46821,6 +46654,8 @@
     }
    ],
    "unscheduled": [
+    7,
+    3,
     6
    ],
    "later": [],
@@ -46833,18 +46668,6 @@
      "title": "Créneau 2",
      "top": 165,
      "height": 120
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Audit 2",
-     "top": 165,
-     "height": 45
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Démo 7",
-     "top": 210,
-     "height": 60
     },
     {
      "kind": "BUSY",
@@ -46860,7 +46683,7 @@
     },
     {
      "kind": "WORK",
-     "title": "Rapport 3",
+     "title": "Audit 2",
      "top": 580,
      "height": 20
     }
@@ -52137,19 +51960,8 @@
    "scheduled": [
     {
      "id": 2,
-     "start": "2026-06-05T08:15",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 7,
      "start": "2026-06-05T10:15",
-     "duration": 120,
+     "duration": 30,
      "pinned": false,
      "pushedAfter": "Créneau 0",
      "pushedAfterKind": "PINNED",
@@ -52158,8 +51970,19 @@
      "dip": false
     },
     {
+     "id": 7,
+     "start": "2026-06-05T10:45",
+     "duration": 120,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
      "id": 8,
-     "start": "2026-06-05T12:15",
+     "start": "2026-06-05T12:45",
      "duration": 30,
      "pinned": false,
      "pushedAfter": null,
@@ -52170,7 +51993,7 @@
     },
     {
      "id": 1,
-     "start": "2026-06-05T12:45",
+     "start": "2026-06-05T13:15",
      "duration": 120,
      "pinned": false,
      "pushedAfter": null,
@@ -52181,7 +52004,7 @@
     },
     {
      "id": 4,
-     "start": "2026-06-05T14:45",
+     "start": "2026-06-05T15:15",
      "duration": 60,
      "pinned": false,
      "pushedAfter": null,
@@ -52207,26 +52030,32 @@
     },
     {
      "kind": "WORK",
-     "title": "Plan 7",
+     "title": "Rapport 2",
      "top": 75,
+     "height": 30
+    },
+    {
+     "kind": "WORK",
+     "title": "Plan 7",
+     "top": 105,
      "height": 120
     },
     {
      "kind": "WORK",
      "title": "Mail 8",
-     "top": 195,
+     "top": 225,
      "height": 30
     },
     {
      "kind": "WORK",
      "title": "Revue 1",
-     "top": 225,
+     "top": 255,
      "height": 120
     },
     {
      "kind": "WORK",
      "title": "Mail 4",
-     "top": 345,
+     "top": 375,
      "height": 60
     }
    ],
@@ -53765,39 +53594,20 @@
    "scheduled": [
     {
      "id": 3,
-     "start": "2026-09-09T11:30",
+     "start": "2026-09-09T17:30",
      "duration": 90,
      "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 4,
-     "start": "2026-09-09T13:00",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": "Créneau 2",
-     "pushedAfterKind": "PINNED",
-     "conflictWith": null,
-     "deepwork": false,
-     "dip": false
-    },
-    {
-     "id": 2,
-     "start": "2026-09-09T13:15",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
+     "pushedAfter": "Créneau 0",
+     "pushedAfterKind": "BUSY",
      "conflictWith": null,
      "deepwork": false,
      "dip": false
     }
    ],
-   "unscheduled": [],
+   "unscheduled": [
+    4,
+    2
+   ],
    "later": [],
    "toProcess": [
     1,
@@ -53814,24 +53624,6 @@
      "height": 90
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Plan 3",
-     "top": 150,
-     "height": 90
-    },
-    {
-     "kind": "WORK",
-     "title": "Démo 4",
-     "top": 240,
-     "height": 15
-    },
-    {
-     "kind": "WORK",
-     "title": "Audit 2",
-     "top": 255,
-     "height": 45
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 1",
      "top": 315,
@@ -53842,6 +53634,12 @@
      "title": "Créneau 0",
      "top": 420,
      "height": 90
+    },
+    {
+     "kind": "WORK",
+     "title": "Plan 3",
+     "top": 510,
+     "height": 30
     }
    ],
    "scores": {
@@ -56916,20 +56714,11 @@
      "conflictWith": null,
      "deepwork": false,
      "dip": false
-    },
-    {
-     "id": 8,
-     "start": "2027-11-30T14:15",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
     }
    ],
-   "unscheduled": [],
+   "unscheduled": [
+    8
+   ],
    "later": [
     5
    ],
@@ -56942,12 +56731,6 @@
      "title": "Créneau 0",
      "top": 375,
      "height": 60
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Réunion 8",
-     "top": 375,
-     "height": 45
     },
     {
      "kind": "BUSY",
@@ -58104,18 +57887,18 @@
    "scheduled": [
     {
      "id": 3,
-     "start": "2027-09-30T07:00",
+     "start": "2027-09-30T11:23",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     },
     {
      "id": 13,
-     "start": "2027-09-30T11:23",
+     "start": "2027-09-30T11:38",
      "duration": 120,
      "pinned": false,
      "pushedAfter": null,
@@ -58126,17 +57909,6 @@
     },
     {
      "id": 9,
-     "start": "2027-09-30T13:23",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": false,
-     "dip": false
-    },
-    {
-     "id": 2,
      "start": "2027-09-30T13:38",
      "duration": 15,
      "pinned": false,
@@ -58147,8 +57919,19 @@
      "dip": false
     },
     {
-     "id": 5,
+     "id": 2,
      "start": "2027-09-30T13:53",
+     "duration": 15,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 5,
+     "start": "2027-09-30T14:08",
      "duration": 120,
      "pinned": false,
      "pushedAfter": null,
@@ -58159,7 +57942,7 @@
     },
     {
      "id": 11,
-     "start": "2027-09-30T15:53",
+     "start": "2027-09-30T16:08",
      "duration": 30,
      "pinned": false,
      "pushedAfter": null,
@@ -58194,32 +57977,38 @@
     },
     {
      "kind": "WORK",
-     "title": "Tests 13",
+     "title": "Bug 3",
      "top": 203,
+     "height": 15
+    },
+    {
+     "kind": "WORK",
+     "title": "Tests 13",
+     "top": 218,
      "height": 120
     },
     {
      "kind": "WORK",
      "title": "Réunion 9",
-     "top": 323,
-     "height": 15
-    },
-    {
-     "kind": "WORK",
-     "title": "Client 2",
      "top": 338,
      "height": 15
     },
     {
      "kind": "WORK",
-     "title": "Revue 5",
+     "title": "Client 2",
      "top": 353,
+     "height": 15
+    },
+    {
+     "kind": "WORK",
+     "title": "Revue 5",
+     "top": 368,
      "height": 120
     },
     {
      "kind": "WORK",
      "title": "Plan 11",
-     "top": 473,
+     "top": 488,
      "height": 30
     }
    ],
@@ -60608,39 +60397,6 @@
    "raised": [],
    "scheduled": [
     {
-     "id": 7,
-     "start": "2027-03-02T07:45",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 9,
-     "start": "2027-03-02T08:15",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 1,
-     "start": "2027-03-02T08:30",
-     "duration": 20,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
      "id": 12,
      "start": "2027-03-02T13:00",
      "duration": 240,
@@ -60652,12 +60408,45 @@
      "dip": false
     },
     {
-     "id": 3,
+     "id": 7,
      "start": "2027-03-02T17:00",
      "duration": 30,
      "pinned": false,
      "pushedAfter": "Budget 12",
      "pushedAfterKind": "PINNED",
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 9,
+     "start": "2027-03-02T17:30",
+     "duration": 15,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 1,
+     "start": "2027-03-02T17:45",
+     "duration": 20,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 3,
+     "start": "2027-03-02T18:05",
+     "duration": 30,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
      "conflictWith": null,
      "deepwork": false,
      "dip": false
@@ -60682,24 +60471,6 @@
      "title": "Créneau 4",
      "top": 0,
      "height": 75
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Tests 7",
-     "top": 0,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 9",
-     "top": 15,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Tests 1",
-     "top": 30,
-     "height": 20
     },
     {
      "kind": "BUSY",
@@ -60727,8 +60498,26 @@
     },
     {
      "kind": "WORK",
-     "title": "Démo 3",
+     "title": "Tests 7",
      "top": 540,
+     "height": 30
+    },
+    {
+     "kind": "WORK",
+     "title": "Mail 9",
+     "top": 570,
+     "height": 15
+    },
+    {
+     "kind": "WORK",
+     "title": "Tests 1",
+     "top": 585,
+     "height": 20
+    },
+    {
+     "kind": "WORK",
+     "title": "Démo 3",
+     "top": 605,
      "height": 30
     }
    ],
@@ -60999,19 +60788,8 @@
    "scheduled": [
     {
      "id": 13,
-     "start": "2026-10-05T10:45",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 11,
      "start": "2026-10-05T16:09",
-     "duration": 30,
+     "duration": 45,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -61020,9 +60798,9 @@
      "dip": false
     },
     {
-     "id": 2,
-     "start": "2026-10-05T16:39",
-     "duration": 45,
+     "id": 11,
+     "start": "2026-10-05T16:54",
+     "duration": 30,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -61066,7 +60844,8 @@
    ],
    "unscheduled": [
     8,
-    1
+    1,
+    2
    ],
    "later": [],
    "toProcess": [
@@ -61090,12 +60869,6 @@
      "height": 60
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Client 13",
-     "top": 105,
-     "height": 45
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 0",
      "top": 120,
@@ -61103,15 +60876,15 @@
     },
     {
      "kind": "WORK",
-     "title": "Audit 11",
+     "title": "Client 13",
      "top": 429,
-     "height": 30
+     "height": 45
     },
     {
      "kind": "WORK",
-     "title": "Budget 2",
-     "top": 459,
-     "height": 45
+     "title": "Audit 11",
+     "top": 474,
+     "height": 30
     },
     {
      "kind": "WORK",
@@ -64772,46 +64545,13 @@
    "scheduled": [
     {
      "id": 9,
-     "start": "2026-11-17T08:30",
+     "start": "2026-11-17T10:45",
      "duration": 45,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
      "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 2,
-     "start": "2026-11-17T09:15",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 8,
-     "start": "2026-11-17T09:30",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 10,
-     "start": "2026-11-17T10:00",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": "Créneau 1",
-     "pushedAfterKind": "PINNED",
-     "conflictWith": null,
-     "deepwork": false,
      "dip": false
     },
     {
@@ -64826,14 +64566,47 @@
      "dip": false
     },
     {
-     "id": 6,
+     "id": 2,
      "start": "2026-11-17T12:30",
-     "duration": 60,
+     "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
      "deepwork": true,
+     "dip": false
+    },
+    {
+     "id": 8,
+     "start": "2026-11-17T12:45",
+     "duration": 30,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": true,
+     "dip": false
+    },
+    {
+     "id": 6,
+     "start": "2026-11-17T15:20",
+     "duration": 60,
+     "pinned": false,
+     "pushedAfter": "Créneau 4",
+     "pushedAfterKind": "BUSY",
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 10,
+     "start": "2026-11-17T16:20",
+     "duration": 15,
+     "pinned": false,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
      "dip": false
     }
    ],
@@ -64859,32 +64632,14 @@
      "height": 15
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Plan 9",
-     "top": 0,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Doc 2",
-     "top": 15,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Client 8",
-     "top": 30,
-     "height": 30
-    },
-    {
-     "kind": "WORK",
-     "title": "Revue 10",
-     "top": 60,
-     "height": 15
-    },
-    {
      "kind": "DEEPWORK",
      "title": "Créneau 2",
+     "top": 105,
+     "height": 45
+    },
+    {
+     "kind": "DEEPWORK_TASK",
+     "title": "Plan 9",
      "top": 105,
      "height": 45
     },
@@ -64902,15 +64657,33 @@
     },
     {
      "kind": "DEEPWORK_TASK",
-     "title": "Réunion 6",
+     "title": "Doc 2",
      "top": 210,
-     "height": 60
+     "height": 15
+    },
+    {
+     "kind": "DEEPWORK_TASK",
+     "title": "Client 8",
+     "top": 225,
+     "height": 30
     },
     {
      "kind": "BUSY",
      "title": "Créneau 4",
      "top": 345,
      "height": 30
+    },
+    {
+     "kind": "WORK",
+     "title": "Réunion 6",
+     "top": 380,
+     "height": 60
+    },
+    {
+     "kind": "WORK",
+     "title": "Revue 10",
+     "top": 440,
+     "height": 15
     }
    ],
    "scores": {
@@ -65627,20 +65400,10 @@
      "conflictWith": null,
      "deepwork": false,
      "dip": false
-    },
-    {
-     "id": 15,
-     "start": "2027-02-06T14:15",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
     }
    ],
    "unscheduled": [
+    15,
     4
    ],
    "later": [
@@ -65687,12 +65450,6 @@
     {
      "kind": "DEEPWORK",
      "title": "Créneau 1",
-     "top": 315,
-     "height": 30
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Client 15",
      "top": 315,
      "height": 30
     }
@@ -66423,13 +66180,13 @@
     },
     {
      "id": 11,
-     "start": "2026-07-22T12:45",
+     "start": "2026-07-22T14:29",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
-     "deepwork": true,
+     "deepwork": false,
      "dip": false
     }
    ],
@@ -66456,9 +66213,9 @@
      "height": 15
     },
     {
-     "kind": "DEEPWORK_TASK",
+     "kind": "WORK",
      "title": "Tests 11",
-     "top": 225,
+     "top": 329,
      "height": 15
     },
     {
@@ -68324,53 +68081,12 @@
    "raised": [
     15
    ],
-   "scheduled": [
-    {
-     "id": 15,
-     "start": "2026-05-08T10:15",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 8,
-     "start": "2026-05-08T10:45",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 11,
-     "start": "2026-05-08T11:00",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 13,
-     "start": "2026-05-08T15:45",
-     "duration": 90,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    15,
+    8,
+    11,
+    13,
     7,
     9,
     10,
@@ -68390,24 +68106,6 @@
      "height": 120
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Tests 15",
-     "top": 75,
-     "height": 30
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Rapport 8",
-     "top": 105,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Budget 11",
-     "top": 120,
-     "height": 45
-    },
-    {
      "kind": "DEEPWORK",
      "title": "Créneau 3",
      "top": 390,
@@ -68418,12 +68116,6 @@
      "title": "Créneau 2",
      "top": 405,
      "height": 120
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Audit 13",
-     "top": 405,
-     "height": 90
     }
    ],
    "scores": {
@@ -73572,22 +73264,11 @@
    "scheduled": [
     {
      "id": 5,
-     "start": "2027-06-23T11:15",
+     "start": "2027-06-23T15:40",
      "duration": 90,
      "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 2,
-     "start": "2027-06-23T12:45",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": "Créneau 2",
-     "pushedAfterKind": "PINNED",
+     "pushedAfter": "Créneau 1",
+     "pushedAfterKind": "BUSY",
      "conflictWith": null,
      "deepwork": false,
      "dip": false
@@ -73604,7 +73285,9 @@
      "dip": false
     }
    ],
-   "unscheduled": [],
+   "unscheduled": [
+    2
+   ],
    "later": [],
    "toProcess": [
     3,
@@ -73623,28 +73306,22 @@
      "height": 90
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Budget 5",
-     "top": 135,
-     "height": 90
-    },
-    {
      "kind": "DEEPWORK",
      "title": "Créneau 3",
      "top": 150,
      "height": 15
     },
     {
-     "kind": "WORK",
-     "title": "Plan 2",
-     "top": 225,
-     "height": 30
-    },
-    {
      "kind": "BUSY",
      "title": "Créneau 1",
      "top": 300,
      "height": 90
+    },
+    {
+     "kind": "WORK",
+     "title": "Budget 5",
+     "top": 400,
+     "height": 80
     }
    ],
    "scores": {
@@ -80280,20 +79957,9 @@
    "raised": [
     5
    ],
-   "scheduled": [
-    {
-     "id": 2,
-     "start": "2026-03-02T09:30",
-     "duration": 90,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    2,
     5
    ],
    "later": [],
@@ -80315,12 +79981,6 @@
      "title": "Créneau 2",
      "top": 30,
      "height": 120
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Audit 2",
-     "top": 30,
-     "height": 90
     },
     {
      "kind": "DEEPWORK",
@@ -89223,7 +88883,7 @@
    "scheduled": [
     {
      "id": 7,
-     "start": "2027-06-22T09:00",
+     "start": "2027-06-22T09:14",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
@@ -89234,7 +88894,7 @@
     },
     {
      "id": 12,
-     "start": "2027-06-22T09:15",
+     "start": "2027-06-22T09:29",
      "duration": 15,
      "pinned": false,
      "pushedAfter": null,
@@ -89245,7 +88905,7 @@
     },
     {
      "id": 3,
-     "start": "2027-06-22T09:30",
+     "start": "2027-06-22T09:44",
      "duration": 45,
      "pinned": false,
      "pushedAfter": null,
@@ -89256,7 +88916,7 @@
     },
     {
      "id": 11,
-     "start": "2027-06-22T10:15",
+     "start": "2027-06-22T10:29",
      "duration": 20,
      "pinned": false,
      "pushedAfter": null,
@@ -89286,19 +88946,19 @@
     {
      "kind": "DEEPWORK_TASK",
      "title": "Audit 7",
-     "top": 0,
+     "top": 14,
      "height": 15
     },
     {
      "kind": "DEEPWORK_TASK",
      "title": "Audit 12",
-     "top": 15,
+     "top": 29,
      "height": 15
     },
     {
      "kind": "DEEPWORK_TASK",
      "title": "Réunion 3",
-     "top": 30,
+     "top": 44,
      "height": 45
     },
     {
@@ -89310,7 +88970,7 @@
     {
      "kind": "DEEPWORK_TASK",
      "title": "Budget 11",
-     "top": 75,
+     "top": 89,
      "height": 20
     },
     {
@@ -94242,42 +93902,12 @@
   "expected": {
    "blocked": [],
    "raised": [],
-   "scheduled": [
-    {
-     "id": 1,
-     "start": "2026-02-28T07:45",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 4,
-     "start": "2026-02-28T08:00",
-     "duration": 45,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 3,
-     "start": "2026-02-28T08:45",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
+   "scheduled": [],
+   "unscheduled": [
+    1,
+    4,
+    3
    ],
-   "unscheduled": [],
    "later": [],
    "toProcess": [],
    "required": 90,
@@ -94286,12 +93916,6 @@
     {
      "kind": "DEEPWORK",
      "title": "Créneau 4",
-     "top": 0,
-     "height": 15
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Réunion 3",
      "top": 0,
      "height": 15
     },
@@ -94705,31 +94329,10 @@
     8,
     10
    ],
-   "scheduled": [
-    {
-     "id": 5,
-     "start": "2027-10-22T16:45",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 8,
-     "start": "2027-10-22T17:15",
-     "duration": 60,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    }
-   ],
+   "scheduled": [],
    "unscheduled": [
+    5,
+    8,
     7,
     4,
     1
@@ -94755,18 +94358,6 @@
      "title": "Créneau 1",
      "top": 525,
      "height": 90
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Audit 5",
-     "top": 525,
-     "height": 30
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 8",
-     "top": 555,
-     "height": 60
     },
     {
      "kind": "BUSY",
@@ -96359,19 +95950,8 @@
    "scheduled": [
     {
      "id": 5,
-     "start": "2027-08-04T13:00",
-     "duration": 15,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 8,
      "start": "2027-08-04T16:54",
-     "duration": 90,
+     "duration": 15,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -96381,6 +95961,7 @@
     }
    ],
    "unscheduled": [
+    8,
     4,
     12
    ],
@@ -96412,12 +95993,6 @@
      "height": 90
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Budget 5",
-     "top": 240,
-     "height": 15
-    },
-    {
      "kind": "DEEPWORK",
      "title": "Créneau 3",
      "top": 345,
@@ -96425,7 +96000,7 @@
     },
     {
      "kind": "WORK",
-     "title": "Bug 8",
+     "title": "Budget 5",
      "top": 474,
      "height": 6
     }
@@ -98741,28 +98316,6 @@
    "scheduled": [
     {
      "id": 9,
-     "start": "2026-02-06T12:00",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 12,
-     "start": "2026-02-06T12:30",
-     "duration": 30,
-     "pinned": false,
-     "pushedAfter": null,
-     "pushedAfterKind": null,
-     "conflictWith": null,
-     "deepwork": true,
-     "dip": false
-    },
-    {
-     "id": 13,
      "start": "2026-02-06T13:03",
      "duration": 30,
      "pinned": false,
@@ -98773,9 +98326,9 @@
      "dip": false
     },
     {
-     "id": 3,
+     "id": 12,
      "start": "2026-02-06T14:25",
-     "duration": 60,
+     "duration": 30,
      "pinned": false,
      "pushedAfter": "Créneau 0",
      "pushedAfterKind": "BUSY",
@@ -98784,9 +98337,9 @@
      "dip": false
     },
     {
-     "id": 2,
-     "start": "2026-02-06T15:25",
-     "duration": 15,
+     "id": 13,
+     "start": "2026-02-06T14:55",
+     "duration": 30,
      "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
@@ -98799,6 +98352,28 @@
      "start": "2026-02-06T15:45",
      "duration": 15,
      "pinned": true,
+     "pushedAfter": null,
+     "pushedAfterKind": null,
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 3,
+     "start": "2026-02-06T16:00",
+     "duration": 60,
+     "pinned": false,
+     "pushedAfter": "Budget 15",
+     "pushedAfterKind": "PINNED",
+     "conflictWith": null,
+     "deepwork": false,
+     "dip": false
+    },
+    {
+     "id": 2,
+     "start": "2026-02-06T17:00",
+     "duration": 15,
+     "pinned": false,
      "pushedAfter": null,
      "pushedAfterKind": null,
      "conflictWith": null,
@@ -98838,20 +98413,8 @@
      "height": 60
     },
     {
-     "kind": "DEEPWORK_TASK",
-     "title": "Réunion 9",
-     "top": 240,
-     "height": 30
-    },
-    {
-     "kind": "DEEPWORK_TASK",
-     "title": "Mail 12",
-     "top": 270,
-     "height": 30
-    },
-    {
      "kind": "WORK",
-     "title": "Client 13",
+     "title": "Réunion 9",
      "top": 303,
      "height": 30
     },
@@ -98863,20 +98426,32 @@
     },
     {
      "kind": "WORK",
-     "title": "Rapport 3",
+     "title": "Mail 12",
      "top": 385,
-     "height": 60
+     "height": 30
     },
     {
      "kind": "WORK",
-     "title": "Client 2",
-     "top": 445,
-     "height": 15
+     "title": "Client 13",
+     "top": 415,
+     "height": 30
     },
     {
      "kind": "PINNED",
      "title": "Budget 15",
      "top": 465,
+     "height": 15
+    },
+    {
+     "kind": "WORK",
+     "title": "Rapport 3",
+     "top": 480,
+     "height": 60
+    },
+    {
+     "kind": "WORK",
+     "title": "Client 2",
+     "top": 540,
      "height": 15
     }
    ],

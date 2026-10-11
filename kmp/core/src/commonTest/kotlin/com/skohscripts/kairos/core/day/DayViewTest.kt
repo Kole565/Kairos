@@ -91,6 +91,20 @@ class DayViewTest {
     }
 
     @Test
+    fun a_deep_work_window_only_fills_its_part_to_come() {
+        val block = TimeBlock(1, "Deep", LocalDateTime(2026, 9, 29, 10, 0), LocalDateTime(2026, 9, 29, 11, 30), BlockKind.DEEPWORK, createdAt = t0)
+        val snapshot = KairosSnapshot(tasks = listOf(task(1)), timeBlocks = listOf(block), settings = Settings(workdayStartHour = 9, workdayEndHour = 18))
+        // Fenêtre finie : la tâche se pose à maintenant, hors deep work, jamais à 10 h.
+        val late = build(snapshot, now = LocalDateTime(2026, 9, 29, 16, 0)).agenda.single()
+        assertEquals(LocalDateTime(2026, 9, 29, 16, 0), late.start)
+        assertFalse(late.deepwork)
+        // Fenêtre entamée : seule sa part à venir est remplie.
+        val during = build(snapshot, now = LocalDateTime(2026, 9, 29, 10, 15)).agenda.single()
+        assertEquals(LocalDateTime(2026, 9, 29, 10, 15), during.start)
+        assertTrue(during.deepwork)
+    }
+
+    @Test
     fun a_blocked_parent_is_only_in_blocked() {
         val tasks = listOf(task(1, title = "Mère"), task(2, parent = 1), task(3, title = "Bloqueuse"))
         val deps = listOf(TaskDependency(1, taskId = 1, blockerId = 3, createdAt = t0))
