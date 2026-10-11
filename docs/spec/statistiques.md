@@ -113,7 +113,9 @@ reçoit **toutes** les tâches, archivées comprises (comme Kairos 2).
   tuile prend `weight(1f)` et au moins 150 dp : quatre par ligne en largeur
   bureau, deux sur un téléphone (à largeur fixe de 200 dp, un téléphone n'en
   plaçait qu'une par ligne, écran trois fois trop long ; défaut vu sur les
-  captures des magasins, `publication.md`).
+  captures des magasins, `publication.md`). `fillMaxRowHeight()` : les
+  tuiles d'une même ligne ont la même hauteur, même quand un libellé passe
+  à la ligne.
 - `Panel` : `OutlinedCard`, icône, titre, phrase de rôle.
 - `BarRow` : libellé (96 dp), piste neutre `surfaceContainerHighest`,
   remplissage **primaire** à bouts arrondis de 4 dp, valeur écrite à

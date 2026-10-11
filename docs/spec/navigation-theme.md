@@ -201,7 +201,9 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
     seuls le rail, la rangée de pastilles et la barre basse sont conditionnels,
     le contenu garde sa place dans la composition.
   - `RAIL` : `NavigationRail` (en-tête : logo 34 dp + « Kairos ») à gauche
-    du `Scaffold`.
+    du `Scaffold` ; en-tête et destinations dans une colonne défilante (une
+    fenêtre de 360 dp de haut, téléphone en paysage, coupait Semaine et
+    Stats sans moyen de les atteindre).
   - `BOTTOM_BAR` : `NavigationBar` en `bottomBar` du `Scaffold`.
   - `TOP_BAR` : barre d'application puis une rangée défilante de `FilterChip`
     (icône + libellé ; sélection en `secondaryContainer`, rôle MD3 par défaut
