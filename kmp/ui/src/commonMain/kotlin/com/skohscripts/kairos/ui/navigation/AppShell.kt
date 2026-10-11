@@ -182,8 +182,12 @@ fun AppShell(
         secondary == Secondary.ABOUT -> stringResource(Res.string.title_about)
         team && teamName.isNotBlank() -> stringResource(Res.string.title_team_named, teamName, stringResource(current.title))
         team -> stringResource(current.title)
-        destination == Destination.DAY && day != null && day != today -> stringResource(Res.string.title_day_other, Dates.long(day, language))
-        destination == Destination.WEEK -> stringResource(Res.string.title_week_of, Dates.long(TaskStats.monday(nav.week ?: today), language))
+        // Sans rail (fenêtre étroite), date courte : « Semaine · du lundi 5 octobre 2026 » tenait sur trois lignes à 380 dp.
+        destination == Destination.DAY && day != null && day != today ->
+            stringResource(Res.string.title_day_other, if (layout == NavigationLayout.RAIL) Dates.long(day, language) else Dates.dayShort(day, language))
+        destination == Destination.WEEK -> TaskStats.monday(nav.week ?: today).let { monday ->
+            stringResource(Res.string.title_week_of, if (layout == NavigationLayout.RAIL) Dates.long(monday, language) else Dates.short(monday, language))
+        }
         else -> stringResource(destination.title)
     }
     // Sujet d'aide de ce qui est affiché ; `null` = pas de « ? » (Accueil, « À propos »).
@@ -194,8 +198,8 @@ fun AppShell(
     }
     val topBar: @Composable () -> Unit = {
         TopAppBar(
-            // Avec le sélecteur d'espace à côté, le titre tient sur deux lignes au plus.
-            title = { if (selector != null) Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) else Text(title) },
+            // Deux lignes au plus (sélecteur d'espace à côté, fenêtre étroite) : la barre garde sa hauteur.
+            title = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
             navigationIcon = {
                 if (secondary != null) {
                     IconButton(onClick = onCloseSecondary) {

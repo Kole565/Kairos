@@ -66,7 +66,9 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   au-dessus de chaque écran (`mises-a-jour.md`).
 - Le titre de la barre dit ce qui est affiché : « Jour · mercredi 30
   septembre 2026 » pour un autre jour qu'aujourd'hui, « Semaine · du lundi
-  28 septembre 2026 » pour la semaine regardée.
+  28 septembre 2026 » pour la semaine regardée ; sans rail (fenêtre
+  étroite), en date courte (« Jour · mer. 30/09 », « Semaine · du 28 sept. »).
+  Deux lignes au plus, puis points de suspension.
 - Au lancement, un indicateur « Ouverture de Kairos… » attend l'ouverture des
   données ; un échec est affiché (« Impossible d'ouvrir les données » et le
   détail), jamais un écran vide.
@@ -188,8 +190,9 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - `AppShell` :
   - `TopAppBar` avec le titre, fidèle à ce qui est affiché (Kairos 2) :
     « Réglages », « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
-    autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »,
-    sinon celui de la destination ; flèche retour quand un écran secondaire est ouvert ; sinon, sans rail,
+    autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »
+    (sans rail : `Dates.dayShort` et `Dates.short`, la date longue tenait sur
+    trois lignes à 380 dp), sinon celui de la destination ; `maxLines = 2` ; flèche retour quand un écran secondaire est ouvert ; sinon, sans rail,
     le logo en 28 dp. Actions : le sélecteur d'espace (sans rail, gestion
     d'équipe activée), le cœur (sauf avec ce sélecteur, `soutien.md`), le « ? » (s'il y a un sujet d'aide : ni
     l'Accueil ni « À propos »), puis la roue crantée `onOpenSettings`

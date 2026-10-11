@@ -16,6 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import com.skohscripts.kairos.ui.app.heading
@@ -52,7 +55,18 @@ fun GuideDialog(kind: GuideKind, onOpen: (GuideTarget) -> Unit, onDismiss: () ->
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(stringResource(step.body), style = MaterialTheme.typography.bodyMedium)
+                // Hauteur de la plus longue étape pour toutes : « Précédent » et « Suivant » ne sautent pas d'une étape à
+                // l'autre. Les textes des autres étapes sont là, transparents et absents de l'accessibilité.
+                Box {
+                    steps.forEach { other ->
+                        val shown = other === step
+                        Text(
+                            stringResource(other.body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics { },
+                        )
+                    }
+                }
                 KairosTextButton(onClick = { onOpen(step.target) }) { Text(stringResource(Res.string.guide_see_screen)) }
             }
         },
