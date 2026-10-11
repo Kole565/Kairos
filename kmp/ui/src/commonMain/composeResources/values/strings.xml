@@ -163,7 +163,7 @@
     <string name="duration_hours_minutes">%1$d h %2$s</string>
     <string name="duration_hours">%1$d h</string>
     <string name="duration_minutes">%1$d min</string>
-    <string name="overload_banner">%1$d tâches sont déjà à priorité maximale. Le signal de priorité se dilue : dépriorise ce qui peut attendre.</string>
+    <string name="overload_banner">Déjà %1$d tâche(s) à priorité maximale. Le signal de priorité se dilue : dépriorise ce qui peut attendre.</string>
     <string name="agenda_title">Aujourd’hui, dans l’ordre</string>
     <string name="agenda_hint">ordre du score WSJF : valeur ÷ effort</string>
     <string name="agenda_empty">Aucune tâche à faire n’est actuellement planifiée.</string>
@@ -310,7 +310,7 @@
     <string name="stats_bias_over">Tu surestimes.</string>
     <string name="stats_bias_fair">Estimations justes.</string>
     <string name="stats_types_title">Répartition du temps réel</string>
-    <string name="stats_types_hint">Où passe le temps chronométré, sur %1$d semaines.</string>
+    <string name="stats_types_hint">Où passe le temps chronométré, sur %1$d semaine(s).</string>
     <string name="stats_types_empty">Aucun temps chronométré sur la période.</string>
     <string name="stats_types_row">%1$s · %2$d %</string>
     <string name="stats_no_type">Sans type</string>
@@ -743,9 +743,9 @@
     <string name="team_clear_action">Supprimer les données d’équipe…</string>
     <string name="team_clear_title">Supprimer les données d’équipe ?</string>
     <string name="team_clear_body">%1$s et %2$s seront supprimés. Une sauvegarde est enregistrée juste avant. Vos tâches personnelles et vos réglages d’équipe ne changent pas.</string>
-    <string name="team_clear_members_one">1 membre</string>
+    <string name="team_clear_members_one">%1$d membre</string>
     <string name="team_clear_members_many">%1$d membres</string>
-    <string name="team_clear_tasks_one">1 tâche d’équipe</string>
+    <string name="team_clear_tasks_one">%1$d tâche d’équipe</string>
     <string name="team_clear_tasks_many">%1$d tâches d’équipe</string>
     <string name="team_clear_confirm">Supprimer</string>
     <string name="team_clear_done">Données d’équipe supprimées.</string>

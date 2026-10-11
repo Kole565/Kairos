@@ -108,7 +108,8 @@ fun AboutScreen() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             val uriHandler = LocalUriHandler.current
-            KairosOutlinedButton(onClick = { uriHandler.openUri(SOURCE_URL) }, contentPadding = KairosButtonIconPadding) {
+            // Sans navigateur (xdg-open absent…), l'ouverture échoue : jamais de plantage (docs/spec/soutien.md).
+            KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(SOURCE_URL) } }, contentPadding = KairosButtonIconPadding) {
                 Icon(KairosIcons.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                 Text(stringResource(Res.string.about_source), modifier = Modifier.padding(start = 8.dp))
             }

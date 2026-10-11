@@ -1,6 +1,9 @@
 package com.skohscripts.kairos.data
 
 import com.skohscripts.kairos.core.model.BlockKind
+import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
+import com.skohscripts.kairos.core.model.PRIORITY_VALUES
+import com.skohscripts.kairos.core.settings.SettingsForm
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Note
@@ -26,6 +29,9 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import kotlin.time.Instant
 
 /**
@@ -57,20 +63,56 @@ object ExportCodec {
     fun encode(snapshot: KairosSnapshot, appVersion: String, exportedAt: Instant): String =
         json.encodeToString(ExportFile.serializer(), ExportFile.from(snapshot, appVersion, exportedAt))
 
-    /** @throws ImportException si le texte n'est pas un export Kairos lisible. */
+    /** Titre le plus long accepté à l'import : au-delà, l'affichage d'une seule ligne gelait l'interface (2 Mo). */
+    internal const val MAX_TITLE = 10_000
+
+    /**
+     * @throws ImportException si le texte n'est pas un export Kairos lisible. En deux temps : un JSON qui n'est pas un
+     * objet `kairos-export` n'est « pas un export » ; un export Kairos aux champs mal typés, absents ou hors des règles
+     * de l'application (réglages hors bornes, identifiants en double, priorité inconnue…) est « illisible » et n'est
+     * jamais importé, même en partie (docs/spec/export-import.md § Import).
+     */
     fun decode(text: String): KairosSnapshot {
-        val file = try {
-            json.decodeFromString(ExportFile.serializer(), text)
+        // Un fichier enregistré par le Bloc-notes de Windows commence par une marque d'ordre des octets.
+        val element = try {
+            json.parseToJsonElement(text.removePrefix("\uFEFF"))
         } catch (e: Exception) {
             throw ImportException(ImportException.Reason.NOT_AN_EXPORT, e)
         }
-        if (file.format != FORMAT) throw ImportException(ImportException.Reason.NOT_AN_EXPORT)
-        if (file.formatVersion > FORMAT_VERSION) throw ImportException(ImportException.Reason.TOO_NEW)
+        val root = element as? JsonObject ?: throw ImportException(ImportException.Reason.NOT_AN_EXPORT)
+        if ((root["format"] as? JsonPrimitive)?.takeIf { it.isString }?.content != FORMAT) throw ImportException(ImportException.Reason.NOT_AN_EXPORT)
+        val version = (root["formatVersion"] as? JsonPrimitive)?.intOrNull ?: throw ImportException(ImportException.Reason.NOT_AN_EXPORT)
+        if (version > FORMAT_VERSION) throw ImportException(ImportException.Reason.TOO_NEW)
         return try {
-            file.toSnapshot()
+            json.decodeFromJsonElement(ExportFile.serializer(), root).toSnapshot().also(::check)
         } catch (e: Exception) {
             throw ImportException(ImportException.Reason.CORRUPTED, e)
         }
+    }
+
+    /** Les règles que la saisie garantit, vérifiées sur un fichier venu d'ailleurs ; `IllegalArgumentException` sinon. */
+    private fun check(s: KairosSnapshot) {
+        // Réglages : mêmes bornes et règles que le formulaire (une heure 25 faisait planter les vues Jour et Semaine).
+        require(SettingsForm.validate(SettingsForm.values(s.settings), s.settings).settings != null) { "réglages" }
+        fun unique(ids: List<Long>, what: String) = require(ids.size == ids.toSet().size) { "identifiants en double : $what" }
+        unique(s.tasks.map { it.id }, "tâches")
+        unique(s.timeBlocks.map { it.id }, "créneaux")
+        unique(s.dependencies.map { it.id }, "dépendances")
+        unique(s.workSessions.map { it.id }, "sessions")
+        unique(s.notes.map { it.id }, "notes")
+        unique(s.members.map { it.id }, "membres")
+        unique(s.absences.map { it.id }, "absences")
+        unique(s.teamEvents.map { it.id }, "journal")
+        unique(s.teamScenarios.map { it.id }, "scénarios")
+        val ids = s.tasks.mapTo(HashSet()) { it.id }
+        for (t in s.tasks) {
+            require(t.title.length <= MAX_TITLE) { "titre trop long" }
+            require(t.priority == null || t.priority in PRIORITY_VALUES) { "priorité" }
+            require(t.fibonacciPoints == null || t.fibonacciPoints in FIBONACCI_SCALE) { "points" }
+            require((t.estimatedMinutes ?: 0) >= 0 && (t.manualTimeSpentMinutes ?: 0) >= 0) { "durées" }
+        }
+        for (d in s.dependencies) require(d.taskId in ids && d.blockerId in ids && d.taskId != d.blockerId) { "dépendance" }
+        for (b in s.timeBlocks) require(b.end >= b.start) { "créneau" }
     }
 }
 

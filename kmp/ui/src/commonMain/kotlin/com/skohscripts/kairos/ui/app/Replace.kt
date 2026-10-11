@@ -70,7 +70,12 @@ suspend fun saveBackup(services: AppServices, prefix: String, messages: (String)
  */
 suspend fun replaceWithBackup(services: AppServices, snapshot: KairosSnapshot, messages: (String) -> Unit): Boolean {
     if (!saveBackup(services, "avant-import", messages)) return false
-    services.repository.replaceAll(snapshot)
+    // Filet : une écriture refusée par la base (contrainte, disque) annule la transaction ; l'application le dit au
+    // lieu de quitter sur l'erreur SQLite brute (constaté avant que l'import ne valide les identifiants).
+    if (runCatching { services.repository.replaceAll(snapshot) }.isFailure) {
+        messages(getString(Res.string.file_error))
+        return false
+    }
     services.teamUi.reset()
     return true
 }

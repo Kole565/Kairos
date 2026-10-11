@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import com.skohscripts.kairos.core.settings.FieldError
 import com.skohscripts.kairos.core.settings.GeneralError
 import com.skohscripts.kairos.core.settings.SettingsForm
+import com.skohscripts.kairos.core.settings.FieldKind
 import com.skohscripts.kairos.ui.generated.resources.action_save
 import com.skohscripts.kairos.ui.generated.resources.settings_error_dip
 import com.skohscripts.kairos.ui.generated.resources.settings_error_workday
@@ -124,7 +125,13 @@ import org.jetbrains.compose.resources.stringResource
 fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
     val snapshot by services.repository.snapshot.collectAsState()
     val current = snapshot.settings
-    val saved = remember(current) { SettingsForm.values(current) }
+    val language = Locale.current.language
+    // Décimales à la virgule en français (« 0,8 », comme l'aide l'écrit) ; la validation lit les deux.
+    val saved = remember(current, language) {
+        SettingsForm.values(current).mapValues { (key, value) ->
+            if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
+        }
+    }
     var values by remember(current) { mutableStateOf(saved) }
     var errors by remember(current) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
     var general by remember(current) { mutableStateOf<GeneralError?>(null) }

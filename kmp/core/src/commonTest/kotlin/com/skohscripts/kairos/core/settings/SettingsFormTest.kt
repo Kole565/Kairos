@@ -59,6 +59,15 @@ class SettingsFormTest {
         // Début = tronc = fin reste permis (≤).
         val s = validate("cognitiveDipStartHour" to "14", "cognitiveDipTroughHour" to "14", "cognitiveDipEndHour" to "14").settings
         assertEquals(14, s!!.cognitiveDipTroughHour)
+        // Creux désactivé : l'ordre de ses heures ne bloque pas l'enregistrement.
+        assertNull(validate("cognitiveDipEnabled" to "false", "cognitiveDipTroughHour" to "17").general)
+    }
+
+    @Test
+    fun an_integer_too_long_to_read_is_too_large_not_unreadable() {
+        assertEquals(FieldError(FieldErrorKind.TOO_LARGE, Int.MAX_VALUE.toString()), validate("defaultTaskDurationMinutes" to "99999999999").fieldErrors["defaultTaskDurationMinutes"])
+        assertEquals(FieldError(FieldErrorKind.TOO_LARGE, "23"), validate("workdayEndHour" to "99999999999").fieldErrors["workdayEndHour"])
+        assertEquals(FieldError(FieldErrorKind.TOO_SMALL, "0"), validate("workdayEndHour" to "-99999999999").fieldErrors["workdayEndHour"])
     }
 
     @Test

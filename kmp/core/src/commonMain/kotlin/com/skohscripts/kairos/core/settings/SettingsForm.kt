@@ -166,7 +166,9 @@ object SettingsForm {
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
         val general = when {
             result.workdayStartHour >= result.workdayEndHour -> GeneralError.WORKDAY_ORDER
-            !(result.cognitiveDipStartHour <= result.cognitiveDipTroughHour && result.cognitiveDipTroughHour <= result.cognitiveDipEndHour) -> GeneralError.DIP_ORDER
+            // Creux désactivé : ses heures ne servent à rien, leur ordre ne bloque pas l'enregistrement.
+            result.cognitiveDipEnabled &&
+                !(result.cognitiveDipStartHour <= result.cognitiveDipTroughHour && result.cognitiveDipTroughHour <= result.cognitiveDipEndHour) -> GeneralError.DIP_ORDER
             else -> null
         }
         return SettingsValidation(if (general == null) result else null, emptyMap(), general)
@@ -182,7 +184,13 @@ object SettingsForm {
             FieldKind.INT, FieldKind.DECIMAL -> {
                 if (text.isEmpty()) return FieldError(FieldErrorKind.REQUIRED)
                 val number = if (f.kind == FieldKind.INT) {
-                    text.toIntOrNull()?.toDouble() ?: return FieldError(FieldErrorKind.NOT_INTEGER)
+                    text.toIntOrNull()?.toDouble() ?: return if (Regex("""-?\d+""").matches(text)) {
+                        // Un entier trop long pour être lu : « Au plus … », pas « un entier est attendu ».
+                        if (text.startsWith("-")) FieldError(FieldErrorKind.TOO_SMALL, bound(f, f.min ?: Int.MIN_VALUE.toDouble()))
+                        else FieldError(FieldErrorKind.TOO_LARGE, bound(f, f.max ?: Int.MAX_VALUE.toDouble()))
+                    } else {
+                        FieldError(FieldErrorKind.NOT_INTEGER)
+                    }
                 } else {
                     parseDecimal(text) ?: return FieldError(FieldErrorKind.NOT_NUMBER)
                 }

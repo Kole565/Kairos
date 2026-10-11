@@ -243,7 +243,9 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   bref » (quatre points), « Le score de priorité (WSJF) » (formule en
   primaire gras + explication), « Pourquoi Kairos ? » ; version
   (`KairosBuild.VERSION_NAME`) ; licence ; bouton « Code source » qui ouvre
-  `SOURCE_URL` (`https://github.com/SKOHscripts/Kairos`) par `LocalUriHandler`,
+  `SOURCE_URL` (`https://github.com/SKOHscripts/Kairos`) par `LocalUriHandler`
+  (enveloppé de `runCatching` comme « Soutenir Kairos » : sans `xdg-open`,
+  l'application quittait sur l'erreur),
   puis un bouton « Soutenir Kairos » qui ouvre `DONATE_URL` (`soutien.md`).
 
 ### Décisions et pièges tracés

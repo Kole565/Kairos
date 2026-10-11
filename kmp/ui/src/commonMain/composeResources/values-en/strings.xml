@@ -160,7 +160,7 @@
     <string name="duration_hours_minutes">%1$d h %2$s</string>
     <string name="duration_hours">%1$d h</string>
     <string name="duration_minutes">%1$d min</string>
-    <string name="overload_banner">%1$d tasks already have the highest priority. The priority signal gets diluted: lower what can wait.</string>
+    <string name="overload_banner">Already %1$d task(s) at the highest priority. The priority signal gets diluted: lower what can wait.</string>
     <string name="agenda_title">Today, in order</string>
     <string name="agenda_hint">ordered by WSJF score: value ÷ effort</string>
     <string name="agenda_empty">No task to do is currently scheduled.</string>
@@ -307,7 +307,7 @@
     <string name="stats_bias_over">You overestimate.</string>
     <string name="stats_bias_fair">Your estimates are accurate.</string>
     <string name="stats_types_title">Where the real time goes</string>
-    <string name="stats_types_hint">Where the timed work goes, over %1$d weeks.</string>
+    <string name="stats_types_hint">Where the timed work goes, over %1$d week(s).</string>
     <string name="stats_types_empty">No timed work over the period.</string>
     <string name="stats_types_row">%1$s · %2$d%</string>
     <string name="stats_no_type">No type</string>
@@ -740,9 +740,9 @@
     <string name="team_clear_action">Delete team data…</string>
     <string name="team_clear_title">Delete team data?</string>
     <string name="team_clear_body">%1$s and %2$s will be deleted. A backup is saved just before. Your personal tasks and your team settings do not change.</string>
-    <string name="team_clear_members_one">1 member</string>
+    <string name="team_clear_members_one">%1$d member</string>
     <string name="team_clear_members_many">%1$d members</string>
-    <string name="team_clear_tasks_one">1 team task</string>
+    <string name="team_clear_tasks_one">%1$d team task</string>
     <string name="team_clear_tasks_many">%1$d team tasks</string>
     <string name="team_clear_confirm">Delete</string>
     <string name="team_clear_done">Team data deleted.</string>

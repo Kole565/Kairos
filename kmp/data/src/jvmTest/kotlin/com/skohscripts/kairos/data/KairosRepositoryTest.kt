@@ -158,6 +158,27 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun importRefusesAnExportBreakingTheAppRulesAndAcceptsABom() {
+        val task = """{"id":1,"title":"x","createdAt":"2026-09-28T07:00:00Z","updatedAt":"2026-09-28T07:00:00Z"}"""
+        fun export(body: String) = """{"format":"kairos-export","formatVersion":1,$body}"""
+        fun reason(text: String) = assertFailsWith<ImportException> { ExportCodec.decode(text) }.reason
+        // Réglages hors bornes (une heure 25 faisait planter les vues Jour et Semaine).
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""settings":{"workdayStartHour":25},"tasks":[]""")))
+        // Identifiants en double, priorité et points inconnus, dépendance vers elle-même.
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[$task,$task]""")))
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[${task.replace("\"title\"", "\"priority\":7,\"title\"")}]""")))
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[${task.replace("\"title\"", "\"fibonacciPoints\":-3,\"title\"")}]""")))
+        assertEquals(
+            ImportException.Reason.CORRUPTED,
+            reason(export(""""tasks":[$task],"dependencies":[{"id":1,"taskId":1,"blockerId":1,"createdAt":"2026-09-28T07:00:00Z"}]""")),
+        )
+        // Mal typé : illisible, pas « pas un export ».
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[{"id":"abc"}]""")))
+        // Marque d'ordre des octets (Bloc-notes de Windows) : l'export reste lisible.
+        assertEquals(listOf("x"), ExportCodec.decode("\uFEFF" + export(""""tasks":[$task]""")).tasks.map { it.title })
+    }
+
+    @Test
     fun missingSettingsTakeTheirDefaults() {
         val text = """{"format":"kairos-export","formatVersion":1,"settings":{"meetingBufferMinutes":12,"inconnu":true}}"""
         val snapshot = ExportCodec.decode(text)
