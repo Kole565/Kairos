@@ -44,6 +44,6 @@ class BlockerChoicesTest {
         val team = Task(2, "Refonte API", space = TaskSpace.TEAM, createdAt = t0, updatedAt = t0)
         val personal = task(3, "Impôts")
         assertEquals(listOf(3L), BlockerChoices.of(task(1, "Perso"), listOf(team, personal), emptyList(), emptyMap(), "fr").map { it.task.id })
-        assertEquals(emptyList(), BlockerChoices.of(team.copy(id = 4), listOf(team, personal), emptyList(), emptyMap(), "fr").map { it.task.id })
+        assertEquals(listOf(2L), BlockerChoices.of(team.copy(id = 4), listOf(team, personal), emptyList(), emptyMap(), "fr").map { it.task.id })
     }
 }
