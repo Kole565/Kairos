@@ -211,7 +211,9 @@ posée.
   haut, travail et épinglée en conteneur secondaire (contour pour
   l'épinglée), conflit en conteneur d'erreur, deep work en tertiaire
   (hachures dessinées pour le bloc réservé) ; libellé « heure · titre » si
-  l'entrée fait au moins 14 min.
+  l'entrée fait au moins 14 min, sauf pour un fond (deep work, occupé) dont
+  le haut est recouvert par une tâche commençant moins de 16 min après lui
+  (les deux libellés se chevauchaient).
 - `Capture` : `SingleChoiceSegmentedButtonRow` ; `CaptureState` (volet,
   `FocusRequester` du champ). `BlockFormState` / `BlockFields` : jour
   (AAAA-MM-JJ), début et fin (`Dates.parseTime` accepte « 9:30 »,

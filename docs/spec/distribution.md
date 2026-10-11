@@ -186,8 +186,10 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   sortie 0 ou 1.
 - **Empaquetage** (plugin Compose Desktop, jpackage, runtime Java réduit
   embarquant `java.instrument`, `java.management`, `java.net.http` (depuis
-  M5, vérification des mises à jour), `java.sql`, `jdk.unsupported` en plus
-  des modules détectés) :
+  M5, vérification des mises à jour), `java.sql`, `jdk.localedata` (noms de
+  mois et de jours français du sélecteur de dates Material 3 : sans lui, le
+  runtime réduit retombe sur l'anglais, constaté au test exploratoire du
+  2026-10-11), `jdk.unsupported` en plus des modules détectés) :
   - formats `Msi`, `Deb`, `Dmg` ; `createDistributable` produit l'image
     portable ; la release y écrit le marqueur `kairos-portable` (Linux,
     Windows) juste avant d'en faire l'archive, après les installeurs

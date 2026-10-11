@@ -57,4 +57,13 @@ class StringsParityTest {
             )
         }
     }
+
+    @Test
+    fun frenchPunctuationKeepsItsNonBreakingSpace() {
+        // « … » et l'espace avant : ; ? ! sont insécables (docs/spec/i18n.md) : sinon un retour à la ligne laisse « » »
+        // ou « : » seul en tête de ligne.
+        val loose = Regex("""« | [:;?!»]""")
+        val bad = strings("values").filterValues { loose.containsMatchIn(it) }.keys
+        assertTrue(bad.isEmpty(), "espaces sécables avant la ponctuation : $bad")
+    }
 }

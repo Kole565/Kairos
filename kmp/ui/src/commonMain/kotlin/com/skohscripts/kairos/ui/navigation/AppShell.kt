@@ -3,6 +3,7 @@ package com.skohscripts.kairos.ui.navigation
 import com.skohscripts.kairos.ui.theme.KairosFilterChip
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Arrangement
@@ -293,8 +294,13 @@ private fun KairosNavigationRail(
     onNavigate: (NavEntry) -> Unit,
     spaceSelector: (@Composable () -> Unit)?,
 ) {
-    NavigationRail(
-        header = {
+    NavigationRail {
+        // En-tête et destinations défilent ensemble : sur une fenêtre basse (téléphone en paysage, 360 dp de haut),
+        // les dernières destinations restaient hors d'atteinte sous le bord.
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(vertical = 12.dp)) {
                 Image(KairosLogo, contentDescription = null, modifier = Modifier.size(34.dp))
                 Spacer(Modifier.height(4.dp))
@@ -309,17 +315,16 @@ private fun KairosNavigationRail(
                     Box(Modifier.padding(horizontal = 4.dp)) { it() }
                 }
             }
-        },
-    ) {
-        Spacer(Modifier.height(8.dp))
-        entries.forEach { dest ->
-            val isSelected = dest == selected
-            NavigationRailItem(
-                selected = isSelected,
-                onClick = { onNavigate(dest) },
-                icon = { Icon(if (isSelected) dest.selectedIcon() else dest.icon(), contentDescription = null) },
-                label = { Text(stringResource(dest.label)) },
-            )
+            Spacer(Modifier.height(8.dp))
+            entries.forEach { dest ->
+                val isSelected = dest == selected
+                NavigationRailItem(
+                    selected = isSelected,
+                    onClick = { onNavigate(dest) },
+                    icon = { Icon(if (isSelected) dest.selectedIcon() else dest.icon(), contentDescription = null) },
+                    label = { Text(stringResource(dest.label)) },
+                )
+            }
         }
     }
 }

@@ -38,6 +38,7 @@ import com.skohscripts.kairos.ui.generated.resources.load_computing
 import com.skohscripts.kairos.ui.generated.resources.load_horizon_option
 import com.skohscripts.kairos.ui.generated.resources.load_horizon_title
 import com.skohscripts.kairos.ui.generated.resources.load_member_counts
+import com.skohscripts.kairos.ui.generated.resources.load_member_counts_personal
 import com.skohscripts.kairos.ui.generated.resources.load_plan_note
 import com.skohscripts.kairos.ui.generated.resources.load_spread_gap
 import com.skohscripts.kairos.ui.generated.resources.load_spread_hint
@@ -298,7 +299,13 @@ private fun MemberCard(member: TeamMember, absence: MemberAbsence?, today: Local
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         itemVerticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(Res.string.load_member_counts, load.inProgressCount, load.todoCount), style = MaterialTheme.typography.bodySmall)
+                        // « moi » : ses tâches perso comptent dans les heures, la carte les compte aussi (sinon « 0 à faire » pour 20 h).
+                        val counts = if (load.personalCount > 0) {
+                            stringResource(Res.string.load_member_counts_personal, load.inProgressCount, load.todoCount, load.personalCount)
+                        } else {
+                            stringResource(Res.string.load_member_counts, load.inProgressCount, load.todoCount)
+                        }
+                        Text(counts, style = MaterialTheme.typography.bodySmall)
                         if (load.unestimatedCount > 0) Flag(unestimatedText(load.unestimatedCount), flagged = true)
                         if (load.atRiskCount > 0) {
                             Flag(

@@ -33,6 +33,9 @@ import org.jetbrains.compose.resources.stringResource
 private val MINUTE = 1.dp
 private val GUTTER = 44.dp
 
+/** Hauteur d'un libellé de la frise, en minutes (1 dp par minute). */
+private const val LABEL_MINUTES = 16
+
 /**
  * Carte « Agenda » : la journée de travail heure par heure, créneaux et
  * tâches placées (`build_timeline`). Couleurs de la charte : occupé neutre,
@@ -71,7 +74,13 @@ internal fun TimelineCard(view: DayView, settings: Settings, language: String, m
                             .background(scheme.primary, MaterialTheme.shapes.extraSmall),
                     )
                 }
+                // Un fond (deep work, occupé) dont le haut est recouvert par une tâche qui commence moins de LABEL_MINUTES
+                // après lui tait son libellé : les deux textes se chevauchaient (une tâche posée à 10 h 13 dans une fenêtre
+                // de 10 h). Les hachures et la couleur de la tâche disent déjà ce qu'est le fond.
+                val foreground = view.timeline.filter { it.kind != TimelineKind.DEEPWORK && it.kind != TimelineKind.BUSY && it.kind != TimelineKind.SESSION }
                 for (e in view.timeline) {
+                    val background = e.kind == TimelineKind.DEEPWORK || e.kind == TimelineKind.BUSY
+                    val labelCovered = background && foreground.any { it.topMinutes >= e.topMinutes && it.topMinutes < e.topMinutes + LABEL_MINUTES }
                     val (container, content) = when (e.kind) {
                         TimelineKind.BUSY -> scheme.surfaceContainerHighest to scheme.onSurfaceVariant
                         TimelineKind.WORK, TimelineKind.PINNED -> scheme.secondaryContainer to scheme.onSecondaryContainer
@@ -111,7 +120,7 @@ internal fun TimelineCard(view: DayView, settings: Settings, language: String, m
                                 }
                             },
                         ) {
-                            if (e.heightMinutes >= 14) {
+                            if (e.heightMinutes >= 14 && !labelCovered) {
                                 Text(
                                     "${Dates.time(e.start, language)} · ${e.title}",
                                     style = MaterialTheme.typography.labelSmall,

@@ -201,7 +201,11 @@ qu'elles ne pourraient l'être.
 - `TeamLoad.build` : le plan lit `planInput` sur l'horizon choisi à l'écran ;
   les compteurs « en cours » / « à faire » d'un membre et le backlog restent
   ceux des tâches d'équipe ; `MemberLoad.personalHours` et `recurringHours`
-  disent la part de la charge venue des tâches perso et des occurrences.
+  disent la part de la charge venue des tâches perso et des occurrences, et
+  `personalCount` le nombre de tâches perso ouvertes qui comptent : la carte
+  de « moi » dit « 0 en cours · 0 à faire · 5 perso » (avant, « 0 à faire »
+  pour 20 h de charge se lisait comme une erreur ; test exploratoire du
+  2026-10-11).
 - `LoadPlan.prepare` reçoit en plus `spent` (minutes par tâche, vide par
   défaut) et `busy` (heures occupées de « moi » par jour, aucune par défaut) ;
   `TeamLoad`, `AssignmentSuggestion` et `MonteCarlo` les fournissent depuis

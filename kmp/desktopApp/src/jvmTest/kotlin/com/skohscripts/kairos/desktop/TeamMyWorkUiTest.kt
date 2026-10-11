@@ -106,7 +106,11 @@ class TeamMyWorkUiTest {
         val s = seeded(withMe = true)
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { s.services } }
 
-        // Espace Équipe : la tâche perso est dans le plan de « moi », marquée « Personal », et la charge dit d'où elle vient.
+        // Espace Équipe : la carte de « moi » compte la tâche perso, son plan la contient, marquée « Personal »,
+        // et la charge dit d'où elle vient.
+        waitText("Tracking")
+        onAllNodesWithText("Team").onFirst().performClick()
+        waitText("0 in progress · 0 to do · 1 personal")
         openMySheet()
         waitText("Quarterly report")
         waitText("Personal")

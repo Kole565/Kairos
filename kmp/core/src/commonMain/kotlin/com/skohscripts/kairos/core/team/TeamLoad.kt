@@ -35,6 +35,8 @@ data class MemberLoad(
     val personalHours: Double = 0.0,
     /** Part de [loadHours] venue des occurrences projetées des tâches récurrentes. */
     val recurringHours: Double = 0.0,
+    /** Tâches perso ouvertes de « moi » qui comptent dans l'équipe (hors [inProgressCount] et [todoCount]). */
+    val personalCount: Int = 0,
 )
 
 /** Une catégorie (`Task.taskType`, `""` = sans catégorie) : où passe la capacité. */
@@ -148,6 +150,7 @@ data class TeamLoad(
                     plan = mp,
                     personalHours = known.filter { it.taskId in personalIds }.sumOf { it.hours },
                     recurringHours = known.filter { it.taskId < 0 }.sumOf { it.hours },
+                    personalCount = planned.count { it.assigneeId == m.id && it.id in personalIds },
                 )
             }
 

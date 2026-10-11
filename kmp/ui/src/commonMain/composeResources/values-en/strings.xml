@@ -326,6 +326,7 @@
     <string name="stats_completeness_row">%1$d% · %2$d/%3$d</string>
     <string name="guide_points_title">How to estimate points?</string>
     <string name="guide_points_intro">Relative size (never hours): volume × complexity × uncertainty (“do I know how to do it?”). Compare with your own finished tasks: “bigger than this one, smaller than that one”. A few seconds; when in doubt, round up.</string>
+    <string name="guide_points_level">%1$d · %2$s: %3$s</string>
     <string name="guide_points_outro">Different from the duration: points feed the order (effort divides the score), the duration is used to place the task in the day. A task can be short but tricky, or long but mechanical.</string>
     <string name="guide_points_yours">for you ≈ %1$s (median of %2$d task(s))</string>
     <string name="guide_points_yours_unreliable">for you ≈ %1$s (median of %2$d task(s), not reliable)</string>
@@ -862,6 +863,7 @@
     <string name="load_plan_note">Plan without uncertainty: see Forecast for the probabilities.</string>
     <string name="load_computing">Computing the load…</string>
     <string name="load_member_counts">%1$d in progress · %2$d to do</string>
+    <string name="load_member_counts_personal">%1$d in progress · %2$d to do · %3$d personal</string>
     <string name="load_at_risk_one">1 deadline at risk</string>
     <string name="load_at_risk_many">%1$d deadlines at risk</string>
     <string name="load_bar_value">%1$s / %2$s · %3$s</string>
