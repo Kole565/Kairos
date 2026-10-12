@@ -9,31 +9,58 @@ import com.skohscripts.kairos.data.db.KairosDatabase
 
 /**
  * Ouverture de la base (docs/spec/modele-donnees.md § Ouverture et
- * migrations) : crée le schéma sur une base sans table `task`, applique les
- * migrations SQLDelight (fichiers `.sqm`) si `PRAGMA user_version` est en
- * retard, puis tient cette version à jour. Idempotent.
+ * migrations) : crée le schéma sur une base sans table `task`, sinon applique
+ * les migrations SQLDelight (fichiers `.sqm`) qui lui manquent, puis tient
+ * `PRAGMA user_version` à jour. Idempotent.
+ *
+ * La version d'une base existante est lue sur **ses tables et ses colonnes**
+ * ([actualVersion]), jamais sur `user_version` : le pilote Android pose
+ * lui-même cette valeur à l'ouverture, avant que ce code ne la lise, si bien
+ * qu'une base restée en schéma 6 apparaissait déjà en schéma 7 et n'était pas
+ * migrée (« no such column: task.team_excluded », issue #65 et suivantes).
  */
 object KairosStore {
     class Opened(val database: KairosDatabase, val driver: SqlDriver, val created: Boolean)
 
     suspend fun open(driver: SqlDriver): Opened {
         val schema = KairosDatabase.Schema
-        val current = userVersion(driver)
-        // La présence de la table `task` décide de la création, pas `user_version` :
-        // le pilote Android pose lui-même la version (schéma factice, voir androidApp).
-        val created = when {
-            !hasTaskTable(driver) -> {
-                schema.awaitCreate(driver)
-                true
-            }
-            current in 1 until schema.version -> {
-                schema.awaitMigrate(driver, current, schema.version)
-                false
-            }
-            else -> false
+        val stamped = userVersion(driver)
+        val database = KairosDatabase(driver)
+        val created = if (!hasTaskTable(driver)) {
+            schema.awaitCreate(driver)
+            true
+        } else {
+            val actual = actualVersion(driver)
+            // Toutes les migrations manquantes ou aucune : une base restée à mi-chemin ne serait plus réparable.
+            if (actual < schema.version) database.transaction { schema.awaitMigrate(driver, actual, schema.version) }
+            false
         }
-        if (current != schema.version) driver.execute(null, "PRAGMA user_version = ${schema.version}", 0).await()
-        return Opened(KairosDatabase(driver), driver, created)
+        if (stamped != schema.version) driver.execute(null, "PRAGMA user_version = ${schema.version}", 0).await()
+        return Opened(database, driver, created)
+    }
+
+    /**
+     * Marqueurs de schéma, du plus récent au plus ancien : la première table ou colonne présente donne la version.
+     * Un marqueur par fichier `.sqm` (`N.sqm` mène à la version N + 1) ; en ajouter un à chaque migration, sans quoi
+     * `KairosStoreTest.everyMigrationHasAMarker` échoue.
+     */
+    private val MARKERS: List<Pair<Long, String>> = listOf(
+        7L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'team_excluded'",
+        6L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'origin'",
+        5L to "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'team_scenario'",
+        4L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'progress_percent'",
+        3L to "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'member_absence'",
+        2L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'space'",
+    )
+
+    /** Version réelle du schéma d'une base qui a une table `task` : 1 (celui de la 3.0.0) si aucun marqueur n'est là. */
+    internal suspend fun actualVersion(driver: SqlDriver): Long {
+        MARKERS.forEachIndexed { index, (version, sql) ->
+            // Identifiants négatifs distincts : le pilote met les requêtes en cache par identifiant.
+            val present = Query(-10 - index, driver, "KairosStore", "marker$version", sql) { it.getLong(0) ?: 0L }.awaitAsOneOrNull() ?: 0L
+            if (present > 0L) return version
+        }
+        return 1L
     }
 
     // Lectures par l'API Query (comme le code généré) : un mappeur QueryResult

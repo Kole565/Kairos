@@ -145,10 +145,19 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
 ### Ouverture et migrations (`KairosStore.open`)
 
 1. Si la table `task` n'existe pas : création du schéma (`created = true`).
-2. Sinon, si `PRAGMA user_version` est entre 1 et la version du schéma
-   exclue : migrations SQLDelight (fichiers `.sqm`, additives, vérifiées par
-   `verifyMigrations`).
+2. Sinon, la **version réelle** du schéma est lue sur les tables et colonnes
+   de la base (`KairosStore.actualVersion`, voir ci-dessous) ; si elle est
+   inférieure à la version du schéma, toutes les migrations manquantes
+   (fichiers `.sqm`, additives, vérifiées par `verifyMigrations`) sont
+   appliquées **dans une seule transaction**.
 3. `PRAGMA user_version` = version du schéma.
+
+`actualVersion` teste des marqueurs, du plus récent au plus ancien : colonne
+`task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
+`task.progress_percent` (4), table `member_absence` (3), `task.space` (2),
+sinon 1. Chaque nouveau fichier `.sqm` ajoute son marqueur à
+`KairosStore.MARKERS` ; `ExchangeMigrationTest.everyMigrationHasAMarker`
+échoue sinon.
 
 Schéma 1 : celui de la 3.0.0. Schéma 2 : `1.sqm` (jalon E1 de l'espace
 Équipe) ajoute `task.space`, `task.assignee_id`, leurs index et
@@ -253,6 +262,25 @@ de SQLDelight.
   pilote Android pose lui-même `user_version`. Il reçoit donc un schéma
   factice (`DeferredSchema`, création et migration vides, voir
   `distribution.md` § Android), et la création réelle reste commune.
+- **Version lue sur le schéma, pas sur `user_version`** (issue #65, 3.3.1) : le
+  pilote Android ouvre le fichier avec son schéma factice et **pose lui-même**
+  `user_version` à la version courante, avant que `KairosStore.open` ne la lise.
+  Une base restée en schéma 6 apparaissait donc déjà en schéma 7, la migration
+  n'était pas lancée et la première lecture plantait (« no such column:
+  task.team_excluded », constaté sur un Fairphone FP4 en passant de la 3.2.0 à
+  la 3.3.0 ; une mise à jour de la 3.0.0 vers la 3.1.0 ou plus aurait fait de même
+  avec `task.space`). Lire les tables et colonnes évite de dépendre d'un numéro
+  que le pilote écrase, et **répare** aussi les bases déjà étiquetées à tort : au
+  lancement suivant leurs migrations manquantes s'appliquent, sans perte
+  (`ExchangeMigrationTest.aDatabaseStampedWithTheCurrentVersionButMissingColumnsIsStillMigrated`,
+  `aSchemaOneDatabaseStampedWithTheCurrentVersionIsMigratedFromTheStart`).
+  Écartés : faire migrer `DeferredSchema.migrate` (le pilote Android est
+  synchrone, la migration commune est asynchrone, et appeler le pilote depuis
+  `onUpgrade` le rouvre récursivement) ; retenir l'ancienne version dans
+  `DeferredSchema` (ne répare pas les bases déjà étiquetées à tort).
+- **Migrations en une transaction** : une migration interrompue à mi-chemin
+  (colonne déjà ajoutée) ne se rejouerait plus, la lecture des marqueurs la
+  verrait à moitié faite. SQLite sait annuler le DDL.
 - **Lire par `Query`, pas par le pilote brut** : un mappeur `QueryResult`
   paresseux passé directement à `SqlDriver.executeQuery` est évalué après la
   fermeture du curseur par le pilote JDBC synchrone, et lit toujours 0. Bug

@@ -194,6 +194,12 @@ l'application : plantage immédiat, sans aucune information exploitable.
   plantait lui-même, la cause d'origine ne serait pas effacée.
 - **Échec d'écriture muet** : le gestionnaire entoure l'écriture d'un `runCatching` ; il ne doit
   jamais masquer le plantage d'origine ni en provoquer un second.
+- **Premier rapport reçu (3.3.0)** : un Fairphone FP4 (Android 16) a montré
+  `SQLiteException: no such column: task.team_excluded` au lancement qui suit la
+  mise à jour 3.2.0 → 3.3.0. Cause : la migration de la base n'était pas lancée
+  sur Android (`modele-donnees.md` § Décisions, « Version lue sur le schéma »),
+  corrigée en 3.3.1. C'est aussi la cause **probable** de l'issue #65 (plantage
+  après la 3.2.0 chez qui venait de la 3.0.0), à confirmer par le rapporteur.
 - **Plantages natifs et arrêts du système non couverts** : seul un échec Java/Kotlin
   non rattrapé écrit un rapport. Un signal natif, un arrêt pour manque de mémoire
   ou une fermeture forcée n'en laissent pas ; l'issue #65 restera à documenter par

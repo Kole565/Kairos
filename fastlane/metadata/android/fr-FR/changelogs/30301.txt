@@ -1,0 +1,1 @@
+Kairos 3.3.1 : corrige un plantage au lancement après une mise à jour sur Android (base de données non migrée). Vos données sont conservées ; si Kairos a affiché un rapport d’erreur, « Ouvrir Kairos » suffit.

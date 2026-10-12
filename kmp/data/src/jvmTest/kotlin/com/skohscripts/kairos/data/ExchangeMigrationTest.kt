@@ -212,4 +212,63 @@ class ExchangeMigrationTest {
         file.delete()
         fresh.delete()
     }
+
+    // --- Version lue sur le schéma, pas sur user_version (issue #65 : « no such column: task.team_excluded ») ---------
+
+    private fun stamp(f: File, version: Int) = java.sql.DriverManager.getConnection("jdbc:sqlite:${f.path}").use { c ->
+        c.createStatement().use { it.execute("PRAGMA user_version = $version") }
+    }
+
+    @Test
+    fun aDatabaseStampedWithTheCurrentVersionButMissingColumnsIsStillMigrated() = runTest {
+        // Le pilote Android pose user_version lui-même à l'ouverture : une base de schéma 5 y apparaissait déjà « à jour ».
+        val file = databaseFrom(schemaV5)
+        stamp(file, KairosDatabase.Schema.version.toInt())
+        val opened = KairosStore.open(driver(file))
+        assertFalse(opened.created)
+        assertTrue("origin" in columns(file, "task") && "team_excluded" in columns(file, "task"))
+        assertTrue("last_report_at" in columns(file, "team_member"))
+        val repo = KairosRepository.open(opened, examples, clock, timeZone = TimeZone.UTC)
+        assertEquals(listOf("Perso", "Équipe"), repo.snapshot.value.tasks.map { it.title })
+        assertEquals(40, repo.snapshot.value.tasks[1].progressPercent)
+    }
+
+    @Test
+    fun aSchemaOneDatabaseStampedWithTheCurrentVersionIsMigratedFromTheStart() = runTest {
+        // Cas de qui est passé de la 3.0.0 à une version suivante sur Android : base de schéma 1, étiquetée 7.
+        val file = Files.createTempFile("kairos-v1", ".db").toFile()
+        File("src/commonMain/sqldelight/databases/1.db").copyTo(file, overwrite = true)
+        assertTrue("space" !in columns(file, "task"))
+        stamp(file, KairosDatabase.Schema.version.toInt())
+        val opened = KairosStore.open(driver(file))
+        val columns = columns(file, "task")
+        assertTrue(listOf("space", "progress_percent", "origin", "team_excluded").all { it in columns })
+        assertTrue(java.sql.DriverManager.getConnection("jdbc:sqlite:${file.path}").use { c ->
+            c.createStatement().executeQuery("SELECT count(*) FROM sqlite_master WHERE name IN ('team_member','member_absence','team_event','team_scenario')").use { it.getInt(1) } == 4
+        })
+        KairosRepository.open(opened, examples, clock, timeZone = TimeZone.UTC)
+    }
+
+    @Test
+    fun openingAnUpToDateDatabaseChangesNothing() = runTest {
+        val file = freshDatabase()
+        val before = columns(file, "task")
+        KairosStore.open(driver(file))
+        assertEquals(before, columns(file, "task"))
+        assertEquals(KairosDatabase.Schema.version.toInt(), userVersion(file))
+    }
+
+    @Test
+    fun everyMigrationHasAMarker() = runTest {
+        // N.sqm mène à la version N + 1 : la version lue sur une base neuve doit être la courante. Une migration
+        // ajoutée sans marqueur dans KairosStore.MARKERS fait échouer ce test.
+        val sqm = File("src/commonMain/sqldelight/com/skohscripts/kairos/data/db").listFiles { f -> f.extension == "sqm" }!!.size
+        assertEquals(sqm + 1L, KairosDatabase.Schema.version)
+        val fresh = driver(freshDatabase())
+        assertEquals(KairosDatabase.Schema.version, KairosStore.actualVersion(fresh))
+        // Et le schéma de la 3.0.0 se lit comme tel.
+        val v1 = Files.createTempFile("kairos-v1b", ".db").toFile()
+        File("src/commonMain/sqldelight/databases/1.db").copyTo(v1, overwrite = true)
+        assertEquals(1L, KairosStore.actualVersion(driver(v1)))
+    }
 }
