@@ -530,7 +530,7 @@ class TeamExchangeUiTest {
         onNodeWithContentDescription("Edit").performClick()
         waitText("Edit task")
         // Supprimer ou garder : les deux choix sont proposés dans la fiche.
-        onNodeWithText("Delete").performScrollTo().assertExists()
+        onNodeWithText("Delete").assertExists()
         onNodeWithText("Keep as a personal task").performScrollTo().performClick()
         waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.single().origin == null }
         waitGone("Edit task")
@@ -586,7 +586,7 @@ class TeamExchangeUiTest {
         waitText("Edit task")
         waitText("Received from Corentin. Title, description, priority, points, category, deadline and duration are replaced with every new packet; progress is yours.")
         onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress)).performSemanticsAction(SemanticsActions.SetProgress) { it(30f) }
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.single { it.id == migration.id }.progressPercent == 30 }
         assertNotNull(services.repository.snapshot.value.tasks.single { it.id == migration.id }.startedOn)
     }

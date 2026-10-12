@@ -181,7 +181,7 @@ class DayScreenUiTest {
         onNodeWithText("More options").performScrollTo().performClick()
         onNode(hasSetTextAction() and hasText("Fixed time (HH:MM)")).performScrollTo().performTextInput("14:30")
         onNodeWithText("Beta").performScrollTo().performClick()
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.dependencies.isNotEmpty() }
         val dep = repository.snapshot.value.dependencies.single()
         assertEquals(a to b, dep.taskId to dep.blockerId)

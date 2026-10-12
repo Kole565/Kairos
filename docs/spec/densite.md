@@ -86,7 +86,11 @@ champs à contour).
   l'aire de touche sans agrandir le dessin.
 - `KairosFilterChip` : `FilterChip` de 32 dp (`FilterChipDefaults.Height`),
   aire tactile 48 dp. `KairosSegmentedRow` et ses `KairosSegmentedButton` :
-  40 dp, sans `heightIn(48)`.
+  40 dp, sans `heightIn(48)`. Un libellé qui passe à la ligne faisait déborder
+  son segment sur le voisin (« Créneau / deep work » à 340 dp) ; essayer
+  `IntrinsicSize.Min` + `fillMaxHeight()` rendait tous les segments à 48 dp
+  (écarté : contraire aux 40 dp dessinés). Solution : libellé court
+  (« Créneau ») sous 380 dp de fenêtre (`Capture.kt`, `ShellResizeUiTest`).
 - `KairosRowIconButton(icon, description, onClick)` : `IconButton` de 40 dp,
   icône de 20 dp, pour les actions de ligne. Les `IconButton` de navigation
   et de barre d'application gardent 24 dp.

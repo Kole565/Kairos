@@ -83,7 +83,13 @@ fun AboutScreen() {
 
             Section(Res.string.about_brief_title) {
                 listOf(Res.string.about_brief_1, Res.string.about_brief_2, Res.string.about_brief_3, Res.string.about_brief_4)
-                    .forEach { Text("•  " + stringResource(it), style = MaterialTheme.typography.bodyMedium) }
+                    .forEach {
+                        // Puce à part : les lignes suivantes s'alignent sous le texte, pas sous la puce.
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("•", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        }
+                    }
             }
             Section(Res.string.about_score_title) {
                 Text(

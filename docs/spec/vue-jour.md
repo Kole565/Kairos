@@ -112,7 +112,10 @@ guide des points), échéance, durée ; « Options avancées » : programmée po
 récurrence (aucune, quotidienne, jours ouvrés, hebdomadaire, mensuelle,
 « le … du mois » avec le jour), type, heure fixe (HH:MM, vide = aucune),
 nouvelles sous-tâches (une par ligne), « Bloquée par » (cases à cocher).
-Un seul « Enregistrer » ; « Supprimer » avec confirmation. **Durée
+Un seul « Enregistrer » ; « Supprimer » avec confirmation. Seul le contenu
+défile : « Supprimer », « Annuler » et « Enregistrer » restent en bas de la
+fiche (à 900x700, « Enregistrer » était hors de vue sous les options
+avancées). **Durée
 suggérée** : choisir un palier de points dont le temps réel médian est
 fiable (3 tâches au moins) **remplace** la durée par cette médiane ; choisir
 un type fiable ne la remplit que si elle est vide. On reste libre de la
@@ -238,7 +241,8 @@ posée.
   qu'une durée vide avec `minutesByType[type]`.
 - `Dates` : « 30 sept. » / « Sep 30 », « 09h15 » / « 09:15 », graduations
   « 9h » / « 9:00 », nombres à une décimale sans « .0 » (deux pour une valeur positive
-  qui s'arrondirait à 0 : un score de 1/21 s'affiche « 0.05 », jamais « 0 ») ; `duration()` :
+  qui s'arrondirait à 0 : un score de 1/21 s'affiche « 0,05 », jamais « 0 ») ;
+  la virgule en français (`Dates.number(valeur, langue)` : « 7,6 », « 7.6 » en anglais) ; `duration()` :
   « 1 h 30 », « 2 h », « 45 min » ; `long` : « mardi 29 septembre 2026 »
 (« 1er » le premier du mois) / « Tuesday, September 29, 2026 » ;
 `dayShort` : « mar. 29/09 » / « Tue 9/29 » ; `dayMonth` : « 28/09 » /

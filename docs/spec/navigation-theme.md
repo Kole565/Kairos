@@ -207,7 +207,10 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   - `BOTTOM_BAR` : `NavigationBar` en `bottomBar` du `Scaffold`.
   - `TOP_BAR` : barre d'application puis une rangée défilante de `FilterChip`
     (icône + libellé ; sélection en `secondaryContainer`, rôle MD3 par défaut
-    des puces sélectionnées). La pastille active se ramène en vue
+    des puces sélectionnées). **La molette de la souris** la fait défiler
+    (`pointerInput` sur `PointerEventType.Scroll`) : sans geste horizontal,
+    une fenêtre de bureau étroite n'atteignait ni « Stats » ni, une fois Stats
+    ouvert, « Accueil » (`ShellResizeUiTest`). La pastille active se ramène en vue
     (`BringIntoViewRequester`) dès qu'elle devient active : à 360 dp, les
     cinq pastilles ne tiennent pas, et l'on peut arriver sur Stats depuis
     l'Accueil ou la visite.
@@ -240,7 +243,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - `AboutScreen` : colonne défilante de 720 dp au plus, centrée. Logo 56 dp +
   nom + devise ; phrase d'introduction ; trois cartes « filled »
   (`surfaceContainerLow`, élévation 0 : jamais d'ombre sur une carte) : « En
-  bref » (quatre points), « Le score de priorité (WSJF) » (formule en
+  bref » (quatre points, puce à part : les lignes suivantes s'alignent sous le texte), « Le score de priorité (WSJF) » (formule en
   primaire gras + explication), « Pourquoi Kairos ? » ; version
   (`KairosBuild.VERSION_NAME`) ; licence ; bouton « Code source » qui ouvre
   `SOURCE_URL` (`https://github.com/SKOHscripts/Kairos`) par `LocalUriHandler`

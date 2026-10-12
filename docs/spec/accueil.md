@@ -219,9 +219,11 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
   texte « Voir l’écran » ; `confirmButton` « Suivant » (« Terminer » à
   la dernière), `dismissButton` « Précédent » (« Passer la visite » à la
   première). L'index est `rememberSaveable(kind)`. `onDismissRequest` quitte.
-  Les textes de toutes les étapes sont superposés dans un `Box`, ceux des
-  autres étapes transparents et sans sémantique : le dialogue garde la hauteur
-  de la plus longue, « Précédent » et « Suivant » ne sautent pas.
+  Les titres et les textes de toutes les étapes sont superposés dans un `Box`,
+  ceux des autres étapes transparents et sans sémantique : le dialogue garde la
+  hauteur du plus long (un titre sur deux lignes à 400 dp), « Précédent » et
+  « Suivant » ne sautent pas. Le défilement est propre à chaque étape
+  (`rememberSaveable(index)`) : la suivante s'ouvre en haut.
 - **`GuideSteps`** : `PERSONAL` (6 étapes : Notes, Jour, Jour, Jour, Stats,
   Réglages) et `TEAM` (6 : Équipe, Backlog, Backlog, Suivi, Prévisions,
   Équipe avec onglet « Échanges »). `GuideStep(icon, title, body,

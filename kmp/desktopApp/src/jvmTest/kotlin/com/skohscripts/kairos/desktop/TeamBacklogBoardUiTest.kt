@@ -238,7 +238,7 @@ class TeamBacklogBoardUiTest {
         onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
             .performSemanticsAction(SemanticsActions.SetProgress) { it(60f) }
         waitText("60%")
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitTask(repository, taskId) { it.progressPercent == 60 && it.startedOn != null }
         // La carte : la barre et son « 60% », dans la colonne « En cours ».
         waitText("In progress (1)", substring = true)

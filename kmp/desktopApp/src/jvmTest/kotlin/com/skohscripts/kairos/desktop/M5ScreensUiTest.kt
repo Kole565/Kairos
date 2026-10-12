@@ -169,12 +169,12 @@ class M5ScreensUiTest {
         assert(honey.surface.toArgb() !in screenColors())
 
         // Couleur illisible : erreur sous le champ, rien d'enregistré.
-        type("Custom colour", "bleu")
+        type("Custom color", "bleu")
         onNodeWithText("Save").performClick()
-        waitText("Unreadable colour: “bleu” (format #RRGGBB).")
+        waitText("Unreadable color: “bleu” (format #RRGGBB).")
         assertEquals("#2F6FED", repository.snapshot.value.settings.themeColor)
         // Pas de « Couleurs du système » sur le bureau.
-        assertEquals(0, onAllNodesWithContentDescription("System colours").fetchSemanticsNodes().size)
+        assertEquals(0, onAllNodesWithContentDescription("System colors").fetchSemanticsNodes().size)
     }
 
     @Test

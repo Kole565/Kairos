@@ -128,6 +128,7 @@
     <string name="capture_title">Capturer</string>
     <string name="capture_mode_task">Tâche</string>
     <string name="capture_mode_block">Créneau / deep work</string>
+    <string name="capture_mode_block_short">Créneau</string>
     <string name="shortcut_hint">Raccourci clavier : %1$s</string>
     <string name="block_placeholder">ex. Réunion hebdo, Focus</string>
     <string name="block_date">Jour (AAAA-MM-JJ)</string>
@@ -251,12 +252,12 @@
     <string name="alerts_denied">Notifications bloquées : les alertes s’afficheront dans l’application.</string>
     <string name="alerts_unavailable">Notifications indisponibles ici : les alertes s’afficheront dans l’application.</string>
     <string name="alert_title">Kairos · %1$s</string>
-    <string name="alert_over">temps réel %1$s au-delà de l’estimé (%2$s).</string>
+    <string name="alert_over">temps réel %1$s au-delà de l’estimation (%2$s).</string>
     <string name="alert_idle">le chrono tourne depuis %1$s. Pense à l’arrêter si c’est terminé.</string>
     <string name="alert_pomodoro">%1$s de focus continu, une courte pause ?</string>
     <string name="alert_close">Fermer l’alerte</string>
     <string name="settings_chrono_title">Alertes du chrono</string>
-    <string name="settings_chrono_body">Rappels pendant qu’un chrono tourne. Un seuil à 0 désactive l’alerte ; le dépassement de l’estimé est toujours signalé.</string>
+    <string name="settings_chrono_body">Rappels pendant qu’un chrono tourne. Un seuil à 0 désactive l’alerte ; le dépassement de l’estimation est toujours signalé.</string>
     <string name="settings_idle">Chrono oublié après (min)</string>
     <string name="settings_pomodoro">Pause suggérée après (min)</string>
     <string name="settings_sound">Son quand aucune notification ne peut s’afficher</string>
@@ -573,7 +574,7 @@
     <string name="forecast_criticality_empty">Aucune échéance n’est manquée dans les tirages.</string>
     <string name="forecast_criticality_value">%1$s en retard</string>
     <string name="forecast_bottleneck_title">Goulot</string>
-    <string name="forecast_bottleneck_hint">Part des tirages où chaque membre finit le dernier ; les ex æquo comptent pour chacun.</string>
+    <string name="forecast_bottleneck_hint">Part des tirages où chaque membre finit le dernier ; les ex æquo comptent pour chacun.</string>
     <string name="forecast_bottleneck_empty">Aucun membre n’a de tâche dans ce périmètre.</string>
     <string name="forecast_bottleneck_share">%1$s des tirages</string>
     <string name="forecast_outcome_title">Issue la plus probable</string>
@@ -688,7 +689,7 @@
     <string name="action_ok">OK</string>
     <string name="settings_section_team">Équipe</string>
     <string name="setting_team_enabled">Gestion d’équipe</string>
-    <string name="setting_team_enabled_help">Gérer une équipe : membres, backlog partagé, charge et prévisions. Sans effet sur vos tâches personnelles.</string>
+    <string name="setting_team_enabled_help">Gérer une équipe : membres, backlog partagé, charge et prévisions. Sans effet sur tes tâches personnelles.</string>
     <string name="setting_team_name">Nom de l’équipe</string>
     <string name="setting_team_name_help">Affiché dans le titre des écrans de l’espace Équipe.</string>
     <string name="setting_team_manager">Votre nom (dans les paquets)</string>
@@ -1079,7 +1080,7 @@
     <string name="home_feature_stats_body">Débit, temps par type de tâche et calibration de tes estimations.</string>
     <string name="home_team_title">Travailler en équipe</string>
     <string name="home_team_manager">Tu encadres une équipe ? Active la gestion d’équipe (Réglages → Équipe) : membres, backlog, charge, prévisions et suivi de l’avancement.</string>
-    <string name="home_team_member">Tu travailles pour un manager ? Importe le fichier qu’il t’envoie (Réglages → Données → Importer), puis renvoie-lui ton avancement. Aucun serveur : vous vous transmettez les fichiers comme vous voulez.</string>
+    <string name="home_team_member">Tu travailles pour un manager ? Importe le fichier qu’il t’envoie (Réglages → Données → Importer), puis renvoie-lui ton avancement. Aucun serveur : le fichier voyage comme tu veux (courriel, clé USB, dossier partagé).</string>
     <string name="home_team_open_team">Ouvrir l’espace Équipe</string>
     <string name="home_team_open_settings">Ouvrir les Réglages</string>
     <string name="home_tour">Visite guidée</string>

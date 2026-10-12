@@ -99,7 +99,7 @@ class M6GuideUiTest {
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         pressHelp()
         waitText("Help: Today")
-        waitText("“Now” tells you what to do.", substring = true)
+        waitText("“Up next” tells you what to do.", substring = true)
         onNodeWithText("Kairos home").performClick()
 
         // L'Accueil : raison d'être, fonctionnalités, équipe ; plus de « ? » (la page tient lieu d'aide).

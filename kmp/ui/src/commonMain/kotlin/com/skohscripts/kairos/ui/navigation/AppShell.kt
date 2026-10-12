@@ -37,6 +37,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -345,15 +347,34 @@ private fun KairosNavigationBar(entries: List<NavEntry>, selected: NavEntry?, on
 }
 
 /** Barre horizontale compacte (bureau/web étroit) : pastilles, l'active en `secondaryContainer`. */
+/** Pixels par cran de molette sur la rangée des destinations (un cran vaut ~1 unité de `scrollDelta`). */
+private const val WHEEL_STEP = 60f
+
 @Composable
 private fun KairosTopNavigation(entries: List<NavEntry>, selected: NavEntry?, onNavigate: (NavEntry) -> Unit) {
     val description = stringResource(Res.string.nav_navigation)
+    val scroll = rememberScrollState()
+    val scope = rememberCoroutineScope()
     Surface(color = MaterialTheme.colorScheme.surface) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .semantics { contentDescription = description }
-                .horizontalScroll(rememberScrollState())
+                // La molette de la souris (verticale) fait défiler la rangée : sans elle, une fenêtre de bureau étroite
+                // ne montrait ni « Stats » ni (une fois Stats ouvert) « Accueil », faute de geste horizontal.
+                .pointerInput(scroll) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            if (event.type == PointerEventType.Scroll) {
+                                val delta = event.changes.sumOf { (it.scrollDelta.y + it.scrollDelta.x).toDouble() }.toFloat()
+                                scope.launch { scroll.scrollTo((scroll.value + delta * WHEEL_STEP).toInt().coerceIn(0, scroll.maxValue)) }
+                                event.changes.forEach { it.consume() }
+                            }
+                        }
+                    }
+                }
+                .horizontalScroll(scroll)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
             entries.forEach { dest ->

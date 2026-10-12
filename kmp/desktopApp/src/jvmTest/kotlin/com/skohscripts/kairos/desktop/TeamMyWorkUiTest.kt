@@ -122,7 +122,7 @@ class TeamMyWorkUiTest {
         editTheTaskWithMoreOptions()
         onNodeWithText("Count in the team").performScrollTo().performClick()
         // Le dialogue défile : le bouton doit être visible, sinon le clic tombe sur le fond et ferme sans enregistrer.
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 15_000) { s.repository.snapshot.value.tasks.single { it.id == s.taskId }.teamExcluded }
 
         // Retour à l'équipe : elle n'y est plus.

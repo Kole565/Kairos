@@ -154,7 +154,7 @@ class M4ScreensUiTest {
         onNodeWithText("e.g. “Gamma” · e.g. “Beta”").assertExists()
 
         onNodeWithText("3 moderate").performScrollTo().performClick()
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single { it.title == "Delta" }.estimatedMinutes == 45 }
     }
 

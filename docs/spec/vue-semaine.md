@@ -24,7 +24,8 @@ un autre jour.
 ### Comportement attendu (utilisateur)
 
 - En tête : « Semaine du 28/09 », puis dessous « Semaine précédente » à
-  gauche et « Semaine suivante » à droite. La barre de titre dit « Semaine · du lundi 28 septembre
+  gauche et « Semaine suivante » à droite (même hauteur : à 360 dp l'un passe
+  sur deux lignes, l'autre l'imite). La barre de titre dit « Semaine · du lundi 28 septembre
   2026 ».
 - « Temps réel cette semaine : 3 h 10 (Dev 2 h · Réunion 1 h 10) » :
   sessions commencées dans la semaine, ventilées par type (types non vides).
