@@ -7,7 +7,7 @@ Chaque tâche reçoit un score de priorité (WSJF) : sa valeur (priorité P0, P1
 <ul>
 <li>Les tâches sont placées autour de vos réunions, avec une marge après chacune.</li>
 <li>Les créneaux de deep work sont protégés ; l’après-midi, les tâches complexes cèdent la place aux tâches légères.</li>
-<li>Heures fixes, tâches récurrentes (quotidiennes, jours ouvrés, hebdomadaires, « le 23 du mois »), dépendances entre tâches, sous-tâches, jours fériés français.</li>
+<li>Heures fixes, tâches récurrentes (quotidiennes, jours ouvrés, hebdomadaires, « le 23 du mois »), dépendances entre tâches, sous-tâches modifiables, jours fériés français.</li>
 </ul>
 
 <b>Capturer sans friction (GTD)</b>
@@ -20,7 +20,7 @@ Un chrono par tâche, avec notification permanente ; alertes de dépassement, de
 Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le manager, qui reste le seul utilisateur :
 <ul>
 <li>Membres et absences, backlog partagé, suivi de l’avancement avec son journal.</li>
-<li>Charge de chacun rapportée à sa capacité, et suggestion de répartition des tâches.</li>
+<li>Charge de chacun rapportée à sa capacité, et suggestion de répartition des tâches ; vos propres tâches perso peuvent compter dans votre charge.</li>
 <li>Prévisions Monte Carlo : dates de fin en pourcentages de chances, échéances menacées, scénarios « Et si… ? ».</li>
 <li>Échanges par fichier avec les membres qui ont Kairos : ils reçoivent leurs tâches et renvoient leur avancement.</li>
 <li>Tout reste sur l’appareil ; l’espace Perso ne montre jamais rien de l’équipe.</li>
@@ -33,4 +33,4 @@ Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le
 <li>Reprise des données de Kairos 2.</li>
 </ul>
 
-Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais.
+Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais (au choix dans les réglages ; l’anglais par défaut si votre système n’est pas en français).

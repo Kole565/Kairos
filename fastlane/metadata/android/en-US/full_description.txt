@@ -7,7 +7,7 @@ Each task gets a priority score (WSJF): its value (priority P0, P1 or P2, plus t
 <ul>
 <li>Tasks are placed around your meetings, with a buffer after each one.</li>
 <li>Deep-work slots are protected; in the afternoon, complex tasks give way to lighter ones.</li>
-<li>Fixed times, recurring tasks (daily, weekdays, weekly, “on the 23rd of the month”), dependencies between tasks, subtasks, French public holidays.</li>
+<li>Fixed times, recurring tasks (daily, weekdays, weekly, “on the 23rd of the month”), dependencies between tasks, editable subtasks, French public holidays.</li>
 </ul>
 
 <b>Capture without friction (GTD)</b>
@@ -20,7 +20,7 @@ A timer per task, with an ongoing notification; alerts when you go past the esti
 Off by default, team management adds a second space for the manager, who remains the only user:
 <ul>
 <li>Members and absences, a shared backlog, progress tracking with its log.</li>
-<li>Each person’s load against their capacity, and a suggested split of the tasks.</li>
+<li>Each person’s load against their capacity, and a suggested split of the tasks; your own personal tasks can count in your load.</li>
 <li>Monte Carlo forecasts: finish dates as percentage chances, threatened deadlines, “What if…?” scenarios.</li>
 <li>File exchanges with members who use Kairos: they receive their tasks and send back their progress.</li>
 <li>Everything stays on the device; the personal space never shows anything from the team.</li>
@@ -33,4 +33,4 @@ Off by default, team management adds a second space for the manager, who remains
 <li>Brings over your Kairos 2 data.</li>
 </ul>
 
-Kairos is also available for Windows, Linux and macOS, and in the browser. Free software under the MIT licence, in French and English.
+Kairos is also available for Windows, Linux and macOS, and in the browser. Free software under the MIT licence, in French and English (your choice in the settings; English by default if your system is not in French).
