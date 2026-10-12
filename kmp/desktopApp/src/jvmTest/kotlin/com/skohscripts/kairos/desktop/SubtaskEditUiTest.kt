@@ -2,6 +2,7 @@ package com.skohscripts.kairos.desktop
 
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.runComposeUiTest
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
@@ -60,6 +62,11 @@ class SubtaskEditUiTest {
 
     /** Ouvre la fiche qui a la section « Subtasks » (la mère), en essayant chaque « Edit » de la vue Jour. */
     private fun ComposeUiTest.openTheMothersDialog() {
+        // La mère est dans « Parent tasks in progress », une section secondaire repliée (docs/spec/vue-jour.md).
+        // La liste est paresseuse : l'en-tête n'est composé qu'une fois la liste défilée jusqu'à lui.
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Parent tasks in progress", substring = true))
+        onNodeWithText("Parent tasks in progress", substring = true).performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("0/3 subtask(s)").fetchSemanticsNodes().isNotEmpty() }
         val count = onAllNodesWithContentDescription("Edit").fetchSemanticsNodes().size
         for (index in 0 until count) {
             onAllNodesWithContentDescription("Edit")[index].performClick()
