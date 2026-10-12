@@ -198,7 +198,7 @@ l'application : plantage immédiat, sans aucune information exploitable.
   `SQLiteException: no such column: task.team_excluded` au lancement qui suit la
   mise à jour 3.2.0 → 3.3.0. Cause : la migration de la base n'était pas lancée
   sur Android (`modele-donnees.md` § Décisions, « Version lue sur le schéma »),
-  corrigée en 3.3.1. C'est aussi la cause **probable** de l'issue #65 (plantage
+  corrigée avant la publication de la 3.3.0 (la version a été retirée puis republiée avec le correctif). C'est aussi la cause **probable** de l'issue #65 (plantage
   après la 3.2.0 chez qui venait de la 3.0.0), à confirmer par le rapporteur.
 - **Plantages natifs et arrêts du système non couverts** : seul un échec Java/Kotlin
   non rattrapé écrit un rapport. Un signal natif, un arrêt pour manque de mémoire

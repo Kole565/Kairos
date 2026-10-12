@@ -1,1 +1,0 @@
-Kairos 3.3.1: fixes a crash at launch after an update on Android (database not migrated). Your data is kept; if Kairos showed an error report, “Open Kairos” is enough.

@@ -262,7 +262,7 @@ de SQLDelight.
   pilote Android pose lui-même `user_version`. Il reçoit donc un schéma
   factice (`DeferredSchema`, création et migration vides, voir
   `distribution.md` § Android), et la création réelle reste commune.
-- **Version lue sur le schéma, pas sur `user_version`** (issue #65, 3.3.1) : le
+- **Version lue sur le schéma, pas sur `user_version`** (issue #65, 3.3.0) : le
   pilote Android ouvre le fichier avec son schéma factice et **pose lui-même**
   `user_version` à la version courante, avant que `KairosStore.open` ne la lise.
   Une base restée en schéma 6 apparaissait donc déjà en schéma 7, la migration
