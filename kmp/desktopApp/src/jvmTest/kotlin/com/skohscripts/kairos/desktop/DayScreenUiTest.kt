@@ -106,6 +106,20 @@ class DayScreenUiTest {
     }
 
     @Test
+    fun theShortcutsStayQuietWhileTypingTheTitleOfASlot() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("To process (0)").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithText("Time slot / deep work").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Start (HH:MM)").fetchSemanticsNodes().isNotEmpty() }
+        // « n » (raccourci « nouvelle tâche ») dans le titre du créneau : une saisie, pas un raccourci.
+        onNode(hasSetTextAction() and hasText("Title")).performClick()
+        onNode(hasSetTextAction() and hasText("Title")).performKeyInput { pressKey(Key.N) }
+        waitForIdle()
+        assertEquals(1, onAllNodesWithText("Start (HH:MM)").fetchSemanticsNodes().size, "le raccourci N a quitté le formulaire du créneau")
+    }
+
+    @Test
     fun snoozeMovesTheDeadlineToTheNextWorkingDay() = runComposeUiTest {
         val services = services()
         val repository = services.repository

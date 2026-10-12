@@ -151,7 +151,7 @@ private fun TaskCapture(focus: FocusRequester, onAdd: (String) -> Unit) {
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
-            modifier = Modifier.weight(1f).focusRequester(focus).onPreviewKeyEvent {
+            modifier = Modifier.weight(1f).focusRequester(focus).quietShortcuts().onPreviewKeyEvent {
                 if (it.type == KeyEventType.KeyDown && (it.key == Key.Enter || it.key == Key.NumPadEnter)) {
                     submit()
                     true

@@ -127,7 +127,9 @@ JSON UTF-8 indenté :
   reste écrit dans les réglages d'un export 1 ; une version antérieure
   l'ignore (champ inconnu).
 - `decode` (en deux temps, marque d'ordre des octets UTF-8 ignorée — un
-  fichier du Bloc-notes de Windows en commence) :
+  fichier du Bloc-notes de Windows en commence ; `TeamExchangeCodec.detect` et les
+  décodeurs de paquet et de rapport l'ignorent aussi, sinon l'aiguillage du bouton
+  « Importer » refusait le fichier avant que `ExportCodec` ne le lise) :
   - pas du JSON, pas un objet, `format` différent ou `formatVersion` absente
     → `ImportException(NOT_AN_EXPORT)` ;
   - `formatVersion` supérieure à 2 → `TOO_NEW` (1 et 2 sont lues ; un

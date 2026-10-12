@@ -125,7 +125,7 @@ internal fun BlockFields(state: BlockFormState) {
             label = { Text(stringResource(Res.string.field_title)) },
             placeholder = { Text(stringResource(Res.string.block_placeholder)) },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().quietShortcuts(),
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             val dayError = state.day.isNotBlank() && state.parsedDay == null
@@ -134,7 +134,7 @@ internal fun BlockFields(state: BlockFormState) {
                 label = { Text(stringResource(Res.string.block_date)) },
                 isError = dayError,
                 supportingText = if (dayError) ({ Text(stringResource(Res.string.field_deadline_invalid)) }) else null,
-                singleLine = true, modifier = Modifier.width(190.dp),
+                singleLine = true, modifier = Modifier.width(190.dp).quietShortcuts(),
             )
             TimeField(state.start, { state.start = it }, Res.string.block_start, state.orderError)
             TimeField(state.end, { state.end = it }, Res.string.block_end, state.orderError)
@@ -172,7 +172,7 @@ private fun TimeField(value: String, onChange: (String) -> Unit, label: StringRe
         label = { Text(stringResource(label), maxLines = 1, overflow = TextOverflow.Ellipsis) },
         isError = invalid || orderError,
         supportingText = if (invalid) ({ Text(stringResource(Res.string.time_invalid)) }) else null,
-        singleLine = true, modifier = Modifier.width(170.dp),
+        singleLine = true, modifier = Modifier.width(170.dp).quietShortcuts(),
     )
 }
 

@@ -201,8 +201,13 @@ posée.
   de test `day-screen`) ; elle reprend le focus après la première image, à
   la fermeture d'un dialogue et à tout clic dans le vide (`detectTapGestures`,
   après les éléments cliquables qui consomment le leur) : sans cela, le focus
-  n'était plus nulle part et `N` / `/` restaient sourds. Un champ de saisie consomme la frappe avant
-  elle : les raccourcis sont inactifs pendant une saisie.
+  n'était plus nulle part et `N` / `/` restaient sourds. Les raccourcis sont
+  inactifs pendant une saisie : le champ ne consomme pas toujours la touche (le
+  caractère arrive en « KeyTyped »), donc chaque champ de la vue Jour (capture,
+  titre / date / heures d'un créneau, recherche) porte `quietShortcuts()` qui
+  arrête `N` et `/` avant l'écran ; sans cela, « n » dans le titre d'un créneau
+  renvoyait vers « Nouvelle tâche » et le titre était perdu
+  (`DayScreenUiTest.theShortcutsStayQuietWhileTypingTheTitleOfASlot`).
 - `TaskRow(tâche, RowContext, heure?, bloquée, modifiable, description,
   before, after, extra)` : `RowContext` porte la vue, la langue, le mode
   compact, les actions (chrono compris) et l'horloge du minuteur vivant. Formes et couleurs de la charte : `Badge` neutre,

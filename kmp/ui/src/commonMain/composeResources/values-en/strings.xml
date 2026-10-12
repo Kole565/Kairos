@@ -553,7 +553,7 @@
     <string name="forecast_by_title">How many by…</string>
     <string name="forecast_by_hint">Number of scope tasks finished by a chosen date, with the matching confidence.</string>
     <string name="forecast_by_date">Date: %1$s</string>
-    <string name="forecast_by_answer">By %1$s: %2$s, out of %3$d scope tasks.</string>
+    <string name="forecast_by_answer">By %1$s: %2$s, out of %3$d scope task(s).</string>
     <string name="forecast_by_first_one">at least %1$d task (%2$s)</string>
     <string name="forecast_by_first_many">at least %1$d tasks (%2$s)</string>
     <string name="forecast_by_next">%1$d (%2$s)</string>
@@ -567,7 +567,7 @@
     <string name="forecast_deadline">Due %1$s</string>
     <string name="forecast_deadline_risk">%1$s · at risk</string>
     <string name="forecast_criticality_title">Criticality</string>
-    <string name="forecast_criticality_hint">The 10 deadline tasks that most often finish late.</string>
+    <string name="forecast_criticality_hint">The deadline tasks that most often finish late (10 at most).</string>
     <string name="forecast_criticality_empty">No deadline is missed in any draw.</string>
     <string name="forecast_criticality_value">%1$s late</string>
     <string name="forecast_bottleneck_title">Bottleneck</string>

@@ -206,7 +206,8 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     }
 
     BoxWithConstraints(
-        Modifier.fillMaxSize().testTag("day-screen").focusRequester(rootFocus).focusable()
+        Modifier.fillMaxSize().testTag("day-screen").focusRequester(rootFocus)
+            .focusable()
             // Un clic dans le vide (texte, fond) rend le focus à l'écran, sinon il n'est plus nulle part et les
             // raccourcis restent sourds ; les éléments cliquables consomment leur clic avant.
             .pointerInput(Unit) { detectTapGestures { runCatching { rootFocus.requestFocus() } } }

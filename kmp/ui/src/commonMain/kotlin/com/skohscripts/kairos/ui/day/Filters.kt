@@ -88,7 +88,7 @@ internal fun FilterCard(
                     placeholder = { Text(stringResource(Res.string.filter_search_placeholder)) },
                     leadingIcon = { Icon(KairosIcons.Search, contentDescription = null) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth().focusRequester(searchFocus),
+                    modifier = Modifier.fillMaxWidth().focusRequester(searchFocus).quietShortcuts(),
                 )
                 val all = stringResource(Res.string.filter_all)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

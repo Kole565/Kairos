@@ -167,6 +167,15 @@ class TeamExchangeCodecTest {
     }
 
     @Test
+    fun aByteOrderMarkIsIgnoredByEveryDecoder() {
+        val bom = "\uFEFF"
+        assertEquals(TeamExchangeCodec.Kind.EXPORT, TeamExchangeCodec.detect(bom + export()))
+        assertEquals(TeamExchangeCodec.Kind.PACK, TeamExchangeCodec.detect(bom + TeamExchangeCodec.encodePack(pack, "3")))
+        assertEquals(pack, TeamExchangeCodec.decodePack(bom + TeamExchangeCodec.encodePack(pack, "3")))
+        assertEquals(report, TeamExchangeCodec.decodeReport(bom + TeamExchangeCodec.encodeReport(report, "3")))
+    }
+
+    @Test
     fun unreadableValuesAreCorrupted() {
         val packText = TeamExchangeCodec.encodePack(pack, "3")
         val corrupted = ImportException.Reason.CORRUPTED

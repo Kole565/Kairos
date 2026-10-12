@@ -50,7 +50,10 @@ object TeamExchangeCodec {
      * entre les trois formats : chacun n'est reconnu que par sa valeur exacte.
      * @throws ImportException `NOT_AN_EXPORT` si le texte n'est pas un objet JSON portant un `format` connu.
      */
-    fun detect(text: String): Kind {
+    fun detect(raw: String): Kind {
+        // Un fichier enregistré par le Bloc-notes de Windows commence par une marque d'ordre des octets (BOM) : ignorée
+        // ici comme dans `ExportCodec.decode` (sinon le fichier était « pas un export » avant même d'être lu).
+        val text = raw.removePrefix(BOM)
         val format = try {
             ((json.parseToJsonElement(text) as? JsonObject)?.get("format") as? JsonPrimitive)?.takeIf { it.isString }?.content
         } catch (e: Exception) {
@@ -75,7 +78,10 @@ object TeamExchangeCodec {
     /** @throws ImportException si le texte n'est pas un rapport lisible. */
     fun decodeReport(text: String): TeamReport = decode(text, REPORT_FORMAT, ReportFile.serializer()) { it.toModel() }
 
-    private fun <F, M> decode(text: String, format: String, serializer: kotlinx.serialization.KSerializer<F>, toModel: (F) -> M): M {
+    private const val BOM = "\uFEFF"
+
+    private fun <F, M> decode(raw: String, format: String, serializer: kotlinx.serialization.KSerializer<F>, toModel: (F) -> M): M {
+        val text = raw.removePrefix(BOM)
         val header = try {
             json.decodeFromString(Header.serializer(), text)
         } catch (e: Exception) {
