@@ -105,4 +105,4 @@ Tests d'isolation à garder verts à chaque jalon :
    et regarder les captures en mode solo **et** espace activé.
 6. Tracer : État « implémentée (jalon En) », report des « Impacts sur les
    specs existantes » dans ces specs, index `docs/spec/README.md`,
-   `README.md` pour les fonctionnalités visibles.
+   `README.md` et `README.fr.md` pour les fonctionnalités visibles.

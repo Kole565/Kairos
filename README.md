@@ -1,316 +1,307 @@
 # Kairos
 
-<img align="right" src="fastlane/metadata/android/fr-FR/images/icon.png" width="140" alt="Logo Kairos">
+<img align="right" src="fastlane/metadata/android/en-US/images/icon.png" width="140" alt="Kairos logo">
 
 [![Kairos 3](https://github.com/SKOHscripts/Kairos/actions/workflows/kmp.yml/badge.svg)](https://github.com/SKOHscripts/Kairos/actions/workflows/kmp.yml)
 [![Release](https://img.shields.io/github/v/release/SKOHscripts/Kairos)](https://github.com/SKOHscripts/Kairos/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Le bon moment pour chaque tâche.** Kairos répond à une question concrète :
-« qu’est-ce que je fais maintenant, et dans quel ordre, sachant qu’une réunion
-de 13 h à 14 h m’empêche de traiter le sujet urgent avant 14 h 05 ? » Il range
-tes tâches dans l’ordre où les faire et les place dans les trous de ta
-journée. Sans compte, sans publicité, sans réseau : tes données restent sur
-ton appareil.
+**English** · [Français](README.fr.md)
 
-**Android, Windows, Linux, macOS, et dans le navigateur.**
-[**⬇ Télécharger**](https://skohscripts.github.io/Kairos/)
+**The right time for every task.** Kairos answers a concrete question: "what do
+I do now, and in what order, given that a meeting from 1 pm to 2 pm keeps me
+from handling the urgent topic before 2:05 pm?" It sorts your tasks into the
+order to do them and fits them into the gaps of your day. No account, no ads,
+no network: your data stays on your device.
 
-## En bref
+**Android, Windows, Linux, macOS, and in the browser.**
+[**⬇ Download**](https://skohscripts.github.io/Kairos/en/)
 
-- Il classe les tâches du jour par un score de priorité, affiché sur chacune,
-  et explique ce score en un toucher.
-- Il pose chaque tâche dans les trous de l’agenda, autour des réunions, avec
-  une marge après chacune.
-- Il protège des blocs de deep work et allège le creux de l’après-midi.
-- Il chronomètre le temps réel, alerte en cas de dépassement, de chrono
-  oublié ou de pause à prendre, et compare tes estimations au temps passé.
+## In short
 
-Le score de priorité vient de la méthode WSJF (« Weighted Shortest Job First ») :
+- It ranks the day's tasks with a priority score, shown on each one, and
+  explains that score in one tap.
+- It places each task in the gaps of the calendar, around meetings, with a
+  buffer after each one.
+- It protects deep-work blocks and eases the afternoon dip.
+- It times the real work, alerts you when you go over the estimate, forget a
+  running timer or need a break, and compares your estimates with the time
+  actually spent.
+
+The priority score comes from the WSJF method ("Weighted Shortest Job First"):
 
 ```
-              valeur(priorité) + criticité(échéance)
+              value(priority) + criticality(deadline)
   score  =  ──────────────────────────────────────────
-                   effort (points de Fibonacci)
+                    effort (Fibonacci points)
 ```
 
-- `valeur(priorité)` est exponentielle : `4^(2 − p)`, donc P0 = 16, P1 = 4, P2 = 1.
-- `criticité(échéance)` monte en rampe à l’approche de l’échéance, ou de la
-  date programmée si elle est plus proche. Une tâche en retard reste un palier
-  à part : elle passe toujours devant, hors score.
-- `effort` est la taille en points de Fibonacci (1 à 21).
+- `value(priority)` is exponential: `4^(2 − p)`, so P0 = 16, P1 = 4, P2 = 1.
+- `criticality(deadline)` ramps up as the deadline approaches, or the scheduled
+  date if that is closer. An overdue task stays a tier of its own: it always
+  comes first, outside the score.
+- `effort` is the size in Fibonacci points (1 to 21).
 
-Le petit et prioritaire passe donc devant le gros et lointain. Tous les poids
-se règlent dans les **Réglages**.
+So small and important goes before big and distant. Every weight can be tuned
+in **Settings**.
 
-> **Pourquoi « Kairos » ?** En grec, *καιρός* désigne le moment opportun,
-> l’instant juste où agir, par opposition à *Chronos*, le temps qui défile.
-> C’est le métier de l’outil : trouver le bon créneau pour chaque tâche. Nom de
-> code : **14h55**, le creux post-déjeuner, l’heure la moins productive de la
-> journée.
+> **Why "Kairos"?** In Greek, *καιρός* means the opportune moment, the right
+> instant to act, as opposed to *Chronos*, the time that flows by. That is the
+> tool's job: finding the right slot for every task. Code name: **14h55**, the
+> post-lunch dip, the least productive hour of the day.
 
-## Installer
+## Install
 
-La [page de téléchargement](https://skohscripts.github.io/Kairos/) propose le
-bon fichier pour ton système. Tous les fichiers, et leurs sommes de contrôle
-(`SHA256SUMS`), sont aussi dans les
-[releases GitHub](https://github.com/SKOHscripts/Kairos/releases).
+The [download page](https://skohscripts.github.io/Kairos/en/) offers the right
+file for your system. All files, and their checksums (`SHA256SUMS`), are also
+in the [GitHub releases](https://github.com/SKOHscripts/Kairos/releases).
 
-| Système | Fichier | Remarque |
+| System | File | Note |
 |---|---|---|
-| Android 8 ou plus récent | `Kairos-android.apk` (bientôt sur F-Droid) | Le même APK signé que sur F-Droid : on passera de l’un à l’autre sans désinstaller. |
-| Windows 10 ou 11 | `Kairos-windows-x64.msi` | Installation pour l’utilisateur courant, sans droit administrateur. |
-| Windows, poste verrouillé | `Kairos-windows-x64-portable.zip` | Dézipper, lancer `Kairos.exe` : rien n’est installé. Kairos propose ses raccourcis (menu Démarrer, Bureau). |
-| Linux (x86-64) | `Kairos-linux-x64.deb`, ou `Kairos-linux-x64-portable.tar.gz` | Version portable : Kairos propose de s’ajouter au menu des applications, avec son icône. |
+| Android 8 or later | `Kairos-android.apk` (F-Droid coming soon) | The same signed APK as on F-Droid: you can switch from one to the other without uninstalling. |
+| Windows 10 or 11 | `Kairos-windows-x64.msi` | Per-user install, no administrator rights needed. |
+| Windows, locked-down PC | `Kairos-windows-x64-portable.zip` | Unzip, run `Kairos.exe`: nothing is installed. Kairos offers to add its shortcuts (Start menu, Desktop). |
+| Linux (x86-64) | `Kairos-linux-x64.deb`, or `Kairos-linux-x64-portable.tar.gz` | Portable version: Kairos offers to add itself to the applications menu, with its icon. |
 | macOS | `Kairos-macos-arm64.dmg` (Apple Silicon), `Kairos-macos-x64.dmg` (Intel) | |
-| Navigateur | [Kairos en ligne](https://skohscripts.github.io/Kairos/app/) | Edge ou Chrome récents ; rien à installer. |
+| Browser | [Kairos online](https://skohscripts.github.io/Kairos/app/) | Recent Edge or Chrome; nothing to install. |
 
-**Première installation.**
+**First install.**
 
-- **macOS** : l’application n’est pas notariée par Apple. Au premier lancement,
-  clic droit sur Kairos, « Ouvrir », puis confirmer.
-- **Windows** : SmartScreen peut afficher « Windows a protégé votre
-  ordinateur » : « Informations complémentaires », puis « Exécuter quand même ».
-- **Android** : autoriser l’installation depuis le navigateur ou le
-  gestionnaire de fichiers quand Android le demande (inutile depuis F-Droid).
+- **macOS**: the app is not notarized by Apple. On first launch, right-click
+  Kairos, choose "Open", then confirm.
+- **Windows**: SmartScreen may show "Windows protected your PC": click "More
+  info", then "Run anyway".
+- **Android**: allow installation from the browser or the file manager when
+  Android asks (not needed from F-Droid).
 
-**Depuis Kairos 2.** Sur Android, installe Kairos 3 (APK ou F-Droid) par-dessus
-Kairos 2 : il reprend ses données automatiquement au premier lancement. Sur le bureau, il
-propose au premier lancement d’importer la base Kairos 2 trouvée à son
-emplacement habituel ; on peut aussi l’importer plus tard (Réglages →
-Données → « Importer une base Kairos 2.x »). L’ancienne base n’est jamais
-modifiée. Ne sont pas repris : TimeTree et l’import GitLab, retirés de
-Kairos 3.
+**From Kairos 2.** On Android, install Kairos 3 (APK or F-Droid) over Kairos 2:
+it picks up its data automatically on first launch. On the desktop, it offers
+on first launch to import the Kairos 2 database found at its usual location;
+you can also import it later (Settings → Data → "Import a Kairos 2.x
+database"). The old database is never modified. Not carried over: TimeTree and
+the GitLab import, which were removed from Kairos 3.
 
-**Mises à jour.** Sur Android, par F-Droid ou un nouvel APK. Sur
-le bureau, Kairos vérifie toutes les 6 heures s’il existe une nouvelle version
-et l’annonce dans un bandeau (« Télécharger » ouvre sa page) ; réglage dans
-Réglages → Mises à jour. La version web est toujours la dernière.
+**Updates.** On Android, through F-Droid or a new APK. On the desktop, Kairos
+checks every 6 hours for a new version and announces it in a banner
+("Download" opens its page); setting in Settings → Updates. The web version is
+always the latest.
 
-## Fonctionnalités
+## Features
 
 ### Notes (capture)
 
-Un écran pour se décharger l’esprit sans réfléchir à la structure : un seul
-champ de texte libre, aucune priorité ni échéance à choisir sur le moment
-(Ctrl/Cmd+Entrée capture sans lâcher le clavier). Quand une idée est prête,
-**« → Tâche »** la convertit : la première ligne devient le titre, le reste la
-description, et la tâche arrive dans « À traiter ». La note est archivée,
-jamais perdue. Une note peut aussi être modifiée, archivée sans suite ou
-supprimée.
+A screen to empty your head without thinking about structure: a single free
+text field, no priority or deadline to choose on the spot (Ctrl/Cmd+Enter
+captures without leaving the keyboard). When an idea is ready, **"→ Task"**
+converts it: the first line becomes the title, the rest the description, and
+the task lands in "To process". The note is archived, never lost. A note can
+also be edited, archived without follow-up, or deleted.
 
-### Tâches
+### Tasks
 
-- **Capture en une ligne** : la tâche arrive dans « À traiter », le champ
-  reste prêt pour la suivante.
-- **Édition complète** : titre, description, priorité, points, échéance, date
-  programmée, projet, durée estimée, type, récurrence, heure fixe, lien,
-  sous-tâches, bloqueurs. Un seul « Enregistrer ».
-- **Sous-tâches modifiables** : la fiche d’une tâche liste ses sous-tâches pour
-  les renommer, les cocher ou les supprimer, en plus d’en ajouter.
-- **Raccourcis clavier** (bureau et web) : `N` pour capturer, `/` pour
-  chercher.
-- **Sous-tâches** : avancement n/m sur la mère ; seules les feuilles sont
-  planifiées.
-- **Récurrence** : quotidienne, jours ouvrés, hebdomadaire, mensuelle (terminer
-  une occurrence crée la suivante), et « le N du mois » (décalée au jour ouvré
-  précédent si week-end ou férié).
-- **« Décaler »** : atterrit toujours sur un jour ouvré.
+- **One-line capture**: the task lands in "To process", and the field stays
+  ready for the next one.
+- **Full editing**: title, description, priority, points, deadline, scheduled
+  date, project, estimated duration, type, recurrence, fixed time, link,
+  subtasks, blockers. A single "Save".
+- **Editable subtasks**: a task's sheet lists its subtasks so you can rename,
+  check or delete them, on top of adding new ones.
+- **Keyboard shortcuts** (desktop and web): `N` to capture, `/` to search.
+- **Subtasks**: n/m progress on the parent; only the leaves are scheduled.
+- **Recurrence**: daily, weekdays, weekly, monthly (finishing an occurrence
+  creates the next one), and "on day N of the month" (moved to the previous
+  working day if it falls on a weekend or holiday).
+- **"Snooze"**: always lands on a working day.
 
-### « À traiter »
+### "To process"
 
-Une tâche n’entre dans le tri qu’une fois sa **priorité** et ses **points**
-posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
-(**P0 Critique**, **P1 Important**, **P2 Utile** ; de « 1 trivial » à
-« 21 énorme »). « Comment qualifier ? » rappelle la règle.
+A task only enters the ranking once its **priority** and **points** are set,
+in one tap on chips that say what each choice means (**P0 Critical**,
+**P1 Important**, **P2 Useful**; from "1 trivial" to "21 huge"). "How to
+qualify?" recalls the rule.
 
-### Ordonnancement
+### Scheduling
 
-- **Score** affiché sur chaque tâche ; **« Pourquoi à cette place ? »** détaille
-  le calcul : ce que vaut la priorité, ce que l’échéance ajoute, l’effort qui
-  divise le tout.
-- **Placement** : les tâches sont posées dans les trous de la journée avec
-  leur durée, une marge après chaque réunion, le débordement signalé. Une
-  tâche **épinglée** à une heure n’est jamais déplacée ; un conflit est
-  signalé. Une tâche **programmée** plus tard reste masquée, sauf si son
-  échéance approche.
-- **Points de Fibonacci** : une taille relative (1, 2, 3, 5, 8, 13, 21). Le
-  guide « Comment estimer les points ? » montre, pour chaque palier, le temps
-  réel médian de tes propres tâches terminées et deux exemples ; l’édition
-  suggère une durée d’après ton historique.
-- **Creux de l’après-midi (14h55)** : pendant une fenêtre réglable (13 h → 16 h
-  par défaut), Kairos évite d’y placer les tâches complexes et y fait remonter
-  les légères. Les échéances et le chemin critique priment toujours ; le score
-  affiché ne change pas.
-- **Jours ouvrés et fériés** : calendrier français intégré, dates
-  supplémentaires dans les Réglages.
+- **Score** shown on every task; **"Why this position?"** details the
+  calculation: what the priority is worth, what the deadline adds, and the
+  effort that divides it all.
+- **Placement**: tasks are laid into the gaps of the day with their duration,
+  a buffer after every meeting, and overflow flagged. A task **pinned** to a
+  time is never moved; a conflict is flagged. A task **scheduled** for later
+  stays hidden, unless its deadline approaches.
+- **Fibonacci points**: a relative size (1, 2, 3, 5, 8, 13, 21). The guide
+  "How to estimate points?" shows, for each level, the median real time of
+  your own finished tasks and two examples; editing suggests a duration based
+  on your history.
+- **Afternoon dip (14h55)**: during an adjustable window (1 pm → 4 pm by
+  default), Kairos avoids placing complex tasks there and pulls light ones up.
+  Deadlines and the critical path always come first; the displayed score does
+  not change.
+- **Working days and holidays**: built-in French calendar, with extra dates
+  in Settings.
 
-### Dépendances
+### Dependencies
 
-« Bloqué par » : une tâche dont un bloqueur est encore à faire sort du planning
-(section « Bloquées », levée automatique). Un bloqueur d’une tâche urgente
-remonte dans l’ordre (chemin critique). Les cycles sont refusés.
+"Blocked by": a task with a blocker still to do leaves the schedule (section
+"Blocked", lifted automatically). A blocker of an urgent task moves up in the
+order (critical path). Cycles are refused.
 
-### Créneaux et deep work
+### Slots and deep work
 
-- **Créneaux occupés** (réunions, déjeuner…), ponctuels ou récurrents
-  (quotidien, jours ouvrés, hebdomadaire), modifiables et supprimables.
-- **Deep work** : un créneau réservé à une seule tâche, la plus urgente ; les
-  autres le contournent.
-- **Frise** de la journée : planifié, occupé, épinglé, deep work, conflits, et
-  un rail du temps réellement chronométré.
+- **Busy slots** (meetings, lunch…), one-off or recurring (daily, weekdays,
+  weekly), editable and deletable.
+- **Deep work**: a slot reserved for a single task, the most urgent one; the
+  others work around it.
+- **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a
+  lane for the time actually tracked.
 
-### Temps réel et alertes
+### Real time and alerts
 
-- **Chrono par tâche** (un seul à la fois), en direct sur la ligne, dans
-  « Maintenant », la carte « En ce moment » et le titre de la fenêtre ; il
-  survit à la fermeture de l’application et au redémarrage du téléphone.
-- **Trois alertes** : dépassement de l’estimé, chrono oublié, pause
-  suggérée. Un bandeau dans l’application, et une notification système :
-  Android (notification permanente avec chronomètre, même application
-  fermée), zone de notification du bureau, notification du navigateur.
+- **Timer per task** (one at a time), live on the row, in "Up next", in the
+  "Right now" card and in the window title; it survives closing the app and
+  restarting the phone.
+- **Three alerts**: going past the estimate, a forgotten timer, a suggested
+  break. A banner in the app, and a system notification: Android (ongoing
+  notification with a stopwatch, even with the app closed), the desktop
+  notification area, the browser notification.
 
-### Vues
+### Views
 
-- **Jour** : « Maintenant », agenda ordonné, sections « À traiter »,
-  « Bloquées », « Programmées plus tard », filtres, backlog, frise ; badge
-  « traîne depuis N j » et bandeau de surcharge de P0. On peut regarder un
-  autre jour.
-- **Semaine** : sept jours (échéances, tâches faites, créneaux), temps réel de
-  la semaine par type.
-- **Statistiques** : débit hebdomadaire, calibration des estimations (temps
-  réel médian par palier, biais), temps par type, flux, complétude. L’effectif
-  est affiché ; un petit échantillon est marqué « peu fiable ».
+- **Day**: "Up next", the ordered agenda, sections "To process", "Blocked",
+  "Scheduled later", filters, backlog, timeline; "lingering for N d" badge and
+  P0 overload banner. You can look at another day.
+- **Week**: seven days (deadlines, finished tasks, slots), the week's real
+  time by type.
+- **Statistics**: weekly throughput, estimation calibration (median real time
+  per level, bias), time by type, flow, completeness. The sample size is
+  shown; a small sample is marked "not reliable".
 
-### Données
+### Data
 
-- Tout reste sur l’appareil : aucune connexion réseau (Android n’a même pas la
-  permission), aucun compte.
-- **Export et import** JSON (Réglages → Données) ; une sauvegarde automatique
-  précède chaque import.
-- **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
-  Chrome, **liées à un fichier** tenu à jour à chaque modification.
-- Interface en **français** et en **anglais** : la langue du système (français
-  si le système est en français, anglais sinon), ou celle que tu choisis dans
-  Réglages → Langue. D’autres langues arriveront dans une prochaine version.
+- Everything stays on the device: no network connection (Android does not even
+  have the permission), no account.
+- JSON **export and import** (Settings → Data); an automatic backup precedes
+  every import.
+- **Web version**: data saved in the browser and, in Edge or Chrome, **linked
+  to a file** kept up to date on every change.
+- Interface in **French** and **English**: the system language (French if the
+  system is in French, English otherwise), or the one you pick in Settings →
+  Language. More languages are coming in a future version.
 
-### S’y retrouver
+### Finding your way
 
-- Kairos s’ouvre sur la page **Accueil**, premier onglet de la navigation :
-  elle rappelle à quoi sert Kairos et ce qu’il sait faire, avec un accès
-  direct à chaque écran ; elle explique aussi comment travailler avec un
-  manager ou une équipe.
-- Les **Réglages** s’ouvrent par la roue crantée, en haut à droite de chaque
-  écran.
-- Un bouton **« ? »** en haut de chaque écran : l’aide de l’écran où tu te
-  trouves, l’accès à l’Accueil et à la visite guidée.
-- Une **visite guidée** pas à pas (six étapes), proposée au premier
-  lancement et à revoir quand on veut ; une seconde visite présente l’espace
-  Équipe quand il est activé.
+- Kairos opens on the **Home** page, the first tab of the navigation: it
+  recalls what Kairos is for and what it can do, with direct access to every
+  screen; it also explains how to work with a manager or a team.
+- **Settings** open from the gear icon, at the top right of every screen.
+- A **"?"** button at the top of every screen: help for the screen you are on,
+  access to Home and to the guided tour.
+- A step-by-step **guided tour** (six steps), offered on first launch and
+  available any time; a second tour presents the Team space when it is
+  enabled.
 
-### Gestion d'équipe (facultative)
+### Team management (optional)
 
-- À activer dans **Réglages → Équipe** ; désactivée, rien ne change dans
-  Kairos. Activée, un sélecteur **Perso | Équipe** apparaît en haut.
-- **Membres** : quotité, heures par jour, absences ; « C’est moi » fait
-  apparaître dans votre vue Jour les tâches d’équipe qui vous sont
-  assignées.
-- **Backlog** d’équipe trié par le même score WSJF, catégories = types de
-  tâche, **assignation** et **réaffectation** (une à une ou en lot).
-- **Suivi** : une ligne par membre (en cours, à faire, faites), avancement
-  par pas de 10 %, signaux « en retard », « sans avancement », « ballottée »,
-  limite de tâches en cours ; **historique** complet de chaque tâche.
-- **Charge** : capacité de chacun (quotité, absences, jours fériés, taux de
-  focus), charge et taux par membre, pour l’équipe et par catégorie, date
-  de fin prévue de chaque tâche et échéances en danger ;
-  **suggestion de répartition** du backlog, à accepter ligne à ligne.
-- **Prévisions** par simulation (Monte Carlo) sur l’historique réel de
-  l’équipe : date de fin à 50, 85 et 95 % de chances, probabilité de tenir
-  chaque échéance, sujets les plus à risque, membre goulot, issue la plus
-  probable ; **scénarios « Et si… ? »** (absence, renfort, réaffectation,
-  tâches en plus…) comparés côte à côte, puis appliqués si on le souhaite.
-- **Votre travail perso compte** : si un membre est « C’est moi », vos tâches
-  personnelles entrent dans votre charge et vos prévisions d’équipe (marquées
-  « Perso »), sans quitter l’espace Perso ; « Compter dans l’équipe » (fiche
-  de la tâche, options avancées) en exclut une. Vos réunions de la vue Jour
-  réduisent votre capacité, et les prévisions proposent « Mon travail ».
-- Les prévisions et la charge tiennent compte des **tâches récurrentes**
-  (chaque occurrence à venir sur l’horizon) et du **temps déjà passé** sur
-  une tâche.
-- **Échanges par fichier** avec les membres qui ont Kairos, réunis dans
-  l’onglet **Échanges** de l’écran Équipe : « Envoyer ses tâches… » produit un
-  paquet que le membre reçoit par **Importer** (ses tâches rejoignent sa
-  journée, marquées « de <manager> ») ; il renvoie son avancement
-  (« Renvoyer l’avancement… »), que le manager reçoit au même endroit et
-  intègre après un aperçu. Pour chaque membre, l’onglet montre la date du
-  dernier paquet et du dernier rapport, et signale « En attente de son
-  rapport ». Chacun garde la main sur ses champs ; rien n’est supprimé sans
-  qu’on le choisisse.
-- Un seul utilisateur, le manager : tout reste sur l’appareil, sans compte
-  ni réseau ; les fichiers circulent comme on veut (courriel, clé USB…).
+- Turn it on in **Settings → Team**; when off, nothing changes in Kairos. When
+  on, a **Personal | Team** selector appears at the top.
+- **Members**: availability, hours per day, absences; "This is me" makes the
+  team tasks assigned to you appear in your Day view.
+- Team **backlog** sorted by the same WSJF score, categories = task types,
+  **assignment** and **reassignment** (one by one or in bulk).
+- **Tracking**: one row per member (in progress, to do, done), progress in 10 %
+  steps, signals "late", "no progress", "bounced", limit on tasks in
+  progress; a full **history** of every task.
+- **Load**: everyone's capacity (availability, absences, public holidays,
+  focus rate), load and rate per member, for the team and per category,
+  forecast finish date of each task and deadlines at risk; **suggested split**
+  of the backlog, to accept line by line.
+- **Forecasts** by simulation (Monte Carlo) on the team's real history: finish
+  date at 50, 85 and 95 % chance, probability of meeting each deadline, topics
+  most at risk, bottleneck member, most likely outcome; **"What if…?"
+  scenarios** (absence, reinforcement, reassignment, extra tasks…) compared
+  side by side, then applied if you wish.
+- **Your personal work counts**: if a member is "This is me", your personal
+  tasks enter your load and your team forecasts (marked "Personal"), without
+  leaving the Personal space; "Count in the team" (task sheet, more options)
+  excludes one. Your meetings in the Day view reduce your capacity, and the
+  forecasts offer "My work".
+- Forecasts and load take **recurring tasks** into account (every upcoming
+  occurrence over the horizon) and the **time already spent** on a task.
+- **File exchanges** with members who have Kairos, gathered in the
+  **Exchanges** tab of the Team screen: "Send their tasks…" produces a packet
+  that the member receives with **Import** (their tasks join their day, marked
+  "from <manager>"); they send their progress back ("Send back progress…"),
+  which the manager receives in the same place and merges after a preview. For
+  each member, the tab shows the date of the last packet and the last report,
+  and flags "Waiting for their report". Everyone keeps control of their own
+  fields; nothing is deleted unless you choose it.
+- A single user, the manager: everything stays on the device, with no account
+  or network; the files travel however you like (email, USB drive…).
 
-### Soutenir
+### Support
 
-- Un **cœur** dans la barre du haut (et un bouton dans « À propos et guide »)
-  ouvre la [page de don](https://skohscripts.github.io/donate.github.io/) de
-  l’auteur. Kairos reste gratuit et identique pour tous.
+- A **heart** in the top bar (and a button in "About & guide") opens the
+  author's [donation page](https://skohscripts.github.io/donate.github.io/).
+  Kairos stays free and identical for everyone.
 
-### Apparence
+### Appearance
 
-- **Couleur du thème** au choix (Réglages → Apparence) : le miel par défaut,
-  sept autres couleurs proposées, ou une couleur libre (`#RRGGBB`). Tout le
-  thème en est dérivé (Material Design 3), contrastes compris.
-- Sur **Android 12 et plus**, « Couleurs du système » suit les couleurs du
-  fond d’écran (Material You).
-- Au lancement, une **page de démarrage** (Android, bureau, web) : l’aiguille
-  du cadran solaire fait un tour et se pose sur le logo, puis l’application
-  apparaît en fondu. Un toucher l’abrège.
+- **Theme color** of your choice (Settings → Appearance): honey by default,
+  seven other suggested colors, or a free color (`#RRGGBB`). The whole theme is
+  derived from it (Material Design 3), contrast included.
+- On **Android 12 and later**, "System colors" follows the wallpaper colors
+  (Material You).
+- At launch, a **startup page** (Android, desktop, web): the sundial hand makes
+  one turn and settles on the logo, then the app fades in. A tap skips it.
 
-## Réglages
+## Settings
 
-Chaque réglage est expliqué sous son champ ; un seul « Enregistrer », et un
-champ invalide dit pourquoi.
+Every setting is explained under its field; a single "Save", and an invalid
+field says why.
 
-| Section | Réglages | Défaut |
+| Section | Settings | Default |
 |---|---|---|
-| Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
-| Score de priorité (WSJF) | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
-| Creux de l’après-midi | Activé, début, creux, fin, force | activé, 13 h – 15 h – 16 h, 1 |
-| Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
-| Types de tâches | Liste des types | |
-| Statistiques | Fenêtre des indicateurs | 8 semaines |
-| Alertes du chrono | Chrono oublié, pause suggérée, son de secours | 180 min, 50 min, désactivé |
-| Jours fériés | Calendrier français, dates supplémentaires | activé |
-| Langue | Langue de l’interface (Système, Français, English) | Système |
-| Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
-| Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
-| Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
+| Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
+| Priority score (WSJF) | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
+| Afternoon dip | On/off, start, trough, end, strength | on, 1 pm – 3 pm – 4 pm, 1 |
+| Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
+| Task types | List of types | |
+| Statistics | Window of the indicators | 8 weeks |
+| Timer alerts | Forgotten timer, suggested break, fallback sound | 180 min, 50 min, off |
+| Public holidays | French calendar, extra dates | on |
+| Language | Interface language (System, Français, English) | System |
+| Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
+| Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
+| Updates (desktop) | Check for new versions | on |
 
-## Développement
+## Development
 
-Kairos 3 est écrit en **Kotlin Multiplatform** et **Compose Multiplatform**
-(dossier `kmp/`) : un seul code pour Android, le bureau (JVM) et le web
-(Kotlin/Wasm). Dépendances libres uniquement, versions figées dans
+Kairos 3 is written in **Kotlin Multiplatform** and **Compose Multiplatform**
+(`kmp/` folder): one codebase for Android, the desktop (JVM) and the web
+(Kotlin/Wasm). Free dependencies only, versions pinned in
 `kmp/gradle/libs.versions.toml`.
 
 ```bash
 cd kmp
 ./gradlew :core:jvmTest :data:jvmTest :ui:jvmTest :desktopApp:jvmTest   # tests
-./gradlew :desktopApp:run                                                 # application de bureau
-./gradlew :desktopApp:run --args=--self-test=/tmp/captures                # rendu hors écran
+./gradlew :desktopApp:run                                                 # desktop app
+./gradlew :desktopApp:run --args=--self-test=/tmp/captures                # off-screen rendering
 ./gradlew :androidApp:assembleRelease                                     # APK
-./gradlew :webApp:wasmJsBrowserDistribution                               # version web
+./gradlew :webApp:wasmJsBrowserDistribution                               # web version
 ```
 
-- Architecture, modules et décisions : [`docs/spec/architecture.md`](docs/spec/architecture.md) ;
-  une spécification par domaine dans [`docs/spec/`](docs/spec/README.md).
-- Charte graphique (Material Design 3, thème « miel ») :
-  [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
-- Versions, releases et paquets : [`docs/spec/distribution.md`](docs/spec/distribution.md) ;
-  F-Droid et page de téléchargement :
-  [`docs/spec/publication.md`](docs/spec/publication.md).
-- Règles de contribution : [`CLAUDE.md`](CLAUDE.md).
+The design and contribution documents are written in French.
 
-## Licence
+- Architecture, modules and decisions: [`docs/spec/architecture.md`](docs/spec/architecture.md);
+  one specification per domain in [`docs/spec/`](docs/spec/README.md).
+- Visual identity (Material Design 3, "honey" theme):
+  [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md).
+- Versions, releases and packages: [`docs/spec/distribution.md`](docs/spec/distribution.md);
+  F-Droid and the download page:
+  [`docs/spec/publication.md`](docs/spec/publication.md).
+- Contribution rules: [`CLAUDE.md`](CLAUDE.md). Pull requests and issues are
+  welcome in English.
+
+## License
 
 [MIT](LICENSE).
