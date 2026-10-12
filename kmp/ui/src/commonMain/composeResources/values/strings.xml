@@ -1029,7 +1029,7 @@
     <string name="exchange_value_none">—</string>
     <string name="exchange_report_refused_title">Rapport non intégré</string>
     <string name="exchange_report_refused_wrong_team">Ce rapport est adressé à une autre équipe.</string>
-    <string name="exchange_report_refused_unknown_member">Le membre de ce rapport ne fait plus partie de l’équipe.</string>
+    <string name="exchange_report_refused_unknown_member">Le membre de ce rapport n’est pas (ou plus) dans l’équipe.</string>
     <string name="exchange_report_refused_older">Ce rapport est plus ancien que celui du %1$s déjà intégré.</string>
     <string name="exchange_report_refused_future">Ce rapport est daté du futur : vérifie l’horloge de l’appareil qui l’a écrit, puis demande-lui de le renvoyer.</string>
     <string name="exchange_report_done_summary">Rapport de %1$s intégré : %2$d tâche(s) mise(s) à jour, %3$d sous-tâche(s) ajoutée(s).</string>

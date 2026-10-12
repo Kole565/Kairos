@@ -1025,7 +1025,7 @@
     <string name="exchange_value_none">—</string>
     <string name="exchange_report_refused_title">Report not integrated</string>
     <string name="exchange_report_refused_wrong_team">This report is addressed to another team.</string>
-    <string name="exchange_report_refused_unknown_member">The member of this report is no longer part of the team.</string>
+    <string name="exchange_report_refused_unknown_member">The member of this report is not (or no longer) in the team.</string>
     <string name="exchange_report_refused_older">This report is older than the one of %1$s already integrated.</string>
     <string name="exchange_report_refused_future">This report is dated in the future: check the clock of the device that wrote it, then ask for a new one.</string>
     <string name="exchange_report_done_summary">Report from %1$s integrated: %2$d task(s) updated, %3$d subtask(s) added.</string>
