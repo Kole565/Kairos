@@ -101,7 +101,7 @@
     <string name="data_export">Export</string>
     <string name="data_import">Import</string>
     <string name="import_confirm_title">Replace all data?</string>
-    <string name="import_confirm_body">Importing replaces all tasks, time slots, notes and settings on this device with those in the file. A backup of the current data is made just before.</string>
+    <string name="import_confirm_body">Importing replaces all tasks, time slots, notes, settings and team data on this device with those in the file. A backup of the current data is made just before.</string>
     <string name="import_confirm_action">Replace</string>
     <string name="export_done">Export saved.</string>
     <string name="import_done">Import complete: %1$d tasks.</string>

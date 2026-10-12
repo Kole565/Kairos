@@ -104,7 +104,7 @@
     <string name="data_export">Exporter</string>
     <string name="data_import">Importer</string>
     <string name="import_confirm_title">Remplacer toutes les données ?</string>
-    <string name="import_confirm_body">L’import remplace toutes les tâches, créneaux, notes et réglages de cet appareil par ceux du fichier. Une sauvegarde des données actuelles est faite juste avant.</string>
+    <string name="import_confirm_body">L’import remplace toutes les tâches, créneaux, notes, réglages et données d’équipe de cet appareil par ceux du fichier. Une sauvegarde des données actuelles est faite juste avant.</string>
     <string name="import_confirm_action">Remplacer</string>
     <string name="export_done">Export enregistré.</string>
     <string name="import_done">Import terminé : %1$d tâches.</string>

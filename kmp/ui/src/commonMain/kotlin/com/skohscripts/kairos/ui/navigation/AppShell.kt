@@ -204,7 +204,12 @@ fun AppShell(
     val topBar: @Composable () -> Unit = {
         TopAppBar(
             // Deux lignes au plus (sélecteur d'espace à côté, fenêtre étroite) : la barre garde sa hauteur.
-            title = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+            // Avec le sélecteur d'espace dans la barre, le titre garde moins de 120 dp à 360 dp : corps réduit, sinon
+            // « Aujourd’hui » et « Statistiques » se coupaient au milieu du mot.
+            title = {
+                val tight = layout != NavigationLayout.RAIL && selector != null
+                Text(title, style = if (tight) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            },
             navigationIcon = {
                 if (secondary != null) {
                     IconButton(onClick = onCloseSecondary) {

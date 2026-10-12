@@ -68,7 +68,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   septembre 2026 » pour un autre jour qu'aujourd'hui, « Semaine · du lundi
   28 septembre 2026 » pour la semaine regardée ; sans rail (fenêtre
   étroite), en date courte (« Jour · mer. 30/09 », « Semaine · du 28 sept. »).
-  Deux lignes au plus, puis points de suspension.
+  Deux lignes au plus, puis points de suspension ; en corps `titleMedium` quand le sélecteur d’espace partage la barre (sans rail), pour que « Aujourd’hui » ne se coupe pas au milieu du mot à 360 dp.
 - Au lancement, un indicateur « Ouverture de Kairos… » attend l'ouverture des
   données ; un échec est affiché (« Impossible d'ouvrir les données » et le
   détail), jamais un écran vide.
