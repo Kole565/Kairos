@@ -133,7 +133,13 @@ data class DayView(
             val statusById = snapshot.tasks.associate { it.id to it.status }
             val isTodo: (Long) -> Boolean = { (statusById[it] ?: TaskStatus.TODO) == TaskStatus.TODO }
             val edges = snapshot.dependencies.map { Dependencies.Edge(blocked = it.taskId, blocker = it.blockerId) }
-            val blockedIds = Dependencies.blockedTaskIds(edges, isTodo)
+            val directlyBlocked = Dependencies.blockedTaskIds(edges, isTodo)
+            // Une sous-tâche d'une mère bloquée est bloquée aussi : jamais planifiée, listée dans « Bloquées ».
+            val inherited = Dependencies.inheritedBlock(
+                directlyBlocked,
+                open.filter { it.parentId != null && it.parentId in byId }.associate { it.id to it.parentId!! },
+            )
+            val blockedIds = directlyBlocked + inherited.keys
 
             val own = open.associate { it.id to Scheduling.sortKey(it, day, settings) }
             val effective = Dependencies.derivedUrgency(edges, own)
@@ -161,7 +167,8 @@ data class DayView(
             val reasons = Dependencies.openBlockers(edges, isTodo)
             val blocked = blockedIds.mapNotNull { id -> byId[id] }
                 .filter(filter::matches)
-                .map { BlockedTask(it, reasons[it.id].orEmpty().map(breadcrumb)) }
+                // Héritée : le motif est la mère qui attend (« en attente de : Mère »).
+                .map { BlockedTask(it, inherited[it.id]?.let { mother -> listOf(breadcrumb(mother)) } ?: reasons[it.id].orEmpty().map(breadcrumb)) }
                 .sortedBy { it.task.title }
 
             val children = all.filter { it.parentId != null }.groupBy { it.parentId!! }

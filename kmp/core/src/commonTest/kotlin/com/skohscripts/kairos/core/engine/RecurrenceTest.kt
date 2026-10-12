@@ -68,6 +68,20 @@ class RecurrenceTest {
     }
 
     @Test
+    fun weekdays_never_lands_on_a_holiday() {
+        val tuesday = LocalDate(2026, 11, 10)
+        val armistice = LocalDate(2026, 11, 11) // mercredi férié
+        assertEquals(armistice, Recurrence.nextDeadline(TaskRecurrence.WEEKDAYS, tuesday))
+        assertEquals(LocalDate(2026, 11, 12), Recurrence.nextDeadline(TaskRecurrence.WEEKDAYS, tuesday, holidays = setOf(armistice)))
+        // Le vendredi avant un lundi férié : mardi.
+        val monday = LocalDate(2026, 11, 16)
+        assertEquals(LocalDate(2026, 11, 17), Recurrence.nextDeadline(TaskRecurrence.WEEKDAYS, LocalDate(2026, 11, 13), holidays = setOf(monday)))
+        val done = task(recurrence = TaskRecurrence.WEEKDAYS, deadline = tuesday)
+        val next = Recurrence.nextOccurrence(done, tuesday, emptyList(), Instant.parse("2026-11-10T08:00:00Z"), setOf(armistice))
+        assertEquals(LocalDate(2026, 11, 12), next!!.deadline)
+    }
+
+    @Test
     fun spawn_does_nothing_for_non_recurring_or_calendar_series() {
         assertNull(Recurrence.nextOccurrence(task(recurrence = TaskRecurrence.NONE), today, emptyList(), now))
         assertNull(Recurrence.nextOccurrence(task(recurrence = TaskRecurrence.MONTHLY_ON_DAY), today, emptyList(), now))

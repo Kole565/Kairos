@@ -47,6 +47,11 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
 - Un bloqueur fait ou archivé ne bloque plus ; une tâche faite ou archivée
   n'est jamais « bloquée ».
 - Un cycle ne masque aucune tâche : ses arêtes sont neutralisées.
+- Les sous-tâches d'une tâche bloquée sont bloquées aussi (de proche en proche) :
+  jamais planifiées, listées dans « Bloquées » avec « en attente de : Mère »
+  (2026-10-12, demande explicite : elles étaient planifiées malgré leur mère
+  en attente). Vue Jour seulement : `Dependencies.inheritedBlock`, appelée par
+  `DayView.build` ; l'espace Équipe (`TeamStates`) garde les arêtes telles quelles.
 - Ajouter une arête qui fermerait un cycle (auto-dépendance comprise) est
   détecté avant écriture.
 - L'urgence héritée est recalculée à chaque affichage et ne modifie aucune

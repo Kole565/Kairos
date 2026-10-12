@@ -105,11 +105,35 @@ class DayViewTest {
     }
 
     @Test
+    fun the_subtasks_of_a_blocked_parent_are_blocked_and_never_planned() {
+        val tasks = listOf(
+            task(1, title = "Mère"), task(2, parent = 1, title = "Fille"), task(3, parent = 2, title = "Petite-fille"),
+            task(4, title = "Bloqueuse"), task(5, title = "Libre"), task(6, parent = 5, title = "Fille libre"),
+        )
+        val deps = listOf(TaskDependency(1, taskId = 1, blockerId = 4, createdAt = t0))
+        val view = build(KairosSnapshot(tasks = tasks, dependencies = deps))
+        assertEquals(setOf(1L, 2L, 3L), view.blocked.map { it.task.id }.toSet())
+        assertEquals(listOf("Mère"), view.blocked.single { it.task.id == 2L }.blockers)
+        assertEquals(listOf("Mère"), view.blocked.single { it.task.id == 3L }.blockers) // la plus proche mère bloquée
+        // Ni la fille ni la petite-fille ne sont placées ; la fille libre l'est.
+        assertEquals(setOf(4L, 6L), view.agenda.map { it.task.id }.toSet() + view.unscheduled.map { it.id }.toSet())
+    }
+
+    @Test
+    fun a_pinned_task_of_the_past_is_still_up_next() {
+        val pinned = task(1, title = "Point d'équipe").copy(pinnedStart = LocalDateTime(2026, 9, 29, 9, 30))
+        val view = build(KairosSnapshot(tasks = listOf(pinned, task(2))), now = LocalDateTime(2026, 9, 29, 17, 0))
+        assertEquals(1L, view.nextUp?.id) // la tâche épinglée reste à son heure (9 h 30) et s'affiche « maintenant » tant qu'elle n'est pas faite
+        assertEquals(LocalDateTime(2026, 9, 29, 9, 30), view.nextUpStart)
+    }
+
+    @Test
     fun a_blocked_parent_is_only_in_blocked() {
         val tasks = listOf(task(1, title = "Mère"), task(2, parent = 1), task(3, title = "Bloqueuse"))
         val deps = listOf(TaskDependency(1, taskId = 1, blockerId = 3, createdAt = t0))
         val view = build(KairosSnapshot(tasks = tasks, dependencies = deps))
-        assertEquals(listOf(1L), view.blocked.map { it.task.id })
+        // La mère et sa sous-tâche (bloquée par héritage) sont dans « Bloquées » ; aucune « tâche mère en cours ».
+        assertEquals(listOf(1L, 2L), view.blocked.map { it.task.id }.sorted())
         assertTrue(view.parents.isEmpty())
     }
 

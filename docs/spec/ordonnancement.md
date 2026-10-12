@@ -43,6 +43,9 @@ traiter ».
   jamais avant, avec la note « à partir de 14h05, après « Réunion » ».
 - Une tâche épinglée à une heure y est posée exactement ; le reste s'organise
   autour. Un chevauchement avec un créneau est **signalé**, jamais corrigé.
+  Une tâche épinglée dont l'heure est **passée** reste à cette heure et s'affiche
+  « À faire maintenant » tant qu'elle n'est pas faite (décision explicite du
+  2026-10-12 : le planning ne la cache pas ni ne la déplace ; `DayViewTest`).
 - Une fenêtre de deep work n'accueille que les tâches les plus urgentes,
   autant que sa durée le permet, chacune gardant sa durée ; aucune autre
   tâche ne s'y intercale. Seule sa part à venir compte : à 16 h, une

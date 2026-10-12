@@ -23,12 +23,16 @@ object Recurrence {
     /** Règles recréées à la complétion. */
     val COMPLETION_RULES = setOf(TaskRecurrence.DAILY, TaskRecurrence.WEEKDAYS, TaskRecurrence.WEEKLY, TaskRecurrence.MONTHLY)
 
-    /** Prochaine échéance après [base] ; [dayOfWeek] (0 = lundi) ancre `weekly`. */
-    fun nextDeadline(rule: TaskRecurrence, base: LocalDate, dayOfWeek: Int? = null): LocalDate = when (rule) {
+    /**
+     * Prochaine échéance après [base] ; [dayOfWeek] (0 = lundi) ancre `weekly`. [holidays] : `weekdays` (jours ouvrés)
+     * saute aussi les fériés, jamais une échéance un jour férié (écart volontaire avec Kairos 2, docs/spec/recurrence.md) ;
+     * vide par défaut : les tests différentiels de Kairos 2 n'en ont pas.
+     */
+    fun nextDeadline(rule: TaskRecurrence, base: LocalDate, dayOfWeek: Int? = null, holidays: Set<LocalDate> = emptySet()): LocalDate = when (rule) {
         TaskRecurrence.DAILY -> base.plus(DatePeriod(days = 1))
         TaskRecurrence.WEEKDAYS -> {
             var step = base.plus(DatePeriod(days = 1))
-            while (Workdays.weekday(step) >= 5) step = step.plus(DatePeriod(days = 1))
+            while (Workdays.weekday(step) >= 5 || step in holidays) step = step.plus(DatePeriod(days = 1))
             step
         }
         TaskRecurrence.WEEKLY -> {
@@ -62,7 +66,7 @@ object Recurrence {
      * identique (titre, règle, échéance) déjà à faire dans [existing].
      * L'identifiant rendu vaut 0 (attribué par la base).
      */
-    fun nextOccurrence(task: Task, today: LocalDate, existing: List<Task>, now: Instant): Task? {
+    fun nextOccurrence(task: Task, today: LocalDate, existing: List<Task>, now: Instant, holidays: Set<LocalDate> = emptySet()): Task? {
         if (task.recurrence !in COMPLETION_RULES) return null
         val base = maxOf(task.deadline ?: today, today)
         val anchor = if (task.recurrence == TaskRecurrence.WEEKLY) {
@@ -70,7 +74,7 @@ object Recurrence {
         } else {
             null
         }
-        val deadline = nextDeadline(task.recurrence, base, anchor)
+        val deadline = nextDeadline(task.recurrence, base, anchor, holidays)
         val duplicate = existing.any {
             it.title == task.title && it.recurrence == task.recurrence && it.deadline == deadline && it.status == TaskStatus.TODO
         }

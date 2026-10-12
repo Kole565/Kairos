@@ -171,7 +171,7 @@ class KairosRepository(
             }
             if (next == TaskStatus.DONE) {
                 queries.closeOpenSessionsOf(now(), taskId)
-                Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now())?.let { insertNew(it, src) }
+                Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src) }
             }
         }
     }
@@ -837,7 +837,7 @@ class KairosRepository(
             val doneAt = u.doneOn?.atTime(DONE_HOUR, 0)?.toInstant(timeZone)?.coerceAtMost(clock.now()) ?: clock.now()
             journal(after, TeamEventKind.DONE, before.progressPercent?.toString(), DONE_PROGRESS.toString(), src, memberId = reporterId, at = doneAt.store())
             queries.closeOpenSessionsOf(now(), after.id)
-            Recurrence.nextOccurrence(after, today(), state.value.tasks, clock.now())?.let { insertNew(it, src, actor = reporterId) }
+            Recurrence.nextOccurrence(after, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src, actor = reporterId) }
         } else {
             journal(after, TeamEventKind.REOPENED, before.progressPercent?.toString(), after.progressPercent?.toString(), src, memberId = reporterId)
         }
@@ -1244,6 +1244,10 @@ class KairosRepository(
         if (memberId != null && state.value.members.none { it.id == memberId && !it.archived }) return null
         return task.copy(assigneeId = memberId, startedOn = if (memberId != null && keepInProgress) task.startedOn else null)
     }
+
+    /** Fériés des réglages autour d'aujourd'hui : « jours ouvrés » ne tombe jamais dessus. */
+    private fun holidaysNow(): Set<kotlinx.datetime.LocalDate> =
+        Workdays.holidaysFor(today(), state.value.settings.holidaysFr, state.value.settings.extraHolidays)
 
     private fun Task.isStartable() =
         space == TaskSpace.TEAM && status == TaskStatus.TODO && assigneeId != null && startedOn == null

@@ -32,7 +32,8 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   crée la suivante, échéance avancée selon la règle, priorité, points, type,
   durée, projet, description et heure fixe (même heure, nouveau jour)
   repris ; sa date programmée est la nouvelle échéance (elle n'apparaît pas
-  dans la journée avant).
+  dans la journée avant). Une tâche « jours ouvrés » ne tombe jamais sur un
+  week-end **ni sur un jour férié** des réglages (France, jours libres).
 - Une hebdomadaire revient toujours sur son jour de semaine (celui de son
   échéance), même terminée en retard, sans dérive.
 - Une récurrente terminée en retard repart d'aujourd'hui, pas de l'échéance
@@ -67,11 +68,11 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 ## 2. Solution technique
 
-- `nextDeadline(règle, base, jourDeSemaine?)` : `DAILY` +1 jour ;
-  `WEEKDAYS` jour suivant hors week-end ; `WEEKLY` prochain jour de semaine
+- `nextDeadline(règle, base, jourDeSemaine?, fériés = ∅)` : `DAILY` +1 jour ;
+  `WEEKDAYS` jour suivant hors week-end et hors `fériés` ; `WEEKLY` prochain jour de semaine
   ancré (défaut : celui de la base), toujours strictement après ; `MONTHLY`
   +1 mois, jour borné à la fin du mois.
-- `nextOccurrence(tâche, aujourd'hui, existantes, maintenant)` : `null` hors
+- `nextOccurrence(tâche, aujourd'hui, existantes, maintenant, fériés = ∅)` : `null` hors
   `COMPLETION_RULES` ou si une tâche à faire de même titre, règle et
   échéance existe ; sinon la copie (identifiant 0), base
   `max(échéance, aujourd'hui)`, ancre hebdomadaire = `recurrenceDayOfWeek`
@@ -105,6 +106,13 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 ### Décisions et pièges tracés
 
+- **« Jours ouvrés » saute les fériés** (2026-10-12, demande explicite après le test
+  exploratoire : l'occurrence suivant le mardi 10 nov. tombait le mercredi 11, férié ;
+  Kairos 2 ne sautait que les week-ends). Écart volontaire : `nextDeadline` reçoit les
+  fériés des réglages (`Workdays.holidaysFor`), passés par `nextOccurrence`, les deux
+  chemins de complétion du dépôt (`toggleDone`, intégration d'un rapport) et la
+  projection des séries d'équipe (`TeamWork.seriesDates`). Les tests différentiels de
+  Kairos 2 n'en passent pas (ensemble vide par défaut) et restent identiques.
 - **Jour du mois limité à 1-31** : Kairos 2 ne le validait pas et un 0
   aurait fait échouer le calcul de la date ; le dialogue refuse
   l'enregistrement et le dépôt vide une valeur hors bornes. Choisir
