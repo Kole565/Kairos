@@ -19,7 +19,9 @@ class DatesTest {
     fun shortDatesPerLanguage() {
         assertEquals("30 sept.", Dates.short(LocalDate(2026, 9, 30), "fr"))
         assertEquals("Sep 30", Dates.short(LocalDate(2026, 9, 30), "en"))
-        assertEquals("1 janv.", Dates.short(LocalDate(2027, 1, 1), "de"))
+        // Repli anglais (docs/spec/i18n.md, issue #70) : seule une langue française donne des dates françaises.
+        assertEquals("Jan 1", Dates.short(LocalDate(2027, 1, 1), "de"))
+        assertEquals("1 janv.", Dates.short(LocalDate(2027, 1, 1), "fr-CA"))
     }
 
     @Test
