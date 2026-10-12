@@ -1,7 +1,9 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.app.tabLeavesField
 import com.skohscripts.kairos.ui.app.heading
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -280,25 +282,28 @@ internal fun SettingInput(key: String, value: String, error: FieldError?, onChan
     }
     val help = text.help?.let { stringResource(it) }
     val message = error?.let { errorMessage(it, field.minExclusive) }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        label = { Text(stringResource(text.label)) },
-        isError = error != null,
-        supportingText = (message ?: help)?.let { { Text(it) } },
-        singleLine = field.kind != FieldKind.TEXT,
-        keyboardOptions = when (field.kind) {
-            FieldKind.INT -> KeyboardOptions(keyboardType = KeyboardType.Number)
-            FieldKind.DECIMAL -> KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            else -> KeyboardOptions.Default
-        },
-        modifier = if (field.kind == FieldKind.INT || field.kind == FieldKind.DECIMAL) {
-            // widthIn AVANT fillMaxWidth : l'ordre inverse laisse la contrainte entrante (pleine largeur) l'emporter sur la borne.
-            Modifier.widthIn(max = NUMBER_FIELD_MAX_WIDTH).fillMaxWidth()
-        } else {
-            Modifier.fillMaxWidth()
-        }.bringIntoViewRequester(reveal),
-    )
+    // Champ multiligne : Tab change de champ au lieu d'insérer une tabulation (le parent lit la touche avant le champ).
+    Box(if (field.kind == FieldKind.TEXT) Modifier.tabLeavesField() else Modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onChange,
+            label = { Text(stringResource(text.label)) },
+            isError = error != null,
+            supportingText = (message ?: help)?.let { { Text(it) } },
+            singleLine = field.kind != FieldKind.TEXT,
+            keyboardOptions = when (field.kind) {
+                FieldKind.INT -> KeyboardOptions(keyboardType = KeyboardType.Number)
+                FieldKind.DECIMAL -> KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                else -> KeyboardOptions.Default
+            },
+            modifier = if (field.kind == FieldKind.INT || field.kind == FieldKind.DECIMAL) {
+                // widthIn AVANT fillMaxWidth : l'ordre inverse laisse la contrainte entrante (pleine largeur) l'emporter sur la borne.
+                Modifier.widthIn(max = NUMBER_FIELD_MAX_WIDTH).fillMaxWidth()
+            } else {
+                Modifier.fillMaxWidth()
+            }.bringIntoViewRequester(reveal),
+        )
+    }
 }
 
 /**

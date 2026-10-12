@@ -148,7 +148,12 @@ fun MemberSheetContent(
     /** Noms des autres membres (archivés compris) : un doublon est refusé. */
     takenNames: List<String> = emptyList(),
 ) {
-    var input by remember(member?.id) { mutableStateOf(if (member == null) MemberForm.newInput(settings) else MemberForm.inputOf(member)) }
+    // Heures par jour à la virgule en français (« 7,5 », comme la carte du membre) ; la saisie accepte les deux.
+    val english = Locale.current.language.startsWith("en")
+    var input by remember(member?.id) {
+        val start = if (member == null) MemberForm.newInput(settings) else MemberForm.inputOf(member)
+        mutableStateOf(if (english) start else start.copy(hoursPerDay = start.hoursPerDay.replace('.', ',')))
+    }
     var isSelf by remember(member?.id) { mutableStateOf(member?.isSelf == true) }
     var errors by remember(member?.id) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
     var editing by remember { mutableStateOf<AbsenceTarget?>(null) }

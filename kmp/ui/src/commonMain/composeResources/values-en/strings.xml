@@ -678,6 +678,7 @@
     <string name="mod_field_deadline_none">Remove the deadline</string>
     <string name="mod_field_deadline_hint">With no date chosen, the task’s deadline is removed.</string>
     <string name="mod_field_count">Number of tasks</string>
+    <string name="mod_field_count_help">Between 1 and %1$d.</string>
     <string name="mod_field_points">Size (points)</string>
     <string name="mod_field_category">Category</string>
     <string name="mod_field_focus">Focus factor (%)</string>
@@ -1040,6 +1041,7 @@
     <string name="title_home">Home</string>
     <string name="welcome_tour">Guided tour</string>
     <string name="help_action">Help</string>
+    <string name="link_unavailable">Can’t open the link: no browser is available.</string>
     <string name="donate_action">Support Kairos</string>
     <string name="help_title">Help: %1$s</string>
     <string name="help_close">Close</string>

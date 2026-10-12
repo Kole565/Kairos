@@ -14,7 +14,12 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.runComposeUiTest
@@ -120,5 +125,15 @@ class SettingsLayoutUiTest {
         waitUntil(timeoutMillis = 15_000) {
             runCatching { field("Statistics window (weeks)").assertIsDisplayed() }.isSuccess
         }
+    }
+
+    @Test
+    fun tabLeavesTheMultilineTypesFieldInsteadOfTypingATab() = runComposeUiTest {
+        settingsAt(1000.dp)
+        field("Types offered when editing").performScrollTo().performClick().assertIsFocused()
+        field("Types offered when editing").performKeyInput { pressKey(Key.Tab) }
+        waitForIdle()
+        // Le focus passe au champ suivant : sans la règle, Tab restait dans le champ (et y insérait une tabulation).
+        field("Types offered when editing").assertIsNotFocused()
     }
 }

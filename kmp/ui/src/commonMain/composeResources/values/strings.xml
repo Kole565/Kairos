@@ -681,6 +681,7 @@
     <string name="mod_field_deadline_none">Retirer l’échéance</string>
     <string name="mod_field_deadline_hint">Sans date choisie, l’échéance de la tâche est retirée.</string>
     <string name="mod_field_count">Nombre de tâches</string>
+    <string name="mod_field_count_help">Entre 1 et %1$d.</string>
     <string name="mod_field_points">Taille (points)</string>
     <string name="mod_field_category">Catégorie</string>
     <string name="mod_field_focus">Taux de focus (%)</string>
@@ -1044,6 +1045,7 @@
     <string name="title_home">Accueil</string>
     <string name="welcome_tour">Visite guidée</string>
     <string name="help_action">Aide</string>
+    <string name="link_unavailable">Impossible d’ouvrir le lien : aucun navigateur n’est disponible.</string>
     <string name="donate_action">Soutenir Kairos</string>
     <string name="help_title">Aide : %1$s</string>
     <string name="help_close">Fermer</string>

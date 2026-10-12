@@ -131,7 +131,7 @@ réglages, les tâches bloquées et les clés d'urgence effectives
    une tâche non remontée, −score est remplacé par −score de placement, dont
    l'effort est majoré de `penalty × intensité × effort normalisé`). Si la
    tâche chevauche un obstacle, elle est repoussée après lui (+ marge) et
-   note l'obstacle (`pushedAfter`, `BUSY` ou `PINNED`). Si elle commence
+   note l'obstacle (`pushedAfter`, `BUSY`, `PINNED` ou `DEEPWORK`). Si elle commence
    après la fin de journée : « sans créneau », et l'on continue (une plus
    courte peut encore tenir). `dipApplied` si le creux a changé le choix.
 6. Charge : requis = durées des tâches à placer ; disponible = fenêtre

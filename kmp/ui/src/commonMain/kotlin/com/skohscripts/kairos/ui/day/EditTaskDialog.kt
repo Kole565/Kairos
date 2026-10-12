@@ -80,6 +80,7 @@ import com.skohscripts.kairos.ui.generated.resources.edit_advanced
 import com.skohscripts.kairos.ui.generated.resources.field_blockers
 import com.skohscripts.kairos.ui.generated.resources.team_count_in_team
 import com.skohscripts.kairos.ui.generated.resources.team_count_in_team_hint
+import com.skohscripts.kairos.ui.app.tabLeavesField
 import com.skohscripts.kairos.ui.settings.SwitchRow
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_cycle
 import com.skohscripts.kairos.ui.generated.resources.field_blockers_hint
@@ -219,7 +220,7 @@ internal fun EditTaskDialog(
                             { description = it },
                             label = { Text(stringResource(Res.string.field_description)) },
                             minLines = 3,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().tabLeavesField(),
                         )
                         if (received != null) {
                             ReceivedMark(received.origin, received.removed)
@@ -320,7 +321,7 @@ internal fun EditTaskDialog(
                                 { subtasks = it },
                                 label = { Text(stringResource(Res.string.field_subtasks)) },
                                 minLines = 2,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().tabLeavesField(),
                             )
                             if (countInTeam != null) {
                                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -399,7 +400,10 @@ internal fun EditTaskDialog(
                                 )
                             if (team != null && teamEditing) {
                                 val percent = progress.roundToInt()
-                                team.onSave(edit, percent.takeIf { assignee != null && task.status == TaskStatus.TODO && percent != (task.progressPercent ?: 0) })
+                                // Réaffecté sans garder « En cours » : la tâche repart « À faire » ; le curseur (brouillon) ne la
+                                // recommence pas (« En cours 50 % » après un « Non »).
+                                val restarts = task.startedOn != null && assignee != task.assigneeId && !keepInProgress
+                                team.onSave(edit, percent.takeIf { !restarts && assignee != null && task.status == TaskStatus.TODO && percent != (task.progressPercent ?: 0) })
                             } else if (received != null) {
                                 val percent = receivedProgress.roundToInt()
                                 received.onSave(edit, percent.takeIf { task.status == TaskStatus.TODO && percent != (task.progressPercent ?: 0) })

@@ -47,6 +47,10 @@ Kairos reprend le principe, mais ouvre directement la page de don commune
 - `DONATE_URL` (`AboutScreen.kt`, à côté de `SOURCE_URL`) : constante unique de
   l'adresse ; l'appel est `LocalUriHandler.openUri`, enveloppé de `runCatching`
   (un environnement sans navigateur ne doit pas faire planter l'application).
+  Un échec n'est pas muet : `rememberLinkOpener` (`app/OpenLink.kt`, utilisé par
+  « À propos » et la bannière de mise à jour) et le bouton de la barre
+  affichent la snackbar `link_unavailable` (« Impossible d'ouvrir le lien : aucun
+  navigateur n'est disponible. »).
 - `AppShell` : `IconButton` avec `KairosIcons.Favorite` dans `actions` de la
   `TopAppBar`, **avant** le « ? », hors de la condition `secondary == null`,
   sauf si `selectorInBar` (sélecteur d'espace dans la barre).

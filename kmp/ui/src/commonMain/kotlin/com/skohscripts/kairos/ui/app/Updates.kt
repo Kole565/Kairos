@@ -16,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -79,7 +78,7 @@ fun UpdateBanner(services: AppServices, modifier: Modifier = Modifier) {
     val dismissed by updates.dismissed.collectAsState()
     val available = status as? UpdateStatus.Available ?: return
     if (available.version == dismissed) return
-    val uri = LocalUriHandler.current
+    val openLink = rememberLinkOpener()
     // Bannière neutre (charte : pas de couleur pour une information), icône pour la repérer.
     Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = modifier.fillMaxWidth()) {
         FlowRow(
@@ -92,7 +91,7 @@ fun UpdateBanner(services: AppServices, modifier: Modifier = Modifier) {
                 stringResource(Res.string.update_banner, available.version, KairosBuild.VERSION_NAME),
                 style = MaterialTheme.typography.bodyMedium,
             )
-            KairosTextButton(onClick = { runCatching { uri.openUri(available.url) } }) { Text(stringResource(Res.string.update_download)) }
+            KairosTextButton(onClick = { openLink(available.url) }) { Text(stringResource(Res.string.update_download)) }
             KairosTextButton(onClick = { updates.dismiss(available.version) }) { Text(stringResource(Res.string.update_later)) }
         }
     }

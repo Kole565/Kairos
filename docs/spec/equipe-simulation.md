@@ -109,7 +109,8 @@ une ».
   - **retirer** un membre (ses tâches retournent au backlog du scénario) ;
   - ajouter une **absence** ; changer une **quotité** ;
   - **réaffecter** une ou plusieurs tâches ;
-  - ajouter **N tâches hypothétiques** (points, catégorie, priorité) ;
+  - ajouter **N tâches hypothétiques** (points, catégorie, priorité) ; N va de 1 à
+    `Scenario.MAX_ADDED_TASKS`, la plage est rappelée sous le champ (`mod_field_count_help`) ;
   - changer une **priorité** ou une **échéance** ;
   - changer le **taux de focus**.
 - Les scénarios sont enregistrés (liste, renommer, dupliquer, supprimer).

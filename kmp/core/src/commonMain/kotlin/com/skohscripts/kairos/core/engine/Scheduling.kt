@@ -189,7 +189,8 @@ object Scheduling {
 
     // --- Résultat ----------------------------------------------------------------
 
-    enum class ObstacleKind { BUSY, PINNED }
+    /** [DEEPWORK] : fenêtre de deep work (Kairos 2 la rangeait avec les épinglées ; la note de la vue Jour les distingue). */
+    enum class ObstacleKind { BUSY, PINNED, DEEPWORK }
 
     data class ScheduledTask(
         val task: Task,
@@ -311,7 +312,7 @@ object Scheduling {
                 assigned += candidate.id
                 slot = slot.plusMinutes(duration)
             }
-            obstacles += Obstacle(block.start, block.end, block.title, 0, ObstacleKind.PINNED)
+            obstacles += Obstacle(block.start, block.end, block.title, 0, ObstacleKind.DEEPWORK)
         }
 
         // 2. Placement au curseur, la meilleure tâche pour chaque créneau.

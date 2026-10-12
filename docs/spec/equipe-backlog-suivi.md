@@ -70,6 +70,10 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 - Une réaffectation garde l'avancement et le temps passé ; elle remet
   l'état à « À faire » si la tâche était « En cours » (le nouveau titulaire
   n'a pas commencé), après avoir demandé : « Garder l'état En cours ? ».
+  Dans la fiche, un curseur d'avancement modifié n'est réappliqué qu'**après** la
+  réaffectation si la tâche garde son état ; si elle repart à « À faire »
+  (« Non »), le curseur est ignoré (`EditTaskDialog` : `restarts`), sinon la carte
+  finissait « En cours 50 % » juste après avoir été remise à « À faire ».
 - Les sous-tâches d'une tâche d'équipe sont des tâches d'équipe ; à la
   création, elles prennent l'assigné de la mère ; ensuite elles se
   réaffectent chacune.

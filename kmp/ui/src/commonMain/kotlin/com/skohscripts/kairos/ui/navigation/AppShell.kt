@@ -66,6 +66,7 @@ import com.skohscripts.kairos.ui.generated.resources.action_back
 import com.skohscripts.kairos.ui.generated.resources.app_name
 import com.skohscripts.kairos.ui.generated.resources.donate_action
 import com.skohscripts.kairos.ui.generated.resources.help_action
+import com.skohscripts.kairos.ui.generated.resources.link_unavailable
 import com.skohscripts.kairos.ui.generated.resources.nav_navigation
 import com.skohscripts.kairos.ui.generated.resources.nav_settings
 import com.skohscripts.kairos.ui.generated.resources.title_settings
@@ -139,6 +140,7 @@ fun AppShell(
     UpdateWatcher(services)
     val scope = rememberCoroutineScope()
     val showMessage: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+    val linkFailure = stringResource(Res.string.link_unavailable)
     // Hors des branches de mise en page : un redimensionnement ne rouvre pas l'accueil.
     CompositionLocalProvider(LocalMessages provides showMessage) { WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }) }
 
@@ -220,7 +222,7 @@ fun AppShell(
                 // Sélecteur d'espace dans la barre : le cœur lui laisse la place (titre illisible sinon à 360 dp) ;
                 // « Soutenir Kairos » reste dans « À propos et guide » (docs/spec/soutien.md).
                 if (!selectorInBar) {
-                    IconButton(onClick = { runCatching { uriHandler.openUri(DONATE_URL) } }) {
+                    IconButton(onClick = { runCatching { uriHandler.openUri(DONATE_URL) }.onFailure { showMessage(linkFailure) } }) {
                         Icon(KairosIcons.Favorite, contentDescription = stringResource(Res.string.donate_action))
                     }
                 }
@@ -241,7 +243,7 @@ fun AppShell(
     }
     val content: @Composable (Modifier) -> Unit = { modifier ->
         Column(modifier.fillMaxSize()) {
-            UpdateBanner(services)
+            CompositionLocalProvider(LocalMessages provides showMessage) { UpdateBanner(services) }
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 CompositionLocalProvider(LocalMessages provides showMessage) {

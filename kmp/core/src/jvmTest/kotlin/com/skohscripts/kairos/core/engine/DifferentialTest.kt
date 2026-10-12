@@ -104,7 +104,7 @@ class DifferentialTest {
             val scheduled = schedule.scheduled.map {
                 mapOf(
                     "id" to it.task.id, "start" to it.start.toString(), "duration" to it.durationMinutes,
-                    "pinned" to it.pinned, "pushedAfter" to it.pushedAfter, "pushedAfterKind" to it.pushedAfterKind?.name,
+                    "pinned" to it.pinned, "pushedAfter" to it.pushedAfter, "pushedAfterKind" to it.pushedAfterKind?.let { k -> if (k == Scheduling.ObstacleKind.DEEPWORK) "PINNED" else k.name }, // Kairos 2 : deep work = épinglée
                     "conflictWith" to it.conflictWith, "deepwork" to it.deepwork, "dip" to it.dipApplied,
                 )
             }

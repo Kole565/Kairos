@@ -56,7 +56,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
 6. **Aujourd'hui, dans l'ordre** : les tâches placées par heure, ordre du
    score ; étiquettes « épinglée », « deep work », « chemin critique » ;
    notes « à partir de 14h05, après « Réunion » » (« (épinglée) » si
-   l'obstacle est une tâche épinglée), « créneau creux (~15 h) : tâche
+   l'obstacle est une tâche épinglée, jamais pour une fenêtre de deep work :
+  `ObstacleKind.DEEPWORK`, que le test différentiel range avec `PINNED`, comme Kairos 2), « créneau creux (~15 h) : tâche
    légère privilégiée », « chevauche « Réunion » ». Vide : « Aucune tâche à
    faire n'est actuellement planifiée ».
 7. **Sections secondaires**, chacune avec son compte et une phrase de rôle,
@@ -247,7 +248,10 @@ posée.
 - `Dates` : « 30 sept. » / « Sep 30 », « 09h15 » / « 09:15 », graduations
   « 9h » / « 9:00 », nombres à une décimale sans « .0 » (deux pour une valeur positive
   qui s'arrondirait à 0 : un score de 1/21 s'affiche « 0,05 », jamais « 0 ») ;
-  la virgule en français (`Dates.number(valeur, langue)` : « 7,6 », « 7.6 » en anglais) ; `duration()` :
+  la virgule en français (`Dates.number(valeur, langue)` : « 7,6 », « 7.6 » en anglais) ;
+  `Dates.short(date, langue, référence)` ajoute l'année si elle diffère de celle
+  du jour affiché (« 29 févr. 2028 », « Feb 29, 2028 ») : échéances et jours
+  prévus des lignes de tâche, du Backlog et du Suivi d'équipe ; `duration()` :
   « 1 h 30 », « 2 h », « 45 min » ; `long` : « mardi 29 septembre 2026 »
 (« 1er » le premier du mois) / « Tuesday, September 29, 2026 » ;
 `dayShort` : « mar. 29/09 » / « Tue 9/29 » ; `dayMonth` : « 28/09 » /

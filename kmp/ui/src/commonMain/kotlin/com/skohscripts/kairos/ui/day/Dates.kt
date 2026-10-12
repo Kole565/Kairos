@@ -27,6 +27,16 @@ internal object Dates {
         return if (english(language)) "${EN[month]} ${date.day}" else "${date.day} ${FR[month]}"
     }
 
+    /** Comme [short], avec l'année (« 29 févr. 2028 », « Feb 29, 2028 ») si elle diffère de celle de [reference]. */
+    fun short(date: LocalDate, language: String, reference: LocalDate): String {
+        val text = short(date, language)
+        return when {
+            date.year == reference.year -> text
+            english(language) -> "$text, ${date.year}"
+            else -> "$text ${date.year}"
+        }
+    }
+
     private val FR_LONG = listOf("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre")
     private val EN_LONG = listOf("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
     private val FR_DAYS = listOf("lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche")

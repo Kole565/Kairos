@@ -40,6 +40,7 @@ import com.skohscripts.kairos.ui.generated.resources.mod_field_absence_start
 import com.skohscripts.kairos.ui.generated.resources.mod_field_availability
 import com.skohscripts.kairos.ui.generated.resources.mod_field_category
 import com.skohscripts.kairos.ui.generated.resources.mod_field_count
+import com.skohscripts.kairos.ui.generated.resources.mod_field_count_help
 import com.skohscripts.kairos.ui.generated.resources.mod_field_date_pick
 import com.skohscripts.kairos.ui.generated.resources.mod_field_deadline
 import com.skohscripts.kairos.ui.generated.resources.mod_field_deadline_hint
@@ -230,6 +231,8 @@ internal fun ModificationDialog(
                 if (type == ModType.ADD_TASKS) {
                     OutlinedTextField(
                         count, { count = it }, label = { Text(stringResource(Res.string.mod_field_count)) }, singleLine = true,
+                        // La plage permise, toujours dite : le champ rouge seul n'expliquait pas pourquoi OK était grisé.
+                        supportingText = { Text(stringResource(Res.string.mod_field_count_help, Scenario.MAX_ADDED_TASKS)) },
                         keyboardOptions = numberKeys, isError = built == null, modifier = Modifier.fillMaxWidth(),
                     )
                     val none = stringResource(Res.string.mod_none)

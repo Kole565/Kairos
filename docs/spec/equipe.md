@@ -204,6 +204,8 @@ membre, l'écran a deux onglets : « Membres » (ce qui suit) et « Échanges »
 - Validation des champs à l'enregistrement, erreur à la place de l'aide :
   nom vide (« Le nom est obligatoire. »), quotité hors 1-100 ou non
   entière, heures par jour hors 1-24 ou non numériques (virgule ou point).
+  La fiche montre les heures comme la carte (« 7,5 » en français, `MemberSheetContent`
+  convertit le point du modèle à l'affichage ; la saisie accepte les deux).
   Une absence dont la fin précède le début est refusée
   (« La fin doit suivre le début. »).
 - Réglages → carte Équipe, mode activé : **« Supprimer les données

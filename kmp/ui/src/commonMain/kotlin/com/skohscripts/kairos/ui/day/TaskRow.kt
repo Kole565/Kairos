@@ -223,8 +223,8 @@ private fun TaskTags(task: Task, ctx: RowContext) {
     if (task.projectTag.isNotEmpty()) Badge(task.projectTag)
     if (task.taskType.isNotEmpty()) Badge(task.taskType)
     task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(duration(it)) }
-    task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language))) }
-    task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language))) }
+    task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language, ctx.view.day))) }
+    task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language, ctx.view.day))) }
     if (task.recurrence != TaskRecurrence.NONE) {
         Icon(
             KairosIcons.Repeat,

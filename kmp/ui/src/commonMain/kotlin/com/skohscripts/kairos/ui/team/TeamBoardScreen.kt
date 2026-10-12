@@ -412,7 +412,7 @@ private fun TaskCard(
             ) {
                 if (task.taskType.isNotEmpty()) Badge(task.taskType)
                 task.priority?.let { PriorityBadge(it) }
-                task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, language))) }
+                task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, language, today))) }
                 if (card.blocked) WarnBadge(stringResource(Res.string.board_blocked), KairosIcons.Block)
                 card.signals.forEach { SignalBadge(it) }
             }
