@@ -20,7 +20,7 @@ Un chrono par tâche, avec notification permanente ; alertes de dépassement, de
 Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le manager, qui reste le seul utilisateur :
 <ul>
 <li>Membres et absences, backlog partagé, suivi de l’avancement avec son journal.</li>
-<li>Charge de chacun rapportée à sa capacité, et suggestion de répartition des tâches.</li>
+<li>Charge de chacun rapportée à sa capacité, et suggestion de répartition des tâches ; vos propres tâches perso peuvent compter dans votre charge.</li>
 <li>Prévisions Monte Carlo : dates de fin en pourcentages de chances, échéances menacées, scénarios « Et si… ? ».</li>
 <li>Échanges par fichier avec les membres qui ont Kairos : ils reçoivent leurs tâches et renvoient leur avancement.</li>
 <li>Tout reste sur l’appareil ; l’espace Perso ne montre jamais rien de l’équipe.</li>
