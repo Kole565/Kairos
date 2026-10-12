@@ -141,7 +141,10 @@ object Recurrence {
         tasks.filter { it.recurrence == TaskRecurrence.MONTHLY_ON_DAY && it.recurrenceDayOfMonth != null }
             .forEach { series.getOrPut(SeriesKey(it.title, it.recurrenceDayOfMonth!!, it.space)) { mutableListOf() } += it }
         return series.mapNotNull { (key, members) ->
-            val covered = members.any { m -> m.recurrencePeriod == currentPeriod || (m.deadline != null && period(m.deadline) == currentPeriod) }
+            // Une occurrence déjà posée pour un mois suivant (série créée après le jour N) couvre aussi le mois courant.
+            val covered = members.any { m ->
+                (m.recurrencePeriod.isNotEmpty() && m.recurrencePeriod >= currentPeriod) || (m.deadline != null && period(m.deadline) == currentPeriod)
+            }
             if (covered) return@mapNotNull null
             val title = key.title
             val dayOfMonth = key.dayOfMonth

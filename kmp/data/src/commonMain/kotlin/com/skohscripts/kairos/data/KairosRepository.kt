@@ -46,11 +46,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.todayIn
 import kotlinx.serialization.json.Json
@@ -271,8 +273,15 @@ class KairosRepository(
             // suivant en créait une seconde, de même titre, et l'originale restait « sans créneau » (recurrence.md).
             val seriesDay = updated.recurrenceDayOfMonth
             if (onDay && seriesDay != null && updated.deadline == null && updated.recurrencePeriod.isEmpty()) {
-                val deadline = Recurrence.calendarDeadline(seriesDay, today(), holidaysNow())
-                updated = updated.copy(deadline = deadline, scheduledDate = updated.scheduledDate ?: deadline, recurrencePeriod = Recurrence.period(today()))
+                // Le jour N de ce mois est déjà passé : la tâche est l'occurrence du mois suivant (sinon elle naissait en retard).
+                val holidays = holidaysNow()
+                var month = today()
+                var deadline = Recurrence.calendarDeadline(seriesDay, month, holidays)
+                if (deadline < month) {
+                    month = LocalDate(month.year, month.month.ordinal + 1, 1).plus(DatePeriod(months = 1))
+                    deadline = Recurrence.calendarDeadline(seriesDay, month, holidays)
+                }
+                updated = updated.copy(deadline = deadline, scheduledDate = updated.scheduledDate ?: deadline, recurrencePeriod = Recurrence.period(month))
             }
             val reassigned = edit.reassign?.let { reassigned(updated, it.memberId, it.keepInProgress) }
             if (reassigned != null) updated = reassigned

@@ -320,12 +320,14 @@ private fun TimeSpent(task: Task, ctx: RowContext) {
 }
 
 /** Signaux de tri (`task_key_badges`) : score (s'ouvre sur son explication), priorité, points. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun KeyBadges(task: Task, ctx: RowContext) {
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+    // FlowRow : à 360 dp, score, priorité et points passent à la ligne plutôt que d'écraser un libellé.
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
         if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language) }
         task.priority?.let { PriorityBadge(it) }
-        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it)) }
+        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it), nowrap = true) }
     }
 }
 
@@ -367,6 +369,8 @@ internal fun Badge(
     content: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     bold: Boolean = false,
     icon: ImageVector? = null,
+    /** Court libellé qui ne se coupe jamais (« 2 pts » à 360 dp se repliait lettre par lettre). */
+    nowrap: Boolean = false,
 ) {
     Surface(color = container, contentColor = content, shape = CircleShape) {
         Row(
@@ -375,7 +379,7 @@ internal fun Badge(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
         ) {
             icon?.let { Icon(it, contentDescription = null, modifier = Modifier.size(14.dp)) }
-            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = if (bold) FontWeight.Bold else null)
+            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = if (bold) FontWeight.Bold else null, softWrap = !nowrap, maxLines = if (nowrap) 1 else Int.MAX_VALUE)
         }
     }
 }

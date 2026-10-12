@@ -250,6 +250,19 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun aCalendarSeriesWhoseDayHasPassedStartsNextMonth() = runTest {
+        val repo = empty()
+        val id = repo.createTask("Loyer")!!
+        // Aujourd'hui : mardi 29 sept. 2026 ; le 5 est passé.
+        repo.updateTask(id, edit("Loyer", { it.copy(recurrence = TaskRecurrence.MONTHLY_ON_DAY, recurrenceDayOfMonth = 5) }))
+        val task = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 10, 5), task.deadline)
+        assertEquals("2026-10", task.recurrencePeriod)
+        repo.ensureCalendarOccurrences(LocalDate(2026, 9, 29))
+        assertEquals(1, repo.snapshot.value.tasks.size)
+    }
+
+    @Test
     fun snoozeSkipsWeekendAndHolidays() = runTest {
         val repo = empty()
         val id = repo.createTask("T")!!
