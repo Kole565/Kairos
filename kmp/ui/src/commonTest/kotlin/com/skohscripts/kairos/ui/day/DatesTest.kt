@@ -8,10 +8,27 @@ import kotlin.test.assertNull
 
 class DatesTest {
     @Test
+    fun aFarDateGetsItsYear() {
+        val today = LocalDate(2026, 10, 12)
+        assertEquals("28 févr.", Dates.short(LocalDate(2026, 2, 28), "fr", today))
+        assertEquals("29 févr. 2028", Dates.short(LocalDate(2028, 2, 29), "fr", today))
+        assertEquals("Feb 29, 2028", Dates.short(LocalDate(2028, 2, 29), "en", today))
+    }
+
+    @Test
     fun shortDatesPerLanguage() {
         assertEquals("30 sept.", Dates.short(LocalDate(2026, 9, 30), "fr"))
         assertEquals("Sep 30", Dates.short(LocalDate(2026, 9, 30), "en"))
         assertEquals("1 janv.", Dates.short(LocalDate(2027, 1, 1), "de"))
+    }
+
+    @Test
+    fun smallPositiveNumbersAreNeverShownAsZero() {
+        assertEquals("16", Dates.number(16.0))
+        assertEquals("6.2", Dates.number(6.24))
+        assertEquals("0.05", Dates.number(1.0 / 21))
+        assertEquals("0.01", Dates.number(0.001))
+        assertEquals("0", Dates.number(0.0))
     }
 
     @Test

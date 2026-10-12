@@ -11,6 +11,7 @@ import com.skohscripts.kairos.core.team.AssignmentSuggestion
 import com.skohscripts.kairos.core.team.Capacity
 import com.skohscripts.kairos.core.team.Effort
 import com.skohscripts.kairos.core.team.TeamMembers
+import com.skohscripts.kairos.core.team.TeamWork
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -135,9 +136,14 @@ class MonteCarlo private constructor(
             ForecastModel.THROUGHPUT -> data.throughputAvailable((scope as? ForecastScope.Member)?.memberId)
         }
 
-        /** Prépare la simulation décrite par [request] (voir la classe). */
+        /**
+         * Prépare la simulation décrite par [request] (voir la classe). La base est lue par la vue de calcul
+         * (`TeamWork`, docs/spec/equipe-moi.md) : tâches perso de « moi » dans son travail assigné, occurrences
+         * projetées des tâches récurrentes jusqu'à la fin de l'horizon des réglages dans le plan rejoué (jamais dans
+         * le périmètre), temps passé déduit, créneaux occupés de « moi » retirés de sa capacité.
+         */
         fun prepare(request: ForecastRequest): MonteCarlo {
-            val snapshot = request.snapshot
+            val snapshot = TeamWork.view(request.snapshot)
             val settings = snapshot.settings
             val team = settings.team ?: TeamSettings()
             val local = request.now.toLocalDateTime(request.timeZone)
@@ -163,6 +169,8 @@ class MonteCarlo private constructor(
             }
             val requestedIds = requested.mapTo(HashSet()) { it.id }
 
+            val horizonEnd = Capacity.horizonEnd(day, team.horizonWeeks)
+            val input = TeamWork.planInput(snapshot, day, request.now, horizonEnd)
             var working = snapshot
             if (request.model == ForecastModel.EFFORT && requested.isNotEmpty()) {
                 val suggestion = AssignmentSuggestion.suggest(
@@ -171,6 +179,9 @@ class MonteCarlo private constructor(
                 val target = suggestion.suggestions.associate { it.taskId to it.memberId }
                 working = snapshot.copy(tasks = snapshot.tasks.map { t -> target[t.id]?.let { t.copy(assigneeId = it) } ?: t })
             }
+            // Le plan rejoué : la base de travail plus les occurrences projetées (hors périmètre, elles prennent leur capacité).
+            val projected = input.snapshot.tasks.filter(TeamWork::isProjected)
+            val replayed = if (projected.isEmpty()) working else working.copy(tasks = working.tasks + projected)
 
             // Tâches en jeu : portées (après répartition) ou demandées au backlog (même sans porteur : elles ne finiront pas).
             val workingActive = working.tasks.filter {
@@ -208,8 +219,9 @@ class MonteCarlo private constructor(
             )
             val engine: DrawEngine = if (effort) {
                 EffortModel(
-                    snapshot = working, day = day, calibration = calibration, todayFraction = fraction,
+                    snapshot = replayed, day = day, calibration = calibration, todayFraction = fraction,
                     data = request.data, capacityRandomness = request.options.capacityRandomness, seed = request.seed, scopeIds = scopeIds,
+                    spent = input.spent, busy = input.busy,
                 )
             } else {
                 ThroughputModel(

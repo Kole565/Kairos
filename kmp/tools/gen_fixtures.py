@@ -198,8 +198,18 @@ def scheduling_case(seed: int, dip: bool = False) -> dict:
     own = {t.id: urgency_key(t, day, settings=settings) for t in todo}
     effective = derived_urgency(edges, own)
     raised = sorted(tid for tid, key in effective.items() if key < own.get(tid, key))
+    # Écart volontaire (spec v3, ordonnancement.md) : une fenêtre de deep work est rognée à « maintenant » le jour
+    # même, sa part passée n'accueille aucune tâche et une fenêtre finie disparaît. Le moteur de Kairos 2 reçoit
+    # donc les fenêtres déjà rognées ; la frise garde les créneaux tels quels.
+    placing = []
+    for b in blocks:
+        if b.kind == "deepwork" and now is not None and now.date() == day and now > b.start:
+            if now >= b.end:
+                continue
+            b = TimeBlock(title=b.title, start=now, end=b.end, source=b.source, kind=b.kind)
+        placing.append(b)
     schedule = build_day_schedule(
-        tasks, blocks, day, now=now, settings=settings, blocked_ids=blocked, urgency_keys=effective
+        tasks, placing, day, now=now, settings=settings, blocked_ids=blocked, urgency_keys=effective
     )
     timeline = build_timeline(schedule, blocks, day, settings=settings)
 

@@ -17,6 +17,18 @@ class MemberFormTest {
     private fun errors(input: MemberForm.Input) = MemberForm.validate(input).errors
 
     @Test
+    fun aNameIsBoundedAndUniqueAmongTheOtherMembers() {
+        val long = "x".repeat(MemberForm.MAX_NAME + 1)
+        assertEquals(FieldError(FieldErrorKind.TOO_LARGE, "60"), errors(ok.copy(name = long))[MemberForm.NAME])
+        assertNull(MemberForm.validate(ok.copy(name = "x".repeat(MemberForm.MAX_NAME))).errors[MemberForm.NAME])
+        // Insensible à la casse et aux espaces de bord ; les noms des autres membres (archivés compris) seulement.
+        val taken = listOf("Bob", " alex ")
+        assertEquals(FieldError(FieldErrorKind.DUPLICATE, "Alex"), MemberForm.validate(ok, taken).errors[MemberForm.NAME])
+        assertEquals(FieldError(FieldErrorKind.DUPLICATE, "BOB"), MemberForm.validate(ok.copy(name = "BOB"), taken).errors[MemberForm.NAME])
+        assertNull(MemberForm.validate(ok.copy(name = "Alexandre"), taken).errors[MemberForm.NAME])
+    }
+
+    @Test
     fun aValidFormIsCleanedAndConverted() {
         val r = MemberForm.validate(ok.copy(name = "  Alex  ", role = " Dev back ", hoursPerDay = " 7 "))
         assertEquals(MemberForm.Valid("Alex", "Dev back", 80, 7.0), r.valid)

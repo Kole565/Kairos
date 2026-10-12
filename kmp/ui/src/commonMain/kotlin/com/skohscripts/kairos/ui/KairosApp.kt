@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.TeamSettings
 import com.skohscripts.kairos.ui.app.AppServices
+import com.skohscripts.kairos.ui.app.LocalStartupSplash
+import com.skohscripts.kairos.ui.app.StartupSplash
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.error_open_title
 import com.skohscripts.kairos.ui.generated.resources.loading
@@ -49,7 +52,7 @@ import org.jetbrains.compose.resources.stringResource
  * [openServices] ouvre la base (et le reste) une seule fois ; un écran de
  * chargement l'attend, un échec est affiché plutôt qu'un écran vide.
  *
- * Navigation par état (destination courante + écran secondaire, Accueil ou « À propos », ouvert ou
+ * Navigation par état (destination courante + écran secondaire, Réglages ou « À propos », ouvert ou
  * non) plutôt qu'une bibliothèque de navigation : cinq destinations de premier
  * niveau et deux écrans secondaires n'en justifient pas une
  * (docs/spec/navigation-theme.md § Décisions).
@@ -57,12 +60,16 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun KairosApp(
     platform: Platform,
-    /** Destination d'ouverture ; autre que « Jour » seulement pour les captures des magasins. */
+    /** Destination d'ouverture : l'Accueil ; une autre pour les tests, l'auto-test et les captures des magasins. */
     initialDestination: Destination = Destination.START,
-    /** Destination d'ouverture de l'espace Équipe (quand il est ouvert) ; autre que « Suivi » seulement pour les captures des magasins. */
-    initialTeamDestination: TeamDestination = TeamDestination.START,
+    /** Destination d'ouverture de l'espace Équipe (quand il est ouvert) : l'Accueil aussi ; une autre pour les tests et les captures. */
+    initialTeamDestination: TeamDestination = TeamDestination.HOME,
+    /** Écran secondaire ouvert d'emblée (les Réglages des captures des magasins), `null` ailleurs. */
+    initialSecondary: Secondary? = null,
     /** Couleurs du système (Android 12 et plus), `null` ailleurs (docs/spec/apparence.md). */
     systemColorScheme: ColorScheme? = null,
+    /** Page de démarrage (docs/spec/demarrage.md) : les points d'entrée seulement, jamais les tests ni les captures. */
+    splash: Boolean = false,
     openServices: suspend () -> AppServices,
 ) {
     KairosTheme {
@@ -73,22 +80,37 @@ fun KairosApp(
                 runCatching { openServices() }.onSuccess { services = it }.onFailure { failure = it }
             }
             val ready = services
-            when {
-                ready != null -> {
-                    // Thème des réglages dès qu'ils sont lus ; le miel de la charte pendant le chargement.
-                    val themeColor = ready.repository.snapshot.collectAsState().value.settings.themeColor
-                    val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
-                    KairosTheme(scheme) { KairosShell(platform, ready, initialDestination, initialTeamDestination) }
+            // Sauvegardé : une rotation ne rejoue pas l'animation, un nouveau lancement si.
+            var splashDone by rememberSaveable { mutableStateOf(!splash) }
+            // L'application se compose sous la page de démarrage : le fondu la révèle déjà prête.
+            Box(Modifier.fillMaxSize()) {
+                CompositionLocalProvider(LocalStartupSplash provides !splashDone) {
+                    when {
+                        ready != null -> {
+                            // Thème des réglages dès qu'ils sont lus ; le miel de la charte pendant le chargement.
+                            val themeColor = ready.repository.snapshot.collectAsState().value.settings.themeColor
+                            val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
+                            KairosTheme(scheme) { KairosShell(platform, ready, initialDestination, initialTeamDestination, initialSecondary) }
+                        }
+                        failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
+                        else -> Status(stringResource(Res.string.loading), null, progress = true)
+                    }
                 }
-                failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
-                else -> Status(stringResource(Res.string.loading), null, progress = true)
+                // Dans le thème miel par défaut, pas celui des réglages : même fond que les relais natifs.
+                if (!splashDone) StartupSplash(ready = ready != null || failure != null, onFinished = { splashDone = true })
             }
         }
     }
 }
 
 @Composable
-private fun KairosShell(platform: Platform, services: AppServices, initialDestination: Destination, initialTeamDestination: TeamDestination) {
+private fun KairosShell(
+    platform: Platform,
+    services: AppServices,
+    initialDestination: Destination,
+    initialTeamDestination: TeamDestination,
+    initialSecondary: Secondary?,
+) {
     val repository = services.repository
     // Seul le sous-objet d'équipe intéresse la coquille : un changement d'un autre réglage ne la recompose pas.
     val team by remember { repository.snapshot.map { it.settings.team }.distinctUntilChanged() }
@@ -100,7 +122,9 @@ private fun KairosShell(platform: Platform, services: AppServices, initialDestin
     }
     var destination by rememberSaveable { mutableStateOf(initialDestination) }
     var teamDestination by rememberSaveable { mutableStateOf(initialTeamDestination) }
-    var secondary by rememberSaveable { mutableStateOf<Secondary?>(null) }
+    var secondary by rememberSaveable { mutableStateOf(initialSecondary) }
+    // « À propos » ouvert depuis les Réglages : la flèche retour y ramène.
+    var secondaryParent by rememberSaveable { mutableStateOf<Secondary?>(null) }
     val nav = remember { NavState() }
     val scope = rememberCoroutineScope()
 
@@ -121,8 +145,9 @@ private fun KairosShell(platform: Platform, services: AppServices, initialDestin
             chosenSpace = Space.PERSONAL
             nav.day = null
             nav.week = null
-            destination = Destination.START
+            destination = Destination.WORK
             secondary = null
+            secondaryParent = null
             persistSpace(Space.PERSONAL)
         }
     }
@@ -146,18 +171,21 @@ private fun KairosShell(platform: Platform, services: AppServices, initialDestin
                     nav.week = null
                     destination = it
                     secondary = null
+                    secondaryParent = null
                 },
                 onNavigateTeam = {
                     teamDestination = it
                     secondary = null
+                    secondaryParent = null
                 },
                 onSpaceChange = {
-                    // Changer d'espace ouvre la première destination de l'autre espace (Jour ou Suivi).
+                    // Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou Suivi), pas son Accueil.
                     nav.day = null
                     nav.week = null
-                    destination = Destination.START
+                    destination = Destination.WORK
                     teamDestination = TeamDestination.START
                     secondary = null
+                    secondaryParent = null
                     chosenSpace = it
                     persistSpace(it)
                 },
@@ -165,10 +193,20 @@ private fun KairosShell(platform: Platform, services: AppServices, initialDestin
                     nav.day = day
                     destination = Destination.DAY
                     secondary = null
+                    secondaryParent = null
                 },
-                onOpenHome = { secondary = Secondary.HOME },
-                onOpenAbout = { secondary = Secondary.ABOUT },
-                onCloseSecondary = { secondary = null },
+                onOpenSettings = {
+                    secondary = Secondary.SETTINGS
+                    secondaryParent = null
+                },
+                onOpenAbout = {
+                    secondaryParent = secondary
+                    secondary = Secondary.ABOUT
+                },
+                onCloseSecondary = {
+                    secondary = secondaryParent
+                    secondaryParent = null
+                },
             )
         }
     }

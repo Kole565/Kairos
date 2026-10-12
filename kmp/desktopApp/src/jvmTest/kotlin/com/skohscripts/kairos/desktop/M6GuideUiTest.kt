@@ -19,6 +19,8 @@ import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.Reassignment
 import com.skohscripts.kairos.data.TaskEdit
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.BackupStore
@@ -94,10 +96,10 @@ class M6GuideUiTest {
     @Test
     fun helpExplainsTheCurrentScreenAndOpensTheHomePage() = runComposeUiTest {
         val services = services(repository())
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         pressHelp()
         waitText("Help: Today")
-        waitText("“Now” tells you what to do.", substring = true)
+        waitText("“Up next” tells you what to do.", substring = true)
         onNodeWithText("Kairos home").performClick()
 
         // L'Accueil : raison d'être, fonctionnalités, équipe ; plus de « ? » (la page tient lieu d'aide).
@@ -120,15 +122,45 @@ class M6GuideUiTest {
     }
 
     @Test
-    fun theHomePageClosesWithItsBackArrow() = runComposeUiTest {
+    fun theAppOpensOnTheHomePageAndSettingsAreInTheTopBar() = runComposeUiTest {
         val services = services(repository())
+        // Ouverture réelle (sans destination imposée) : l'Accueil, première destination, sans « ? ».
         setContent { KairosApp(Platform.DESKTOP) { services } }
-        pressHelp()
-        onNodeWithText("Kairos home").performClick()
         waitText("What is Kairos for?")
+        assertEquals(0, onAllNodesWithContentDescription("Help").fetchSemanticsNodes().size)
+        listOf("Home", "Notes", "Day", "Week", "Stats").forEach { assertTrue(count(it) >= 1, it) }
+
+        // Les Réglages : roue crantée, écran secondaire avec son aide et sa flèche retour.
+        openSettings()
+        waitText("Appearance")
+        assertEquals(0, onAllNodesWithContentDescription("Settings").fetchSemanticsNodes().size)
+        pressHelp()
+        waitText("Help: Settings")
+        onNodeWithText("Close").performClick()
+        waitGone("Help: Settings")
+
+        // « À propos et guide » ouvert depuis les Réglages : la flèche y ramène, puis à l'Accueil.
+        onNodeWithText("About & guide").performScrollTo().performClick()
+        waitText("Source code")
         onNodeWithContentDescription("Back").performClick()
-        waitGone("What is Kairos for?")
-        waitUntil(timeoutMillis = 15_000) { onAllNodesWithContentDescription("Help").fetchSemanticsNodes().isNotEmpty() }
+        waitText("Appearance")
+        onNodeWithContentDescription("Back").performClick()
+        waitText("What is Kairos for?")
+    }
+
+    @Test
+    fun theTeamSpaceAlsoOpensOnTheHomePage() = runComposeUiTest {
+        val (repo, _) = managerWithLea()
+        val services = services(repo)
+        setContent { KairosApp(Platform.DESKTOP) { services } }
+        // Quitté dans l'espace Équipe : rouvert dans l'espace Équipe, sur l'Accueil, avec la barre d'équipe.
+        waitText("What is Kairos for?")
+        waitText("Team space tour")
+        onAllNodesWithText("Tracking").onFirst().performClick()
+        waitText("Platform · Tracking")
+        // Revenir à l'Accueil par la barre.
+        onAllNodesWithText("Home").onFirst().performClick()
+        waitText("What is Kairos for?")
     }
 
     // --- Visite guidée ------------------------------------------------------------------------------------------------
@@ -136,7 +168,7 @@ class M6GuideUiTest {
     @Test
     fun theTourWalksThroughAndOpensTheScreen() = runComposeUiTest {
         val services = services(repository())
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         pressHelp()
         onNodeWithText("Guided tour").performClick()
         waitText("Step 1 of 6")
@@ -160,7 +192,7 @@ class M6GuideUiTest {
     fun theTourEndsOnFinishAndLeavesNoTrace() = runComposeUiTest {
         val repository = repository()
         val services = services(repository)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         val before = repository.snapshot.value.settings
         pressHelp()
         onNodeWithText("Guided tour").performClick()
@@ -175,7 +207,7 @@ class M6GuideUiTest {
     @Test
     fun theFirstLaunchDialogStartsTheTour() = runComposeUiTest {
         val services = services(repository(), firstLaunch = true)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Welcome to Kairos")
         onNodeWithText("Guided tour").performClick()
         waitGone("Welcome to Kairos")
@@ -185,7 +217,7 @@ class M6GuideUiTest {
     @Test
     fun quittingTheTourFromTheFirstStepClosesIt() = runComposeUiTest {
         val services = services(repository())
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         pressHelp()
         onNodeWithText("Guided tour").performClick()
         waitText("Step 1 of 6")
@@ -209,7 +241,7 @@ class M6GuideUiTest {
     fun theTeamTourIsOfferedInTheTeamSpaceAndItsLastStepOpensTheExchangesTab() = runComposeUiTest {
         val (repo, _) = managerWithLea()
         val services = services(repo)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Tracking")
         pressHelp()
         waitText("Help: Tracking")
@@ -231,7 +263,7 @@ class M6GuideUiTest {
     fun theHomePageOffersTheTeamTourAndSpaceOnlyWhenTeamManagementIsOn() = runComposeUiTest {
         val (repo, _) = managerWithLea()
         val services = services(repo)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Tracking")
         pressHelp()
         onNodeWithText("Kairos home").performClick()
@@ -256,7 +288,7 @@ class M6GuideUiTest {
     fun theTabsOnlyAppearOnceThereIsAMember() = runComposeUiTest {
         val repo = runBlocking { repository().also { it.updateSettings(Settings(team = team)) } }
         val services = services(repo)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Tracking")
         onAllNodesWithText("Team").onFirst().performClick()
         waitText("Add a member")
@@ -268,7 +300,7 @@ class M6GuideUiTest {
         val (repo, lea) = managerWithLea()
         val files = Files()
         val services = services(repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openExchanges()
         // Une ligne par membre actif : jamais envoyé, rien d'attendu.
         waitText("Léa")
@@ -301,7 +333,7 @@ class M6GuideUiTest {
         }
         val files = Files(toOpen = reportText)
         val services = services(repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openExchanges()
         waitText("Waiting for their report")
 
@@ -320,7 +352,7 @@ class M6GuideUiTest {
         val (repo, _) = managerWithLea()
         val backup = com.skohscripts.kairos.data.ExportCodec.encode(repo.snapshot.value, "3.0.0", now)
         val services = services(repo, Files(toOpen = backup))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openExchanges()
         val tasksBefore = repo.snapshot.value.tasks.size
         onNodeWithText("Receive a report…").performClick()

@@ -33,8 +33,12 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
 - Un bloqueur d'une tâche plus urgente remonte dans l'ordre et porte
   « chemin critique » ; sa priorité affichée ne change jamais.
 - Le dialogue d'édition propose les autres tâches à faire en cases à cocher
-  (« Bloquée par ») ; l'ensemble coché est l'état voulu. Une case qui
-  fermerait une boucle est ignorée sans erreur, le reste s'enregistre.
+  (« Bloquée par ») ; l'ensemble coché est l'état voulu. Une tâche qui
+  attend déjà celle-ci (directement ou non) a sa case grisée, avec « (attend
+  déjà cette tâche) » : la cocher fermerait une boucle. Le dépôt ignore de
+  toute façon une telle arête sans erreur, le reste s'enregistre. Chaque case
+  porte « Mère › titre » pour une sous-tâche, et deux libellés identiques
+  (une tâche et sa prochaine occurrence) se distinguent par leur date.
 
 ### Critères de succès
 
@@ -43,6 +47,11 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
 - Un bloqueur fait ou archivé ne bloque plus ; une tâche faite ou archivée
   n'est jamais « bloquée ».
 - Un cycle ne masque aucune tâche : ses arêtes sont neutralisées.
+- Les sous-tâches d'une tâche bloquée sont bloquées aussi (de proche en proche) :
+  jamais planifiées, listées dans « Bloquées » avec « en attente de : Mère »
+  (2026-10-12, demande explicite : elles étaient planifiées malgré leur mère
+  en attente). Vue Jour seulement : `Dependencies.inheritedBlock`, appelée par
+  `DayView.build` ; l'espace Équipe (`TeamStates`) garde les arêtes telles quelles.
 - Ajouter une arête qui fermerait un cycle (auto-dépendance comprise) est
   détecté avant écriture.
 - L'urgence héritée est recalculée à chaque affichage et ne modifie aucune
@@ -92,3 +101,12 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
   (comme Kairos 2 ; il ne bloquait déjà plus).
 - **Cases à cocher, pas de liste à sélection multiple** (décision de Kairos 2
   reprise) ; le libellé de chaque case est cliquable (`LabeledCheckbox`).
+- **Boucle annoncée avant l'enregistrement** (2026-10-10, test exploratoire) :
+  la case était proposée puis silencieusement oubliée, sans retour.
+  `BlockerChoices.of(tâche, candidats, dépendances, titres, langue)` (`ui/day`)
+  rend libellé et `cyclic` (`wouldCreateCycle`), et écarte les tâches d'un
+  autre espace (une tâche d'équipe de « moi » visible dans l'espace Perso
+  était proposée à une tâche perso, puis refusée sans un mot par le dépôt) ; une case `cyclic` non cochée
+  est désactivée (une case déjà cochée reste décochable). Doublons de libellé :
+  « (15 oct.) » d'après l'échéance, sinon la date programmée, sinon
+  « (#id) ».

@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity(), FileService {
             // Couleurs du fond d'écran (Material You), proposées dans Réglages → Apparence
             // à partir d'Android 12 (docs/spec/apparence.md).
             val system = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) dynamicLightColorScheme(LocalContext.current) else null
-            KairosApp(Platform.ANDROID, systemColorScheme = system) { services.await() }
+            KairosApp(Platform.ANDROID, systemColorScheme = system, splash = true) { services.await() }
         }
     }
 

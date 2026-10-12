@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui.guide
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -14,6 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.ScrollState
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import com.skohscripts.kairos.ui.app.heading
@@ -41,15 +46,40 @@ fun GuideDialog(kind: GuideKind, onOpen: (GuideTarget) -> Unit, onDismiss: () ->
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(step.icon(), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp)) },
-        title = { Text(stringResource(step.title), modifier = Modifier.heading()) },
+        title = {
+            // Hauteur du plus long titre pour toutes les étapes (« Tes données et ton manager » passe sur deux lignes à
+            // 400 dp) : les boutons ne sautent pas. Les autres titres sont là, transparents et sans sémantique.
+            Box {
+                steps.forEach { other ->
+                    val shown = other === step
+                    Text(
+                        stringResource(other.title),
+                        modifier = if (shown) Modifier.heading() else Modifier.alpha(0f).clearAndSetSemantics { },
+                    )
+                }
+            }
+        },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Défile sur un écran bas (téléphone en paysage, fenêtre réduite) : rien n’est coupé. Un défilement par étape :
+            // la suivante s'ouvre en haut, pas au milieu d'une phrase.
+            Column(Modifier.verticalScroll(rememberSaveable(index, saver = ScrollState.Saver) { ScrollState(0) }), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     stringResource(Res.string.guide_step_counter, index + 1, steps.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(stringResource(step.body), style = MaterialTheme.typography.bodyMedium)
+                // Hauteur de la plus longue étape pour toutes : « Précédent » et « Suivant » ne sautent pas d'une étape à
+                // l'autre. Les textes des autres étapes sont là, transparents et absents de l'accessibilité.
+                Box {
+                    steps.forEach { other ->
+                        val shown = other === step
+                        Text(
+                            stringResource(other.body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = if (shown) Modifier else Modifier.alpha(0f).clearAndSetSemantics { },
+                        )
+                    }
+                }
                 KairosTextButton(onClick = { onOpen(step.target) }) { Text(stringResource(Res.string.guide_see_screen)) }
             }
         },

@@ -86,7 +86,11 @@ champs à contour).
   l'aire de touche sans agrandir le dessin.
 - `KairosFilterChip` : `FilterChip` de 32 dp (`FilterChipDefaults.Height`),
   aire tactile 48 dp. `KairosSegmentedRow` et ses `KairosSegmentedButton` :
-  40 dp, sans `heightIn(48)`.
+  40 dp, sans `heightIn(48)`. Un libellé qui passe à la ligne faisait déborder
+  son segment sur le voisin (« Créneau / deep work » à 340 dp) ; essayer
+  `IntrinsicSize.Min` + `fillMaxHeight()` rendait tous les segments à 48 dp
+  (écarté : contraire aux 40 dp dessinés). Solution : libellé court
+  (« Créneau ») sous 380 dp de fenêtre (`Capture.kt`, `ShellResizeUiTest`).
 - `KairosRowIconButton(icon, description, onClick)` : `IconButton` de 40 dp,
   icône de 20 dp, pour les actions de ligne. Les `IconButton` de navigation
   et de barre d'application gardent 24 dp.
@@ -209,3 +213,17 @@ champs à contour).
   dessinée.
 - `reglages.md` : cartes pleines, largeur des champs numériques.
 - Index `docs/spec/README.md`.
+
+### Arbitrages de la passe QA du 12/10 (à ne pas rouvrir sans raison)
+
+- **Cible mobile = 360 dp.** Sous cette largeur (320 dp : titre « Aujourd’hui »
+  très serré, dialogues sans marge latérale), le rendu reste utilisable (aucun
+  débordement de page, tout défile) mais n'est pas garanti au pixel ; aucun
+  composant n'est contorsionné pour 320 dp. Le titre de la barre passe en corps
+  `titleMedium` quand le sélecteur d'espace la partage (`navigation-theme.md`).
+- **Types de tâche par défaut sans espace après la virgule** (« Développement,
+  Revue de code,Réunion,… ») : conservés tels quels. C'est le format de Kairos 2
+  (parité des exports et des bases migrées) ; l'affichage en pastilles coupe sur
+  les virgules, jamais sur le texte saisi.
+- **Badges d'une ligne de tâche** : en `FlowRow` (score, priorité, points
+  passent à la ligne) et « N pts » en une seule ligne (`Badge(nowrap = true)`).

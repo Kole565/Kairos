@@ -63,11 +63,14 @@ de décider.
   - **Échéances** : liste des tâches à échéance, triées par probabilité
     croissante, avec « 62 % · en danger » (contour + icône sous le seuil) ;
   - **Criticité** : les 10 tâches les plus souvent en retard ;
-  - **Goulot** : membres et part des tirages où chacun finit le dernier ;
+  - **Goulot** : part des tirages où chacun finit le dernier
+    (`ForecastAccumulator`) ; seuls figurent les membres qui finissent le dernier
+    dans au moins un tirage (un porteur à 0 % est omis, pas perdu) ;
   - **Issue la plus probable** : distribution du nombre de retards et
     ensemble le plus fréquent.
 - **Honnêteté** (règle des statistiques) : chaque résultat affiche le nombre
-  de tirages, la graine, la source des données (« historique : 38 tâches
+  de tirages, la graine (entier **non signé** : une graine tirée sur 64 bits
+  s'affichait « -3284359446655896974 »), la source des données (« historique : 38 tâches
   faites sur 12 semaines » ou « hypothèse par défaut ») et est marqué
   « peu fiable » si l'historique est sous le minimum (§ Données). Aucune
   date n'est jamais affichée seule, sans sa fourchette.
@@ -108,7 +111,8 @@ une ».
   - **retirer** un membre (ses tâches retournent au backlog du scénario) ;
   - ajouter une **absence** ; changer une **quotité** ;
   - **réaffecter** une ou plusieurs tâches ;
-  - ajouter **N tâches hypothétiques** (points, catégorie, priorité) ;
+  - ajouter **N tâches hypothétiques** (points, catégorie, priorité) ; N va de 1 à
+    `Scenario.MAX_ADDED_TASKS`, la plage est rappelée sous le champ (`mod_field_count_help`) ;
   - changer une **priorité** ou une **échéance** ;
   - changer le **taux de focus**.
 - Les scénarios sont enregistrés (liste, renommer, dupliquer, supprimer).
@@ -268,11 +272,19 @@ une ».
   sûr, quelle que soit la vitesse de la machine (piège tracé : « Stop » est
   visible dès la préparation, où cliquer ne produit pas de résultat).
 - Résultat et comparaison gardés en mémoire pour la session
-  (`TeamUiState`, dans `AppServices`, jamais en base) avec une
+  (`TeamUiState`, dans `AppServices`, jamais en base ; `reset()` après
+  « Supprimer les données d'équipe » et après un import qui remplace tout,
+  sinon l'ancienne prévision restait affichée sur « Membre inconnu ») avec une
   **empreinte** (`ForecastFingerprint` : jour, membres, absences, tâches
-  d'équipe, leurs dépendances et sessions, journal, réglages ; ni le thème,
-  ni le dernier espace, ni les tâches Perso ni les notes) ; empreinte
-  différente → « périmé », sans recalcul automatique.
+  d'équipe de la vue de calcul — tâches perso de « moi » qui comptent
+  comprises, `equipe-moi.md` —, leurs dépendances et sessions, journal,
+  créneaux quand « moi » existe, réglages ; ni le thème, ni le dernier
+  espace, ni les tâches perso exclues ni les notes) ; empreinte différente →
+  « périmé », sans recalcul automatique.
+- Les données, le plan rejoué et le périmètre lisent la vue de calcul
+  `TeamWork` (`equipe-moi.md`) : travail perso de « moi », occurrences
+  projetées des récurrences (dans le plan, jamais dans le périmètre), temps
+  passé déduit, créneaux de « moi » ; périmètre « Mon travail ».
 
 ### Scénarios (`Scenario.kt`, table `team_scenario`)
 
@@ -412,3 +424,10 @@ Reportés au jalon E5 : `reglages.md` (réglages de simulation),
 `modele-donnees.md` (`team_scenario`, `4.sqm`), `export-import.md`
 (`teamScenarios`), `architecture.md` (`core/team/forecast/`),
 `navigation-theme.md` (icônes).
+
+### Arbitrage du 12/10 (passe QA)
+
+- Une échéance **déjà passée** s'affiche « 0 % · en danger » dans les
+  prévisions (probabilité de tenir = 0, sous le seuil), pas « en retard » : le
+  mot « en retard » est réservé au plan de charge déterministe
+  (`equipe-charge.md`), les prévisions ne parlent que de probabilités.

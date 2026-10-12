@@ -38,6 +38,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
@@ -166,14 +170,22 @@ fun NotesScreen(services: AppServices, onOpenTasks: () -> Unit) {
     }
 
     editing?.let { note ->
-        var body by remember(note.id) { mutableStateOf(note.body) }
+        // Curseur en fin de texte et focus d'emblée : on ouvre ce dialogue pour écrire.
+        var body by remember(note.id) { mutableStateOf(TextFieldValue(note.body, TextRange(note.body.length))) }
+        val editFocus = remember(note.id) { FocusRequester() }
+        LaunchedEffect(note.id) {
+            // Le dialogue s'attache une image après sa composition : la demande de focus attend qu'il le soit.
+            withFrameNanos { }
+            withFrameNanos { }
+            runCatching { editFocus.requestFocus() }
+        }
         AlertDialog(
             onDismissRequest = { editing = null },
             title = { Text(stringResource(Res.string.notes_edit_title)) },
-            text = { OutlinedTextField(body, { body = it }, minLines = 4, modifier = Modifier.fillMaxWidth()) },
+            text = { OutlinedTextField(body, { body = it }, minLines = 4, modifier = Modifier.fillMaxWidth().focusRequester(editFocus)) },
             confirmButton = {
-                KairosButton(enabled = body.isNotBlank(), onClick = {
-                    scope.launch { repository.editNote(note.id, body) }
+                KairosButton(enabled = body.text.isNotBlank(), onClick = {
+                    scope.launch { repository.editNote(note.id, body.text) }
                     editing = null
                 }) { Text(stringResource(Res.string.action_save)) }
             },

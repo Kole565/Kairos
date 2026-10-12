@@ -35,6 +35,7 @@ import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TeamSettings
 import com.skohscripts.kairos.core.team.Effort
+import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.core.team.EffortSource
 import com.skohscripts.kairos.core.team.TeamEvent
 import com.skohscripts.kairos.data.TaskEdit
@@ -81,7 +82,8 @@ internal class EffortInfo(
             val points = task.fibonacciPoints
             return EffortInfo(
                 hours = hours,
-                remainingHours = Effort.remaining(task, calibration, snapshot.settings).first,
+                // Comme le plan : sans avancement déclaré, le temps passé est déduit (docs/spec/equipe-moi.md).
+                remainingHours = Effort.remaining(task, calibration, snapshot.settings, TeamWork.spentMinutes(snapshot, now)[task.id] ?: 0).first,
                 source = source,
                 points = points,
                 calibratedCount = if (source == EffortSource.CALIBRATED) calibration.firstOrNull { it.key == points.toString() }?.count else null,

@@ -26,6 +26,7 @@ import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.guide_points_example
 import com.skohscripts.kairos.ui.generated.resources.guide_points_intro
+import com.skohscripts.kairos.ui.generated.resources.guide_points_level
 import com.skohscripts.kairos.ui.generated.resources.guide_points_none
 import com.skohscripts.kairos.ui.generated.resources.guide_points_outro
 import com.skohscripts.kairos.ui.generated.resources.guide_points_title
@@ -87,7 +88,7 @@ private fun PointsGuideBody(refs: Map<Int, TaskStats.FiboReference>) {
     FIBONACCI_SCALE.forEach { points ->
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
-                "$points · ${stringResource(Levels.pointsName(points))} : ${stringResource(Levels.pointsMeaning(points))}",
+                stringResource(Res.string.guide_points_level, points, stringResource(Levels.pointsName(points)), stringResource(Levels.pointsMeaning(points))),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
             )

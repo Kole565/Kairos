@@ -41,7 +41,10 @@ CREATE TABLE task (
     -- (côté manager). Même ordre que 5.sqm.
     origin TEXT,
     origin_removed INTEGER NOT NULL DEFAULT 0,
-    reported_minutes INTEGER
+    reported_minutes INTEGER,
+    -- Tâche perso exclue de l'espace Équipe (docs/spec/equipe-moi.md) : 0 = compte dans la charge et les prévisions
+    -- de « moi ». Même ordre que 6.sqm.
+    team_excluded INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX task_status ON task(status);
 CREATE INDEX task_parent ON task(parent_id);
@@ -161,11 +164,11 @@ INSERT INTO task (title, description, priority, deadline, project_tag, status, e
     pinned_start, parent_id, recurrence, scheduled_date, recurrence_day_of_month,
     recurrence_day_of_week, recurrence_period, task_type, fibonacci_points,
     manual_time_spent_minutes, created_at, updated_at, space, assignee_id, progress_percent, started_on, team_uid,
-    origin, origin_removed, reported_minutes)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    origin, origin_removed, reported_minutes, team_excluded)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTaskWithId:
-INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertedId:
 SELECT last_insert_rowid();
@@ -175,7 +178,8 @@ UPDATE task SET title = ?, description = ?, priority = ?, deadline = ?, project_
     estimated_minutes = ?, pinned_start = ?, parent_id = ?, recurrence = ?, scheduled_date = ?,
     recurrence_day_of_month = ?, recurrence_day_of_week = ?, recurrence_period = ?, task_type = ?,
     fibonacci_points = ?, manual_time_spent_minutes = ?, updated_at = ?, space = ?, assignee_id = ?,
-    progress_percent = ?, started_on = ?, team_uid = ?, origin = ?, origin_removed = ?, reported_minutes = ?
+    progress_percent = ?, started_on = ?, team_uid = ?, origin = ?, origin_removed = ?, reported_minutes = ?,
+    team_excluded = ?
 WHERE id = ?;
 
 deleteTask:
@@ -362,6 +366,9 @@ UPDATE task SET assignee_id = NULL, started_on = NULL, updated_at = ? WHERE assi
 
 unassignAllTasks:
 UPDATE task SET assignee_id = NULL WHERE assignee_id IS NOT NULL;
+
+clearTeamExclusions:
+UPDATE task SET team_excluded = 0 WHERE team_excluded != 0;
 
 deleteTeamTasks:
 DELETE FROM task WHERE space = 1;

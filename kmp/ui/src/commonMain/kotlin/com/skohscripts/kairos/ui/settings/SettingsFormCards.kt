@@ -1,7 +1,9 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.app.tabLeavesField
 import com.skohscripts.kairos.ui.app.heading
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -245,10 +250,31 @@ internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, 
     }
 }
 
+/**
+ * Où défiler après un enregistrement refusé : chaque champ s'y inscrit sous sa clé (`themeColor`, `team.name`…),
+ * le bandeau des règles entre champs sous [GENERAL]. Sans cela, l'erreur pouvait être hors de l'écran (à 360 dp, le
+ * bandeau est en tête de page, le champ fautif trois cartes plus bas) et le message « Réglages non enregistrés » ne
+ * disait pas où regarder.
+ */
+internal class ErrorReveal {
+    private val requesters = HashMap<String, BringIntoViewRequester>()
+
+    fun requester(key: String): BringIntoViewRequester = requesters.getOrPut(key) { BringIntoViewRequester() }
+
+    suspend fun reveal(key: String) = requester(key).bringIntoView()
+
+    companion object {
+        const val GENERAL = "_general"
+    }
+}
+
+internal val LocalErrorReveal = compositionLocalOf { ErrorReveal() }
+
 /** Un réglage : interrupteur pour un booléen, champ de texte sinon. */
 @Composable
 internal fun SettingInput(key: String, value: String, error: FieldError?, onChange: (String) -> Unit) {
     val field = SettingsForm.field(key)
+    val reveal = LocalErrorReveal.current.requester(key)
     val text = TEXTS.getValue(key)
     if (field.kind == FieldKind.BOOL) {
         SwitchRow(value == "true", stringResource(text.label)) { onChange(it.toString()) }
@@ -256,25 +282,28 @@ internal fun SettingInput(key: String, value: String, error: FieldError?, onChan
     }
     val help = text.help?.let { stringResource(it) }
     val message = error?.let { errorMessage(it, field.minExclusive) }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-        label = { Text(stringResource(text.label)) },
-        isError = error != null,
-        supportingText = (message ?: help)?.let { { Text(it) } },
-        singleLine = field.kind != FieldKind.TEXT,
-        keyboardOptions = when (field.kind) {
-            FieldKind.INT -> KeyboardOptions(keyboardType = KeyboardType.Number)
-            FieldKind.DECIMAL -> KeyboardOptions(keyboardType = KeyboardType.Decimal)
-            else -> KeyboardOptions.Default
-        },
-        modifier = if (field.kind == FieldKind.INT || field.kind == FieldKind.DECIMAL) {
-            // widthIn AVANT fillMaxWidth : l'ordre inverse laisse la contrainte entrante (pleine largeur) l'emporter sur la borne.
-            Modifier.widthIn(max = NUMBER_FIELD_MAX_WIDTH).fillMaxWidth()
-        } else {
-            Modifier.fillMaxWidth()
-        },
-    )
+    // Champ multiligne : Tab change de champ au lieu d'insérer une tabulation (le parent lit la touche avant le champ).
+    Box(if (field.kind == FieldKind.TEXT) Modifier.tabLeavesField() else Modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onChange,
+            label = { Text(stringResource(text.label)) },
+            isError = error != null,
+            supportingText = (message ?: help)?.let { { Text(it) } },
+            singleLine = field.kind != FieldKind.TEXT,
+            keyboardOptions = when (field.kind) {
+                FieldKind.INT -> KeyboardOptions(keyboardType = KeyboardType.Number)
+                FieldKind.DECIMAL -> KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                else -> KeyboardOptions.Default
+            },
+            modifier = if (field.kind == FieldKind.INT || field.kind == FieldKind.DECIMAL) {
+                // widthIn AVANT fillMaxWidth : l'ordre inverse laisse la contrainte entrante (pleine largeur) l'emporter sur la borne.
+                Modifier.widthIn(max = NUMBER_FIELD_MAX_WIDTH).fillMaxWidth()
+            } else {
+                Modifier.fillMaxWidth()
+            }.bringIntoViewRequester(reveal),
+        )
+    }
 }
 
 /**
@@ -306,4 +335,6 @@ private fun errorMessage(error: FieldError, minExclusive: Boolean): String = whe
     FieldErrorKind.TOO_LARGE -> stringResource(Res.string.settings_error_max, error.bound.orEmpty())
     FieldErrorKind.INVALID_DATE -> stringResource(Res.string.settings_error_date, error.bound.orEmpty())
     FieldErrorKind.INVALID_COLOR -> stringResource(Res.string.settings_error_color, error.bound.orEmpty())
+    // Sans objet pour les Réglages (noms de membres).
+    FieldErrorKind.DUPLICATE -> stringResource(Res.string.settings_error_required)
 }

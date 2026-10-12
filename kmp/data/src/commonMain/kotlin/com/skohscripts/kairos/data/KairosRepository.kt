@@ -46,11 +46,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.todayIn
 import kotlinx.serialization.json.Json
@@ -171,7 +173,7 @@ class KairosRepository(
             }
             if (next == TaskStatus.DONE) {
                 queries.closeOpenSessionsOf(now(), taskId)
-                Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now())?.let { insertNew(it, src) }
+                Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src) }
             }
         }
     }
@@ -264,7 +266,23 @@ class KairosRepository(
                     // La date programmée prime sur le jour affiché : l'heure fixe tombe ce jour-là.
                     pinnedStart = edit.pinTime?.let { (edit.scheduledDate ?: edit.pinDay).atTime(it) },
                     manualTimeSpentMinutes = edit.manualTimeSpentMinutes?.takeIf { it >= 0 },
+                    // « Compter dans l'équipe » ne concerne qu'une tâche perso (docs/spec/equipe-moi.md).
+                    teamExcluded = edit.teamExcluded?.takeIf { task.space == TaskSpace.PERSONAL } ?: task.teamExcluded,
             )
+            // Série « le N du mois » enregistrée sans échéance : la tâche EST l'occurrence de ce mois. Sans cela, l'affichage
+            // suivant en créait une seconde, de même titre, et l'originale restait « sans créneau » (recurrence.md).
+            val seriesDay = updated.recurrenceDayOfMonth
+            if (onDay && seriesDay != null && updated.deadline == null && updated.recurrencePeriod.isEmpty()) {
+                // Le jour N de ce mois est déjà passé : la tâche est l'occurrence du mois suivant (sinon elle naissait en retard).
+                val holidays = holidaysNow()
+                var month = today()
+                var deadline = Recurrence.calendarDeadline(seriesDay, month, holidays)
+                if (deadline < month) {
+                    month = LocalDate(month.year, month.month.ordinal + 1, 1).plus(DatePeriod(months = 1))
+                    deadline = Recurrence.calendarDeadline(seriesDay, month, holidays)
+                }
+                updated = updated.copy(deadline = deadline, scheduledDate = updated.scheduledDate ?: deadline, recurrencePeriod = Recurrence.period(month))
+            }
             val reassigned = edit.reassign?.let { reassigned(updated, it.memberId, it.keepInProgress) }
             if (reassigned != null) updated = reassigned
             updateRow(updated)
@@ -606,6 +624,8 @@ class KairosRepository(
         queries.deleteSessionsOfTeamTasks()
         queries.deleteTeamTasks()
         queries.unassignAllTasks()
+        // Plus d'équipe, plus d'exclusion : la base redevient une base solo, export compris (docs/spec/equipe-moi.md).
+        queries.clearTeamExclusions()
         queries.deleteAllMemberAbsences()
         queries.deleteAllTeamMembers()
     }
@@ -772,7 +792,7 @@ class KairosRepository(
      * Côté manager : aperçu de l'intégration d'un rapport, **sans rien écrire** (de → vers, lignes ignorées, refus).
      * @throws ImportException si le texte n'est pas un rapport lisible.
      */
-    fun previewReport(text: String): ReportMergePlan = ReportMerge.plan(state.value, TeamExchangeCodec.decodeReport(text), timeZone)
+    fun previewReport(text: String): ReportMergePlan = ReportMerge.plan(state.value, TeamExchangeCodec.decodeReport(text), timeZone, clock.now())
 
     /**
      * Côté manager : intègre un rapport, en **une** transaction (la sauvegarde préalable est faite par l'interface).
@@ -787,7 +807,7 @@ class KairosRepository(
         val report = TeamExchangeCodec.decodeReport(text)
         var planned: ReportMergePlan? = null
         write {
-            val plan = ReportMerge.plan(state.value, report, timeZone)
+            val plan = ReportMerge.plan(state.value, report, timeZone, clock.now())
             planned = plan
             if (!plan.accepted) return@write
             val member = checkNotNull(plan.member)
@@ -833,7 +853,7 @@ class KairosRepository(
             val doneAt = u.doneOn?.atTime(DONE_HOUR, 0)?.toInstant(timeZone)?.coerceAtMost(clock.now()) ?: clock.now()
             journal(after, TeamEventKind.DONE, before.progressPercent?.toString(), DONE_PROGRESS.toString(), src, memberId = reporterId, at = doneAt.store())
             queries.closeOpenSessionsOf(now(), after.id)
-            Recurrence.nextOccurrence(after, today(), state.value.tasks, clock.now())?.let { insertNew(it, src, actor = reporterId) }
+            Recurrence.nextOccurrence(after, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src, actor = reporterId) }
         } else {
             journal(after, TeamEventKind.REOPENED, before.progressPercent?.toString(), after.progressPercent?.toString(), src, memberId = reporterId)
         }
@@ -1094,7 +1114,7 @@ class KairosRepository(
                 t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
                 t.createdAt.store(), t.updatedAt.store(), t.space.code.toLong(), t.assigneeId,
                 t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
-                t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+                t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
             )
         }
         for (m in snapshot.members) {
@@ -1153,7 +1173,7 @@ class KairosRepository(
             t.scheduledDate.store(), t.recurrenceDayOfMonth?.toLong(), t.recurrenceDayOfWeek?.toLong(),
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             now(), now(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
-            t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+            t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
         )
         val id = queries.lastInsertedId().awaitAsOneOrNull()
         if (t.space == TaskSpace.TEAM && id != null) {
@@ -1181,7 +1201,8 @@ class KairosRepository(
             t.scheduledDate.store(), t.recurrenceDayOfMonth?.toLong(), t.recurrenceDayOfWeek?.toLong(),
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             if (touch) now() else t.updatedAt.store(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(),
-            t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), t.id,
+            t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
+            if (t.teamExcluded) 1L else 0L, t.id,
         )
     }
 
@@ -1239,6 +1260,10 @@ class KairosRepository(
         if (memberId != null && state.value.members.none { it.id == memberId && !it.archived }) return null
         return task.copy(assigneeId = memberId, startedOn = if (memberId != null && keepInProgress) task.startedOn else null)
     }
+
+    /** Fériés des réglages autour d'aujourd'hui : « jours ouvrés » ne tombe jamais dessus. */
+    private fun holidaysNow(): Set<kotlinx.datetime.LocalDate> =
+        Workdays.holidaysFor(today(), state.value.settings.holidaysFr, state.value.settings.extraHolidays)
 
     private fun Task.isStartable() =
         space == TaskSpace.TEAM && status == TaskStatus.TODO && assigneeId != null && startedOn == null
@@ -1327,6 +1352,11 @@ data class TaskEdit(
      * Mêmes règles que [KairosRepository.assign].
      */
     val reassign: Reassignment? = null,
+    /**
+     * « Compter dans l'équipe » éteint (vrai) ou rallumé (faux) pour une **tâche perso** (docs/spec/equipe-moi.md) ;
+     * `null` = inchangé. Sans effet sur une tâche d'équipe.
+     */
+    val teamExcluded: Boolean? = null,
 )
 
 /** Nouveau titulaire d'une tâche d'équipe : [memberId] `null` = retour au backlog ; [keepInProgress] garde l'état « En cours ». */

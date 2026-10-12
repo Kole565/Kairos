@@ -189,7 +189,8 @@ object Scheduling {
 
     // --- Résultat ----------------------------------------------------------------
 
-    enum class ObstacleKind { BUSY, PINNED }
+    /** [DEEPWORK] : fenêtre de deep work (Kairos 2 la rangeait avec les épinglées ; la note de la vue Jour les distingue). */
+    enum class ObstacleKind { BUSY, PINNED, DEEPWORK }
 
     data class ScheduledTask(
         val task: Task,
@@ -276,7 +277,13 @@ object Scheduling {
         val buffer = settings.meetingBufferMinutes
         val inWindow = busyBlocks.filter { it.start < workdayEnd && it.end > workdayStart }
         val dayBlocks = inWindow.filter { it.kind != BlockKind.DEEPWORK }
-        val deepworkBlocks = inWindow.filter { it.kind == BlockKind.DEEPWORK }.sortedBy { it.start }
+        // Fenêtres de deep work rognées à maintenant (aujourd'hui) : leur part passée n'accueille plus de tâche, une
+        // fenêtre déjà finie disparaît (écart volontaire avec Kairos 2, qui remplissait la fenêtre entière, passé compris).
+        val nowToday = now?.takeIf { it.date == day }
+        val deepworkBlocks = inWindow.filter { it.kind == BlockKind.DEEPWORK }
+            .map { b -> if (nowToday != null && nowToday > b.start) b.copy(start = nowToday) else b }
+            .filter { it.start < it.end && it.start < workdayEnd }
+            .sortedBy { it.start }
 
         val scheduled = mutableListOf<ScheduledTask>()
         val unscheduled = mutableListOf<Task>()
@@ -305,7 +312,7 @@ object Scheduling {
                 assigned += candidate.id
                 slot = slot.plusMinutes(duration)
             }
-            obstacles += Obstacle(block.start, block.end, block.title, 0, ObstacleKind.PINNED)
+            obstacles += Obstacle(block.start, block.end, block.title, 0, ObstacleKind.DEEPWORK)
         }
 
         // 2. Placement au curseur, la meilleure tâche pour chaque créneau.

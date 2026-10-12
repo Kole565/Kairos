@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import com.skohscripts.kairos.core.settings.FieldError
 import com.skohscripts.kairos.core.settings.GeneralError
 import com.skohscripts.kairos.core.settings.SettingsForm
+import com.skohscripts.kairos.core.settings.FieldKind
 import com.skohscripts.kairos.ui.generated.resources.action_save
 import com.skohscripts.kairos.ui.generated.resources.settings_error_dip
 import com.skohscripts.kairos.ui.generated.resources.settings_error_workday
@@ -55,6 +56,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -124,7 +128,13 @@ import org.jetbrains.compose.resources.stringResource
 fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
     val snapshot by services.repository.snapshot.collectAsState()
     val current = snapshot.settings
-    val saved = remember(current) { SettingsForm.values(current) }
+    val language = Locale.current.language
+    // Décimales à la virgule en français (« 0,8 », comme l'aide l'écrit) ; la validation lit les deux.
+    val saved = remember(current, language) {
+        SettingsForm.values(current).mapValues { (key, value) ->
+            if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
+        }
+    }
     var values by remember(current) { mutableStateOf(saved) }
     var errors by remember(current) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
     var general by remember(current) { mutableStateOf<GeneralError?>(null) }
@@ -144,13 +154,20 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
         }
     }
 
+    val reveal = remember { ErrorReveal() }
+
     fun save() {
         val result = SettingsForm.validate(values, current)
         errors = result.fieldErrors
         general = result.general
         val settings = result.settings
         when {
-            settings == null -> scope.launch { messages(getString(Res.string.settings_not_saved)) }
+            settings == null -> scope.launch {
+                // Défiler d'abord vers ce qui est refusé (champ fautif, sinon bandeau des règles entre champs).
+                val first = result.fieldErrors.keys.firstOrNull() ?: ErrorReveal.GENERAL
+                launch { withFrameNanos { }; withFrameNanos { }; runCatching { reveal.reveal(first) } }
+                messages(getString(Res.string.settings_not_saved))
+            }
             current.teamModeEnabled && !settings.teamModeEnabled -> confirmHide = settings
             else -> write(settings)
         }
@@ -164,18 +181,20 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
                 modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(KairosSpacing.l),
             ) {
                 Text(stringResource(Res.string.settings_intro), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth())
-                general?.let { GeneralErrorBanner(it) }
-                SettingsFormCards(values, errors) { key, value ->
-                    values = values + (key to value)
-                    errors = errors - key
-                }
-                AppearanceCard(values["themeColor"].orEmpty(), errors["themeColor"]) {
-                    values = values + ("themeColor" to it)
-                    errors = errors - "themeColor"
-                }
-                TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services) { key, value ->
-                    values = values + (key to value)
-                    errors = errors - key
+                general?.let { Box(Modifier.fillMaxWidth().bringIntoViewRequester(reveal.requester(ErrorReveal.GENERAL))) { GeneralErrorBanner(it) } }
+                CompositionLocalProvider(LocalErrorReveal provides reveal) {
+                    SettingsFormCards(values, errors) { key, value ->
+                        values = values + (key to value)
+                        errors = errors - key
+                    }
+                    AppearanceCard(values["themeColor"].orEmpty(), errors["themeColor"]) {
+                        values = values + ("themeColor" to it)
+                        errors = errors - "themeColor"
+                    }
+                    TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services) { key, value ->
+                        values = values + (key to value)
+                        errors = errors - key
+                    }
                 }
                 services.updates?.let { updates ->
                     UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { values = values + ("updateCheckEnabled" to it) }

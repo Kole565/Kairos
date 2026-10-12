@@ -23,12 +23,16 @@ object Recurrence {
     /** Règles recréées à la complétion. */
     val COMPLETION_RULES = setOf(TaskRecurrence.DAILY, TaskRecurrence.WEEKDAYS, TaskRecurrence.WEEKLY, TaskRecurrence.MONTHLY)
 
-    /** Prochaine échéance après [base] ; [dayOfWeek] (0 = lundi) ancre `weekly`. */
-    fun nextDeadline(rule: TaskRecurrence, base: LocalDate, dayOfWeek: Int? = null): LocalDate = when (rule) {
+    /**
+     * Prochaine échéance après [base] ; [dayOfWeek] (0 = lundi) ancre `weekly`. [holidays] : `weekdays` (jours ouvrés)
+     * saute aussi les fériés, jamais une échéance un jour férié (écart volontaire avec Kairos 2, docs/spec/recurrence.md) ;
+     * vide par défaut : les tests différentiels de Kairos 2 n'en ont pas.
+     */
+    fun nextDeadline(rule: TaskRecurrence, base: LocalDate, dayOfWeek: Int? = null, holidays: Set<LocalDate> = emptySet()): LocalDate = when (rule) {
         TaskRecurrence.DAILY -> base.plus(DatePeriod(days = 1))
         TaskRecurrence.WEEKDAYS -> {
             var step = base.plus(DatePeriod(days = 1))
-            while (Workdays.weekday(step) >= 5) step = step.plus(DatePeriod(days = 1))
+            while (Workdays.weekday(step) >= 5 || step in holidays) step = step.plus(DatePeriod(days = 1))
             step
         }
         TaskRecurrence.WEEKLY -> {
@@ -62,7 +66,7 @@ object Recurrence {
      * identique (titre, règle, échéance) déjà à faire dans [existing].
      * L'identifiant rendu vaut 0 (attribué par la base).
      */
-    fun nextOccurrence(task: Task, today: LocalDate, existing: List<Task>, now: Instant): Task? {
+    fun nextOccurrence(task: Task, today: LocalDate, existing: List<Task>, now: Instant, holidays: Set<LocalDate> = emptySet()): Task? {
         if (task.recurrence !in COMPLETION_RULES) return null
         val base = maxOf(task.deadline ?: today, today)
         val anchor = if (task.recurrence == TaskRecurrence.WEEKLY) {
@@ -70,7 +74,7 @@ object Recurrence {
         } else {
             null
         }
-        val deadline = nextDeadline(task.recurrence, base, anchor)
+        val deadline = nextDeadline(task.recurrence, base, anchor, holidays)
         val duplicate = existing.any {
             it.title == task.title && it.recurrence == task.recurrence && it.deadline == deadline && it.status == TaskStatus.TODO
         }
@@ -115,6 +119,13 @@ object Recurrence {
 
     fun period(day: LocalDate): String = "${day.year.toString().padStart(4, '0')}-${(day.month.ordinal + 1).toString().padStart(2, '0')}"
 
+    /** Échéance, ce mois-ci, d'une série « le N du mois » : le jour N (borné à la fin du mois), reculé au jour ouvré précédent. */
+    fun calendarDeadline(dayOfMonth: Int, today: LocalDate, holidays: Set<LocalDate>): LocalDate {
+        val month = today.month.ordinal + 1
+        val target = LocalDate(today.year, month, minOf(dayOfMonth, daysInMonth(today.year, month)))
+        return Workdays.onOrBeforeBusinessDay(target, holidays)
+    }
+
     /**
      * Occurrences du mois de [today] des séries « le N du mois »
      * (`ensure_calendar_occurrences`) : une par série `(titre, jour, espace)` pas
@@ -130,14 +141,15 @@ object Recurrence {
         tasks.filter { it.recurrence == TaskRecurrence.MONTHLY_ON_DAY && it.recurrenceDayOfMonth != null }
             .forEach { series.getOrPut(SeriesKey(it.title, it.recurrenceDayOfMonth!!, it.space)) { mutableListOf() } += it }
         return series.mapNotNull { (key, members) ->
-            val covered = members.any { m -> m.recurrencePeriod == currentPeriod || (m.deadline != null && period(m.deadline) == currentPeriod) }
+            // Une occurrence déjà posée pour un mois suivant (série créée après le jour N) couvre aussi le mois courant.
+            val covered = members.any { m ->
+                (m.recurrencePeriod.isNotEmpty() && m.recurrencePeriod >= currentPeriod) || (m.deadline != null && period(m.deadline) == currentPeriod)
+            }
             if (covered) return@mapNotNull null
             val title = key.title
             val dayOfMonth = key.dayOfMonth
             val rep = members.maxBy { it.id }
-            val month = today.month.ordinal + 1
-            val target = LocalDate(today.year, month, minOf(dayOfMonth, daysInMonth(today.year, month)))
-            val deadline = Workdays.onOrBeforeBusinessDay(target, holidays)
+            val deadline = calendarDeadline(dayOfMonth, today, holidays)
             Task(
                 id = 0,
                 title = title,

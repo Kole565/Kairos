@@ -43,6 +43,10 @@ pouvoir le toucher sans viser.
   par la couleur seule (icône et texte avec, `statistiques.md`,
   `navigation-theme.md`).
 - Raccourcis clavier documentés dans l'interface (`vue-jour.md`).
+- **Tab ne piège jamais le clavier** : dans un champ multiligne (description,
+  sous-tâches, « Types proposés »), `Modifier.tabLeavesField()` (`app/TabLeavesField.kt`)
+  fait passer au champ suivant (Maj+Tab : précédent) au lieu d'insérer une
+  tabulation.
 - Le bouton « ? » de la barre du haut est nommé « Aide » ; les cartes de
   l'Accueil sont des cartes entières cliquables lues avec leur titre et leur
   phrase ; la visite guidée annonce « Étape n sur N » ; l'onglet « Échanges » est un

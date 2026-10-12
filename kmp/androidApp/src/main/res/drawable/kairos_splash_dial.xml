@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Relais natif de la page de démarrage (docs/spec/demarrage.md) : le cadran du
+     logo SANS secteur, c.-à-d. la première image de StartupSplash (aiguille à
+     midi), même tracé que le logo (docs/DESIGN_SYSTEM.md § Logo,
+     ic_launcher_foreground.xml), viewBox 40×40. Statique : c'est la page Compose
+     qui anime, le système retire ce relais dès la première image de l'activité.
+     Affiché par l'écran de démarrage système (API 31+, values-v31/themes.xml) et
+     par le fond de fenêtre (kairos_launch_background.xml, avant l'API 31). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+    <!-- Réduit à 0.64 autour du centre : l'écran de démarrage système (API 31+)
+         dessine l'icône dans une boîte de 288dp et la rogne à un cercle de 192dp
+         (les 2/3 centraux). Rayon utile après réduction : 12.35 sur 13.33
+         disponibles. 288 × 0.64 = 184.32dp : la taille du cadran de
+         StartupSplash, pour un relais sans saut. -->
+    <group
+        android:pivotX="20"
+        android:pivotY="20"
+        android:scaleX="0.64"
+        android:scaleY="0.64">
+        <path
+            android:fillColor="#FFEEDC"
+            android:pathData="M1.5,20 A18.5,18.5 0 1 1 38.5,20 A18.5,18.5 0 1 1 1.5,20 Z" />
+        <path
+            android:strokeColor="#FFCC85"
+            android:strokeWidth="1.6"
+            android:fillColor="#00000000"
+            android:pathData="M1.5,20 A18.5,18.5 0 1 1 38.5,20 A18.5,18.5 0 1 1 1.5,20 Z" />
+        <path
+            android:fillColor="#2B251C"
+            android:pathData="M17.4,20 A2.6,2.6 0 1 1 22.6,20 A2.6,2.6 0 1 1 17.4,20 Z" />
+    </group>
+</vector>

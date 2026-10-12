@@ -25,6 +25,8 @@ import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.Reassignment
 import com.skohscripts.kairos.data.TaskEdit
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.BackupStore
@@ -134,9 +136,9 @@ class TeamExchangeUiTest {
     private fun ComposeUiTest.count(text: String, substring: Boolean = false) =
         onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().size
 
-    private fun ComposeUiTest.openSettings() {
-        waitText("Settings")
-        onAllNodesWithText("Settings").onFirst().performClick()
+    /** Réglages (roue crantée de la barre du haut), formulaire chargé. */
+    private fun ComposeUiTest.openSettingsPage() {
+        openSettings()
         waitText("Appearance")
     }
 
@@ -152,8 +154,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val files = Files(pack(manager))
         val services = services(repository(), files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
 
         // Aperçu : rien n'est encore écrit.
@@ -182,8 +184,8 @@ class TeamExchangeUiTest {
     fun cancelingThePackPreviewChangesNothing() = runComposeUiTest {
         val manager = manager()
         val services = services(repository(), Files(pack(manager)))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("New (3)")
         onNodeWithText("Cancel").performClick()
@@ -197,8 +199,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val services = services(repository(), Files(pack(manager)))
         failBackups = true
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("New (3)")
         onNodeWithText("Receive").performClick()
@@ -211,8 +213,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val text = pack(manager)
         val services = services(memberWith(text), Files(text))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Nothing to change: this packet was already received or contains no task.")
         // Rien à confirmer : seul « Fermer » est proposé.
@@ -228,8 +230,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val services = services(manager.repo, Files(pack(manager)))
         val before = manager.snap.tasks.size
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Packet not received")
         waitText("This packet comes from the team managed on this device: it is not to be received here.")
@@ -250,8 +252,8 @@ class TeamExchangeUiTest {
             manager.repo.updateTask(manager.migration, TaskEdit(title = "Migration API v2", priority = 1, points = 5, taskType = "Développement", deadline = LocalDate(2026, 10, 10), estimatedMinutes = 480, pinDay = LocalDate(2026, 9, 29)))
         }
         val services = services(member, Files(pack(manager)))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Updated (1)")
         waitText("Migration API v2")
@@ -274,8 +276,8 @@ class TeamExchangeUiTest {
             manager.repo.assign(listOf(manager.migration, manager.recette), manager.marc)
         }
         val services = services(member, Files(pack(manager)))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Update the tasks received from Corentin (Équipe Plateforme)?")
         waitText("Removed (3)")
@@ -303,8 +305,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val text = report(manager)
         val services = services(manager.repo, Files(text))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
 
         waitText("Integrate the report from Léa?")
@@ -318,7 +320,7 @@ class TeamExchangeUiTest {
 
         onNodeWithText("Integrate").performClick()
         waitUntil(timeoutMillis = 5_000) { manager.snap.tasks.single { it.id == manager.migration }.progressPercent == 70 }
-        waitText("Report from Léa integrated: 1 tasks updated, 1 subtasks added.")
+        waitText("Report from Léa integrated: 1 task(s) updated, 1 subtask(s) added.")
         assertNotNull(manager.snap.members.single { it.id == manager.lea }.lastReportAt)
         assertTrue(manager.snap.tasks.any { it.title == "Écrire la recette" })
         assertEquals(1, backups.keys.count { it.startsWith("avant-integration-rapport-") })
@@ -330,8 +332,8 @@ class TeamExchangeUiTest {
         val text = report(manager)
         runBlocking { manager.repo.integrateReport(text) }
         val services = services(manager.repo, Files(text))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Report not integrated")
         waitText("This report is older than the one of Sep 29 already integrated.")
@@ -346,8 +348,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         // Cette base-ci n'est pas l'équipe du rapport (aucun espace Équipe).
         val services = services(repository(), Files(report(manager)))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Report not integrated")
         waitText("This report is addressed to another team.")
@@ -363,8 +365,8 @@ class TeamExchangeUiTest {
         runBlocking { source.createTask("Imported task") }
         val text = com.skohscripts.kairos.data.ExportCodec.encode(source.snapshot.value, "3.0.0", now)
         val services = services(repository(), Files(text))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("Replace all data?")
         assertEquals(0, count("Receive", substring = true))
@@ -376,8 +378,8 @@ class TeamExchangeUiTest {
     @Test
     fun anUnknownFileKeepsTheUsualErrorMessage() = runComposeUiTest {
         val services = services(repository(), Files("""{"format":"something-else"}"""))
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         pressImport()
         waitText("This file is not a Kairos export.")
         assertTrue(services.repository.snapshot.value.tasks.isEmpty())
@@ -400,7 +402,7 @@ class TeamExchangeUiTest {
         val manager = manager()
         val files = Files()
         val services = services(manager.repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMember("Léa")
         waitText("Exchanges")
         waitText("No report integrated yet.")
@@ -421,7 +423,7 @@ class TeamExchangeUiTest {
         val manager = manager()
         val files = Files(accept = false)
         val services = services(manager.repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMember("Léa")
         onNodeWithText("Send their tasks…").performScrollTo().performClick()
         waitUntil(timeoutMillis = 5_000) { true }
@@ -447,7 +449,7 @@ class TeamExchangeUiTest {
         }
         val files = Files()
         val services = services(manager.repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMember("Léa")
         onNodeWithText("Send their tasks…").performScrollTo().performClick()
         waitText("Packet saved: it removes the tasks sent to Léa.")
@@ -462,7 +464,7 @@ class TeamExchangeUiTest {
         val manager = manager()
         val files = Files()
         val services = services(manager.repo, files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMember("Zoé")
         onNodeWithText("Send their tasks…").performScrollTo().performClick()
         waitText("Zoé has no open task: nothing to send.")
@@ -478,7 +480,7 @@ class TeamExchangeUiTest {
             manager.repo.createMember("Claire", "Lead", 100, 7.0, true)
         }
         val services = services(manager.repo)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openMember("Léa")
         waitText("Last report integrated: Sep 29", substring = true)
         // Le membre « moi » n'a pas de paquet à recevoir de lui-même.
@@ -498,7 +500,7 @@ class TeamExchangeUiTest {
         val manager = manager()
         val member = memberWith(pack(manager))
         val services = services(member)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("task received from Corentin").fetchSemanticsNodes().isNotEmpty() }
         assertTrue(count("from Corentin") >= 1)
         assertEquals(0, count("removed by Corentin"))
@@ -523,12 +525,12 @@ class TeamExchangeUiTest {
             member.snapshot.value.tasks.filter { !it.originRemoved }.sortedByDescending { it.id }.forEach { member.deleteTask(it.id) }
         }
         val services = services(member)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("removed by Corentin")
         onNodeWithContentDescription("Edit").performClick()
         waitText("Edit task")
         // Supprimer ou garder : les deux choix sont proposés dans la fiche.
-        onNodeWithText("Delete").performScrollTo().assertExists()
+        onNodeWithText("Delete").assertExists()
         onNodeWithText("Keep as a personal task").performScrollTo().performClick()
         waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.single().origin == null }
         waitGone("Edit task")
@@ -543,7 +545,7 @@ class TeamExchangeUiTest {
         val member = memberWith(pack(manager))
         runBlocking { member.snapshot.value.tasks.filter { it.title != "Écrire les migrations" }.sortedByDescending { it.id }.forEach { member.deleteTask(it.id) } }
         val services = services(member)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Edit").fetchSemanticsNodes().size == 1 }
         onNodeWithContentDescription("Edit").performClick()
         waitText("Edit task")
@@ -559,11 +561,11 @@ class TeamExchangeUiTest {
             repo.setPoints(id, 2)
         }
         val services = services(repo)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Mine", substring = true)
         assertEquals(0, count("from ", substring = true))
         assertEquals(0, onAllNodes(hasContentDescription("task received from", substring = true)).fetchSemanticsNodes().size)
-        openSettings()
+        openSettingsPage()
         waitText("Import")
         assertEquals(0, count("Send back progress", substring = true))
         assertEquals(0, count("Saves a file with the status", substring = true))
@@ -575,7 +577,7 @@ class TeamExchangeUiTest {
         val member = memberWith(pack(manager))
         val services = services(member)
         val migration = member.snapshot.value.tasks.single { it.title == "Migration API" }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Edit").fetchSemanticsNodes().isNotEmpty() }
         // Une seule tâche reçue reste : un seul « Modifier ».
         runBlocking { member.snapshot.value.tasks.filter { it.id != migration.id }.sortedByDescending { it.id }.forEach { member.deleteTask(it.id) } }
@@ -584,7 +586,7 @@ class TeamExchangeUiTest {
         waitText("Edit task")
         waitText("Received from Corentin. Title, description, priority, points, category, deadline and duration are replaced with every new packet; progress is yours.")
         onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress)).performSemanticsAction(SemanticsActions.SetProgress) { it(30f) }
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.single { it.id == migration.id }.progressPercent == 30 }
         assertNotNull(services.repository.snapshot.value.tasks.single { it.id == migration.id }.startedOn)
     }
@@ -594,8 +596,8 @@ class TeamExchangeUiTest {
         val manager = manager()
         val files = Files()
         val services = services(memberWith(pack(manager)), files)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         waitText("Send back progress…")
         onNodeWithText("Saves a file with the status", substring = true).performScrollTo()
         onNodeWithText("Send back progress…").performScrollTo().performClick()
@@ -612,8 +614,8 @@ class TeamExchangeUiTest {
         val member = memberWith(pack(first))
         runBlocking { member.receivePack(pack(second)) }
         val services = services(member, Files())
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
         waitText("Send back progress to", substring = true)
         assertEquals(2, count("Send back progress to Corentin (Équipe Plateforme)…"))
         assertEquals(0, count("Send back progress…"))

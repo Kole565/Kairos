@@ -70,6 +70,10 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 - Une réaffectation garde l'avancement et le temps passé ; elle remet
   l'état à « À faire » si la tâche était « En cours » (le nouveau titulaire
   n'a pas commencé), après avoir demandé : « Garder l'état En cours ? ».
+  Dans la fiche, un curseur d'avancement modifié n'est réappliqué qu'**après** la
+  réaffectation si la tâche garde son état ; si elle repart à « À faire »
+  (« Non »), le curseur est ignoré (`EditTaskDialog` : `restarts`), sinon la carte
+  finissait « En cours 50 % » juste après avoir été remise à « À faire ».
 - Les sous-tâches d'une tâche d'équipe sont des tâches d'équipe ; à la
   création, elles prennent l'assigné de la mère ; ensuite elles se
   réaffectent chacune.
@@ -310,7 +314,10 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
   signaux en badge contour + icône + **texte court** (En retard, Traîne,
   Sans avancement, Ballottée, Bloquée), lisibles sans l'icône et par le
   lecteur d'écran. Menu de carte : Commencer, curseur d'avancement,
-  Réaffecter à…
+  Terminer, Réaffecter à… ; sur une carte faite, Rouvrir. Les deux passent
+  par `toggleDone` (avancement 100 %, journal `done` / `reopened`) : sans
+  eux, la tâche d'un autre membre ne pouvait être finie qu'en la réaffectant
+  à « moi » (test exploratoire du 2026-10-11).
 - Fiche : `EditTaskDialog` reçoit `team: TeamTaskSheet?` (`TeamTaskSheet.kt`,
   `TeamTaskDialog.kt`) : onglets Détails / Historique (`TaskHistory`,
   phrases du journal), « Assigné à » (menu), « Catégorie », curseur 0-100 %
@@ -347,6 +354,12 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 - **Réaffecter remet à « À faire » (sur confirmation)** : le temps passé
   appartient à l'ancien titulaire, le nouvel assigné n'a pas commencé ;
   mais le manager peut garder « En cours » (passation d'un travail entamé).
+  **Rouvert le 2026-10-11 (test exploratoire), décision maintenue** : répondre
+  « Non » remet à « À faire » mais **garde l'avancement** (une tâche à 100 %
+  « À faire » intriguait). L'avancement dit ce qui est déjà fait, utile au
+  nouveau titulaire ; pour repartir de zéro, le manager pose 0 % (curseur de
+  la carte). Le vrai trou était ailleurs : une tâche à 100 % ne pouvait pas
+  être terminée depuis le Suivi, d'où « Terminer » dans le menu de la carte.
 - **Journal écrit par le dépôt** : c'est la seule façon de garantir le
   « suivi complet » demandé, y compris pour les modifications faites depuis
   la vue Jour.

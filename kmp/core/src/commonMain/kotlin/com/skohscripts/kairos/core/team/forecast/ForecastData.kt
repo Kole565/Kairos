@@ -11,6 +11,7 @@ import com.skohscripts.kairos.core.team.Capacity
 import com.skohscripts.kairos.core.team.Effort
 import com.skohscripts.kairos.core.team.TeamBoard
 import com.skohscripts.kairos.core.team.TeamMembers
+import com.skohscripts.kairos.core.team.TeamWork
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -184,6 +185,10 @@ data class ForecastData(
          * (un total sans date) n'y entre pas : seules les sessions datent leurs heures. Une
          * semaine sans heure enregistrée n'est pas lue comme « zéro travail » (rien
          * n'oblige à chronométrer) : elle n'est pas un échantillon.
+         *
+         * La base est lue par la vue de calcul (`TeamWork.view`, docs/spec/equipe-moi.md) : les tâches perso de
+         * « moi » qui comptent dans l'équipe enrichissent ses facteurs, son débit et sa capacité réelle ; sa
+         * capacité prévue des semaines passées retire ses créneaux occupés.
          */
         fun build(
             snapshot: KairosSnapshot,
@@ -191,6 +196,16 @@ data class ForecastData(
             now: Instant,
             timeZone: TimeZone,
             calibration: List<Calibration>? = null,
+        ): ForecastData {
+            return buildFromView(TeamWork.view(snapshot), day, now, timeZone, calibration)
+        }
+
+        private fun buildFromView(
+            snapshot: KairosSnapshot,
+            day: LocalDate,
+            now: Instant,
+            timeZone: TimeZone,
+            calibration: List<Calibration>?,
         ): ForecastData {
             val settings = snapshot.settings
             val team = settings.team ?: TeamSettings()
@@ -234,13 +249,14 @@ data class ForecastData(
             }
             val holidays = Workdays.buildHolidays(windowStart.year..day.year, settings.holidaysFr, settings.extraHolidays)
             val capacity = LinkedHashMap<Long, List<Double>>()
+            val busy = TeamWork.selfBusy(snapshot)
             for (m in TeamMembers.active(snapshot.members)) {
                 val real = realHours[m.id] ?: continue
                 val mine = snapshot.absences.filter { it.memberId == m.id }
                 val samples = ArrayList<Double>()
                 for (w in 0 until weeks) {
                     val start = windowStart.plus(DatePeriod(days = 7 * w))
-                    val planned = Capacity.overRange(m, start, start.plus(DatePeriod(days = 6)), holidays, mine, settings)
+                    val planned = Capacity.overRange(m, start, start.plus(DatePeriod(days = 6)), holidays, mine, settings, busy = busy)
                     if (planned > 0.0 && real[w] > 0.0) samples += (real[w] / planned).coerceIn(MIN_CAPACITY_FACTOR, MAX_CAPACITY_FACTOR)
                 }
                 if (samples.size >= minSamples) capacity[m.id] = samples.sorted()

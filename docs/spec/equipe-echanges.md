@@ -213,7 +213,10 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
   § Décisions).
 - `decode` : même contrat d'erreurs que `ExportCodec` (`NOT_AN_EXPORT`,
   `TOO_NEW`, `CORRUPTED`), champs inconnus ignorés. Les décodages du dépôt
-  lèvent `ImportException`.
+  lèvent `ImportException`. Un rapport dont un temps passé est négatif ou
+  dépasse `ReportFile.MAX_SPENT_MINUTES` (600 000 min, 10 000 h sur une seule
+  tâche) est `CORRUPTED` : l’aperçu montrait « 1666666 h 39 » (test exploratoire
+  du 2026-10-11).
 - Aiguillage du bouton « Importer » : `TeamExchangeCodec.detect(text)` lit
   `format` seul (`kairos-export` → `EXPORT`, `kairos-team-pack` → `PACK`,
   `kairos-team-report` → `REPORT`, autre → `NOT_AN_EXPORT`), puis le
@@ -303,7 +306,12 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
 - Refus : `WRONG_TEAM` (identité d'équipe différente), `UNKNOWN_MEMBER`
   (fiche du membre supprimée depuis l'envoi), `OLDER` (`reportedAt` ≤ le
   dernier rapport intégré de ce membre, colonne
-  `team_member.last_report_at`, mise à jour à chaque intégration).
+  `team_member.last_report_at`, mise à jour à chaque intégration),
+  `FROM_THE_FUTURE` (`reportedAt` de plus d'un jour après l'instant du
+  manager, `ReportMerge.FUTURE_TOLERANCE` : l'intégrer poserait
+  `last_report_at` dans le futur et ferait refuser tous les vrais rapports
+  suivants ; le contrôle n'a lieu que si `plan` reçoit `now`, ce que font
+  `previewReport` et `integrateReport`).
 - Avancement intégré sans arrondi (borné à 0-100) ; date de commencement :
   la **plus ancienne** des deux (celle du membre n'est souvent qu'un
   repli, le jour du rapport, et ne doit pas effacer un commencement connu
@@ -497,3 +505,11 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
 - `accueil.md` : bouton « ? », page Accueil, visite guidée (onglet « Échanges »
   de la visite de l'espace Équipe) ; `navigation-theme.md` : « ? » et écran
   secondaire `Secondary` ; `equipe.md` : écran Équipe à deux onglets.
+
+### Arbitrage du 12/10 (passe QA)
+
+- Un avancement rapporté à 100 % (ou borné à 100 % depuis une valeur aberrante)
+  **ne termine pas** la tâche : l'état « fait » ne vient que du statut du rapport
+  (`ReportMerge`), jamais du pourcentage. Une tâche « En cours à 100 % » est un
+  état valide (le membre n'a pas encore clos), le manager la voit et peut la
+  terminer depuis le Suivi.

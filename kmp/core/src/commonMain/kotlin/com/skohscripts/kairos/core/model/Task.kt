@@ -62,6 +62,11 @@ data class Task(
      * sessions et au temps saisi à la main dans tous les calculs de temps passé (`TimeTracking.spentMinutesByTask`).
      */
     val reportedMinutes: Int? = null,
+    /**
+     * Tâche perso **exclue** de l'espace Équipe (docs/spec/equipe-moi.md) : par défaut, une tâche perso compte dans la
+     * charge et les prévisions de « moi » ; vrai la retire de ces calculs. Sans effet sans gestion d'équipe ni « moi ».
+     */
+    val teamExcluded: Boolean = false,
 ) {
     /**
      * Pas encore clarifiée (GTD) : il manque la priorité **ou** les points. Elle

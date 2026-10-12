@@ -40,7 +40,9 @@ l'APK était en arrière-plan ; Kairos 3 les confie au système.
 - Le temps s'affiche en direct : badge de la ligne, carte « En ce moment »
   (surface sombre : tâche, minuteur, estimé, « Arrêter le chrono »), titre
   de la fenêtre ou de l'onglet (« (0:12) Tâche · Kairos »). Une tâche sans
-  chrono en cours montre « 40 min / 30 » (rouge au-delà de l'estimé).
+  chrono en cours montre « 40 min / 30 min », « 1 h 10 / 1 h » (rouge
+  au-delà de l'estimé) : durées lisibles, comme l'estimation de la ligne
+  (« 1 h 30 », jamais « 90 min »).
 - « Maintenant » affiche le temps travaillé **aujourd'hui** (sessions
   commencées ce jour, jamais l'historique entier) et sa ventilation par
   type. La frise montre à gauche un rail du temps chronométré à côté du

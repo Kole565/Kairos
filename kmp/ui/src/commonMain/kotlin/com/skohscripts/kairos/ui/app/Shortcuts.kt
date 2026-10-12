@@ -165,8 +165,11 @@ private fun rememberShortcutAction(shortcuts: ShortcutService): () -> Unit {
         if (!busy) {
             busy = true
             scope.launch {
+                // Texte lu avant de créer : le raccourci créé retire le bandeau, ce qui annule cette coroutine ; une
+                // lecture (suspendue) après coup pouvait être interrompue et la snackbar ne jamais s'afficher.
+                val created = getString(Res.string.shortcut_created)
                 runCatching { shortcuts.create() }
-                    .onSuccess { message(getString(Res.string.shortcut_created)) }
+                    .onSuccess { message(created) }
                     .onFailure { message(getString(Res.string.shortcut_failed, it.message.orEmpty())) }
                 busy = false
             }

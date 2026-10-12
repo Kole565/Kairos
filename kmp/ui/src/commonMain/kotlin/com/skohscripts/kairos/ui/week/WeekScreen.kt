@@ -102,13 +102,14 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
             // Titre au-dessus des boutons : entre eux, il n'avait plus de place sur un
             // téléphone et s'affichait une lettre par ligne.
             Text(stringResource(Res.string.week_title, Dates.dayMonth(week.monday, language)), style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                KairosOutlinedButton(onClick = { nav.week = week.monday.minus(DatePeriod(days = 7)) }, contentPadding = KairosButtonIconPadding) {
+            // Même hauteur : à 360 dp « Semaine suivante » passe sur deux lignes et sa voisine restait sur une.
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(IntrinsicSize.Min)) {
+                KairosOutlinedButton(onClick = { nav.week = week.monday.minus(DatePeriod(days = 7)) }, modifier = Modifier.fillMaxHeight(), contentPadding = KairosButtonIconPadding) {
                     Icon(KairosIcons.ChevronLeft, contentDescription = null, modifier = Modifier.size(18.dp))
                     Text(stringResource(Res.string.week_prev), modifier = Modifier.padding(start = 4.dp))
                 }
                 Spacer(Modifier.weight(1f))
-                KairosOutlinedButton(onClick = { nav.week = week.monday.plus(DatePeriod(days = 7)) }) {
+                KairosOutlinedButton(onClick = { nav.week = week.monday.plus(DatePeriod(days = 7)) }, modifier = Modifier.fillMaxHeight()) {
                     Text(stringResource(Res.string.week_next), modifier = Modifier.padding(end = 4.dp))
                     Icon(KairosIcons.ChevronRight, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
@@ -125,8 +126,8 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                 projects, snapshot.settings.taskTypeList, remember { FocusRequester() }, LocalPlatform.current != Platform.ANDROID,
             )
             BacklogList(backlog.map { it.title }, backlogOpen) { backlogOpen = !backlogOpen }
-            // Sept colonnes égales quand elles tiennent (140 dp chacune au moins),
-            // sinon des cartes de 184 dp qui passent à la ligne (mobile).
+            // Sept colonnes égales quand elles tiennent (140 dp chacune au moins), sinon autant de colonnes égales de
+            // 160 dp au moins que la largeur en permet : les cartes remplissent la ligne, sans moitié droite vide.
             BoxWithConstraints(Modifier.fillMaxWidth()) {
                 if (maxWidth >= 140.dp * 7 + 8.dp * 6) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.height(IntrinsicSize.Max)) {
@@ -135,8 +136,14 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                         }
                     }
                 } else {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        week.days.forEach { day -> DayCard(day, day.date == today, language, Modifier.width(184.dp)) { onOpenDay(day.date) } }
+                    val columns = ((maxWidth + 8.dp) / (160.dp + 8.dp)).toInt().coerceIn(1, 7)
+                    val cardWidth = (maxWidth - 8.dp * (columns - 1)) / columns
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = columns,
+                    ) {
+                        week.days.forEach { day -> DayCard(day, day.date == today, language, Modifier.width(cardWidth)) { onOpenDay(day.date) } }
                     }
                 }
             }

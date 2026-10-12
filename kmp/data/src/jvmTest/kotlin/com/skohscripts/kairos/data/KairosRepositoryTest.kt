@@ -158,6 +158,27 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun importRefusesAnExportBreakingTheAppRulesAndAcceptsABom() {
+        val task = """{"id":1,"title":"x","createdAt":"2026-09-28T07:00:00Z","updatedAt":"2026-09-28T07:00:00Z"}"""
+        fun export(body: String) = """{"format":"kairos-export","formatVersion":1,$body}"""
+        fun reason(text: String) = assertFailsWith<ImportException> { ExportCodec.decode(text) }.reason
+        // Réglages hors bornes (une heure 25 faisait planter les vues Jour et Semaine).
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""settings":{"workdayStartHour":25},"tasks":[]""")))
+        // Identifiants en double, priorité et points inconnus, dépendance vers elle-même.
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[$task,$task]""")))
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[${task.replace("\"title\"", "\"priority\":7,\"title\"")}]""")))
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[${task.replace("\"title\"", "\"fibonacciPoints\":-3,\"title\"")}]""")))
+        assertEquals(
+            ImportException.Reason.CORRUPTED,
+            reason(export(""""tasks":[$task],"dependencies":[{"id":1,"taskId":1,"blockerId":1,"createdAt":"2026-09-28T07:00:00Z"}]""")),
+        )
+        // Mal typé : illisible, pas « pas un export ».
+        assertEquals(ImportException.Reason.CORRUPTED, reason(export(""""tasks":[{"id":"abc"}]""")))
+        // Marque d'ordre des octets (Bloc-notes de Windows) : l'export reste lisible.
+        assertEquals(listOf("x"), ExportCodec.decode("\uFEFF" + export(""""tasks":[$task]""")).tasks.map { it.title })
+    }
+
+    @Test
     fun missingSettingsTakeTheirDefaults() {
         val text = """{"format":"kairos-export","formatVersion":1,"settings":{"meetingBufferMinutes":12,"inconnu":true}}"""
         val snapshot = ExportCodec.decode(text)
@@ -213,6 +234,32 @@ class KairosRepositoryTest {
         assertEquals(LocalDate(2026, 11, 23), occ.deadline)
         assertEquals("2026-11", occ.recurrencePeriod)
         assertEquals(2, repo.snapshot.value.tasks.size)
+    }
+
+    @Test
+    fun aCalendarSeriesSavedWithoutDeadlineIsThisMonthsOccurrence() = runTest {
+        val repo = empty()
+        val id = repo.createTask("Loyer")!!
+        repo.updateTask(id, edit("Loyer", { it.copy(recurrence = TaskRecurrence.MONTHLY_ON_DAY, recurrenceDayOfMonth = 30) }))
+        val task = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 9, 30), task.deadline)
+        assertEquals("2026-09", task.recurrencePeriod)
+        // Pas de doublon à l'affichage de la vue Jour.
+        repo.ensureCalendarOccurrences(LocalDate(2026, 9, 29))
+        assertEquals(1, repo.snapshot.value.tasks.size)
+    }
+
+    @Test
+    fun aCalendarSeriesWhoseDayHasPassedStartsNextMonth() = runTest {
+        val repo = empty()
+        val id = repo.createTask("Loyer")!!
+        // Aujourd'hui : mardi 29 sept. 2026 ; le 5 est passé.
+        repo.updateTask(id, edit("Loyer", { it.copy(recurrence = TaskRecurrence.MONTHLY_ON_DAY, recurrenceDayOfMonth = 5) }))
+        val task = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 10, 5), task.deadline)
+        assertEquals("2026-10", task.recurrencePeriod)
+        repo.ensureCalendarOccurrences(LocalDate(2026, 9, 29))
+        assertEquals(1, repo.snapshot.value.tasks.size)
     }
 
     @Test

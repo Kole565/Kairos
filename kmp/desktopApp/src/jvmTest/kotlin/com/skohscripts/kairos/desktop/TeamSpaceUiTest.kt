@@ -28,6 +28,8 @@ import com.skohscripts.kairos.core.team.TeamMember
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -85,12 +87,12 @@ class TeamSpaceUiTest {
 
     private fun ComposeUiTest.selectorShown() = onAllNodesWithContentDescription("Space").fetchSemanticsNodes().isNotEmpty()
 
-    private val personalDestinations = listOf("Notes", "Day", "Week", "Stats", "Settings")
-    private val teamDestinations = listOf("Tracking", "Backlog", "Team", "Forecast", "Settings")
+    private val personalDestinations = listOf("Home", "Notes", "Day", "Week", "Stats")
+    private val teamDestinations = listOf("Home", "Tracking", "Backlog", "Team", "Forecast")
 
-    /** Ouvre les Réglages depuis l'espace courant (le rail affiche « Settings » dans les deux espaces). */
-    private fun ComposeUiTest.openSettings() {
-        onAllNodesWithText("Settings").onFirst().performClick()
+    /** Ouvre les Réglages depuis l'espace courant (roue crantée de la barre du haut, la même dans les deux espaces). */
+    private fun ComposeUiTest.openSettingsPage() {
+        openSettings()
         waitText("Appearance")
     }
 
@@ -111,7 +113,7 @@ class TeamSpaceUiTest {
     @Test
     fun soloModeShowsNoSpaceSelectorAndOnlyTheFivePersonalDestinations() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitText("Day")
         personalDestinations.forEach { assertTrue(count(it) >= 1, it) }
         listOf("Tracking", "Backlog", "Forecast").forEach { assertEquals(0, count(it), it) }
@@ -119,7 +121,7 @@ class TeamSpaceUiTest {
         assertEquals(0, onAllNodesWithContentDescription("Team").fetchSemanticsNodes().size)
 
         // La carte Équipe des Réglages est fermée : l'interrupteur et sa phrase, rien d'autre.
-        openSettings()
+        openSettingsPage()
         onNodeWithText("Team management").performScrollTo().assertExists()
         onNodeWithText("Manage a team: members, shared backlog, workload and forecasts. No effect on your personal tasks.").assertExists()
         assertEquals(0, count("Team name"))
@@ -132,9 +134,8 @@ class TeamSpaceUiTest {
     fun enablingTeamManagementShowsTheSelectorAndTheTeamSpaceOpensOnTracking() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitText("Settings")
-        openSettings()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettingsPage()
 
         // Un interrupteur touché ne change rien avant « Enregistrer ».
         toggleTeamMode()
@@ -158,7 +159,7 @@ class TeamSpaceUiTest {
         teamDestinations.forEach { assertTrue(count(it) >= 1, it) }
         listOf("Notes", "Week", "Stats").forEach { assertEquals(0, count(it), it) }
         // Jalon E3 : sans membre, le Suivi explique comment le remplir (plus de « disponible dans une prochaine version »).
-        onNodeWithText("Add members in the Team tab", substring = true).assertExists()
+        onNodeWithText("Add members in Team (Members tab)", substring = true).assertExists()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.settings.team!!.lastSpace == TeamSettings.SPACE_TEAM }
 
         // Backlog (E3) : capture en tête, sections vides ; Prévisions (E5) propose de lancer une simulation ; Réglages est le même écran qu'en Perso.
@@ -168,7 +169,7 @@ class TeamSpaceUiTest {
         waitText("Team members")
         onAllNodesWithText("Forecast").onFirst().performClick()
         waitText("Run the simulation")
-        openSettings()
+        openSettingsPage()
         onNodeWithText("Working day").assertExists()
 
         // Le nom de l'équipe préfixe les titres de l'espace Équipe.
@@ -190,11 +191,11 @@ class TeamSpaceUiTest {
     fun hidingTheTeamSpaceAsksForConfirmation() = runComposeUiTest {
         val services = services(KairosSnapshot(settings = Settings(team = TeamSettings(enabled = true, name = "Platform", identity = "id-1"))))
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { selectorShown() }
         onNodeWithContentDescription("Team").performClick()
         waitText("Platform · Tracking")
-        openSettings()
+        openSettingsPage()
 
         toggleTeamMode()
         onNodeWithText("Save").performClick()
@@ -236,14 +237,14 @@ class TeamSpaceUiTest {
         )
         val services = services(seed)
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { mentions("Personal chore") > 0 }
         // Mode désactivé : aucune tâche d'équipe dans la vue Jour.
         assertEquals(0, mentions("Mine from the team"))
         assertEquals(0, mentions("Someone else’s job"))
         assertEquals(0, mentions("Unassigned backlog item"))
 
-        openSettings()
+        openSettingsPage()
         toggleTeamMode()
         onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.settings.teamModeEnabled }
@@ -255,7 +256,7 @@ class TeamSpaceUiTest {
         assertEquals(0, mentions("Unassigned backlog item"))
 
         // Désactivée de nouveau : elle en repart.
-        openSettings()
+        openSettingsPage()
         toggleTeamMode()
         onNodeWithText("Save").performClick()
         waitText("Hide the Team space?")

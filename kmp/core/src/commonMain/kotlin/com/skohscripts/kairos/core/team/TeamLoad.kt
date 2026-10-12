@@ -31,6 +31,12 @@ data class MemberLoad(
     /** Tâches « en danger » : leur fin prévue dépasse l'échéance (ou elles ne peuvent pas la tenir). */
     val atRiskCount: Int,
     val plan: LoadPlan.MemberPlan,
+    /** Part de [loadHours] venue des tâches perso de « moi » qui comptent dans l'équipe (docs/spec/equipe-moi.md). */
+    val personalHours: Double = 0.0,
+    /** Part de [loadHours] venue des occurrences projetées des tâches récurrentes. */
+    val recurringHours: Double = 0.0,
+    /** Tâches perso ouvertes de « moi » qui comptent dans l'équipe (hors [inProgressCount] et [todoCount]). */
+    val personalCount: Int = 0,
 )
 
 /** Une catégorie (`Task.taskType`, `""` = sans catégorie) : où passe la capacité. */
@@ -96,7 +102,10 @@ data class TeamLoad(
         /**
          * Vue d'ensemble à [now] (fuseau [timeZone]). [horizonWeeks] : l'horizon
          * choisi à l'écran, à défaut celui des réglages. [calibration] : à défaut,
-         * `Effort.teamCalibration`.
+         * `Effort.teamCalibration`. Le plan lit `TeamWork.planInput` : tâches perso de
+         * « moi », occurrences projetées jusqu'à la fin de l'horizon, temps passé,
+         * créneaux occupés (docs/spec/equipe-moi.md) ; les compteurs d'état et le
+         * backlog restent ceux des tâches d'équipe.
          */
         fun build(
             snapshot: KairosSnapshot,
@@ -112,15 +121,20 @@ data class TeamLoad(
             val weeks = horizonWeeks ?: team.horizonWeeks
             val cal = calibration ?: Effort.teamCalibration(snapshot, now)
             val fraction = Capacity.todayFraction(local, settings)
-            val plan = LoadPlan.build(snapshot, day, cal, weeks, fraction)
+            val input = TeamWork.planInput(snapshot, day, now, Capacity.horizonEnd(day, weeks))
+            val plan = LoadPlan.build(input.snapshot, day, cal, weeks, fraction, spent = input.spent, busy = input.busy)
 
             val active = TeamMembers.active(snapshot.members)
             val activeIds = active.mapTo(HashSet()) { it.id }
             val open = snapshot.tasks.filter { it.space == TaskSpace.TEAM && it.status == TaskStatus.TODO }
+            // Tâches posées par le plan (perso de « moi » comprises, occurrences projetées exclues) : pour les non estimées par catégorie.
+            val planned = input.snapshot.tasks.filter { it.space == TaskSpace.TEAM && it.status == TaskStatus.TODO && !TeamWork.isProjected(it) }
+            val personalIds = snapshot.tasks.filter { it.space == TaskSpace.PERSONAL }.mapTo(HashSet()) { it.id }
 
             val members = active.map { m ->
                 val mp = checkNotNull(plan.of(m.id))
                 val mine = open.filter { it.assigneeId == m.id }
+                val known = mp.tasks.filter { !it.unestimated }
                 val rate = if (mp.capacityHours > 0.0) 100.0 * mp.loadHours / mp.capacityHours else null
                 MemberLoad(
                     member = m,
@@ -134,6 +148,9 @@ data class TeamLoad(
                     nextAbsence = TeamMembers.nextAbsence(snapshot.absences, m.id, day),
                     atRiskCount = mp.tasks.count { it.late },
                     plan = mp,
+                    personalHours = known.filter { it.taskId in personalIds }.sumOf { it.hours },
+                    recurringHours = known.filter { it.taskId < 0 }.sumOf { it.hours },
+                    personalCount = planned.count { it.assigneeId == m.id && it.id in personalIds },
                 )
             }
 
@@ -153,7 +170,7 @@ data class TeamLoad(
             val backlogByCategory = backlog.groupBy(categoryOf)
                 .mapValues { (_, list) -> list.sumOf { backlogEfforts.getValue(it.id) ?: 0.0 } }
             val unestimatedByCategory = HashMap<String, Int>()
-            for (t in open) {
+            for (t in (planned + open).distinctBy { it.id }) {
                 val unknown = if (t.assigneeId != null && t.assigneeId in activeIds) {
                     plan.task(t.id)?.unestimated == true
                 } else {

@@ -91,6 +91,7 @@ import com.skohscripts.kairos.ui.generated.resources.exchange_report_ignored
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_member_archived
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_not_applied
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_nothing
+import com.skohscripts.kairos.ui.generated.resources.exchange_report_refused_future
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_refused_older
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_refused_title
 import com.skohscripts.kairos.ui.generated.resources.exchange_report_refused_unknown_member
@@ -403,6 +404,7 @@ private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>) {
             stringResource(Res.string.exchange_report_refused_older, plan.lastReportAt?.let { Dates.short(it.toLocalDateTime(zone).date, language) }.orEmpty()),
             style = MaterialTheme.typography.bodyMedium,
         )
+        ReportRefusal.FROM_THE_FUTURE -> Text(stringResource(Res.string.exchange_report_refused_future), style = MaterialTheme.typography.bodyMedium)
         null -> Unit
     }
     if (!plan.accepted) return

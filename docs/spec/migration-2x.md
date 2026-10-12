@@ -57,6 +57,9 @@ perte, ni risque pour l'ancienne base.
   TimeTree…), jamais lus au-delà de leur nom.
 - Un fichier qui n'est pas une base Kairos 2 est refusé (« Ce fichier n'est
   pas une base Kairos 2 (tasks.db). »), sans rien changer.
+  Une **base de Kairos 3** (tables `team_member`, `settings`) a aussi une table
+  `task` : `LegacyFiles.read` la refuse de la même façon, au lieu de remettre
+  l'équipe et les réglages à leurs défauts.
 
 ### Critères de succès
 

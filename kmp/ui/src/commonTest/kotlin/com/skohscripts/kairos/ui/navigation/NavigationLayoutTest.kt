@@ -23,12 +23,23 @@ class NavigationLayoutTest {
     }
 
     @Test
-    fun atMostFiveDestinationsStartingOnDay() {
-        // Limite MD3 d'une barre de navigation ; ordre du flux GTD.
+    fun atMostFiveDestinationsStartingOnHome() {
+        // Limite MD3 d'une barre de navigation ; l'Accueil en tête, puis l'ordre du flux GTD ; pas de Réglages (barre du haut).
         assertEquals(
-            listOf(Destination.NOTES, Destination.DAY, Destination.WEEK, Destination.STATS, Destination.SETTINGS),
+            listOf(Destination.HOME, Destination.NOTES, Destination.DAY, Destination.WEEK, Destination.STATS),
             Destination.entries,
         )
-        assertEquals(Destination.DAY, Destination.START)
+        assertEquals(Destination.HOME, Destination.START)
+        assertEquals(Destination.DAY, Destination.WORK)
+    }
+
+    @Test
+    fun theTeamSpaceAlsoStartsItsBarWithHome() {
+        assertEquals(
+            listOf(TeamDestination.HOME, TeamDestination.BOARD, TeamDestination.BACKLOG, TeamDestination.MEMBERS, TeamDestination.FORECAST),
+            TeamDestination.entries,
+        )
+        // Passer dans l'espace Équipe ouvre le Suivi, pas l'Accueil.
+        assertEquals(TeamDestination.BOARD, TeamDestination.START)
     }
 }

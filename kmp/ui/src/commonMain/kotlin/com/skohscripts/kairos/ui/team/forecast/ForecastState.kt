@@ -11,6 +11,7 @@ import com.skohscripts.kairos.core.team.MemberAbsence
 import com.skohscripts.kairos.core.team.TeamEvent
 import com.skohscripts.kairos.core.team.TeamLoad
 import com.skohscripts.kairos.core.team.TeamMember
+import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.core.team.forecast.ForecastData
 import com.skohscripts.kairos.core.team.forecast.ForecastModel
 import com.skohscripts.kairos.core.team.forecast.ForecastOptions
@@ -44,9 +45,11 @@ data class ForecastSpec(
 
 /**
  * Ce dont un résultat dépend dans les données (« empreinte ») : le jour, les membres, leurs absences, les tâches
- * **d'équipe** avec leurs dépendances, leurs sessions de travail et le journal, et les réglages qui comptent
- * (thème et dernier espace affiché exclus : changer de couleur ne périme pas une prévision). Les tâches
- * personnelles, les notes et les créneaux n'y figurent pas. Deux empreintes égales = mêmes entrées de simulation.
+ * **d'équipe** de la vue de calcul (`TeamWork.view` : les tâches perso de « moi » qui comptent y sont,
+ * docs/spec/equipe-moi.md) avec leurs dépendances, leurs sessions de travail et le journal, les créneaux (ceux de
+ * « moi » réduisent sa capacité), et les réglages qui comptent (thème et dernier espace affiché exclus : changer de
+ * couleur ne périme pas une prévision). Les notes et les tâches perso exclues n'y figurent pas. Deux empreintes
+ * égales = mêmes entrées de simulation.
  */
 class ForecastFingerprint private constructor(
     private val day: LocalDate,
@@ -57,16 +60,18 @@ class ForecastFingerprint private constructor(
     private val sessions: List<com.skohscripts.kairos.core.model.WorkSession>,
     private val events: List<TeamEvent>,
     private val settings: Settings,
+    private val blocks: List<com.skohscripts.kairos.core.model.TimeBlock>,
 ) {
     override fun equals(other: Any?): Boolean = other is ForecastFingerprint &&
         day == other.day && settings == other.settings && members == other.members && absences == other.absences &&
-        tasks == other.tasks && dependencies == other.dependencies && sessions == other.sessions && events == other.events
+        tasks == other.tasks && dependencies == other.dependencies && sessions == other.sessions && events == other.events &&
+        blocks == other.blocks
 
     override fun hashCode(): Int = 31 * day.hashCode() + tasks.hashCode()
 
     companion object {
         fun of(snapshot: KairosSnapshot, day: LocalDate): ForecastFingerprint {
-            val tasks = snapshot.tasks.filter { it.space == TaskSpace.TEAM }
+            val tasks = TeamWork.view(snapshot).tasks.filter { it.space == TaskSpace.TEAM }
             val ids = tasks.mapTo(HashSet()) { it.id }
             val settings = snapshot.settings
             return ForecastFingerprint(
@@ -78,6 +83,7 @@ class ForecastFingerprint private constructor(
                 sessions = snapshot.workSessions.filter { it.taskId in ids },
                 events = snapshot.teamEvents,
                 settings = settings.copy(themeColor = Settings.DEFAULT_THEME_COLOR, team = settings.team?.copy(lastSpace = "", name = "", managerName = "")),
+                blocks = if (TeamWork.self(snapshot) != null) snapshot.timeBlocks else emptyList(),
             )
         }
     }
@@ -162,6 +168,18 @@ class TeamUiState(
 
     /** Scénarios cochés pour la comparaison. */
     var compared: Set<Long> by mutableStateOf(emptySet())
+
+    /**
+     * Oublie tout : les données d'équipe ont été supprimées ou remplacées (import). Sans cela, la prévision d'avant
+     * restait affichée (« Membre : Membre inconnu », « Résultat périmé »).
+     */
+    fun reset() {
+        backlogSelection = emptySet()
+        spec = ForecastSpec()
+        forecast = null
+        comparison = null
+        compared = emptySet()
+    }
 }
 
 /** Où en est un calcul : rien, préparation (périmètre, répartition du backlog), tirages (« 3 200 / 5 000 »). */

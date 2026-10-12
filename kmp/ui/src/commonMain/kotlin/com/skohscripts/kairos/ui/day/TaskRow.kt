@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -55,7 +57,6 @@ import com.skohscripts.kairos.ui.generated.resources.spent_of_estimate
 import com.skohscripts.kairos.ui.generated.resources.action_undo
 import com.skohscripts.kairos.ui.generated.resources.deadline_badge
 import com.skohscripts.kairos.ui.generated.resources.description_expand
-import com.skohscripts.kairos.ui.generated.resources.minutes_badge
 import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.generated.resources.tag_recurring
 import com.skohscripts.kairos.ui.generated.resources.tag_scheduled
@@ -96,7 +97,8 @@ internal class RowContext(
  * étiquettes, description] [score, priorité, points] [décaler, modifier]. Le
  * corps grandit vers le bas, jamais vers la droite : les colonnes de droite
  * restent alignées d'une ligne à l'autre. En largeur étroite, la colonne
- * « clés » passe sous le corps ; coche et actions ne bougent pas.
+ * « clés » passe sous le corps et les actions la rejoignent sur une même ligne ;
+ * la coche ne bouge pas.
  *
  * [before] : étiquettes propres à la section (épinglée, deep work, chemin
  * critique…) ; [after] : notes de placement (repoussée, creux, conflit).
@@ -152,27 +154,42 @@ internal fun TaskRow(
                         after()
                     }
                     if (showDescription && !done) Description(task, ctx)
-                    if (ctx.compact) KeyBadges(task, ctx)
+                    // Étroit : les clés et les actions partagent une ligne sous le corps, le titre garde la largeur (à 400 dp,
+                    // trois boutons à droite ne lui laissaient que 175 px : trois ou quatre lignes par titre).
+                    if (ctx.compact) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.weight(1f)) { KeyBadges(task, ctx) }
+                            RowActions(task, ctx, editable)
+                        }
+                    }
                 }
                 if (!ctx.compact) {
                     Row(Modifier.padding(top = 10.dp, start = 8.dp)) { KeyBadges(task, ctx) }
+                    RowActions(task, ctx, editable)
                 }
-                if (task.status == TaskStatus.TODO) {
-                    val running = ctx.view.running?.taskId == task.id
-                    KairosRowIconButton(
-                        if (running) KairosIcons.Stop else KairosIcons.PlayArrow,
-                        stringResource(if (running) Res.string.action_timer_stop else Res.string.action_timer_start),
-                        onClick = { ctx.onToggleTimer(task) },
-                        tint = if (running) MaterialTheme.colorScheme.primary else LocalContentColor.current,
-                    )
-                    KairosRowIconButton(KairosIcons.Redo, stringResource(Res.string.action_snooze), onClick = { ctx.onSnooze(task) })
-                }
-                if (editable) {
-                    KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
-                }
+                // Sans bouton en fin de ligne (étroit, ou « Fait » non modifiable), la marge du bord reste celle des autres lignes.
+                if (ctx.compact || (task.status != TaskStatus.TODO && !editable)) Spacer(Modifier.width(12.dp))
             }
             extra()
         }
+    }
+}
+
+/** Chrono, décaler (tâche à faire) et modifier : à droite du corps en largeur bureau, sous lui en largeur étroite. */
+@Composable
+private fun RowActions(task: Task, ctx: RowContext, editable: Boolean) {
+    if (task.status == TaskStatus.TODO) {
+        val running = ctx.view.running?.taskId == task.id
+        KairosRowIconButton(
+            if (running) KairosIcons.Stop else KairosIcons.PlayArrow,
+            stringResource(if (running) Res.string.action_timer_stop else Res.string.action_timer_start),
+            onClick = { ctx.onToggleTimer(task) },
+            tint = if (running) MaterialTheme.colorScheme.primary else LocalContentColor.current,
+        )
+        KairosRowIconButton(KairosIcons.Redo, stringResource(Res.string.action_snooze), onClick = { ctx.onSnooze(task) })
+    }
+    if (editable) {
+        KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
     }
 }
 
@@ -205,9 +222,9 @@ private fun TaskTags(task: Task, ctx: RowContext) {
     ReceivedTasks.originOf(task)?.let { ReceivedMark(it, task.originRemoved) }
     if (task.projectTag.isNotEmpty()) Badge(task.projectTag)
     if (task.taskType.isNotEmpty()) Badge(task.taskType)
-    task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(stringResource(Res.string.minutes_badge, it)) }
-    task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language))) }
-    task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language))) }
+    task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(duration(it)) }
+    task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language, ctx.view.day))) }
+    task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language, ctx.view.day))) }
     if (task.recurrence != TaskRecurrence.NONE) {
         Icon(
             KairosIcons.Repeat,
@@ -296,19 +313,21 @@ private fun TimeSpent(task: Task, ctx: RowContext) {
     if (spent <= 0) return
     val estimate = task.estimatedMinutes?.takeIf { it > 0 }
     when {
-        estimate == null -> Badge(stringResource(Res.string.minutes_badge, spent))
-        spent > estimate -> Badge(stringResource(Res.string.spent_of_estimate, spent, estimate), scheme.errorContainer, scheme.onErrorContainer)
-        else -> Badge(stringResource(Res.string.spent_of_estimate, spent, estimate))
+        estimate == null -> Badge(duration(spent))
+        spent > estimate -> Badge(stringResource(Res.string.spent_of_estimate, duration(spent), duration(estimate)), scheme.errorContainer, scheme.onErrorContainer)
+        else -> Badge(stringResource(Res.string.spent_of_estimate, duration(spent), duration(estimate)))
     }
 }
 
 /** Signaux de tri (`task_key_badges`) : score (s'ouvre sur son explication), priorité, points. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun KeyBadges(task: Task, ctx: RowContext) {
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+    // FlowRow : à 360 dp, score, priorité et points passent à la ligne plutôt que d'écraser un libellé.
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
         if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language) }
         task.priority?.let { PriorityBadge(it) }
-        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it)) }
+        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it), nowrap = true) }
     }
 }
 
@@ -350,6 +369,8 @@ internal fun Badge(
     content: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     bold: Boolean = false,
     icon: ImageVector? = null,
+    /** Court libellé qui ne se coupe jamais (« 2 pts » à 360 dp se repliait lettre par lettre). */
+    nowrap: Boolean = false,
 ) {
     Surface(color = container, contentColor = content, shape = CircleShape) {
         Row(
@@ -358,7 +379,7 @@ internal fun Badge(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
         ) {
             icon?.let { Icon(it, contentDescription = null, modifier = Modifier.size(14.dp)) }
-            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = if (bold) FontWeight.Bold else null)
+            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = if (bold) FontWeight.Bold else null, softWrap = !nowrap, maxLines = if (nowrap) 1 else Int.MAX_VALUE)
         }
     }
 }

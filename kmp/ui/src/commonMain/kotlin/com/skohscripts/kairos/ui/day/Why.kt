@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +62,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: String) {
     var open by remember { mutableStateOf(false) }
-    val score = Dates.number(why.score)
+    val score = Dates.number(why.score, language)
     val title = stringResource(Res.string.why_title)
     Box {
         Surface(
@@ -95,14 +96,14 @@ internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: Str
                     }
                 }
                 val priority = task.priority?.let { "P$it ${stringResource(Levels.priorityName(it))}" }
-                Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value))
-                Term(dateLabel(why), "+ ${Dates.number(why.criticality)}")
+                Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value, Locale.current.language))
+                Term(dateLabel(why), "+ ${Dates.number(why.criticality, Locale.current.language)}")
                 val effort = when (why.effortSource) {
-                    Scheduling.EffortSource.POINTS -> stringResource(Res.string.why_effort_points, Dates.number(why.effort))
+                    Scheduling.EffortSource.POINTS -> stringResource(Res.string.why_effort_points, Dates.number(why.effort, Locale.current.language))
                     Scheduling.EffortSource.MINUTES -> stringResource(Res.string.why_effort_minutes)
                     Scheduling.EffortSource.DEFAULT -> stringResource(Res.string.why_effort_default)
                 }
-                Term(effort, "÷ ${Dates.number(why.effort)}")
+                Term(effort, "÷ ${Dates.number(why.effort, Locale.current.language)}")
                 HorizontalDivider()
                 Term(stringResource(Res.string.why_score), "= $score", bold = true)
                 Text(stringResource(Res.string.why_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

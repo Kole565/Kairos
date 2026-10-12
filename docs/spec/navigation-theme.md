@@ -18,17 +18,23 @@ rendu du README) et avec **cinq** destinations au lieu de six.
 
 ### Objectif / problème
 
-Kairos a plusieurs vues (Notes, Jour, Semaine, Statistiques, Réglages) qui
+Kairos a plusieurs vues (Accueil, Notes, Jour, Semaine, Statistiques, Réglages) qui
 doivent partager une identité et une navigation cohérentes sur un téléphone,
 une fenêtre de bureau et un onglet de navigateur. Un nouvel utilisateur doit
 aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 
 ### Comportement attendu (utilisateur)
 
-- **Cinq destinations**, dans l'ordre du flux GTD : Notes, Jour, Semaine,
-  Stats, Réglages. Chacune a une icône et un libellé. La destination affichée
-  est mise en évidence (indicateur coloré + icône pleine). L'application
-  s'ouvre sur **Jour**.
+- **Cinq destinations** : **Accueil** en tête, puis l'ordre du flux GTD :
+  Notes, Jour, Semaine, Stats. Chacune a une icône et un libellé. La
+  destination affichée est mise en évidence (indicateur coloré + icône
+  pleine). L'application s'ouvre sur **l'Accueil** (2026-10-10 ; avant :
+  Jour), dans l'espace où on l'a quittée.
+- **Réglages** : une roue crantée (`KairosIcons.Settings`, « Réglages ») à
+  droite de la barre d'application, sur toutes les destinations des deux
+  espaces ; elle ouvre les Réglages en écran secondaire (titre « Réglages »,
+  flèche retour), les mêmes dans les deux espaces. Elle disparaît quand un
+  écran secondaire est ouvert.
 - **Forme de la navigation** :
   - fenêtre de 600 dp de large ou plus, sur toute plateforme : **rail
     vertical** à gauche, avec le logo et « Kairos » en tête ;
@@ -38,28 +44,31 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
     dans une fenêtre rétrécie (règle reprise de Kairos 2).
 - Une **barre d'application** en haut affiche le titre de l'écran (« Aujourd'hui »
   pour Jour). Sans rail, le logo y porte l'identité.
-- **Aide et Accueil** (`accueil.md`) : un bouton « ? » (`KairosIcons.Help`,
-  « Aide ») à droite de la barre d'application, sur toutes les destinations
-  des deux espaces, ouvre l'aide de l'écran courant, l'Accueil de Kairos
-  (écran secondaire `Secondary.HOME`, titre « Accueil ») et la visite guidée.
-  Il disparaît quand un écran secondaire est ouvert.
+- **Aide** (`accueil.md`) : un bouton « ? » (`KairosIcons.Help`,
+  « Aide ») avant la roue crantée, sur toutes les destinations des deux
+  espaces sauf l'Accueil, et sur les Réglages ; il ouvre l'aide de l'écran
+  courant, l'Accueil et la visite guidée.
 - **Soutien** (`soutien.md`) : un cœur (`KairosIcons.Favorite`, « Soutenir Kairos »)
   juste avant le « ? », sur tous les écrans y compris les écrans secondaires ;
   il ouvre la page de don dans le navigateur.
 - **« À propos et guide »** : accessible depuis Réglages et depuis l'Accueil
-  (écran secondaire `Secondary.ABOUT`). Présente Kairos (ce
+  (écran secondaire `Secondary.ABOUT`) ; ouvert depuis les Réglages, sa flèche
+  retour y ramène. Présente Kairos (ce
   qu'il fait en quatre points, la formule du score de priorité, l'origine du
   nom), la version, la licence (MIT, données locales) et un lien vers le code
   source. Un bouton retour, le retour système Android ou Échap le ferment.
-- Depuis le jalon M4, les cinq destinations sont portées : Notes
+- Les cinq destinations sont portées : Accueil (`accueil.md`), Notes
   (`notes-capture.md`), Jour (`vue-jour.md`), Semaine (`vue-semaine.md`),
-  Stats (`statistiques.md`), Réglages (`reglages.md`).
+  Stats (`statistiques.md`) ; les Réglages (`reglages.md`) sont un écran
+  secondaire.
 - Au premier lancement, un accueil présente Kairos et les exemples
   (`accueil.md`) ; sur le bureau, un bandeau signale une nouvelle version
   au-dessus de chaque écran (`mises-a-jour.md`).
 - Le titre de la barre dit ce qui est affiché : « Jour · mercredi 30
   septembre 2026 » pour un autre jour qu'aujourd'hui, « Semaine · du lundi
-  28 septembre 2026 » pour la semaine regardée.
+  28 septembre 2026 » pour la semaine regardée ; sans rail (fenêtre
+  étroite), en date courte (« Jour · mer. 30/09 », « Semaine · du 28 sept. »).
+  Deux lignes au plus, puis points de suspension ; en corps `titleMedium` quand le sélecteur d’espace partage la barre (sans rail), pour que « Aujourd’hui » ne se coupe pas au milieu du mot à 360 dp.
 - Au lancement, un indicateur « Ouverture de Kairos… » attend l'ouverture des
   données ; un échec est affiché (« Impossible d'ouvrir les données » et le
   détail), jamais un écran vide.
@@ -71,7 +80,10 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - La barre basse n'apparaît jamais sur le bureau ni sur le web, quelle que
   soit la largeur (test `NavigationLayoutTest`).
 - Aucun débordement horizontal à 360 dp : la barre du haut défile, le texte
-  passe à la ligne.
+  passe à la ligne ; l'onglet actif y est toujours visible.
+- Redimensionner la fenêtre au travers de 600 dp (rail ↔ barre du haut) ne
+  change rien à l'écran affiché : un dialogue ouvert, une saisie en cours
+  restent en place (test `ShellResizeUiTest`).
 - Couleurs, formes et typographie conformes à `docs/DESIGN_SYSTEM.md` : un
   seul thème clair, Roboto embarquée (aucune police distante), icônes
   Material Symbols Outlined 400, variante pleine pour la destination active.
@@ -144,9 +156,12 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - `Platform` : `ANDROID`, `DESKTOP`, `WEB`, fourni par le point d'entrée ;
   `KairosApp` le pose aussi dans `LocalPlatform` pour les écrans qui en
   dépendent (la vue Jour masque les raccourcis clavier sur Android).
-- `Destination` (enum, dans l'ordre) : `NOTES`, `DAY`, `WEEK`, `STATS`,
-  `SETTINGS`, chacune avec libellé court, titre de page, icône et icône
-  pleine (`NavEntry`). `START = DAY`. Mode « gestion d'équipe » activé :
+- `Destination` (enum, dans l'ordre) : `HOME`, `NOTES`, `DAY`, `WEEK`,
+  `STATS`, chacune avec libellé court, titre de page, icône et icône
+  pleine (`NavEntry` ; `HOME` : `nav_home` « Accueil », `title_home`,
+  `KairosIcons.Home` / `HomeFilled`). `START = HOME` (ouverture de
+  l'application), `WORK = DAY` (passage dans l'espace Perso, retour forcé
+  quand la gestion d'équipe est désactivée). Mode « gestion d'équipe » activé :
   un second espace, ses destinations (`TeamDestination`) et le sélecteur
   d'espace en tête du rail ou dans la barre du haut (`equipe.md`
   § Interface) ; désactivé, la coquille est celle décrite ici, à l'octet
@@ -154,31 +169,51 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - `NavigationLayout.choose(platform, largeur)` : `RAIL` si largeur ≥ 600 dp
   (`COMPACT_WIDTH_LIMIT`), sinon `BOTTOM_BAR` sur Android, `TOP_BAR` ailleurs.
 - `KairosApp(platform, initialDestination = Destination.START,
-  systemColorScheme = null, openServices)` : `KairosTheme` par défaut, puis
+  initialTeamDestination = TeamDestination.HOME, initialSecondary = null,
+  systemColorScheme = null, splash = false, openServices)` : `KairosTheme` par défaut, puis
   celui de `Settings.themeColor` dès les services prêts (`apparence.md`) ;
   appelle
   `openServices()` une fois (`LaunchedEffect`) : indicateur de progression
-  pendant l'attente, titre d'erreur et détail en cas d'échec. Puis
+  pendant l'attente, titre d'erreur et détail en cas d'échec ; avec
+  `splash = true` (points d'entrée seulement), la page de démarrage couvre
+  le tout jusqu'à son fondu (`demarrage.md`). Puis
   `KairosShell` : état `destination` (initialisé à `initialDestination`,
-  que seules les captures des magasins changent, `publication.md`) et
-  `secondary: Secondary?` (`rememberSaveable` ; `HOME` ou `ABOUT`),
+  que changent les tests, l'auto-test et les captures des magasins,
+  `publication.md`), `secondary: Secondary?` (`rememberSaveable` ;
+  `SETTINGS` ou `ABOUT` ; `initialSecondary` pour la capture des Réglages)
+  et `secondaryParent` (l'écran secondaire d'où « À propos » a été ouvert,
+  rendu par la flèche retour),
   `NavState` (jour et semaine regardés, `vue-semaine.md`) ;
   `BoxWithConstraints` fournit la largeur à `choose`. Naviguer vers une
-  destination ferme l'écran secondaire (Accueil ou « À propos ») et ramène à
+  destination ferme l'écran secondaire (Réglages ou « À propos ») et ramène à
   aujourd'hui et à la semaine courante ; `onOpenDay(jour)` ouvre la vue Jour d'un jour donné.
 - `AppShell` :
   - `TopAppBar` avec le titre, fidèle à ce qui est affiché (Kairos 2) :
-    « Accueil », « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
-    autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »,
-    sinon celui de la destination ; flèche retour quand un écran secondaire est ouvert ; sinon, sans rail,
+    « Réglages », « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
+    autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »
+    (sans rail : `Dates.dayShort` et `Dates.short`, la date longue tenait sur
+    trois lignes à 380 dp), sinon celui de la destination ; `maxLines = 2` ; flèche retour quand un écran secondaire est ouvert ; sinon, sans rail,
     le logo en 28 dp. Actions : le sélecteur d'espace (sans rail, gestion
-    d'équipe activée), puis le « ? » (aucun écran secondaire ouvert).
+    d'équipe activée), le cœur (sauf avec ce sélecteur, `soutien.md`), le « ? » (s'il y a un sujet d'aide : ni
+    l'Accueil ni « À propos »), puis la roue crantée `onOpenSettings`
+    (aucun écran secondaire ouvert).
+  - Une seule arborescence `Row { rail? ; Scaffold }` pour les trois formes :
+    seuls le rail, la rangée de pastilles et la barre basse sont conditionnels,
+    le contenu garde sa place dans la composition.
   - `RAIL` : `NavigationRail` (en-tête : logo 34 dp + « Kairos ») à gauche
-    d'un `Scaffold`.
-  - `BOTTOM_BAR` : `Scaffold` avec `NavigationBar`.
+    du `Scaffold` ; en-tête et destinations dans une colonne défilante (une
+    fenêtre de 360 dp de haut, téléphone en paysage, coupait Semaine et
+    Stats sans moyen de les atteindre).
+  - `BOTTOM_BAR` : `NavigationBar` en `bottomBar` du `Scaffold`.
   - `TOP_BAR` : barre d'application puis une rangée défilante de `FilterChip`
     (icône + libellé ; sélection en `secondaryContainer`, rôle MD3 par défaut
-    des puces sélectionnées).
+    des puces sélectionnées). **La molette de la souris** la fait défiler
+    (`pointerInput` sur `PointerEventType.Scroll`) : sans geste horizontal,
+    une fenêtre de bureau étroite n'atteignait ni « Stats » ni, une fois Stats
+    ouvert, « Accueil » (`ShellResizeUiTest`). La pastille active se ramène en vue
+    (`BringIntoViewRequester`) dès qu'elle devient active : à 360 dp, les
+    cinq pastilles ne tiennent pas, et l'on peut arriver sur Stats depuis
+    l'Accueil ou la visite.
   - Quand un écran secondaire est ouvert, aucune destination n'est marquée active.
   - `SnackbarHost` dans chaque `Scaffold` ; `LocalMessages` fournit aux
     écrans une fonction qui y affiche un message.
@@ -193,23 +228,27 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 ### Écrans (`screens/`)
 
 - `DestinationScreen(destination, services, nav, onOpenDay, onNavigate,
-  onOpenAbout)` : les cinq destinations sont portées depuis le jalon M4 :
+  home)` : `HOME` → `home()` (l'Accueil, fourni par la coquille),
   `NOTES` → `NotesScreen` (`notes-capture.md`), `DAY` → `DayScreen` du
   jour de `nav.day` (`vue-jour.md`), `WEEK` → `WeekScreen`
-  (`vue-semaine.md`), `STATS` → `StatsScreen` (`statistiques.md`),
-  `SETTINGS` → `SettingsScreen` (`reglages.md` : formulaire complet, carte
-  Données, carte « À propos et guide » en `OutlinedCard` + `ListItem`,
-  icône `Info`, chevron).
-- `HomeScreen` : la page « Accueil » (`accueil.md`) ; son appel
-  `TeamDestinationScreen(destination, services, nav, onOpenAbout, onTour)`
-  transmet `nav` (onglet « Échanges ») et le lancement de la visite d'équipe.
+  (`vue-semaine.md`), `STATS` → `StatsScreen` (`statistiques.md`).
+- `TeamDestinationScreen(destination, services, nav, onTour, home)` : `HOME`
+  → `home()`, puis les quatre écrans d'équipe ; transmet `nav` (onglet
+  « Échanges ») et le lancement de la visite d'équipe.
+- `HomeScreen` : la page « Accueil » (`accueil.md`), composée par `AppShell`
+  (`home`) pour les deux espaces.
+- `SettingsScreen` (`reglages.md` : formulaire complet, carte Données, carte
+  « À propos et guide » en `OutlinedCard` + `ListItem`, icône `Info`,
+  chevron) : écran secondaire `Secondary.SETTINGS`, composé par `AppShell`.
 - `AboutScreen` : colonne défilante de 720 dp au plus, centrée. Logo 56 dp +
   nom + devise ; phrase d'introduction ; trois cartes « filled »
   (`surfaceContainerLow`, élévation 0 : jamais d'ombre sur une carte) : « En
-  bref » (quatre points), « Le score de priorité (WSJF) » (formule en
+  bref » (quatre points, puce à part : les lignes suivantes s'alignent sous le texte), « Le score de priorité (WSJF) » (formule en
   primaire gras + explication), « Pourquoi Kairos ? » ; version
   (`KairosBuild.VERSION_NAME`) ; licence ; bouton « Code source » qui ouvre
-  `SOURCE_URL` (`https://github.com/SKOHscripts/Kairos`) par `LocalUriHandler`,
+  `SOURCE_URL` (`https://github.com/SKOHscripts/Kairos`) par `LocalUriHandler`
+  (enveloppé de `runCatching` comme « Soutenir Kairos » : sans `xdg-open`,
+  l'application quittait sur l'erreur),
   puis un bouton « Soutenir Kairos » qui ouvre `DONATE_URL` (`soutien.md`).
 
 ### Décisions et pièges tracés
@@ -218,6 +257,16 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   2026-09-28) : MD3 limite une barre de navigation à cinq entrées. L'accueil
   de Kairos 2 (qui rendait le README) devient « À propos et guide », dans
   Réglages.
+- **Accueil en destination, Réglages dans la barre du haut** (2026-10-10,
+  demande explicite) : l'Accueil, ouvert jusque-là depuis le « ? »
+  seulement, devient la première destination des deux espaces et l'écran
+  d'ouverture ; les Réglages, consultés rarement, cèdent leur place et
+  passent en roue crantée à droite de la barre du haut (convention des
+  applications Android et de bureau). Toujours cinq destinations par
+  espace. Passer d'un espace à l'autre ouvre son écran de travail (Jour,
+  Suivi) et non son Accueil : on change d'espace pour travailler. Écartés :
+  garder l'ouverture sur Jour avec un Accueil en onglet (l'Accueil doit être
+  la première chose vue) ; une sixième destination (limite MD3).
 - **Seuil 600 dp** (MD3, compact / moyen) au lieu des 720 px de Kairos 2 :
   le rail tient dès 600 dp en Compose, et c'est le seuil standard des classes
   de taille de fenêtre.
@@ -226,7 +275,14 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   raison, la règle Kairos 2 « aucune détection de plateforme côté serveur »
   n'a plus d'objet.
 - **Navigation par état plutôt que par bibliothèque** : cinq destinations de
-  premier niveau et deux écrans secondaires (Accueil, « À propos »). À réévaluer si des écrans
+  premier niveau et deux écrans secondaires (Réglages, « À propos »). À réévaluer si des écrans
   imbriqués apparaissent (détail d'une tâche en plein écran, par exemple).
+- **Une arborescence, pas trois branches** (2026-10-10, test exploratoire) :
+  une branche `when (layout)` par forme de navigation recomposait l'écran à
+  neuf au franchissement de 600 dp, ce qui fermait le dialogue d'édition et
+  perdait la saisie. Les éléments de navigation sont conditionnels, le
+  `Scaffold` et son contenu ne le sont pas. Écarté : `movableContentOf`
+  (le contenu capture l'état de la coquille, il faudrait tout passer en
+  paramètres).
 - **Retour** : `org.jetbrains.compose.ui:ui-backhandler` doit être déclaré
   explicitement (absent des dépendances transitives de `compose.ui` en 1.12).

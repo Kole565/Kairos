@@ -27,6 +27,8 @@ import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.TaskEdit
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -136,7 +138,7 @@ class ForecastUiTest {
     @Test
     fun aSimulationWithAFixedSeedShowsTheDatesOfTheEngineAndItsHonestyNote() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openForecast()
         run()
 
@@ -149,7 +151,7 @@ class ForecastUiTest {
         onNodeWithText("95% chance by ${text(finish.p95!!)}").assertExists()
         // Honnêteté : tirages, graine, source des données, date du calcul.
         onNodeWithText("500 draws · seed 42").assertExists()
-        onNodeWithText("History: ${expected.source.samples} finished tasks over 12 weeks").assertExists()
+        onNodeWithText("History: ${expected.source.samples} finished task(s) over 12 weeks").assertExists()
         assertTrue(count("Computed on", substring = true) >= 1)
         assertEquals(expected, services.teamUi.forecast!!.result)
         // Les panneaux par tâche du modèle par effort.
@@ -159,7 +161,7 @@ class ForecastUiTest {
     @Test
     fun theThroughputModelIsDisabledWithItsReasonWithoutHistoryAndAvailableWithIt() = runComposeUiTest {
         val bare = services(history = false)
-        setContent { KairosApp(Platform.DESKTOP) { bare } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { bare } }
         openForecast()
         waitText("The by-throughput model is unavailable", substring = true)
         onNodeWithText("By throughput").assertIsNotEnabled()
@@ -169,7 +171,7 @@ class ForecastUiTest {
     @Test
     fun theThroughputModelRunsWithHistoryAndHidesThePerTaskPanels() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openForecast()
         waitUntil(timeoutMillis = 15_000) {
             runCatching { onNodeWithText("By throughput").assertIsEnabled() }.isSuccess
@@ -186,7 +188,7 @@ class ForecastUiTest {
     @Test
     fun aResultBecomesOutdatedWhenTheDataChangesWithoutBeingRecomputed() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openForecast()
         run()
         assertEquals(0, count("Outdated result", substring = true))
@@ -208,7 +210,7 @@ class ForecastUiTest {
             if (done >= 10) { reached.complete(Unit); release.await() }
         })
         val services = services(runs = 50_000, ui = ui, extraTasks = 120)
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openForecast()
         onNodeWithText("Run the simulation").performClick()
         waitUntil(timeoutMillis = 15_000) { reached.isCompleted }
@@ -227,7 +229,7 @@ class ForecastUiTest {
     fun scenariosAreCreatedComparedAppliedDuplicatedAndDeleted() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openForecast()
 
         // Créer : un nom, un membre hypothétique, une absence (dates : le jour proposé par le sélecteur).
@@ -303,9 +305,8 @@ class ForecastUiTest {
     fun theTeamCardOfTheSettingsOffersTheFourForecastSettingsAndRefusesOutOfRangeValues() = runComposeUiTest {
         val services = services(history = false)
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Settings").fetchSemanticsNodes().isNotEmpty() }
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Appearance")
         listOf("Draws per simulation", "History considered (weeks)", "Reliable minimum sample", "Deadline at risk below (%)").forEach {
             onNodeWithText(it).performScrollTo().assertExists()

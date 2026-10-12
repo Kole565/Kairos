@@ -23,7 +23,7 @@ class SettingField internal constructor(
     internal val write: (Settings, String) -> Settings,
 )
 
-enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LARGE, INVALID_DATE, INVALID_COLOR }
+enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LARGE, INVALID_DATE, INVALID_COLOR, DUPLICATE }
 
 /** Erreur d'un champ ; [bound] est la borne franchie (« 0 », « 23 ») ou la date illisible. */
 data class FieldError(val kind: FieldErrorKind, val bound: String? = null)
@@ -113,13 +113,13 @@ object SettingsForm {
         int("staleOverdueDays", 0, get = { it.staleOverdueDays }) { s, v -> s.copy(staleOverdueDays = v) },
         int("staleUntouchedDays", 0, get = { it.staleUntouchedDays }) { s, v -> s.copy(staleUntouchedDays = v) },
         int("priorityOverloadThreshold", 0, get = { it.priorityOverloadThreshold }) { s, v -> s.copy(priorityOverloadThreshold = v) },
-        text("taskTypes", FieldKind.TEXT, { it.taskTypes }) { s, v -> s.copy(taskTypes = v) },
+        text("taskTypes", FieldKind.TEXT, { it.taskTypes }) { s, v -> s.copy(taskTypes = normalizeList(v)) },
         int("statsWindowWeeks", 1, get = { it.statsWindowWeeks }) { s, v -> s.copy(statsWindowWeeks = v) },
         int("timerIdleAlertMinutes", 0, get = { it.timerIdleAlertMinutes }) { s, v -> s.copy(timerIdleAlertMinutes = v) },
         int("pomodoroFocusMinutes", 0, get = { it.pomodoroFocusMinutes }) { s, v -> s.copy(pomodoroFocusMinutes = v) },
         bool("timerAlertSound", { it.timerAlertSound }) { s, v -> s.copy(timerAlertSound = v) },
         bool("holidaysFr", { it.holidaysFr }) { s, v -> s.copy(holidaysFr = v) },
-        text("extraHolidays", FieldKind.DATES, { it.extraHolidays }) { s, v -> s.copy(extraHolidays = normalizeDates(v)) },
+        text("extraHolidays", FieldKind.DATES, { it.extraHolidays }) { s, v -> s.copy(extraHolidays = normalizeList(v)) },
         bool("updateCheckEnabled", { it.updateCheckEnabled }) { s, v -> s.copy(updateCheckEnabled = v) },
         SettingField(
             "themeColor", FieldKind.COLOR,
@@ -166,7 +166,9 @@ object SettingsForm {
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
         val general = when {
             result.workdayStartHour >= result.workdayEndHour -> GeneralError.WORKDAY_ORDER
-            !(result.cognitiveDipStartHour <= result.cognitiveDipTroughHour && result.cognitiveDipTroughHour <= result.cognitiveDipEndHour) -> GeneralError.DIP_ORDER
+            // Creux désactivé : ses heures ne servent à rien, leur ordre ne bloque pas l'enregistrement.
+            result.cognitiveDipEnabled &&
+                !(result.cognitiveDipStartHour <= result.cognitiveDipTroughHour && result.cognitiveDipTroughHour <= result.cognitiveDipEndHour) -> GeneralError.DIP_ORDER
             else -> null
         }
         return SettingsValidation(if (general == null) result else null, emptyMap(), general)
@@ -182,7 +184,13 @@ object SettingsForm {
             FieldKind.INT, FieldKind.DECIMAL -> {
                 if (text.isEmpty()) return FieldError(FieldErrorKind.REQUIRED)
                 val number = if (f.kind == FieldKind.INT) {
-                    text.toIntOrNull()?.toDouble() ?: return FieldError(FieldErrorKind.NOT_INTEGER)
+                    text.toIntOrNull()?.toDouble() ?: return if (Regex("""-?\d+""").matches(text)) {
+                        // Un entier trop long pour être lu : « Au plus … », pas « un entier est attendu ».
+                        if (text.startsWith("-")) FieldError(FieldErrorKind.TOO_SMALL, bound(f, f.min ?: Int.MIN_VALUE.toDouble()))
+                        else FieldError(FieldErrorKind.TOO_LARGE, bound(f, f.max ?: Int.MAX_VALUE.toDouble()))
+                    } else {
+                        FieldError(FieldErrorKind.NOT_INTEGER)
+                    }
                 } else {
                     parseDecimal(text) ?: return FieldError(FieldErrorKind.NOT_NUMBER)
                 }
@@ -201,8 +209,8 @@ object SettingsForm {
 
     private fun parseDate(text: String): LocalDate? = runCatching { LocalDate.parse(text) }.getOrNull()
 
-    /** Dates nettoyées : espaces retirés, vides écartés, séparées par « , ». */
-    private fun normalizeDates(text: String): String = text.split(',').map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
+    /** Liste (dates, types) nettoyée : espaces retirés, vides et doublons écartés (le premier reste), séparée par « , ». */
+    private fun normalizeList(text: String): String = text.split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct().joinToString(",")
 
     /**
      * Couleur du thème (docs/spec/apparence.md) : `system`, ou six chiffres

@@ -167,6 +167,15 @@ class TeamExchangeCodecTest {
     }
 
     @Test
+    fun aByteOrderMarkIsIgnoredByEveryDecoder() {
+        val bom = "\uFEFF"
+        assertEquals(TeamExchangeCodec.Kind.EXPORT, TeamExchangeCodec.detect(bom + export()))
+        assertEquals(TeamExchangeCodec.Kind.PACK, TeamExchangeCodec.detect(bom + TeamExchangeCodec.encodePack(pack, "3")))
+        assertEquals(pack, TeamExchangeCodec.decodePack(bom + TeamExchangeCodec.encodePack(pack, "3")))
+        assertEquals(report, TeamExchangeCodec.decodeReport(bom + TeamExchangeCodec.encodeReport(report, "3")))
+    }
+
+    @Test
     fun unreadableValuesAreCorrupted() {
         val packText = TeamExchangeCodec.encodePack(pack, "3")
         val corrupted = ImportException.Reason.CORRUPTED
@@ -180,6 +189,9 @@ class TeamExchangeCodecTest {
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("2026-10-02", "n'importe quoi")) })
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("2026-10-03T16:00:00Z", "demain")) })
         assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": \"beaucoup\"")) })
+        // Temps passé aberrant (négatif, ou plus de 10 000 h sur une tâche) : illisible, jamais aperçu.
+        assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": 99999999")) })
+        assertEquals(corrupted, reason { TeamExchangeCodec.decodeReport(reportText.replace("\"spentMinutes\": 360", "\"spentMinutes\": -5")) })
     }
 
     @Test

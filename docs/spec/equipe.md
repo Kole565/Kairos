@@ -119,25 +119,37 @@ rien changer pour qui ne l'active pas.
   le sélecteur dans les Réglages ; il est revenu en haut, **conditionné à
   l'activation**, ce qui protège aussi l'utilisateur solo tout en gardant
   la bascule à un toucher pour le manager.
-- L'espace **Perso** garde exactement ses cinq destinations (Notes, Jour,
-  Semaine, Stats, Réglages).
+- L'espace **Perso** garde ses cinq destinations (Accueil, Notes, Jour,
+  Semaine, Stats ; Réglages dans la barre du haut depuis le 2026-10-10,
+  `navigation-theme.md`).
 - L'espace **Équipe** a ses cinq destinations :
-  1. **Suivi** : le tableau de l'équipe, par membre et par état
-     (`equipe-backlog-suivi.md`) ; destination d'ouverture de l'espace ;
-  2. **Backlog** : les tâches d'équipe non assignées, triées par score,
+  1. **Accueil** : la même page que dans l'espace Perso (`accueil.md`) ; en
+     tête de la barre, et écran d'ouverture de l'application quand on l'a
+     quittée dans l'espace Équipe ;
+  2. **Suivi** : le tableau de l'équipe, par membre et par état
+     (`equipe-backlog-suivi.md`) ; destination ouverte quand on passe dans
+     l'espace ;
+  3. **Backlog** : les tâches d'équipe non assignées, triées par score,
      et leur distribution ;
-  3. **Équipe** : les membres, leur capacité et leur charge, la charge
+  4. **Équipe** : les membres, leur capacité et leur charge, la charge
      globale et par catégorie (`equipe-charge.md`) ;
-  4. **Prévisions** : simulations et scénarios (`equipe-simulation.md`) ;
-  5. **Réglages** : le même écran que dans l'espace Perso.
-- Changer d'espace ouvre la première destination de l'autre espace (Jour
-  ou Suivi). L'espace courant est retenu d'une session à l'autre.
+  5. **Prévisions** : simulations et scénarios (`equipe-simulation.md`).
+  Les **Réglages**, le même écran que dans l'espace Perso, s'ouvrent par la
+  roue crantée de la barre du haut.
+- Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou
+  Suivi), pas son Accueil. L'espace courant est retenu d'une session à
+  l'autre.
 - Dans l'espace Équipe, le titre de la barre d'application est préfixé du
   nom de l'équipe s'il est renseigné (« Équipe Plateforme · Suivi »).
 
 #### Membres
 
-- Destination Équipe → « Ajouter un membre » : **nom** (obligatoire),
+- Destination Équipe → « Ajouter un membre » : **nom** (obligatoire, 60 caractères
+  au plus, différent de celui de tout autre membre, archivés compris, sans
+  tenir compte de la casse : deux « Bob » ne se distinguent plus dans les menus
+  d'assignation ni dans la charge ; un doublon déjà en base, venu d'un import,
+  ne bloque pas la modification d'un autre champ, seul un changement de nom est
+  vérifié),
   **rôle** (texte libre, facultatif), **quotité** (en %, 100 par défaut,
   de 1 à 100), **heures par jour** (défaut : journée de travail des
   Réglages, `workdayEndHour − workdayStartHour` moins une heure, bornée à
@@ -192,6 +204,8 @@ membre, l'écran a deux onglets : « Membres » (ce qui suit) et « Échanges »
 - Validation des champs à l'enregistrement, erreur à la place de l'aide :
   nom vide (« Le nom est obligatoire. »), quotité hors 1-100 ou non
   entière, heures par jour hors 1-24 ou non numériques (virgule ou point).
+  La fiche montre les heures comme la carte (« 7,5 » en français, `MemberSheetContent`
+  convertit le point du modèle à l'affichage ; la saisie accepte les deux).
   Une absence dont la fin précède le début est refusée
   (« La fin doit suivre le début. »).
 - Réglages → carte Équipe, mode activé : **« Supprimer les données
@@ -227,7 +241,9 @@ Espace **activé** : l'espace Perso ne change que par les tâches d'équipe
 assignées à « moi », qui y apparaissent marquées « Équipe »
 (`equipe-backlog-suivi.md` § Tâches assignées à moi). Les statistiques
 personnelles les comptent (c'est du temps que je passe) ; aucune autre tâche
-d'équipe n'entre dans un calcul personnel.
+d'équipe n'entre dans un calcul personnel. Dans l'autre sens, les tâches
+perso de « moi » comptent par défaut dans sa charge et ses prévisions
+d'équipe, sans changer d'espace (`equipe-moi.md`).
 
 ### Critères de succès
 
@@ -308,7 +324,8 @@ d'équipe n'entre dans un calcul personnel.
   `startedOn` (date locale), `teamUid` (UUID texte, posé à la création
   d'une tâche d'équipe, sert aux échanges et aux scénarios) ; pour les
   échanges (`equipe-echanges.md`) : `origin` (équipe et manager d'une
-  tâche **reçue**), `originRemoved`, `reportedMinutes`.
+  tâche **reçue**), `originRemoved`, `reportedMinutes` ; pour le travail perso
+  de « moi » (`equipe-moi.md`) : `teamExcluded`.
 - `TeamEvent` (journal), `TeamScenario` : `equipe-backlog-suivi.md` et
   `equipe-simulation.md`.
 - `TeamSnapshot` : la vue d'équipe ci-dessus, entrée de tous les calculs
@@ -344,7 +361,9 @@ d'équipe n'entre dans un calcul personnel.
   - **E5, `4.sqm`** (`user_version` 4 → 5) : `team_scenario` ;
   - **E6, `5.sqm`** (`user_version` 5 → 6) : `task.origin`,
     `task.origin_removed`, `task.reported_minutes`,
-    `team_member.last_report_at` (`equipe-echanges.md`).
+    `team_member.last_report_at` (`equipe-echanges.md`) ;
+  - **`6.sqm`** (`user_version` 6 → 7) : `task.team_excluded`
+    (`equipe-moi.md`).
   Références sans `FOREIGN KEY` (parti pris existant).
 - Une base 2.x importée (`migration-2x.md`) n'a aucune tâche d'équipe :
   `Kairos2Import` n'écrit pas les nouvelles colonnes (défauts SQL).
@@ -403,9 +422,10 @@ aussi son événement de journal dans la même transaction,
 ### Interface (`ui/team/`, `ui/navigation/`)
 
 - `NavEntry` (interface scellée : libellé, titre, icône, icône pleine),
-  implémentée par `Destination` (inchangée, cinq entrées) et par
-  `TeamDestination` (`BOARD`, `BACKLOG`, `MEMBERS`, `FORECAST`, `SETTINGS`,
-  `START = BOARD`) ; `Space` (`PERSONAL`, `TEAM`), `navigation/Space.kt`.
+  implémentée par `Destination` (cinq entrées, `navigation-theme.md`) et par
+  `TeamDestination` (`HOME`, `BOARD`, `BACKLOG`, `MEMBERS`, `FORECAST` ;
+  `START = BOARD`, destination du passage dans l'espace ; à l'ouverture de
+  l'application, `HOME`) ; `Space` (`PERSONAL`, `TEAM`), `navigation/Space.kt`.
   `AppShell` affiche les entrées de l'espace courant (paramètres `space`,
   `teamDestination`, `teamModeEnabled`, `teamName`, `onNavigateTeam`,
   `onSpaceChange`) ; en espace Perso, son rendu est celui d'avant (captures
@@ -439,11 +459,11 @@ aussi son événement de journal dans la même transaction,
   « Annuler ») avant d'écrire ; « Annuler » n'écrit rien et laisse le
   formulaire modifié. Le message « Réglages enregistrés. » est émis avant
   l'écriture, l'écran quittant la composition dès que le mode tombe.
-- `TeamScreens.kt` (`ui/team/`) : `TeamDestinationScreen` aiguille vers
-  `TeamBoardScreen`, `TeamBacklogScreen`, `TeamMembersScreen`,
-  `ForecastScreen` (jalon E1 : état vide centré, 720 dp au plus : icône,
-  titre, phrase de ce que fera l'écran, « Disponible dans une prochaine
-  version. ») ou `SettingsScreen` (le même qu'en espace Perso).
+- `TeamDestinationScreen` (`ui/screens/DestinationScreen.kt`) aiguille vers
+  l'Accueil (`home`, le même qu'en espace Perso), `TeamBoardScreen`,
+  `TeamBacklogScreen`, `TeamMembersScreen` ou `ForecastScreen` ; les
+  Réglages (`SettingsScreen`, le même qu'en espace Perso) sont l'écran
+  secondaire de la roue crantée.
 - Lecteurs : `DayScreen`, `WeekScreen`, `NotesScreen`, `StatsScreen`,
   `ChronoWatcher` et `ChronoSync` (Android) lisent `personalSnapshot` ;
   restent sur `snapshot` le thème (`KairosApp`), `Replace.kt`,
@@ -474,7 +494,9 @@ aussi son événement de journal dans la même transaction,
   (partagé avec `replaceWithBackup`, comportement inchangé) et
   `clearTeamDataWithBackup`. Les écrans d'équipe lisent `snapshot` (base
   complète). Calcul pur : `core/team/MemberForm` (validation par champ,
-  `FieldError` des Réglages réutilisé, heures par jour par défaut),
+  `FieldError` des Réglages réutilisé, heures par jour par défaut ; nom :
+  `MAX_NAME` et `validate(saisie, nomsPris)` → `TOO_LARGE` / `DUPLICATE`, les
+  noms pris étant ceux des autres membres, passés par `MemberSheet`),
   `TeamMembers` (ordre, actifs, archivés, prochaine absence,
   `hasHadTask`, tâches ouvertes), `MemberAbsence`. Accords au singulier et
   au pluriel par des clés `_one` / `_many` (le dépôt n'a pas de ressources

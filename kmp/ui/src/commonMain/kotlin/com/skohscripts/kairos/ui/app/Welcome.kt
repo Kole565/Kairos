@@ -4,6 +4,8 @@ import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -39,7 +41,8 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(services.firstLaunch) }
     val legacy = rememberLegacyImport(services)
     LegacyImportDialog(legacy)
-    if (!open) return
+    // Un dialogue passe au-dessus de tout : il attend la fin de la page de démarrage (docs/spec/demarrage.md).
+    if (!open || LocalStartupSplash.current) return
     val migrated = services.migrated
     val found = services.legacy?.found.takeIf { migrated == null }
     AlertDialog(
@@ -47,7 +50,8 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
         icon = { Image(KairosLogo, contentDescription = null, modifier = Modifier.size(48.dp)) },
         title = { Text(stringResource(Res.string.welcome_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Défile sur un écran bas (téléphone en paysage, fenêtre réduite) : rien n’est coupé.
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(Res.string.welcome_body), style = MaterialTheme.typography.bodyMedium)
                 when {
                     migrated != null -> Text(

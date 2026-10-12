@@ -28,6 +28,8 @@ import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -75,7 +77,7 @@ class DayScreenUiTest {
     fun captureQualifyThenFinish() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("To process (0)").fetchSemanticsNodes().isNotEmpty() }
 
         // Capture : titre seul, la tâche arrive « À traiter ».
@@ -104,6 +106,20 @@ class DayScreenUiTest {
     }
 
     @Test
+    fun theShortcutsStayQuietWhileTypingTheTitleOfASlot() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("To process (0)").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithText("Time slot / deep work").performClick()
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Start (HH:MM)").fetchSemanticsNodes().isNotEmpty() }
+        // « n » (raccourci « nouvelle tâche ») dans le titre du créneau : une saisie, pas un raccourci.
+        onNode(hasSetTextAction() and hasText("Title")).performClick()
+        onNode(hasSetTextAction() and hasText("Title")).performKeyInput { pressKey(Key.N) }
+        waitForIdle()
+        assertEquals(1, onAllNodesWithText("Start (HH:MM)").fetchSemanticsNodes().size, "le raccourci N a quitté le formulaire du créneau")
+    }
+
+    @Test
     fun snoozeMovesTheDeadlineToTheNextWorkingDay() = runComposeUiTest {
         val services = services()
         val repository = services.repository
@@ -112,7 +128,7 @@ class DayScreenUiTest {
             repository.setPriority(id, 1)
             repository.setPoints(id, 2)
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Snooze").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("Snooze").performClick()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single().deadline != null }
@@ -122,7 +138,7 @@ class DayScreenUiTest {
     @Test
     fun blockCaptureAppearsInTheDayList() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Time slot / deep work").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("Time slot / deep work").performClick()
         onNodeWithText("No time slot today.").assertExists()
@@ -141,7 +157,7 @@ class DayScreenUiTest {
     @Test
     fun shortcutsFocusCaptureAndSearch() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Search / filter").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithTag("day-screen").assertIsFocused()
         onNodeWithTag("day-screen").performKeyInput { pressKey(Key.Slash) }
@@ -153,7 +169,7 @@ class DayScreenUiTest {
     @Test
     fun shortcutNFocusesTheTaskCapture() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Time slot / deep work").fetchSemanticsNodes().isNotEmpty() }
         // Même depuis le volet « Créneau », `N` revient sur « Tâche » et y met le curseur.
         onNodeWithText("Time slot / deep work").performClick()
@@ -172,14 +188,14 @@ class DayScreenUiTest {
             listOf(a, b).forEach { repository.setPriority(it, 2); repository.setPoints(it, 3) }
             a to b
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Alpha", substring = true).fetchSemanticsNodes().isNotEmpty() }
         onAllNodesWithContentDescription("Edit").onFirst().performClick()
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Edit task").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("More options").performScrollTo().performClick()
         onNode(hasSetTextAction() and hasText("Fixed time (HH:MM)")).performScrollTo().performTextInput("14:30")
         onNodeWithText("Beta").performScrollTo().performClick()
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.dependencies.isNotEmpty() }
         val dep = repository.snapshot.value.dependencies.single()
         assertEquals(a to b, dep.taskId to dep.blockerId)
@@ -226,7 +242,7 @@ class DayScreenUiTest {
                 override suspend fun openText(): String? = null
             }, { _, _ -> }, clock = h.clock, notifier = h.notifier)
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Start the timer").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("Notifications are blocked: alerts will show in the app.").assertExists()
         onNodeWithText("No timer running. Start it on the current task to track your real time.").assertExists()

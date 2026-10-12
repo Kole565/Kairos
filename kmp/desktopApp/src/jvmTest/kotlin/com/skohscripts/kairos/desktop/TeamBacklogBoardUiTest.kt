@@ -26,6 +26,8 @@ import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.TaskEdit
 import com.skohscripts.kairos.ui.KairosApp
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
@@ -120,7 +122,7 @@ class TeamBacklogBoardUiTest {
     fun aCapturedTaskWaitsToBeQualifiedThenBecomesReadyAndNeverReachesTheDay() = runComposeUiTest {
         val services = services()
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("To qualify (0)")
 
@@ -152,7 +154,7 @@ class TeamBacklogBoardUiTest {
             taskId = ready(it, "Ship the export")
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("Ready (1)")
 
@@ -191,7 +193,7 @@ class TeamBacklogBoardUiTest {
             it.startTeamTask(taskId)
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBoard()
         waitText("Migrate the database")
 
@@ -226,7 +228,7 @@ class TeamBacklogBoardUiTest {
             it.assign(listOf(taskId), crew.alex)
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBoard()
         waitText("Refactor billing")
         assertEquals(0, count("60%"))
@@ -236,7 +238,7 @@ class TeamBacklogBoardUiTest {
         onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
             .performSemanticsAction(SemanticsActions.SetProgress) { it(60f) }
         waitText("60%")
-        onNodeWithText("Save").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
         waitTask(repository, taskId) { it.progressPercent == 60 && it.startedOn != null }
         // La carte : la barre et son « 60% », dans la colonne « En cours ».
         waitText("In progress (1)", substring = true)
@@ -264,7 +266,7 @@ class TeamBacklogBoardUiTest {
             ids += ready(it, "Third job")
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBacklog()
         waitText("Ready (3)")
 
@@ -291,7 +293,7 @@ class TeamBacklogBoardUiTest {
             it.assign(listOf(taskId), crew.me)
         }
         val repository = services.repository
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Personal").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithContentDescription("Personal").performClick()
         waitText("Review the roadmap", substring = true)
@@ -317,7 +319,7 @@ class TeamBacklogBoardUiTest {
             val fine = ready(it, "Fine task", deadline = LocalDate(2026, 10, 30))
             it.assign(listOf(late, fine), crew.alex)
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openBoard()
         waitText("Late task")
         waitText("Fine task")
@@ -339,7 +341,7 @@ class TeamBacklogBoardUiTest {
             it.assign(listOf(mine), crew.me)
             it.updateTask(mine, TaskEdit(title = "My dependent job", priority = 1, points = 3, pinDay = LocalDate(2026, 9, 29), blockerIds = setOf(colleague)))
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Personal").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithContentDescription("Personal").performClick()
         waitText("Blocked (1)")
@@ -355,7 +357,7 @@ class TeamBacklogBoardUiTest {
             val id = ready(it, "Write the release notes")
             it.assign(listOf(id), crew.alex)
         }
-        setContent { KairosApp(Platform.DESKTOP) { services } }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Team").fetchSemanticsNodes().isNotEmpty() }
         onAllNodesWithText("Team").onFirst().performClick()
         waitText("Add a member")
@@ -367,9 +369,8 @@ class TeamBacklogBoardUiTest {
     @Test
     fun theTeamCardOfTheSettingsOffersTheThreeTrackingThresholds() = runComposeUiTest {
         val services = services()
-        setContent { KairosApp(Platform.DESKTOP) { services } }
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Settings").fetchSemanticsNodes().isNotEmpty() }
-        onAllNodesWithText("Settings").onFirst().performClick()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
         waitText("Appearance")
         onNodeWithText("No progress after (working days)").performScrollTo().assertExists()
         onNodeWithText("Bounced from (reassignments)").performScrollTo().assertExists()

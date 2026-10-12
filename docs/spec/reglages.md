@@ -59,8 +59,13 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   « Réglages non enregistrés », et **rien** n'est enregistré. Corriger un
   champ efface son erreur. Les règles entre champs (début de journée avant
   la fin ; début ≤ creux le plus profond ≤ fin) s'affichent dans un bandeau
-  en tête, une fois chaque champ valide.
-- Une décimale s'écrit avec une virgule ou un point.
+  en tête, une fois chaque champ valide. Un enregistrement refusé **défile**
+  jusqu'au premier champ fautif (sinon jusqu'au bandeau) : à 360 dp, le champ
+  est trois cartes plus bas et le message « Réglages non enregistrés » ne disait
+  pas où regarder (`ErrorReveal` : un `BringIntoViewRequester` par clé, fourni par
+  `LocalErrorReveal`).
+- Une décimale s'écrit avec une virgule ou un point ; en français, le
+  formulaire l'affiche à la virgule (« 0,8 », comme son aide).
 - Les réglages valent aussitôt partout (planning, score, alertes, stats).
 
 ### Critères de succès
@@ -99,10 +104,15 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   absente garde la valeur de `base`. Erreurs (`FieldError`) : `REQUIRED`,
   `NOT_INTEGER`, `NOT_NUMBER`, `TOO_SMALL` / `TOO_LARGE` (avec la borne),
   `INVALID_DATE`, `INVALID_COLOR` (avec le texte fautif). Puis, seulement sans erreur de
-  champ, `GeneralError.WORKDAY_ORDER` (début ≥ fin) ou `DIP_ORDER`. Rend les
-  réglages complets, ou `null` à la moindre erreur.
+  champ, `GeneralError.WORKDAY_ORDER` (début ≥ fin) ou `DIP_ORDER` (creux
+  activé seulement : désactivé, ses heures ne servent pas et ne bloquent
+  rien). Un entier trop long pour être lu donne `TOO_LARGE` / `TOO_SMALL`
+  avec la borne (ou la limite d'un entier), pas `NOT_INTEGER`. Rend les
+  réglages complets, ou `null` à la moindre erreur. `ExportCodec.decode`
+  s'en sert aussi pour refuser un export aux réglages hors bornes.
 - Nettoyage à l'écriture : textes sans espaces de bord ; dates
-  supplémentaires sans vides, séparées par « , » ; couleur normalisée en
+  supplémentaires et types proposés sans vides **ni doublons** (le premier
+  reste), séparés par « , » (`normalizeList`) ; couleur normalisée en
   `#RRGGBB` majuscules (`apparence.md`).
 
 ### Écran (`SettingsScreen`, `ui`)

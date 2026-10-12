@@ -38,6 +38,7 @@ import com.skohscripts.kairos.ui.generated.resources.load_computing
 import com.skohscripts.kairos.ui.generated.resources.load_horizon_option
 import com.skohscripts.kairos.ui.generated.resources.load_horizon_title
 import com.skohscripts.kairos.ui.generated.resources.load_member_counts
+import com.skohscripts.kairos.ui.generated.resources.load_member_counts_personal
 import com.skohscripts.kairos.ui.generated.resources.load_plan_note
 import com.skohscripts.kairos.ui.generated.resources.load_spread_gap
 import com.skohscripts.kairos.ui.generated.resources.load_spread_hint
@@ -72,6 +73,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -79,7 +81,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.team.MemberAbsence
-import com.skohscripts.kairos.core.team.MemberForm
 import com.skohscripts.kairos.core.team.TeamMember
 import com.skohscripts.kairos.core.team.TeamMembers
 import com.skohscripts.kairos.ui.app.AppServices
@@ -282,7 +283,7 @@ private fun MemberCard(member: TeamMember, absence: MemberAbsence?, today: Local
                     Text(member.role, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text(
-                    stringResource(Res.string.member_summary, member.availabilityPercent, MemberForm.formatHours(member.hoursPerDay)),
+                    stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, Locale.current.language)),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (absence != null) {
@@ -298,7 +299,13 @@ private fun MemberCard(member: TeamMember, absence: MemberAbsence?, today: Local
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                         itemVerticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(stringResource(Res.string.load_member_counts, load.inProgressCount, load.todoCount), style = MaterialTheme.typography.bodySmall)
+                        // « moi » : ses tâches perso comptent dans les heures, la carte les compte aussi (sinon « 0 à faire » pour 20 h).
+                        val counts = if (load.personalCount > 0) {
+                            stringResource(Res.string.load_member_counts_personal, load.inProgressCount, load.todoCount, load.personalCount)
+                        } else {
+                            stringResource(Res.string.load_member_counts, load.inProgressCount, load.todoCount)
+                        }
+                        Text(counts, style = MaterialTheme.typography.bodySmall)
                         if (load.unestimatedCount > 0) Flag(unestimatedText(load.unestimatedCount), flagged = true)
                         if (load.atRiskCount > 0) {
                             Flag(
@@ -521,6 +528,7 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
                 }
             },
             onClose = onDismiss,
+            takenNames = snapshot.members.filter { it.id != member?.id }.map { it.name },
             onArchive = { member?.let { m -> scope.launch { repository.archiveMember(m.id); onDismiss() } } },
             onRestore = { member?.let { m -> scope.launch { repository.restoreMember(m.id); onDismiss() } } },
             onDelete = { member?.let { m -> scope.launch { repository.deleteMember(m.id); onDismiss() } } },
@@ -535,7 +543,10 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
                 MemberLoadView(
                     load = memberLoad,
                     weeks = load.value?.horizonWeeks ?: 0,
-                    tasks = memberLoad?.plan?.tasks?.mapNotNull { p -> snapshot.tasks.firstOrNull { it.id == p.taskId } }?.associateBy { it.id }.orEmpty(),
+                    // Tâches réelles (une tâche perso de « moi » reste perso : sa pastille), puis occurrences projetées (virtuelles).
+                    tasks = memberLoad?.plan?.tasks?.mapNotNull { p ->
+                        snapshot.tasks.firstOrNull { it.id == p.taskId } ?: load.value?.plan?.tasksById?.get(p.taskId)
+                    }?.associateBy { it.id }.orEmpty(),
                     computing = load.computing,
                 )
             },

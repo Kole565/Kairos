@@ -392,7 +392,7 @@ private fun BacklogRow(
                             itemVerticalAlignment = Alignment.CenterVertically,
                         ) {
                             if (task.taskType.isNotEmpty()) Badge(task.taskType)
-                            task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, language))) }
+                            task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, language, today))) }
                             card.signals.forEach { SignalBadge(it) }
                         }
                         if (compact) RowKeys(card, why, language)

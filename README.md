@@ -192,11 +192,14 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 ### S’y retrouver
 
+- Kairos s’ouvre sur la page **Accueil**, premier onglet de la navigation :
+  elle rappelle à quoi sert Kairos et ce qu’il sait faire, avec un accès
+  direct à chaque écran ; elle explique aussi comment travailler avec un
+  manager ou une équipe.
+- Les **Réglages** s’ouvrent par la roue crantée, en haut à droite de chaque
+  écran.
 - Un bouton **« ? »** en haut de chaque écran : l’aide de l’écran où tu te
   trouves, l’accès à l’Accueil et à la visite guidée.
-- La page **Accueil** rappelle à quoi sert Kairos et ce qu’il sait faire,
-  avec un accès direct à chaque écran ; elle explique aussi comment
-  travailler avec un manager ou une équipe.
 - Une **visite guidée** pas à pas (six étapes), proposée au premier
   lancement et à revoir quand on veut ; une seconde visite présente l’espace
   Équipe quand il est activé.
@@ -222,6 +225,14 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   chaque échéance, sujets les plus à risque, membre goulot, issue la plus
   probable ; **scénarios « Et si… ? »** (absence, renfort, réaffectation,
   tâches en plus…) comparés côte à côte, puis appliqués si on le souhaite.
+- **Votre travail perso compte** : si un membre est « C’est moi », vos tâches
+  personnelles entrent dans votre charge et vos prévisions d’équipe (marquées
+  « Perso »), sans quitter l’espace Perso ; « Compter dans l’équipe » (fiche
+  de la tâche, options avancées) en exclut une. Vos réunions de la vue Jour
+  réduisent votre capacité, et les prévisions proposent « Mon travail ».
+- Les prévisions et la charge tiennent compte des **tâches récurrentes**
+  (chaque occurrence à venir sur l’horizon) et du **temps déjà passé** sur
+  une tâche.
 - **Échanges par fichier** avec les membres qui ont Kairos, réunis dans
   l’onglet **Échanges** de l’écran Équipe : « Envoyer ses tâches… » produit un
   paquet que le membre reçoit par **Importer** (ses tâches rejoignent sa
@@ -247,6 +258,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   thème en est dérivé (Material Design 3), contrastes compris.
 - Sur **Android 12 et plus**, « Couleurs du système » suit les couleurs du
   fond d’écran (Material You).
+- Au lancement, une **page de démarrage** (Android, bureau, web) : l’aiguille
+  du cadran solaire fait un tour et se pose sur le logo, puis l’application
+  apparaît en fondu. Un toucher l’abrège.
 
 ## Réglages
 

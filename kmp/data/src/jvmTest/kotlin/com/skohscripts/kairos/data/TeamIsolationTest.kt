@@ -310,10 +310,11 @@ class TeamIsolationTest {
             }
         }
         assertEquals(columns(fresh), columns(migrated))
-        // E3 a ajouté trois colonnes à la suite de celles d'E1 (mêmes positions qu'en base migrée), puis E6 trois autres.
+        // E3 a ajouté trois colonnes à la suite de celles d'E1 (mêmes positions qu'en base migrée), puis E6 trois autres,
+        // puis `team_excluded` (6.sqm, docs/spec/equipe-moi.md).
         assertEquals(
-            listOf("space", "assignee_id", "progress_percent", "started_on", "team_uid", "origin", "origin_removed", "reported_minutes"),
-            columns(fresh).takeLast(8),
+            listOf("space", "assignee_id", "progress_percent", "started_on", "team_uid", "origin", "origin_removed", "reported_minutes", "team_excluded"),
+            columns(fresh).takeLast(9),
         )
         migrated.delete()
         fresh.delete()

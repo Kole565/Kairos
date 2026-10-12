@@ -19,6 +19,8 @@ import java.util.Properties
 object LegacyFiles {
     /** Tables de Kairos 2 reprises par la migration (`task_sync_meta` est ignorée). */
     private val TABLES = listOf("task", "time_block", "task_dependency", "work_session", "note")
+    /** Tables qui n'existent que dans une base Kairos 3 (jamais dans Kairos 2). */
+    private val K3_TABLES = listOf("team_member", "settings")
     private val json = Json { ignoreUnknownKeys = true }
 
     /** Base trouvée : le fichier SQLite et le `settings.json` voisin, s'il existe. */
@@ -57,6 +59,9 @@ object LegacyFiles {
                     buildSet { while (rs.next()) add(rs.getString(1)) }
                 }
             }
+            // Une base de Kairos 3 (tables `team_member`, `settings`…) a aussi une table `task` : l'importer comme une base 2.x
+            // remplaçait l'équipe et les réglages par des défauts. Refusée avant toute lecture.
+            if (K3_TABLES.any { it in existing }) throw NotALegacyDatabase()
             TABLES.filter { it in existing }.associateWith { table ->
                 connection.createStatement().use { st ->
                     st.executeQuery("SELECT * FROM \"$table\"").use { rs ->

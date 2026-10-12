@@ -112,11 +112,12 @@ JSON UTF-8 indenté :
   E3), `teamScenarios` (jalon E5) — un lecteur 2 plus ancien ignore les champs qu'il ne connaît pas —
   et, sur les tâches, `progressPercent`, `startedOn`, `teamUid` (E3), `space` (`"team"`, écrit seulement pour une
   tâche d'équipe), `assigneeId`, `origin`, `originRemoved` (écrit
-  seulement s'il est vrai) et `reportedMinutes` (E6) ; sur les membres,
+  seulement s'il est vrai) et `reportedMinutes` (E6), `teamExcluded` (écrit
+  seulement s'il est vrai, `equipe-moi.md`) ; sur les membres,
   `lastReportAt` (E6).
 - **Une base sans donnée d'équipe** (`Workspaces.hasTeamData` faux : ni
   membre, ni absence, ni événement, ni tâche d'équipe, ni tâche assignée,
-  ni tâche reçue d'un manager) s'exporte en
+  ni tâche reçue d'un manager, ni tâche perso exclue de l'équipe) s'exporte en
   `formatVersion` 1, sans aucun champ d'équipe : c'est l'export de la
   3.0.0, octet pour octet hors `appVersion` et `exportedAt`, prouvé contre un
   fichier de référence produit avant le chantier
@@ -125,13 +126,29 @@ JSON UTF-8 indenté :
   les écrirait sinon. Un `settings.team` non nul (espace activé puis vidé)
   reste écrit dans les réglages d'un export 1 ; une version antérieure
   l'ignore (champ inconnu).
-- `decode` :
-  - JSON illisible ou `format` différent → `ImportException(NOT_AN_EXPORT)` ;
+- `decode` (en deux temps, marque d'ordre des octets UTF-8 ignorée — un
+  fichier du Bloc-notes de Windows en commence ; `TeamExchangeCodec.detect` et les
+  décodeurs de paquet et de rapport l'ignorent aussi, sinon l'aiguillage du bouton
+  « Importer » refusait le fichier avant que `ExportCodec` ne le lise) :
+  - pas du JSON, pas un objet, `format` différent ou `formatVersion` absente
+    → `ImportException(NOT_AN_EXPORT)` ;
   - `formatVersion` supérieure à 2 → `TOO_NEW` (1 et 2 sont lues ; un
     export 1 donne une base sans donnée d'équipe) ;
-  - valeur invalide (date, instant) → `CORRUPTED` ;
+  - un export Kairos dont un champ est mal typé ou à valeur invalide →
+    `CORRUPTED`. (Une liste absente reste vide, `tasks` comprise : le
+    remplacement est confirmé et précédé d'une sauvegarde.) Valeur invalide :
+    date ou instant illisible, réglages refusés par `SettingsForm.validate`
+    (mêmes bornes et règles que le formulaire), identifiant en double dans
+    une table, titre de plus de 10 000 caractères, priorité hors 0-2, points
+    hors de l'échelle de Fibonacci, durée négative, dépendance vers une tâche
+    absente ou vers elle-même, créneau qui finit avant de commencer ;
   - champs inconnus ignorés, champs absents à leur valeur par défaut
     (réglages compris).
+  Rien n'est jamais importé en partie. Ces contrôles datent du test
+  exploratoire du 2026-10-11 : un fichier aux réglages hors bornes (heure
+  25) était accepté puis faisait planter les vues Jour et Semaine ; des
+  identifiants en double faisaient quitter l'application sur une erreur
+  SQLite brute ; un titre de 2 Mo gelait l'interface.
 
 ### Carte Données (`SettingsScreen.DataCard`)
 

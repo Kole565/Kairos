@@ -41,7 +41,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    manque, qualifiable en un clic par pastilles dont le sens est écrit
    (P0 Critique · P1 Important · P2 Utile ; 1 trivial … 21 énorme).
    Recliquer une valeur la retire. Vide : « Rien à traiter : tout est déjà
-   clarifié ». Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
+   clarifié » ; vidée par un filtre actif seulement : « Aucune tâche à
+   traiter ne correspond au filtre » (ne pas annoncer que tout est clarifié). Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
    qualifier, le sens des priorités (importance, le délai compte à part par
    l'échéance), puis le guide des points (voir **Guide des points**).
 4. **Maintenant** (seul bloc teinté) : « À faire maintenant : » la première
@@ -55,7 +56,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
 6. **Aujourd'hui, dans l'ordre** : les tâches placées par heure, ordre du
    score ; étiquettes « épinglée », « deep work », « chemin critique » ;
    notes « à partir de 14h05, après « Réunion » » (« (épinglée) » si
-   l'obstacle est une tâche épinglée), « créneau creux (~15 h) : tâche
+   l'obstacle est une tâche épinglée, jamais pour une fenêtre de deep work :
+  `ObstacleKind.DEEPWORK`, que le test différentiel range avec `PINNED`, comme Kairos 2), « créneau creux (~15 h) : tâche
    légère privilégiée », « chevauche « Réunion » ». Vide : « Aucune tâche à
    faire n'est actuellement planifiée ».
 7. **Sections secondaires**, chacune avec son compte et une phrase de rôle,
@@ -68,7 +70,9 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    « filtre actif » et « Réinitialiser ». Un filtre actif remonte au-dessus
    de l'agenda. Il réduit les listes, jamais le planning.
 9. **Backlog, sans date** (replié, toujours présent) : tâches à faire sans
-   échéance ni date programmée, non bloquées.
+   échéance ni date programmée, non bloquées. Elles comblent quand même les
+   trous de l'agenda selon leur score (`isEligibleToday`) ; la phrase de rôle
+   le dit, et dit qu'aucun jour de la semaine ne les affiche.
 10. **En ce moment** (chrono en cours) puis **Agenda** (frise) : la journée
     de travail heure par heure, créneaux, tâches placées et rail du temps
     chronométré ; à droite de la liste en largeur bureau, en bas sinon.
@@ -79,8 +83,13 @@ durée, « échéance 30 sept. », « programmée 2 oct. », icône de récurren
 temps passé ou minuteur vivant, « traîne depuis N j ») qui passent à la ligne, puis la description sur une
 ligne, dépliable d'un clic ; colonne « clés » alignée à droite : score (qui
 s'ouvre sur « Pourquoi à cette place ? »), priorité (P0 en rouge), points ;
-actions : chrono et décaler (tâches à faire), modifier. En largeur étroite, la
-colonne « clés » passe sous le corps. Liseré rouge de 3 dp à gauche pour
+actions : chrono et décaler (tâches à faire), modifier (une ligne de « Fait »,
+sans action, garde une marge de 12 dp au bord droit). En largeur étroite
+(< 600 dp), la colonne « clés » passe sous le corps **et les actions la
+rejoignent** sur une même ligne (clés à gauche, actions à droite, `RowActions`) :
+à 400 dp, trois boutons à droite ne laissaient au titre que 175 px, soit trois
+ou quatre lignes par titre (test exploratoire du 2026-10-11) ; la coche ne bouge
+pas. Liseré rouge de 3 dp à gauche pour
 une tâche en retard. Tâche bloquée : fond de surface, contour, titre
 atténué.
 
@@ -104,7 +113,10 @@ guide des points), échéance, durée ; « Options avancées » : programmée po
 récurrence (aucune, quotidienne, jours ouvrés, hebdomadaire, mensuelle,
 « le … du mois » avec le jour), type, heure fixe (HH:MM, vide = aucune),
 nouvelles sous-tâches (une par ligne), « Bloquée par » (cases à cocher).
-Un seul « Enregistrer » ; « Supprimer » avec confirmation. **Durée
+Un seul « Enregistrer » ; « Supprimer » avec confirmation. Seul le contenu
+défile : « Supprimer », « Annuler » et « Enregistrer » restent en bas de la
+fiche (à 900x700, « Enregistrer » était hors de vue sous les options
+avancées). **Durée
 suggérée** : choisir un palier de points dont le temps réel médian est
 fiable (3 tâches au moins) **remplace** la durée par cette médiane ; choisir
 un type fiable ne la remplit que si elle est vide. On reste libre de la
@@ -158,6 +170,8 @@ heure, `why` (tâches qualifiées), `buckets`, `staleDays`, `raised`,
 modèles récurrents qui y tombent, par heure), `dayBlocks` (créneaux
 effectifs), `timeline`, `holidays`. Le backlog est trié par priorité (sans
 priorité en dernier) puis titre ; « Fait » par modification décroissante.
+Une tâche mère bloquée n'est que dans `blocked`, pas dans `parents`
+(une tâche ouverte, une seule section).
 Pour un autre jour que celui de l'heure courante, le placement part du
 début de la journée de travail (`Scheduling.buildDaySchedule` n'utilise
 l'heure que si elle tombe ce jour-là, comme Kairos 2).
@@ -185,9 +199,16 @@ posée.
   raccourcis. États d'ouverture des sections : `mutableStateMapOf`, gardés
   tant que l'écran vit.
 - Racine focalisable (`focusRequester` + `focusable` + `onKeyEvent`, marque
-  de test `day-screen`) ; elle reprend le focus après la première image et à
-  la fermeture d'un dialogue. Un champ de saisie consomme la frappe avant
-  elle : les raccourcis sont inactifs pendant une saisie.
+  de test `day-screen`) ; elle reprend le focus après la première image, à
+  la fermeture d'un dialogue et à tout clic dans le vide (`detectTapGestures`,
+  après les éléments cliquables qui consomment le leur) : sans cela, le focus
+  n'était plus nulle part et `N` / `/` restaient sourds. Les raccourcis sont
+  inactifs pendant une saisie : le champ ne consomme pas toujours la touche (le
+  caractère arrive en « KeyTyped »), donc chaque champ de la vue Jour (capture,
+  titre / date / heures d'un créneau, recherche) porte `quietShortcuts()` qui
+  arrête `N` et `/` avant l'écran ; sans cela, « n » dans le titre d'un créneau
+  renvoyait vers « Nouvelle tâche » et le titre était perdu
+  (`DayScreenUiTest.theShortcutsStayQuietWhileTypingTheTitleOfASlot`).
 - `TaskRow(tâche, RowContext, heure?, bloquée, modifiable, description,
   before, after, extra)` : `RowContext` porte la vue, la langue, le mode
   compact, les actions (chrono compris) et l'horloge du minuteur vivant. Formes et couleurs de la charte : `Badge` neutre,
@@ -203,7 +224,9 @@ posée.
   haut, travail et épinglée en conteneur secondaire (contour pour
   l'épinglée), conflit en conteneur d'erreur, deep work en tertiaire
   (hachures dessinées pour le bloc réservé) ; libellé « heure · titre » si
-  l'entrée fait au moins 14 min.
+  l'entrée fait au moins 14 min, sauf pour un fond (deep work, occupé) dont
+  le haut est recouvert par une tâche commençant moins de 16 min après lui
+  (les deux libellés se chevauchaient).
 - `Capture` : `SingleChoiceSegmentedButtonRow` ; `CaptureState` (volet,
   `FocusRequester` du champ). `BlockFormState` / `BlockFields` : jour
   (AAAA-MM-JJ), début et fin (`Dates.parseTime` accepte « 9:30 »,
@@ -223,7 +246,12 @@ posée.
   remplace la durée par `minutesByPoints[palier]`, `TypeField` ne remplit
   qu'une durée vide avec `minutesByType[type]`.
 - `Dates` : « 30 sept. » / « Sep 30 », « 09h15 » / « 09:15 », graduations
-  « 9h » / « 9:00 », nombres à une décimale sans « .0 » ; `duration()` :
+  « 9h » / « 9:00 », nombres à une décimale sans « .0 » (deux pour une valeur positive
+  qui s'arrondirait à 0 : un score de 1/21 s'affiche « 0,05 », jamais « 0 ») ;
+  la virgule en français (`Dates.number(valeur, langue)` : « 7,6 », « 7.6 » en anglais) ;
+  `Dates.short(date, langue, référence)` ajoute l'année si elle diffère de celle
+  du jour affiché (« 29 févr. 2028 », « Feb 29, 2028 ») : échéances et jours
+  prévus des lignes de tâche, du Backlog et du Suivi d'équipe ; `duration()` :
   « 1 h 30 », « 2 h », « 45 min » ; `long` : « mardi 29 septembre 2026 »
 (« 1er » le premier du mois) / « Tuesday, September 29, 2026 » ;
 `dayShort` : « mar. 29/09 » / « Tue 9/29 » ; `dayMonth` : « 28/09 » /

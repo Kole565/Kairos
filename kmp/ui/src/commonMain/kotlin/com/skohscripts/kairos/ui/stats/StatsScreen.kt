@@ -113,9 +113,9 @@ fun StatsScreen(services: AppServices) {
                 Text(stringResource(Res.string.stats_empty), style = MaterialTheme.typography.bodyLarge)
                 return@Column
             }
-            // Tuiles souples : 4 par ligne au large, 2 sur un téléphone, jamais une seule étirée.
+            // Tuiles souples : 4 par ligne au large, 2 sur un téléphone, jamais une seule étirée ; même hauteur par ligne.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                val tile = Modifier.weight(1f).widthIn(min = 150.dp)
+                val tile = Modifier.weight(1f).widthIn(min = 150.dp).fillMaxRowHeight()
                 StatTile(stats.completedInWindow.toString(), stringResource(Res.string.stats_kpi_done, stats.windowWeeks), tile)
                 StatTile(duration(stats.trackedMinutesWindow), stringResource(Res.string.stats_kpi_tracked), tile)
                 // Seuils de Kairos 2 : délai médian de plus de 7 j, moins de 70 % d'échéances tenues.
@@ -177,7 +177,7 @@ fun StatsScreen(services: AppServices) {
 
             Panel(KairosIcons.Inbox, stringResource(Res.string.stats_flow_title), stringResource(Res.string.stats_flow_hint)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val tile = Modifier.weight(1f).widthIn(min = 150.dp)
+                    val tile = Modifier.weight(1f).widthIn(min = 150.dp).fillMaxRowHeight()
                     StatTile(stats.flow.openCount.toString(), stringResource(Res.string.stats_flow_wip), tile, nested = true)
                     StatTile(stats.flow.medianAgeDays?.toString() ?: "—", stringResource(Res.string.stats_flow_age), tile, nested = true)
                     StatTile(stats.flow.overdueCount.toString(), stringResource(Res.string.stats_flow_overdue), tile, warn = stats.flow.overdueCount > 0, nested = true)

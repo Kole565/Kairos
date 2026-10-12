@@ -23,10 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.KairosBuild
+import com.skohscripts.kairos.ui.app.rememberLinkOpener
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.about_brief_1
 import com.skohscripts.kairos.ui.generated.resources.about_brief_2
@@ -83,7 +83,13 @@ fun AboutScreen() {
 
             Section(Res.string.about_brief_title) {
                 listOf(Res.string.about_brief_1, Res.string.about_brief_2, Res.string.about_brief_3, Res.string.about_brief_4)
-                    .forEach { Text("•  " + stringResource(it), style = MaterialTheme.typography.bodyMedium) }
+                    .forEach {
+                        // Puce à part : les lignes suivantes s'alignent sous le texte, pas sous la puce.
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("•", style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                        }
+                    }
             }
             Section(Res.string.about_score_title) {
                 Text(
@@ -107,12 +113,13 @@ fun AboutScreen() {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            val uriHandler = LocalUriHandler.current
-            KairosOutlinedButton(onClick = { uriHandler.openUri(SOURCE_URL) }, contentPadding = KairosButtonIconPadding) {
+            val openLink = rememberLinkOpener()
+            // Sans navigateur (xdg-open absent…), l'ouverture échoue : jamais de plantage (docs/spec/soutien.md).
+            KairosOutlinedButton(onClick = { openLink(SOURCE_URL) }, contentPadding = KairosButtonIconPadding) {
                 Icon(KairosIcons.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                 Text(stringResource(Res.string.about_source), modifier = Modifier.padding(start = 8.dp))
             }
-            KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(DONATE_URL) } }, contentPadding = KairosButtonIconPadding) {
+            KairosOutlinedButton(onClick = { openLink(DONATE_URL) }, contentPadding = KairosButtonIconPadding) {
                 Icon(KairosIcons.Favorite, contentDescription = null, modifier = Modifier.size(18.dp))
                 Text(stringResource(Res.string.donate_action), modifier = Modifier.padding(start = 8.dp))
             }

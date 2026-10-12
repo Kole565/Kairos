@@ -43,9 +43,14 @@ traiter ».
   jamais avant, avec la note « à partir de 14h05, après « Réunion » ».
 - Une tâche épinglée à une heure y est posée exactement ; le reste s'organise
   autour. Un chevauchement avec un créneau est **signalé**, jamais corrigé.
+  Une tâche épinglée dont l'heure est **passée** reste à cette heure et s'affiche
+  « À faire maintenant » tant qu'elle n'est pas faite (décision explicite du
+  2026-10-12 : le planning ne la cache pas ni ne la déplace ; `DayViewTest`).
 - Une fenêtre de deep work n'accueille que les tâches les plus urgentes,
   autant que sa durée le permet, chacune gardant sa durée ; aucune autre
-  tâche ne s'y intercale.
+  tâche ne s'y intercale. Seule sa part à venir compte : à 16 h, une
+  fenêtre de 10 h à 11 h 30 n'accueille plus rien, et aucune tâche n'est
+  jamais placée dans le passé.
 - Pendant le creux de l'après-midi (13 h à 16 h, tronc à 15 h, réglables),
   une tâche légère passe devant une tâche lourde sur ce créneau précis, avec
   la note « créneau creux (~15 h) : tâche légère privilégiée ». Le score
@@ -116,15 +121,17 @@ réglages, les tâches bloquées et les clés d'urgence effectives
    (obstacles, marge `meetingBufferMinutes` après) et deep work.
 3. Épinglées à leur heure, chevauchement avec un créneau occupé noté
    (`conflictWith`) ; elles deviennent des obstacles sans marge.
-4. Chaque fenêtre de deep work se remplit, dans l'ordre, des tâches les plus
-   urgentes qui y tiennent entières ; puis la fenêtre entière devient un
-   obstacle.
+4. Chaque fenêtre de deep work, rognée à maintenant le jour même (une
+   fenêtre finie disparaît, une fenêtre entamée commence à maintenant), se
+   remplit, dans l'ordre, des tâches les plus urgentes qui y tiennent
+   entières ; puis la fenêtre devient un obstacle. La frise garde les
+   créneaux tels quels.
 5. Curseur : à chaque créneau (curseur sauté hors des obstacles), la tâche
    choisie minimise `selectionKey` (clé effective ; pendant le creux, pour
    une tâche non remontée, −score est remplacé par −score de placement, dont
    l'effort est majoré de `penalty × intensité × effort normalisé`). Si la
    tâche chevauche un obstacle, elle est repoussée après lui (+ marge) et
-   note l'obstacle (`pushedAfter`, `BUSY` ou `PINNED`). Si elle commence
+   note l'obstacle (`pushedAfter`, `BUSY`, `PINNED` ou `DEEPWORK`). Si elle commence
    après la fin de journée : « sans créneau », et l'on continue (une plus
    courte peut encore tenir). `dipApplied` si le creux a changé le choix.
 6. Charge : requis = durées des tâches à placer ; disponible = fenêtre
@@ -177,3 +184,11 @@ change lui-même, sur un checkout du tag `v2.6.0` de Kairos 2
   avec Kairos 2, qui prend la date d'un horodatage UTC naïf.
 - **Une tâche archivée ne bloque pas** : le moteur reçoit le statut réel de
   chaque tâche (voir `dependances.md`).
+- **Deep work rogné à maintenant** (2026-10-11, écart volontaire avec
+  Kairos 2, demandé après le test exploratoire) : Kairos 2 remplissait la
+  fenêtre entière, passé compris ; à 16 h 42, « À faire maintenant » montrait
+  une tâche posée à 10 h et une tâche P0 partait « sans créneau » pendant
+  qu'une fenêtre passée restait « remplie ». Le générateur de fixtures passe
+  au moteur de Kairos 2 des fenêtres déjà rognées, si bien que les tests
+  différentiels portent sur le comportement voulu (31 scénarios sur 480
+  changent, tous avec une heure courante).

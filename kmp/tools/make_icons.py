@@ -19,6 +19,7 @@ OUT = (pathlib.Path(__file__).resolve().parent.parent
 # Nom Kotlin -> (nom Material Symbols, variante pleine générée aussi ?)
 # La variante pleine sert à la destination active de la navigation (convention MD3).
 ICONS = {
+    "Home": ("home", True),
     "Notes": ("sticky_note_2", True),
     "Today": ("today", True),
     "DateRange": ("date_range", True),

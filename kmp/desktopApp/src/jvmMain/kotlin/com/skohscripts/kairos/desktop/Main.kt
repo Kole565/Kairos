@@ -70,7 +70,7 @@ fun main(args: Array<String>) {
                     awtWindow.requestFocus()
                 }
             }
-            KairosApp(Platform.DESKTOP) { DesktopServices.open(dataDir, notifier = notifier, portable = portable) }
+            KairosApp(Platform.DESKTOP, splash = true) { DesktopServices.open(dataDir, notifier = notifier, portable = portable) }
         }
     }
 }

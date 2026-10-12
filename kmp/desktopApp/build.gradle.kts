@@ -51,7 +51,9 @@ compose.desktop {
             vendor = "Corentin Michel"
             copyright = "© 2026 Corentin Michel, licence MIT"
             licenseFile.set(rootProject.file("../LICENSE"))
-            modules("java.instrument", "java.management", "java.net.http", "java.sql", "jdk.unsupported")
+            // jdk.localedata : sans lui, le runtime réduit ne connaît que l'anglais et le sélecteur de dates Material 3
+            // (absences, prévisions) affichait « Oct 2026 » et « M T W T F S S » dans l'interface française.
+            modules("java.instrument", "java.management", "java.net.http", "java.sql", "jdk.localedata", "jdk.unsupported")
             windows {
                 iconFile.set(project.file("icons/kairos.ico"))
                 // Installation par utilisateur : aucun droit administrateur requis.

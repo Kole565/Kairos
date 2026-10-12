@@ -63,6 +63,12 @@ Tests d'isolation à garder verts à chaque jalon :
   états, signaux, suggestion, fusion des paquets et rapports. Ni horloge
   (jour et instant en paramètres), ni hasard (UUID tirés par le dépôt
   dans `data`, graines de simulation tirées par l'interface), ni I/O.
+- **Calculs d'équipe = vue `TeamWork`** (`core/team/TeamWork.kt`,
+  `docs/spec/equipe-moi.md`) : le pendant de `personalView`. Un calcul de
+  charge ou de prévision lit `TeamWork.view(snapshot)` (tâches perso de
+  « moi » converties) et, pour le posage, `TeamWork.planInput` (occurrences
+  projetées à identifiant négatif, temps passé, créneaux de « moi ») ; jamais
+  la base brute. Les écrans d'édition, le Suivi et le Backlog lisent la base.
 - **Réutiliser les moteurs**, ne pas les dupliquer : `Scheduling.sortKey` et
   `wsjfScore` (ordre et score), `Dependencies` (blocage, cycles, urgence
   héritée), `Workdays` (jours ouvrés, fériés), `Staleness`, `TimeTracking`,
@@ -79,8 +85,9 @@ Tests d'isolation à garder verts à chaque jalon :
 - Pas de dépendance entre une tâche `TEAM` et une tâche `PERSONAL`.
 - Alertes par la **forme** (contour + icône), jamais d'ambre ; dépassement
   de charge en `error` (seul rouge permis ici, avec P0).
-- Cinq destinations dans l'espace Équipe (Suivi, Backlog, Équipe,
-  Prévisions, Réglages) ; `Destination` de l'espace Perso inchangée.
+- Cinq destinations dans l'espace Équipe (Accueil, Suivi, Backlog, Équipe,
+  Prévisions) ; les Réglages, communs aux deux espaces, sont dans la barre du
+  haut (écran secondaire).
 
 ## Déroulé d'un jalon
 

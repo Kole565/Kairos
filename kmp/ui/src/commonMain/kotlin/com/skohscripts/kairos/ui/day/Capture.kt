@@ -45,6 +45,8 @@ import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.capture_add
 import com.skohscripts.kairos.ui.generated.resources.capture_label
 import com.skohscripts.kairos.ui.generated.resources.capture_mode_block
+import com.skohscripts.kairos.ui.generated.resources.capture_mode_block_short
+import com.skohscripts.kairos.ui.navigation.LocalWindowWidth
 import com.skohscripts.kairos.ui.generated.resources.capture_mode_task
 import com.skohscripts.kairos.ui.generated.resources.capture_placeholder
 import com.skohscripts.kairos.ui.generated.resources.capture_title
@@ -103,7 +105,11 @@ internal fun Capture(
                     selected = state.blockMode,
                     onClick = { state.blockMode = true },
                     shape = SegmentedButtonDefaults.itemShape(1, 2),
-                ) { Text(stringResource(Res.string.capture_mode_block)) }
+                ) {
+                    // Fenêtre très étroite (< 380 dp) : libellé court, « Créneau / deep work » y passait sur deux lignes et
+                    // le segment débordait sur son voisin ; le formulaire dit « deep work » juste dessous.
+                    Text(stringResource(if (LocalWindowWidth.current < NARROW_CAPTURE) Res.string.capture_mode_block_short else Res.string.capture_mode_block))
+                }
             }
             if (state.blockMode && !taskOnly) {
                 val form = remember(day) { BlockFormState.empty(day) }
@@ -145,7 +151,7 @@ private fun TaskCapture(focus: FocusRequester, onAdd: (String) -> Unit) {
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { submit() }),
-            modifier = Modifier.weight(1f).focusRequester(focus).onPreviewKeyEvent {
+            modifier = Modifier.weight(1f).focusRequester(focus).quietShortcuts().onPreviewKeyEvent {
                 if (it.type == KeyEventType.KeyDown && (it.key == Key.Enter || it.key == Key.NumPadEnter)) {
                     submit()
                     true
@@ -178,3 +184,6 @@ internal fun KeyHint(key: String) {
         )
     }
 }
+
+/** Largeur de fenêtre sous laquelle le segment « Créneau / deep work » prend son libellé court. */
+private val NARROW_CAPTURE = 380.dp

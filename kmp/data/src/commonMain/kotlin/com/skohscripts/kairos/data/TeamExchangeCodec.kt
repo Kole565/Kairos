@@ -50,7 +50,10 @@ object TeamExchangeCodec {
      * entre les trois formats : chacun n'est reconnu que par sa valeur exacte.
      * @throws ImportException `NOT_AN_EXPORT` si le texte n'est pas un objet JSON portant un `format` connu.
      */
-    fun detect(text: String): Kind {
+    fun detect(raw: String): Kind {
+        // Un fichier enregistré par le Bloc-notes de Windows commence par une marque d'ordre des octets (BOM) : ignorée
+        // ici comme dans `ExportCodec.decode` (sinon le fichier était « pas un export » avant même d'être lu).
+        val text = raw.removePrefix(BOM)
         val format = try {
             ((json.parseToJsonElement(text) as? JsonObject)?.get("format") as? JsonPrimitive)?.takeIf { it.isString }?.content
         } catch (e: Exception) {
@@ -75,7 +78,10 @@ object TeamExchangeCodec {
     /** @throws ImportException si le texte n'est pas un rapport lisible. */
     fun decodeReport(text: String): TeamReport = decode(text, REPORT_FORMAT, ReportFile.serializer()) { it.toModel() }
 
-    private fun <F, M> decode(text: String, format: String, serializer: kotlinx.serialization.KSerializer<F>, toModel: (F) -> M): M {
+    private const val BOM = "\uFEFF"
+
+    private fun <F, M> decode(raw: String, format: String, serializer: kotlinx.serialization.KSerializer<F>, toModel: (F) -> M): M {
+        val text = raw.removePrefix(BOM)
         val header = try {
             json.decodeFromString(Header.serializer(), text)
         } catch (e: Exception) {
@@ -223,6 +229,8 @@ private data class ReportFile(
     fun toModel(): TeamReport {
         team.uid.requireText("team.uid")
         member.uid.requireText("member.uid")
+        // Un temps passé négatif ou de plus de 10 000 h sur une seule tâche n'est pas un rapport (« 1666666 h 39 » aperçus).
+        require(tasks.all { it.spentMinutes in 0..MAX_SPENT_MINUTES }) { "temps passé" }
         return TeamReport(
             reportedAt = Instant.parse(reportedAt),
             teamUid = team.uid,
@@ -244,6 +252,8 @@ private data class ReportFile(
     }
 
     companion object {
+        const val MAX_SPENT_MINUTES = 600_000
+
         /** « done » ou « todo » : un rapport ne dit rien d'autre ; un code inconnu se lit « à faire ». */
         private fun status(code: String) = if (code == TaskStatus.DONE.code) TaskStatus.DONE else TaskStatus.TODO
 

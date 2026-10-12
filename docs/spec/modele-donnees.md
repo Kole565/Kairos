@@ -68,7 +68,8 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   d'une tâche reçue d'un manager, `TeamOrigin` encodée, `null` sinon),
   `originRemoved` (retirée par le manager, faux par défaut),
   `reportedMinutes` (dernier total de temps rapporté par un membre, côté
-  manager) (`equipe-echanges.md`).
+  manager) (`equipe-echanges.md`), et `teamExcluded` (tâche perso exclue de
+  la charge et des prévisions de « moi », faux par défaut, `equipe-moi.md`).
   - Dates et heures « métier » **locales naïves** (`LocalDate`,
     `LocalDateTime`) ; horodatages techniques en instants UTC (`Instant`).
     Convention de Kairos 2.
@@ -156,6 +157,8 @@ Schéma 4 : `3.sqm` (jalon E3) ajoute `task.progress_percent`,
 Schéma 5 : `4.sqm` (jalon E5) ajoute `team_scenario`. Schéma 6 : `5.sqm`
 (jalon E6) ajoute `task.origin`, `task.origin_removed`,
 `task.reported_minutes` et `team_member.last_report_at` (en fin de table).
+Schéma 7 : `6.sqm` ajoute `task.team_excluded` (0 par défaut, en fin de
+table, `equipe-moi.md`).
 Les
 schémas de référence de chaque version
 (`data/src/commonMain/sqldelight/databases/<n>.db`, générés par

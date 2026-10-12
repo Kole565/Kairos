@@ -132,5 +132,12 @@ class LegacyMigrationTest {
         val other = File.createTempFile("other", ".db")
         java.sql.DriverManager.getConnection("jdbc:sqlite:${other.absolutePath}").use { it.createStatement().execute("CREATE TABLE x(id INTEGER)") }
         assertFailsWith<NotALegacyDatabase> { Kairos2Import.convert(LegacyFiles.read(other), "fr", now) }
+        // Une base de Kairos 3 a aussi une table `task` : refusée, au lieu de remettre équipe et réglages à zéro.
+        val kairos3 = File.createTempFile("kairos3", ".db")
+        java.sql.DriverManager.getConnection("jdbc:sqlite:${kairos3.absolutePath}").use {
+            it.createStatement().execute("CREATE TABLE task(id INTEGER)")
+            it.createStatement().execute("CREATE TABLE team_member(id INTEGER)")
+        }
+        assertFailsWith<NotALegacyDatabase> { LegacyFiles.read(kairos3) }
     }
 }

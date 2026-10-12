@@ -45,6 +45,34 @@ object Dependencies {
      * transitivité est naturelle (un bloqueur bloqué reste `todo`). Une tâche
      * déjà faite ou archivée n'est jamais bloquée. Statut inconnu = `todo`.
      */
+    /**
+     * Sous-tâches à faire d'une tâche bloquée, de proche en proche : [tâche → son ancêtre bloqué le plus proche]. Une
+     * sous-tâche ne se planifie pas tant que sa mère attend un bloqueur (docs/spec/dependances.md). [blocked] :
+     * [blockedTaskIds] ; [parentOf] : mère de chaque tâche à faire qui en a une.
+     */
+    fun inheritedBlock(blocked: Set<Long>, parentOf: Map<Long, Long>): Map<Long, Long> {
+        val out = LinkedHashMap<Long, Long>()
+        fun nearestBlockedAncestor(id: Long): Long? {
+            var p = parentOf[id]
+            var steps = 0
+            while (p != null && steps++ < parentOf.size + 1) {
+                if (p in blocked || p in out) return if (p in blocked) p else out.getValue(p)
+                p = parentOf[p]
+            }
+            return null
+        }
+        // Ordre stable : les mères avant leurs filles n'est pas garanti, on itère jusqu'au point fixe.
+        var changed = true
+        while (changed) {
+            changed = false
+            for (id in parentOf.keys) {
+                if (id in blocked || id in out) continue
+                nearestBlockedAncestor(id)?.let { out[id] = it; changed = true }
+            }
+        }
+        return out
+    }
+
     fun blockedTaskIds(edges: List<Edge>, isTodo: (Long) -> Boolean): Set<Long> =
         acyclicEdges(edges).filter { isTodo(it.blocked) && isTodo(it.blocker) }.map { it.blocked }.toSet()
 
