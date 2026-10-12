@@ -119,6 +119,13 @@ object Recurrence {
 
     fun period(day: LocalDate): String = "${day.year.toString().padStart(4, '0')}-${(day.month.ordinal + 1).toString().padStart(2, '0')}"
 
+    /** Échéance, ce mois-ci, d'une série « le N du mois » : le jour N (borné à la fin du mois), reculé au jour ouvré précédent. */
+    fun calendarDeadline(dayOfMonth: Int, today: LocalDate, holidays: Set<LocalDate>): LocalDate {
+        val month = today.month.ordinal + 1
+        val target = LocalDate(today.year, month, minOf(dayOfMonth, daysInMonth(today.year, month)))
+        return Workdays.onOrBeforeBusinessDay(target, holidays)
+    }
+
     /**
      * Occurrences du mois de [today] des séries « le N du mois »
      * (`ensure_calendar_occurrences`) : une par série `(titre, jour, espace)` pas
@@ -139,9 +146,7 @@ object Recurrence {
             val title = key.title
             val dayOfMonth = key.dayOfMonth
             val rep = members.maxBy { it.id }
-            val month = today.month.ordinal + 1
-            val target = LocalDate(today.year, month, minOf(dayOfMonth, daysInMonth(today.year, month)))
-            val deadline = Workdays.onOrBeforeBusinessDay(target, holidays)
+            val deadline = calendarDeadline(dayOfMonth, today, holidays)
             Task(
                 id = 0,
                 title = title,

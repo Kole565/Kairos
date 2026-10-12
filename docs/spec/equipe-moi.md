@@ -178,7 +178,9 @@ qu'elles ne pourraient l'être.
     (`Workdays.onOrBeforeBusinessDay`), comme `Recurrence.calendarOccurrences`,
     jamais avant aujourd'hui ;
   - chaque occurrence copie la tâche (effort, points, type, priorité,
-    assigné) avec `deadline` = `scheduledDate` = son jour, avancement nul,
+    assigné) avec `deadline` = son jour et `scheduledDate` = ce jour, ou le jour ouvré qui le précède
+    s'il tombe un week-end ou un férié (une hebdomadaire ancrée un dimanche resterait sinon « en retard » en
+    permanence : elle ne pouvait commencer qu'après son échéance), avancement nul,
     `teamUid` dérivé et stable (`"<teamUid ou task-id>@<date>"`, pour les
     tirages), identifiants `-1, -2…` dans l'ordre (série, date) ;
   - garde-fou : 400 occurrences au plus par série.
@@ -213,7 +215,7 @@ qu'elles ne pourraient l'être.
 - **Date de disponibilité** (`LoadPlan.availableOffset`) : une tâche avec
   `scheduledDate` n'est posable qu'à partir de min(`scheduledDate`,
   `deadline`), la règle « cachée » de la vue Jour (`Scheduling`) ; une
-  occurrence projetée a `scheduledDate` = son échéance. Le posage saute une
+  occurrence projetée a `scheduledDate` = son échéance (ou le jour ouvré qui précède). Le posage saute une
   tâche pas encore disponible et prend la suivante ; si rien n'est
   disponible, ce n'est pas de l'« attente » (qui reste la capacité perdue
   faute de bloqueur fini).

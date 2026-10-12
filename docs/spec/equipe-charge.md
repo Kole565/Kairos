@@ -70,7 +70,11 @@ backlog.
   avec son nom, son rôle, sa quotité, et :
   - **charge / capacité** sur l'horizon : barre neutre, remplissage
     primaire jusqu'à 100 %, la part au-delà en **rouge** (dépassement,
-    charte), valeur écrite (« 112 h / 96 h · 117 % ») ;
+    charte), valeur écrite (« 112 h / 96 h · 117 % ») ; la charge compte tout le
+    travail posé par la simulation, y compris la part qui finit **après** l'horizon,
+    alors que les barres hebdomadaires ne couvrent que les semaines de l'horizon :
+    leur somme peut donc être inférieure à la charge (c'est voulu, ce n'est pas
+    une perte) ;
   - le nombre de tâches en cours et à faire, non estimées comprises ;
   - la prochaine absence (« absent du 12 au 16 oct. ») ;
   - les tâches **en danger** du plan de charge (ci-dessous) : « 2 échéances

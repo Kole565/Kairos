@@ -79,7 +79,7 @@ object TeamWork {
             val rep = list.maxWith(compareBy<Task>({ it.deadline?.toEpochDays() ?: Long.MIN_VALUE }, { it.id }))
             val dates = seriesDates(rep, day, horizonEnd, holidays)
             for (date in dates) {
-                out += project(rep, date, nextId)
+                out += project(rep, date, nextId, holidays)
                 nextId--
             }
         }
@@ -118,10 +118,12 @@ object TeamWork {
         return dates
     }
 
-    private fun project(rep: Task, date: LocalDate, id: Long): Task = rep.copy(
+    private fun project(rep: Task, date: LocalDate, id: Long, holidays: Set<LocalDate>): Task = rep.copy(
         id = id,
         deadline = date,
-        scheduledDate = date,
+        // Disponible dès le jour ouvré qui précède l'échéance : une hebdomadaire ancrée un dimanche ne pouvait sinon
+        // commencer que le lundi, après son échéance, et la prévision la disait « en retard » en permanence.
+        scheduledDate = Workdays.onOrBeforeBusinessDay(date, holidays),
         pinnedStart = rep.pinnedStart?.let { date.atTime(it.time) },
         status = TaskStatus.TODO,
         progressPercent = null,

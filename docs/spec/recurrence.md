@@ -44,6 +44,10 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   tombe un week-end ou un férié (N borné à la fin du mois). Une occurrence
   du mois précédent restée ouverte n'est jamais touchée ; une tâche dont
   l'échéance tombe déjà ce mois-ci compte comme l'occurrence du mois.
+  Une tâche enregistrée comme série sans échéance **est** l'occurrence du mois :
+  `updateTask` lui pose l'échéance de ce mois (`calendarDeadline`) et la période
+  — sinon l'affichage suivant en créait une seconde de même titre, l'originale
+  restant « sans créneau ».
 - « Décaler » envoie l'échéance au jour ouvré qui suit (un vendredi → le
   lundi, ou le mardi si ce lundi est férié) ; une échéance passée repart
   d'aujourd'hui.

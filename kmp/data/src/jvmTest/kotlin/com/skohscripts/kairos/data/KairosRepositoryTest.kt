@@ -237,6 +237,19 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun aCalendarSeriesSavedWithoutDeadlineIsThisMonthsOccurrence() = runTest {
+        val repo = empty()
+        val id = repo.createTask("Loyer")!!
+        repo.updateTask(id, edit("Loyer", { it.copy(recurrence = TaskRecurrence.MONTHLY_ON_DAY, recurrenceDayOfMonth = 30) }))
+        val task = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 9, 30), task.deadline)
+        assertEquals("2026-09", task.recurrencePeriod)
+        // Pas de doublon à l'affichage de la vue Jour.
+        repo.ensureCalendarOccurrences(LocalDate(2026, 9, 29))
+        assertEquals(1, repo.snapshot.value.tasks.size)
+    }
+
+    @Test
     fun snoozeSkipsWeekendAndHolidays() = runTest {
         val repo = empty()
         val id = repo.createTask("T")!!

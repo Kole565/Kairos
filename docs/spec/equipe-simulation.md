@@ -63,7 +63,9 @@ de décider.
   - **Échéances** : liste des tâches à échéance, triées par probabilité
     croissante, avec « 62 % · en danger » (contour + icône sous le seuil) ;
   - **Criticité** : les 10 tâches les plus souvent en retard ;
-  - **Goulot** : membres et part des tirages où chacun finit le dernier ;
+  - **Goulot** : membres du périmètre et part des tirages où chacun finit le
+    dernier (`ForecastAccumulator`) ; un membre sans tâche dans le périmètre
+    choisi n'y figure pas ;
   - **Issue la plus probable** : distribution du nombre de retards et
     ensemble le plus fréquent.
 - **Honnêteté** (règle des statistiques) : chaque résultat affiche le nombre

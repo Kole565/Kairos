@@ -267,6 +267,13 @@ class KairosRepository(
                     // « Compter dans l'équipe » ne concerne qu'une tâche perso (docs/spec/equipe-moi.md).
                     teamExcluded = edit.teamExcluded?.takeIf { task.space == TaskSpace.PERSONAL } ?: task.teamExcluded,
             )
+            // Série « le N du mois » enregistrée sans échéance : la tâche EST l'occurrence de ce mois. Sans cela, l'affichage
+            // suivant en créait une seconde, de même titre, et l'originale restait « sans créneau » (recurrence.md).
+            val seriesDay = updated.recurrenceDayOfMonth
+            if (onDay && seriesDay != null && updated.deadline == null && updated.recurrencePeriod.isEmpty()) {
+                val deadline = Recurrence.calendarDeadline(seriesDay, today(), holidaysNow())
+                updated = updated.copy(deadline = deadline, scheduledDate = updated.scheduledDate ?: deadline, recurrencePeriod = Recurrence.period(today()))
+            }
             val reassigned = edit.reassign?.let { reassigned(updated, it.memberId, it.keepInProgress) }
             if (reassigned != null) updated = reassigned
             updateRow(updated)

@@ -134,6 +134,16 @@ class TeamWorkTest {
     }
 
     @Test
+    fun aWeeklyTaskDueOnASundayIsAvailableFromTheFridayBefore() {
+        // Échéance dimanche 11 oct. : l'occurrence du 18 est disponible dès le vendredi 16 et peut finir à temps.
+        val weekly = task(1, assignee = other.id, hours = 1.0, deadline = day(6)).copy(recurrence = TaskRecurrence.WEEKLY, teamUid = "w")
+        val s = snapshot(listOf(weekly), listOf(other))
+        val first = TeamWork.occurrences(s, monday, Capacity.horizonEnd(monday, 4)).first()
+        assertEquals(day(13), first.deadline)
+        assertEquals(day(11), first.scheduledDate)
+    }
+
+    @Test
     fun aMonthlyOnDaySeriesProjectsTheNextMonthsOnTheBusinessDayBefore() {
         // Le 15 de chaque mois ; le 15 nov. 2026 est un dimanche : vendredi 13.
         val monthly = task(1, assignee = other.id, hours = 2.0, deadline = LocalDate(2026, 10, 15))
