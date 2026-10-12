@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosRowIconButton
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -90,7 +91,6 @@ import com.skohscripts.kairos.ui.generated.resources.settings_error_number
 import com.skohscripts.kairos.ui.generated.resources.settings_error_required
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.settings.SwitchRow
-import androidx.compose.ui.text.intl.Locale
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.exchange_last_report
 import com.skohscripts.kairos.ui.generated.resources.exchange_no_report
@@ -149,7 +149,7 @@ fun MemberSheetContent(
     takenNames: List<String> = emptyList(),
 ) {
     // Heures par jour à la virgule en français (« 7,5 », comme la carte du membre) ; la saisie accepte les deux.
-    val english = Locale.current.language.startsWith("en")
+    val english = uiLanguage().startsWith("en")
     var input by remember(member?.id) {
         val start = if (member == null) MemberForm.newInput(settings) else MemberForm.inputOf(member)
         mutableStateOf(if (english) start else start.copy(hoursPerDay = start.hoursPerDay.replace('.', ',')))
@@ -361,7 +361,7 @@ fun MemberSheetContent(
  */
 @Composable
 private fun ExchangeSection(member: TeamMember, onSend: () -> Unit) {
-    val language = Locale.current.language
+    val language = uiLanguage()
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(Res.string.exchange_section_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
         if (!member.archived) {

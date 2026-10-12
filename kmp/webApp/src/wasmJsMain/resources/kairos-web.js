@@ -219,6 +219,17 @@
       if (!window.__kairosTitle) window.__kairosTitle = document.title;
       document.title = prefix ? prefix + " · " + window.__kairosTitle : window.__kairosTitle;
     },
+    // Langue de l'interface choisie (« fr » ou « en ») : Compose et ses ressources lisent navigator.language(s), que
+    // la surcharge redirige (docs/spec/i18n.md § Choix de la langue). Appelée avant que l'interface les lise.
+    setLanguage(language) {
+      try {
+        Object.defineProperty(navigator, "language", { get: () => language, configurable: true });
+        Object.defineProperty(navigator, "languages", { get: () => [language], configurable: true });
+        document.documentElement.lang = language;
+      } catch (e) {
+        // Navigateur qui refuse la surcharge : l'interface garde la langue du navigateur.
+      }
+    },
     // Court bip (dernier recours, seulement si activé dans les réglages).
     beep() {
       try {

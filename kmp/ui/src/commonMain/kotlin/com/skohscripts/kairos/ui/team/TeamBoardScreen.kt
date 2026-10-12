@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosRowIconButton
 import com.skohscripts.kairos.ui.theme.KairosFilterChip
@@ -45,7 +46,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -130,7 +130,7 @@ fun TeamBoardScreen(services: AppServices) {
     val snapshot by repository.snapshot.collectAsState()
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(timeZone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     val scope = rememberCoroutineScope()
 
     var category by rememberSaveable { mutableStateOf<String?>(null) }
@@ -272,7 +272,7 @@ private fun LaneCard(
             ) {
                 Text(member.name, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (member.isSelf) SelfBadge()
-                Muted(stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, Locale.current.language)))
+                Muted(stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, uiLanguage())))
                 Muted(stringResource(Res.string.board_lane_count, lane.inProgressCount))
                 if (lane.wipExceeded) WarnBadge(stringResource(Res.string.board_lane_wip, lane.inProgressCount, wipLimit))
             }

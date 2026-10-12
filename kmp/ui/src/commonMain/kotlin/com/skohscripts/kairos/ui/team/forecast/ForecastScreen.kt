@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team.forecast
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -38,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -104,7 +104,7 @@ fun ForecastScreen(services: AppServices) {
     val snapshot by services.repository.snapshot.collectAsState()
     val zone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(zone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     val coroutines = rememberCoroutineScope()
     val runner = remember(coroutines) { ForecastController(services, coroutines) }
     val names = remember(snapshot) { ForecastNames(snapshot) }

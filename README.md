@@ -106,6 +106,8 @@ supprimée.
 - **Édition complète** : titre, description, priorité, points, échéance, date
   programmée, projet, durée estimée, type, récurrence, heure fixe, lien,
   sous-tâches, bloqueurs. Un seul « Enregistrer ».
+- **Sous-tâches modifiables** : la fiche d’une tâche liste ses sous-tâches pour
+  les renommer, les cocher ou les supprimer, en plus d’en ajouter.
 - **Raccourcis clavier** (bureau et web) : `N` pour capturer, `/` pour
   chercher.
 - **Sous-tâches** : avancement n/m sur la mère ; seules les feuilles sont
@@ -188,7 +190,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   précède chaque import.
 - **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
-- Interface en **français** et en **anglais** (langue du système).
+- Interface en **français** et en **anglais** : la langue du système (français
+  si le système est en français, anglais sinon), ou celle que tu choisis dans
+  Réglages → Langue. D’autres langues arriveront dans une prochaine version.
 
 ### S’y retrouver
 
@@ -277,6 +281,7 @@ champ invalide dit pourquoi.
 | Statistiques | Fenêtre des indicateurs | 8 semaines |
 | Alertes du chrono | Chrono oublié, pause suggérée, son de secours | 180 min, 50 min, désactivé |
 | Jours fériés | Calendrier français, dates supplémentaires | activé |
+| Langue | Langue de l’interface (Système, Français, English) | Système |
 | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
 | Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
 | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |

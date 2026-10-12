@@ -1,12 +1,12 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +55,8 @@ internal fun ClearTeamDataButton(services: AppServices) {
         val members = snapshot.members.size
         val tasks = snapshot.tasks.count { it.space == TaskSpace.TEAM }
         // Singulier pour 1, et pour 0 en français (« 0 membre », « 0 members »).
-        val singular = { n: Int -> n == 1 || (n == 0 && !Locale.current.language.startsWith("en")) }
+        val french = uiLanguage() == "fr"
+        val singular = { n: Int -> n == 1 || (n == 0 && french) }
         val membersText = stringResource(if (singular(members)) Res.string.team_clear_members_one else Res.string.team_clear_members_many, members)
         val tasksText = stringResource(if (singular(tasks)) Res.string.team_clear_tasks_one else Res.string.team_clear_tasks_many, tasks)
         AlertDialog(

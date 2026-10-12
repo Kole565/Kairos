@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.android
 
 import android.content.Context
+import android.content.res.Resources
 import app.cash.sqldelight.db.AfterVersion
 import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlDriver
@@ -38,7 +39,9 @@ object AndroidServices {
         pickFile: suspend (File) -> Boolean,
     ): AppServices = withContext(Dispatchers.IO) {
         val clock = Clock.System
-        val language = Locale.getDefault().language
+        // Langue du système lue dans la configuration du système, pas dans `Locale.getDefault()` : celle-ci porte
+        // déjà la langue choisie dans Kairos quand l'activité est recréée (docs/spec/i18n.md).
+        val language = Resources.getSystem().configuration.locales[0].language
         val driver = AndroidSqliteDriver(DeferredSchema, context, DATABASE_NAME)
         val opened = KairosStore.open(driver)
         val examples = { ExampleData.snapshot(clock.todayIn(TimeZone.currentSystemDefault()), clock.now(), language) }
@@ -64,6 +67,8 @@ object AndroidServices {
             legacy = AndroidLegacyImport(context, pickFile),
             firstLaunch = opened.created,
             migrated = report,
+            systemLanguage = language,
+            applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
         )
     }
 

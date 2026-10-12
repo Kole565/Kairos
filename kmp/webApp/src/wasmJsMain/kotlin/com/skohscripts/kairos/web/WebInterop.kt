@@ -27,4 +27,5 @@ external object KairosWeb : JsAny {
     fun notify(title: String, body: String, tag: String): Boolean
     fun setTitle(prefix: String?)
     fun beep()
+    fun setLanguage(language: String)
 }

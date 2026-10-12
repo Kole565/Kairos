@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.model
 
+import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.serialization.Serializable
 
 /**
@@ -40,6 +41,8 @@ data class Settings(
     val updateCheckEnabled: Boolean = true,
     /** Graine du thème `#RRGGBB`, ou [SYSTEM_THEME] (docs/spec/apparence.md). */
     val themeColor: String = DEFAULT_THEME_COLOR,
+    /** Langue de l'interface : [LANGUAGE_SYSTEM] (suit le système), [LANGUAGE_FR] ou [LANGUAGE_EN] (docs/spec/i18n.md). */
+    val language: String = LANGUAGE_SYSTEM,
     /**
      * Réglages de l'espace Équipe (docs/spec/equipe.md). `null` tant que
      * l'espace n'a jamais été activé : un champ nul n'est pas écrit (export,
@@ -62,15 +65,20 @@ data class Settings(
         /** Couleurs du système (Android 12 et plus), à défaut le miel. */
         const val SYSTEM_THEME = "system"
 
+        /** Langue de l'interface : celle du système (français si le système est en français, anglais sinon). */
+        const val LANGUAGE_SYSTEM = "system"
+        const val LANGUAGE_FR = "fr"
+        const val LANGUAGE_EN = "en"
+
         /** Types par défaut de Kairos 2, moins « Pilotage/dette technique » (périmètre retiré). */
         const val DEFAULT_TASK_TYPES_FR =
             "Développement,Revue de code,Réunion,Documentation,Administratif,Veille/formation"
         const val DEFAULT_TASK_TYPES_EN =
             "Development,Code review,Meeting,Documentation,Administration,Learning"
 
-        /** Réglages d'une base neuve, types de tâche dans la langue de l'interface. */
+        /** Réglages d'une base neuve, types de tâche dans la langue de l'interface ([language] : celle du système). */
         fun defaults(language: String): Settings =
-            Settings(taskTypes = if (language.lowercase().startsWith("en")) DEFAULT_TASK_TYPES_EN else DEFAULT_TASK_TYPES_FR)
+            Settings(taskTypes = if (UiLanguage.isFrench(language)) DEFAULT_TASK_TYPES_FR else DEFAULT_TASK_TYPES_EN)
     }
 }
 

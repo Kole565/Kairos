@@ -10,9 +10,12 @@ d'entrée (`androidApp/.../MainActivity.kt`, `desktopApp/.../Main.kt`,
 `webApp/.../Main.kt`), les relais natifs (`androidApp/src/main/res/drawable/
 kairos_splash_dial.xml`, `kairos_launch_background.xml`, `values*/themes.xml`,
 `webApp/src/wasmJsMain/resources/index.html`), les captures
-`desktop-startup-splash*.png` de l'auto-test (`SelfTest.kt`). Tests : `StartupSplashUiTest`._
+`desktop-startup-splash*.png` de l'auto-test (`SelfTest.kt`), et le rapport de plantage Android
+(`kmp/ui/.../app/CrashReport.kt`, `androidApp/.../KairosCrash.kt`, `KairosApplication.kt`).
+Tests : `StartupSplashUiTest`, `CrashReportUiTest`._
 
-État : demande du 2026-10-10 (version suivant la `3.2.0`), implémentée.
+État : demande du 2026-10-10 (version suivant la `3.2.0`), implémentée. Rapport de plantage :
+issue #65 (3.3.0), implémenté.
 Rouvre explicitement la décision « l'interface Compose s'affiche dès la
 première image : plus d'écran de démarrage applicatif » (`distribution.md`
 § Android, `plan-v3-kotlin.md`) : le démarrage était si rapide qu'on ne
@@ -52,8 +55,26 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
   et le message de chargement du web montrent le même cadran vide, à la même
   place et à la même taille ; l'animation enchaîne sans saut.
 
+### Rapport de plantage (Android, issue #65)
+
+Après la 3.2.0, un utilisateur (Redmi Note 12, Android 15) ne pouvait plus ouvrir
+l'application : plantage immédiat, sans aucune information exploitable.
+
+- Si Kairos s'arrête sur une erreur non rattrapée, le **lancement suivant** n'ouvre pas
+  l'application mais un écran « Kairos s’est arrêté » : une phrase d'explication, le **rapport**
+  (version, appareil, langue, trace) sélectionnable et défilant, « Partager le rapport » (feuille
+  de partage du système) et « Ouvrir Kairos ».
+- Le rapport **reste sur l'appareil** : aucun réseau, aucune permission ; il ne part que si
+  l'utilisateur le partage.
+- « Ouvrir Kairos » supprime le rapport et ouvre l'application normalement. Tant qu'on ne l'a pas
+  touché, l'écran revient au lancement suivant.
+- Les données ne sont pas ouvertes derrière cet écran : il s'affiche même si c'est la base qui
+  fait planter l'application.
+
 ### Critères de succès
 
+- L'écran du rapport montre le texte et ses deux actions
+  (`CrashReportUiTest.theReportIsShownAndBothActionsAreReachable`).
 - La page de chargement s'affiche au démarrage, puis laisse place à
   l'application après environ 3 s (`StartupSplashUiTest.theSplashPlaysThenFadesIntoTheApp`).
 - Un toucher l'abrège (`StartupSplashUiTest.aTapSkipsTheSplash`).
@@ -143,7 +164,44 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
   et posée sur le logo avec « Ouverture de Kairos… » (`desktop-startup-splash-loading.png`,
   360 px) pour vérifier le dessin à l'œil.
 
+### Rapport de plantage (Android)
+
+- `ui/app/CrashReport.kt` : `CrashReportScreen(report, onShare, onContinue)`. Sans dépendance aux
+  réglages ni aux services (le thème miel par défaut, `KairosTheme`) ; le rapport est une
+  `SelectionContainer` en chasse fixe qui défile seule, les boutons restent en bas. Textes
+  `crash_title`, `crash_body`, `crash_share`, `crash_continue` (FR + EN).
+- `androidApp/.../KairosCrash.kt` : `install` pose un `Thread.setDefaultUncaughtExceptionHandler`
+  qui écrit `files/crash/last.txt` (version, API, fabricant et modèle, locale, thread, trace
+  `Log.getStackTraceString`) puis rend la main au gestionnaire d'origine (le processus s'arrête
+  comme avant). `pending` lit le rapport, `clear` le supprime.
+- `KairosApplication` (déclarée dans le manifeste, `android:name`) l'installe dans `onCreate` :
+  l'activité **et** les récepteurs (`ChronoReceiver`, `BootReceiver`, lancés par le système à la
+  mise à jour) sont couverts.
+- `MainActivity.onCreate` : si un rapport existe, `setContent` de l'écran du rapport puis retour
+  **avant** `KairosProcess.services` (aucune ouverture de base) ; `onResume` ne rouvre pas non plus
+  les services. « Partager » : `Intent.ACTION_SEND` `text/plain` dans un sélecteur ; « Ouvrir
+  Kairos » : `clear` puis `recreate()`.
+
 ### Décisions et pièges tracés
+
+- **Rapport de plantage local** (issue #65) : le diff 3.1.0 → 3.2.0 ne touche que le cœur
+  « Soutenir » et le démarrage a déjà un écran d'erreur pour un échec de `openServices`
+  (`KairosApp`) ; le plantage vient donc d'ailleurs (composition, `onCreate`, récepteur) et sans
+  trace la cause est inconnue. Plutôt que deviner, on donne à l'utilisateur de quoi la transmettre.
+  Écartés : une bibliothèque de rapport (ACRA…, dépendance réseau et permission `INTERNET`,
+  contraire à `distribution.md`) ; un envoi automatique.
+- **Premier rapport gardé** : `write` ne remplace pas un rapport existant. Si l'écran du rapport
+  plantait lui-même, la cause d'origine ne serait pas effacée.
+- **Échec d'écriture muet** : le gestionnaire entoure l'écriture d'un `runCatching` ; il ne doit
+  jamais masquer le plantage d'origine ni en provoquer un second.
+- **Plantages natifs et arrêts du système non couverts** : seul un échec Java/Kotlin
+  non rattrapé écrit un rapport. Un signal natif, un arrêt pour manque de mémoire
+  ou une fermeture forcée n'en laissent pas ; l'issue #65 restera à documenter par
+  un `adb logcat` dans ce cas.
+- **Pas de bouton « Copier »** : le presse-papiers de Compose n'a pas d'entrée commune à ce jour ;
+  le texte est sélectionnable et « Partager » couvre le besoin.
+- **Rapport non anonymisé** : la trace peut contenir un message d'exception ; l'écran le dit
+  (« reste sur ton appareil tant que tu ne le partages pas ») et rien ne part sans geste.
 
 - **Une page Compose commune** plutôt que trois animations natives
   (`AnimatedVectorDrawable`, CSS, rien sur le bureau) : une seule animation

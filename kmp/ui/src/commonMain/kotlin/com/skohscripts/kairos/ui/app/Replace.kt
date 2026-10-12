@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.intl.Locale
 import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.core.legacy.Kairos2Import
 import com.skohscripts.kairos.core.legacy.LegacyDatabase
@@ -138,7 +137,7 @@ class LegacyImportFlow internal constructor(
 fun rememberLegacyImport(services: AppServices): LegacyImportFlow {
     val scope = rememberCoroutineScope()
     val messages = LocalMessages.current
-    val language = Locale.current.language
+    val language = uiLanguage()
     return remember(services) { LegacyImportFlow(services, { block -> scope.launch { block() } }, messages, language) }
 }
 

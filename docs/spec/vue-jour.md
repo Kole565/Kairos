@@ -5,11 +5,12 @@ et fait ses tâches. Fichiers couverts :
 `kmp/core/src/commonMain/.../core/day/DayView.kt` (modèle de l'écran, pur),
 `kmp/ui/src/commonMain/.../ui/day/` (`DayScreen.kt`, `TaskRow.kt`,
 `Why.kt`, `NowCard.kt`, `Timeline.kt`, `Capture.kt`, `Blocks.kt`,
-`Filters.kt`, `Qualify.kt`, `EditTaskDialog.kt`, `PointsGuide.kt`,
+`Filters.kt`, `Qualify.kt`, `EditTaskDialog.kt`, `SubtaskEditor.kt`, `PointsGuide.kt`,
 `Levels.kt`, `Dates.kt`). Tests : `core/.../day/DayViewTest.kt`,
 `ui/.../day/DatesTest.kt`, `desktopApp/.../DayScreenUiTest.kt` (clics et
 clavier réels), `desktopApp/.../M4ScreensUiTest.kt` (autre jour, guide des
-points, durée suggérée)._
+points, durée suggérée), `data/.../SubtaskEditTest.kt` (sous-tâches
+existantes), `desktopApp/.../SubtaskEditUiTest.kt` (section « Sous-tâches »)._
 
 État : **jalons M2 et M4**. Reprend le besoin de `docs/spec/vue-jour-gtd.md`
 (Kairos 2, tag `v2.6.0`). Le moteur est décrit par `ordonnancement.md`, `dependances.md`
@@ -113,6 +114,11 @@ guide des points), échéance, durée ; « Options avancées » : programmée po
 récurrence (aucune, quotidienne, jours ouvrés, hebdomadaire, mensuelle,
 « le … du mois » avec le jour), type, heure fixe (HH:MM, vide = aucune),
 nouvelles sous-tâches (une par ligne), « Bloquée par » (cases à cocher).
+Quand la tâche a déjà des sous-tâches (issue #69, 3.3.0), une section
+**« Sous-tâches »** les liste dans les essentiels, avant « Options
+avancées » : case « faite », titre modifiable, corbeille (la ligne reste, barrée,
+avec « Annuler la suppression »). Rien n'est écrit avant « Enregistrer » ;
+« Annuler » abandonne tout. Une tâche d'équipe n'a pas cette section.
 Un seul « Enregistrer » ; « Supprimer » avec confirmation. Seul le contenu
 défile : « Supprimer », « Annuler » et « Enregistrer » restent en bas de la
 fiche (à 900x700, « Enregistrer » était hors de vue sous les options
@@ -148,6 +154,9 @@ Inactifs pendant une saisie et avec Ctrl, Cmd ou Alt.
   un bloqueur et une heure fixe ; `N` et `/` placent le curseur
   (`DayScreenUiTest`).
 - Aucune ligne ne déborde horizontalement à 420 px (captures de l'auto-test).
+- Depuis la fiche de la mère, on renomme, coche et supprime ses sous-tâches
+  existantes en un seul « Enregistrer » ; « Annuler » ne change rien ; une tâche
+  sans sous-tâche n'a pas la section (`SubtaskEditUiTest`, `SubtaskEditTest`).
 - Depuis la vue Semaine, « Voir le jour » ouvre le mercredi, titré ; « Revenir
   à aujourd'hui » y ramène (`M4ScreensUiTest`).
 - Avec trois tâches terminées à 3 points et 45 min chacune, le guide dit
@@ -257,8 +266,33 @@ posée.
 `dayShort` : « mar. 29/09 » / « Tue 9/29 » ; `dayMonth` : « 28/09 » /
 « 9/28 ».
 
+### Sous-tâches existantes (`SubtaskEditor.kt`, issue #69)
+
+- `DayScreen` passe à `EditTaskDialog` `subtasksOf(id, tâches)` : les sous-tâches non
+  archivées de la tâche, dans l'ordre de création, **seulement pour une tâche perso**
+  (`TaskSpace.PERSONAL`) ; une tâche d'équipe (`TeamTaskDialog`) ne reçoit rien.
+- La fiche garde un `SubtaskDraft` par sous-tâche (titre, fait, supprimée), figé à
+  l'ouverture (`remember(task.id)`) : un changement de la base pendant que la fiche
+  est ouverte ne réécrit pas les saisies. `SubtaskEditor` : une ligne par brouillon
+  (case « faite » `toggleable` 48 dp, `OutlinedTextField` d'une ligne, corbeille
+  `KairosRowIconButton` en couleur d'erreur) ; une ligne supprimée reste, barrée, avec
+  « Annuler la suppression ».
+- « Enregistrer » : `List<SubtaskDraft>.edits(originales)` ne garde que les brouillons
+  qui diffèrent de la tâche d'origine (titre nettoyé ≠ titre, état, suppression) et
+  les passe dans `TaskEdit.subtaskEdits` ; `updateTask` les applique dans la même
+  transaction (`modele-donnees.md`).
+- Le champ « Nouvelles sous-tâches » reste dans les options avancées, inchangé.
+
 ### Décisions et pièges tracés
 
+- **Sous-tâches modifiables depuis la mère** (issue #69, « après la création, aucun
+  moyen d'éditer ses enfants ») : une sous-tâche s'ouvrait seule depuis sa ligne
+  mais la fiche de la mère ne les montrait pas. Écarté : une liste de liens vers
+  la fiche de chaque sous-tâche (un clic de plus, et aucun « tout en un seul
+  Enregistrer »). Modifications en attente dans le dialogue, comme tout le reste de la fiche.
+- **`write` n'est pas réentrant** : cocher une sous-tâche depuis `updateTask`
+  réutilise `toggleInTransaction`, extrait de `toggleDone`, plutôt que de l'appeler
+  (verrou déjà pris : blocage).
 - **Défiler seulement après composition** : un raccourci qui change l'état
   (volet « Tâche », section ouverte) puis fait défiler la liste dans la même
   image fait échouer la liste paresseuse (erreur interne de Compose,

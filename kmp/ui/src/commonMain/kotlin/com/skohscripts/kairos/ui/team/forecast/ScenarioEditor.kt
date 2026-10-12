@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team.forecast
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosRowIconButton
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -40,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -119,7 +119,7 @@ fun ScenarioEditorContent(
     onSave: (String, List<ScenarioModification>) -> Unit = { _, _ -> },
     onDismiss: () -> Unit = {},
 ) {
-    val language = Locale.current.language
+    val language = uiLanguage()
     var name by remember { mutableStateOf(scenario?.name.orEmpty()) }
     var mods by remember { mutableStateOf(scenario?.modifications.orEmpty()) }
     var adding by remember { mutableStateOf<ModType?>(null) }

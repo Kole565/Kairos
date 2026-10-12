@@ -12,7 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -20,6 +19,7 @@ import com.skohscripts.kairos.core.team.LoadPlan
 import com.skohscripts.kairos.core.team.MemberLoad
 import com.skohscripts.kairos.core.team.TeamWork
 import com.skohscripts.kairos.ui.app.heading
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Badge
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.member_load_from_elsewhere
@@ -66,7 +66,7 @@ class MemberLoadView(val load: MemberLoad?, val weeks: Int, val tasks: Map<Long,
  */
 @Composable
 internal fun MemberLoadSection(view: MemberLoadView, today: LocalDate) {
-    val language = Locale.current.language
+    val language = uiLanguage()
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(Res.string.member_load_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
         Text(stringResource(Res.string.load_plan_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

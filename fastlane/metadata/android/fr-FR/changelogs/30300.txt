@@ -1,0 +1,1 @@
+Kairos 3.3.0 : choix de la langue dans les Réglages (français ou anglais, l’anglais par défaut si le système n’est pas en français ; d’autres langues arriveront), sous-tâches modifiables depuis la fiche de leur tâche, et écran de rapport après un plantage sur Android.

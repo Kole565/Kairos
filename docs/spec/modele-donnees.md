@@ -96,7 +96,8 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   (français : ceux de Kairos 2 moins « Pilotage/dette technique » ; anglais :
   traduction). Bornes, validation et écran : `reglages.md`. Réglages ajoutés
   depuis : `updateCheckEnabled` (`mises-a-jour.md`), `themeColor`
-  (`apparence.md`), `team` (`TeamSettings?`, nul tant que l'espace Équipe
+  (`apparence.md`), `language` (`system` par défaut, `fr` ou `en` ; `i18n.md`
+  § Choix de la langue), `team` (`TeamSettings?`, nul tant que l'espace Équipe
   n'a jamais été activé, `equipe.md` § Modèle ; `teamModeEnabled` en est
   la lecture).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,
@@ -200,7 +201,13 @@ de SQLDelight.
     gardé seulement pour « le … du mois » et dans 1-31 ; ancre de semaine =
     jour de l'échéance pour l'hebdomadaire), heure fixe (sur la date
     programmée, sinon sur le jour affiché `pinDay` ; vide = désépinglée),
-    sous-tâches en lot (une ligne non vide = une sous-tâche), bloqueurs
+    sous-tâches en lot (une ligne non vide = une sous-tâche), modifications
+    des sous-tâches **existantes** d'une tâche perso (`TaskEdit.subtaskEdits`,
+    liste de `SubtaskEdit` : titre nettoyé, vide = ancien ; fait ↔ à faire par la
+    logique de `toggleDone`, factorisée en `toggleInTransaction` puisque `write`
+    n'est pas réentrant ; suppression comme `deleteTask`, dépendances comprises ;
+    un `id` qui n'est pas une sous-tâche non archivée de cette mère est ignoré ;
+    sans effet sur une tâche d'équipe), bloqueurs
     (ensemble cible complet, `dependances.md`).
   - `createBlock`, `updateBlock`, `deleteBlock` (`BlockEdit` : titre
     nettoyé, début, fin, nature, récurrence) : refusés (`false`) si la fin

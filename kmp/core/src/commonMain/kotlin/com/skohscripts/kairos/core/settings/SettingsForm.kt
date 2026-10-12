@@ -126,6 +126,8 @@ object SettingsForm {
             read = { it.themeColor },
             write = { s, v -> s.copy(themeColor = normalizeColor(v)!!) },
         ),
+        // Langue : normalisée à l'écriture (une valeur inconnue suit le système), jamais refusée.
+        text("language", FieldKind.TEXT, { it.language }) { s, v -> s.copy(language = UiLanguage.normalize(v)) },
         team("team.enabled", FieldKind.BOOL, get = { it.enabled.toString() }) { t, v -> t.copy(enabled = v == "true") },
         team("team.name", FieldKind.TEXT, get = { it.name }) { t, v -> t.copy(name = v) },
         team("team.managerName", FieldKind.TEXT, get = { it.managerName }) { t, v -> t.copy(managerName = v) },

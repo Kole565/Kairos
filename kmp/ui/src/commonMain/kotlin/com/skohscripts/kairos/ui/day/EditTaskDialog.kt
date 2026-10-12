@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
@@ -43,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.skohscripts.kairos.core.model.Task
-import androidx.compose.ui.text.intl.Locale
 import com.skohscripts.kairos.core.model.TaskDependency
 import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -109,7 +109,8 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Dialogue d'édition d'une tâche (docs/spec/vue-jour.md § Édition) :
  * essentiels toujours visibles (titre, description juste sous le titre,
- * priorité, points, échéance, durée), puis « Options avancées » repliées
+ * priorité, points, échéance, durée, puis les sous-tâches existantes s'il y en a,
+ * [SubtaskEditor]), puis « Options avancées » repliées
  * (programmée pour, projet, temps passé manuel, récurrence et jour du mois,
  * type, heure fixe, nouvelles sous-tâches, bloqueurs). Guide des points
  * sous les pastilles ; palier ou type calibré → durée suggérée. Un seul
@@ -131,6 +132,8 @@ internal fun EditTaskDialog(
     taskTypes: List<String>,
     candidates: List<Task>,
     blockerIds: Set<Long>,
+    /** Sous-tâches existantes de la tâche (docs/spec/vue-jour.md § Édition, issue #69) ; vide pour une tâche d'équipe ou sans fille. */
+    subtasks: List<Task> = emptyList(),
     /** Dépendances existantes et titres de toutes les tâches : libellés et cycles de « Bloquée par » ([BlockerChoices]). */
     dependencies: List<TaskDependency>,
     titles: Map<Long, String>,
@@ -161,7 +164,10 @@ internal fun EditTaskDialog(
     var recurrence by remember { mutableStateOf(task.recurrence) }
     var dayOfMonth by remember { mutableStateOf(task.recurrenceDayOfMonth?.toString().orEmpty()) }
     var pin by remember { mutableStateOf(task.pinnedStart?.time?.let(Dates::field).orEmpty()) }
-    var subtasks by remember { mutableStateOf("") }
+    var newSubtasks by remember { mutableStateOf("") }
+    // Brouillons des sous-tâches existantes, figés à l'ouverture : la fiche reste stable si la base change dessous.
+    val originalSubtasks = remember(task.id) { subtasks }
+    var subtaskDrafts by remember(task.id) { mutableStateOf(originalSubtasks.map { SubtaskDraft.of(it) }) }
     var blockers by remember { mutableStateOf(blockerIds) }
     var advanced by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
@@ -265,6 +271,9 @@ internal fun EditTaskDialog(
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
+                        if (subtaskDrafts.isNotEmpty()) {
+                            SubtaskEditor(subtaskDrafts) { changed -> subtaskDrafts = subtaskDrafts.map { if (it.id == changed.id) changed else it } }
+                        }
                         KairosTextButton(onClick = { advanced = !advanced }, modifier = Modifier.expandedState(advanced), contentPadding = KairosButtonIconPadding) {
                             Icon(if (advanced) KairosIcons.ExpandLess else KairosIcons.ExpandMore, contentDescription = null)
                             Text(stringResource(Res.string.edit_advanced), modifier = Modifier.padding(start = 4.dp))
@@ -317,8 +326,8 @@ internal fun EditTaskDialog(
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             OutlinedTextField(
-                                subtasks,
-                                { subtasks = it },
+                                newSubtasks,
+                                { newSubtasks = it },
                                 label = { Text(stringResource(Res.string.field_subtasks)) },
                                 minLines = 2,
                                 modifier = Modifier.fillMaxWidth().tabLeavesField(),
@@ -336,7 +345,7 @@ internal fun EditTaskDialog(
                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(stringResource(Res.string.field_blockers), style = MaterialTheme.typography.labelLarge)
                                 Text(stringResource(Res.string.field_blockers_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                val language = Locale.current.language
+                                val language = uiLanguage()
                                 val others = remember(task.id, candidates, dependencies, titles, language) {
                                     BlockerChoices.of(task, candidates, dependencies, titles, language)
                                 }
@@ -393,7 +402,8 @@ internal fun EditTaskDialog(
                                     pinTime = parsedPin,
                                     pinDay = day,
                                     manualTimeSpentMinutes = manual.toIntOrNull(),
-                                    newSubtasks = subtasks,
+                                    newSubtasks = newSubtasks,
+                                    subtaskEdits = subtaskDrafts.edits(originalSubtasks),
                                     blockerIds = blockers,
                                     reassign = if (teamEditing && assignee != task.assigneeId) Reassignment(assignee, keepInProgress) else null,
                                     teamExcluded = if (countInTeam != null && counted != countInTeam) !counted else null,

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -395,7 +395,7 @@ private fun reportTitle(plan: ReportMergePlan): String =
 
 @Composable
 private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>) {
-    val language = Locale.current.language
+    val language = uiLanguage()
     val zone = TimeZone.currentSystemDefault()
     when (plan.refusal) {
         ReportRefusal.WRONG_TEAM -> Text(stringResource(Res.string.exchange_report_refused_wrong_team), style = MaterialTheme.typography.bodyMedium)

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.week
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -38,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,7 +89,7 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val now = services.clock.now()
     val today = now.toLocalDateTime(timeZone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     var filter by remember { mutableStateOf(DayFilter()) }
     var filterOpen by remember { mutableStateOf(false) }
     var backlogOpen by remember { mutableStateOf(false) }

@@ -151,30 +151,37 @@ class KairosRepository(
             TaskStatus.DONE -> TaskStatus.TODO
             TaskStatus.ARCHIVED -> return
         }
-        write {
-            val team = task.space == TaskSpace.TEAM
-            val src = source ?: defaultSource(task)
-            var updated = task.copy(status = next)
-            var restored: Int? = null
-            if (team && next == TaskStatus.DONE) {
-                updated = updated.copy(progressPercent = DONE_PROGRESS)
-            } else if (team) {
-                // Dernier `done` de la tâche : son fromValue est l'avancement d'avant la fin. Sans
-                // événement (base importée), l'avancement actuel est gardé.
-                val lastDone = state.value.teamEvents.filter { it.taskId == taskId && it.kind == TeamEventKind.DONE }.maxByOrNull { it.id }
-                restored = if (lastDone != null) lastDone.fromValue?.toIntOrNull() else task.progressPercent
-                updated = updated.copy(progressPercent = restored)
-            }
-            updateRow(updated)
-            if (team && next == TaskStatus.DONE) {
-                journal(updated, TeamEventKind.DONE, task.progressPercent?.toString(), DONE_PROGRESS.toString(), src)
-            } else if (team) {
-                journal(updated, TeamEventKind.REOPENED, task.progressPercent?.toString(), restored?.toString(), src)
-            }
-            if (next == TaskStatus.DONE) {
-                queries.closeOpenSessionsOf(now(), taskId)
-                Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src) }
-            }
+        write { toggleInTransaction(task, next, source) }
+    }
+
+    /**
+     * Corps de [toggleDone], dans une transaction déjà ouverte par l'appelant (`write` n'est pas réentrant : l'édition
+     * d'une tâche l'appelle aussi pour cocher ses sous-tâches). [task] est la tâche **avant** le changement.
+     */
+    private suspend fun toggleInTransaction(task: Task, next: TaskStatus, source: TeamEventSource?) {
+        val taskId = task.id
+        val team = task.space == TaskSpace.TEAM
+        val src = source ?: defaultSource(task)
+        var updated = task.copy(status = next)
+        var restored: Int? = null
+        if (team && next == TaskStatus.DONE) {
+            updated = updated.copy(progressPercent = DONE_PROGRESS)
+        } else if (team) {
+            // Dernier `done` de la tâche : son fromValue est l'avancement d'avant la fin. Sans
+            // événement (base importée), l'avancement actuel est gardé.
+            val lastDone = state.value.teamEvents.filter { it.taskId == taskId && it.kind == TeamEventKind.DONE }.maxByOrNull { it.id }
+            restored = if (lastDone != null) lastDone.fromValue?.toIntOrNull() else task.progressPercent
+            updated = updated.copy(progressPercent = restored)
+        }
+        updateRow(updated)
+        if (team && next == TaskStatus.DONE) {
+            journal(updated, TeamEventKind.DONE, task.progressPercent?.toString(), DONE_PROGRESS.toString(), src)
+        } else if (team) {
+            journal(updated, TeamEventKind.REOPENED, task.progressPercent?.toString(), restored?.toString(), src)
+        }
+        if (next == TaskStatus.DONE) {
+            queries.closeOpenSessionsOf(now(), taskId)
+            Recurrence.nextOccurrence(task, today(), state.value.tasks, clock.now(), holidaysNow())?.let { insertNew(it, src) }
         }
     }
 
@@ -291,11 +298,36 @@ class KairosRepository(
                 journalQualification(task, updated, src)
                 if (reassigned != null) journalAssignment(task, updated, src)
             }
+            // Sous-tâches existantes : seulement celles d'une tâche perso (l'espace Équipe a ses propres règles, journal compris).
+            if (task.space == TaskSpace.PERSONAL) edit.subtaskEdits.forEach { applySubtaskEdit(taskId, it) }
             edit.newSubtasks.lines().map { it.trim() }.filter { it.isNotEmpty() }.forEach {
                 insertNew(newTask(it, taskId).copy(space = updated.space, assigneeId = updated.assigneeId))
             }
             setBlockers(task, edit.blockerIds)
         }
+    }
+
+    /**
+     * Une modification de sous-tâche de [SubtaskEdit], dans la transaction de [updateTask]. Un `id` qui n'est pas une
+     * sous-tâche de [parentId] (supprimée entre-temps, autre mère) est ignoré. Suppression : comme [deleteTask] ;
+     * sinon titre nettoyé (vide = ancien titre) puis fait ↔ à faire, comme [toggleDone] (chrono fermé, occurrence
+     * suivante d'une récurrente).
+     */
+    private suspend fun applySubtaskEdit(parentId: Long, edit: SubtaskEdit) {
+        val child = state.value.tasks.firstOrNull { it.id == edit.id && it.parentId == parentId && it.status != TaskStatus.ARCHIVED } ?: return
+        if (edit.delete) {
+            queries.deleteDependenciesOf(child.id)
+            queries.deleteTask(child.id)
+            return
+        }
+        val title = edit.title.trim().ifEmpty { child.title }
+        var current = child
+        if (title != child.title) {
+            current = child.copy(title = title)
+            updateRow(current)
+        }
+        val next = if (edit.done) TaskStatus.DONE else TaskStatus.TODO
+        if (current.status != next) toggleInTransaction(current, next, null)
     }
 
     /**
@@ -1347,6 +1379,11 @@ data class TaskEdit(
     val newSubtasks: String = "",
     val blockerIds: Set<Long> = emptySet(),
     /**
+     * Modifications des sous-tâches **existantes** de la tâche (docs/spec/vue-jour.md § Édition), appliquées dans le même
+     * enregistrement ; vide = aucune. Sans effet sur une tâche d'équipe.
+     */
+    val subtaskEdits: List<SubtaskEdit> = emptyList(),
+    /**
      * Réaffectation portée par l'édition d'une **tâche d'équipe** (champ « Assigné à »
      * de la fiche) ; `null` = l'assigné ne change pas. Sans effet sur une tâche Perso.
      * Mêmes règles que [KairosRepository.assign].
@@ -1358,6 +1395,12 @@ data class TaskEdit(
      */
     val teamExcluded: Boolean? = null,
 )
+
+/**
+ * Modification d'une sous-tâche existante : nouveau [title], [done] (l'état voulu), ou [delete] (suppression
+ * définitive, comme [KairosRepository.deleteTask]).
+ */
+data class SubtaskEdit(val id: Long, val title: String, val done: Boolean, val delete: Boolean = false)
 
 /** Nouveau titulaire d'une tâche d'équipe : [memberId] `null` = retour au backlog ; [keepInProgress] garde l'état « En cours ». */
 data class Reassignment(val memberId: Long?, val keepInProgress: Boolean = false)

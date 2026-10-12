@@ -34,6 +34,16 @@ class AppServices(
     val shortcuts: ShortcutService? = null,
     /** Espace Équipe : sélection du Backlog, choix et résultats des Prévisions, graine injectable (tests). */
     val teamUi: TeamUiState = TeamUiState(),
+    /**
+     * Langue du système (`fr`, `ru`…), lue par la plateforme **avant** toute surcharge (docs/spec/i18n.md § Choix de
+     * la langue) ; `null` : celle que Compose annonce au premier affichage (tests d'un écran seul).
+     */
+    val systemLanguage: String? = null,
+    /**
+     * Applique la langue d'interface résolue (`fr` ou `en`) à la plateforme, **avant** que l'interface la lise :
+     * locale par défaut de la JVM (bureau, Android) ou du navigateur (web). Sans effet par défaut (tests).
+     */
+    val applyLanguage: (String) -> Unit = {},
 )
 
 /** Lecture d'une base Kairos 2 (docs/spec/migration-2x.md) ; la conversion est commune (`Kairos2Import`). */

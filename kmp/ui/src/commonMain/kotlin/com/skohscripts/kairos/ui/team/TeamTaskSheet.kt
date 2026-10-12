@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -186,7 +186,7 @@ internal fun TeamTaskFields(
             }
         } else {
             Text(
-                stringResource(Res.string.progress_started_on, dateSpan(started, started, sheet.today, Locale.current.language).first),
+                stringResource(Res.string.progress_started_on, dateSpan(started, started, sheet.today, uiLanguage()).first),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -235,7 +235,7 @@ private fun EffortLine(effort: EffortInfo) {
         val text = when (effort.source) {
             EffortSource.ESTIMATE -> stringResource(Res.string.effort_estimate, base)
             EffortSource.CALIBRATED -> stringResource(Res.string.effort_calibrated, base, effort.points ?: 0, effort.calibratedCount ?: 0)
-            EffortSource.POINTS_RATE -> stringResource(Res.string.effort_points, base, effort.points ?: 0, decimalText(effort.hoursPerPoint, Locale.current.language))
+            EffortSource.POINTS_RATE -> stringResource(Res.string.effort_points, base, effort.points ?: 0, decimalText(effort.hoursPerPoint, uiLanguage()))
             EffortSource.NONE -> stringResource(Res.string.effort_none)
         }
         val remaining = effort.remainingHours

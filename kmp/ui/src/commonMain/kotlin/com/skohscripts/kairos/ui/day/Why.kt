@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.why_deadline_in
 import com.skohscripts.kairos.ui.generated.resources.why_deadline_overdue
@@ -96,14 +96,14 @@ internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: Str
                     }
                 }
                 val priority = task.priority?.let { "P$it ${stringResource(Levels.priorityName(it))}" }
-                Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value, Locale.current.language))
-                Term(dateLabel(why), "+ ${Dates.number(why.criticality, Locale.current.language)}")
+                Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value, uiLanguage()))
+                Term(dateLabel(why), "+ ${Dates.number(why.criticality, uiLanguage())}")
                 val effort = when (why.effortSource) {
-                    Scheduling.EffortSource.POINTS -> stringResource(Res.string.why_effort_points, Dates.number(why.effort, Locale.current.language))
+                    Scheduling.EffortSource.POINTS -> stringResource(Res.string.why_effort_points, Dates.number(why.effort, uiLanguage()))
                     Scheduling.EffortSource.MINUTES -> stringResource(Res.string.why_effort_minutes)
                     Scheduling.EffortSource.DEFAULT -> stringResource(Res.string.why_effort_default)
                 }
-                Term(effort, "÷ ${Dates.number(why.effort, Locale.current.language)}")
+                Term(effort, "÷ ${Dates.number(why.effort, uiLanguage())}")
                 HorizontalDivider()
                 Term(stringResource(Res.string.why_score), "= $score", bold = true)
                 Text(stringResource(Res.string.why_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

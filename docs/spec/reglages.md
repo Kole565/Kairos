@@ -7,7 +7,7 @@ validation, pur), `kmp/core/.../model/Settings.kt` (modèle, décrit par
 `modele-donnees.md`), `kmp/ui/.../settings/` (`SettingsScreen.kt`,
 `SettingsFormCards.kt`). La carte Données est décrite par `export-import.md`
 et `migration-2x.md`, la carte Mises à jour par `mises-a-jour.md`, la carte
-Apparence par `apparence.md`. Tests :
+Apparence par `apparence.md`, la carte Langue par `i18n.md`. Tests :
 `core/.../settings/SettingsFormTest.kt`,
 `M5ScreensUiTest.anInvalidFieldBlocksSavingThenAValidFormIsSaved`._
 
@@ -35,7 +35,9 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   sans date, seuil de surcharge P0), **Types de tâches**, **Statistiques**
   (fenêtre en semaines), **Alertes du chrono** (chrono oublié, pause
   suggérée, son de secours), **Jours fériés** (français, dates
-  supplémentaires), **Apparence** (couleur du thème, `apparence.md`),
+  supplémentaires), **Langue** (Système, Français ou English, avant
+  Apparence ; `i18n.md` § Choix de la langue), **Apparence** (couleur du
+  thème, `apparence.md`),
   **Équipe** (interrupteur « Gestion d'équipe », puis, mode activé, nom de
   l'équipe et du manager, seuils « sans avancement », « ballottée » et
   limite d'en-cours, horizon, taux de focus, heures par point, seuil
@@ -92,7 +94,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   `Settings` (préfixée `team.` pour ceux de `Settings.team` : `team.enabled`,
   `team.name`, `team.managerName` ; tant que `team` est nul, y écrire la
   valeur par défaut le laisse nul, pour qu'enregistrer le formulaire d'un
-  solo ne crée jamais d'objet d'équipe), nature (`INT`, `DECIMAL`, `BOOL`, `TEXT`, `DATES`, `COLOR`), bornes
+  solo ne crée jamais d'objet d'équipe), nature (`INT`, `DECIMAL`, `BOOL`, `TEXT`, `DATES`, `COLOR` ; `language` est un
+  `TEXT` normalisé par `UiLanguage.normalize`, jamais refusé), bornes
   incluses, borne basse exclue (`minExclusive`), lecture et écriture.
   Bornes de `app/config.py` : durée par défaut ≥ 1 ; marge, horizon, poids
   de l'urgence, seuils « traîne » et de surcharge, pénalité du creux, seuils

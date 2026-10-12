@@ -1,8 +1,8 @@
 package com.skohscripts.kairos.ui.team
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.intl.Locale
 import com.skohscripts.kairos.core.team.MemberAbsence
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.absence_range
@@ -37,14 +37,14 @@ internal fun dateSpan(start: LocalDate, end: LocalDate, today: LocalDate, langua
 /** « 12 au 16 oct. » ou « 12 oct. » : les dates d'une absence, sans préfixe (liste de la fiche). */
 @Composable
 internal fun absenceDates(absence: MemberAbsence, today: LocalDate): String {
-    val span = dateSpan(absence.start, absence.end, today, Locale.current.language)
+    val span = dateSpan(absence.start, absence.end, today, uiLanguage())
     return if (span.second == null) span.first else stringResource(Res.string.absence_range, span.first, span.second)
 }
 
 /** « Absent du 12 au 16 oct. · Congés » : la ligne de la carte d'un membre. */
 @Composable
 internal fun absenceSummary(absence: MemberAbsence, today: LocalDate): String {
-    val span = dateSpan(absence.start, absence.end, today, Locale.current.language)
+    val span = dateSpan(absence.start, absence.end, today, uiLanguage())
     val base = if (span.second == null) {
         stringResource(Res.string.member_absent_day, span.first)
     } else {

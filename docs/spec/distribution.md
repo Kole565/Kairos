@@ -118,7 +118,9 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   `enableOnBackInvokedCallback="true"` (geste retour prédictif) ;
   `windowSoftInputMode="adjustResize"`. Base et suivi du chrono ouverts une
   fois par processus (`KairosProcess`), quel que soit le point d'entrée
-  (activité, alarme, redémarrage).
+  (activité, alarme, redémarrage). `KairosApplication` (`android:name`) pose le
+  rapport de plantage local avant tout composant : `demarrage.md` § Rapport de
+  plantage (toujours sans réseau ni permission).
 - Thème de fenêtre `Theme.Kairos` (reprise de Kairos 2) :
   `forceDarkAllowed=false` ; avant l'API 31, `windowBackground` =
   `kairos_launch_background` (fond `#FFF8F4` + cadran vide
