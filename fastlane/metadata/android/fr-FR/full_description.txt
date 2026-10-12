@@ -7,7 +7,7 @@ Chaque tâche reçoit un score de priorité (WSJF) : sa valeur (priorité P0, P1
 <ul>
 <li>Les tâches sont placées autour de vos réunions, avec une marge après chacune.</li>
 <li>Les créneaux de deep work sont protégés ; l’après-midi, les tâches complexes cèdent la place aux tâches légères.</li>
-<li>Heures fixes, tâches récurrentes (quotidiennes, jours ouvrés, hebdomadaires, « le 23 du mois »), dépendances entre tâches, sous-tâches, jours fériés français.</li>
+<li>Heures fixes, tâches récurrentes (quotidiennes, jours ouvrés, hebdomadaires, « le 23 du mois »), dépendances entre tâches, sous-tâches modifiables, jours fériés français.</li>
 </ul>
 
 <b>Capturer sans friction (GTD)</b>
@@ -33,4 +33,4 @@ Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le
 <li>Reprise des données de Kairos 2.</li>
 </ul>
 
-Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais.
+Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais (au choix dans les réglages ; l’anglais par défaut si votre système n’est pas en français).

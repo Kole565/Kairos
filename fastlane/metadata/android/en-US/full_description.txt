@@ -7,7 +7,7 @@ Each task gets a priority score (WSJF): its value (priority P0, P1 or P2, plus t
 <ul>
 <li>Tasks are placed around your meetings, with a buffer after each one.</li>
 <li>Deep-work slots are protected; in the afternoon, complex tasks give way to lighter ones.</li>
-<li>Fixed times, recurring tasks (daily, weekdays, weekly, “on the 23rd of the month”), dependencies between tasks, subtasks, French public holidays.</li>
+<li>Fixed times, recurring tasks (daily, weekdays, weekly, “on the 23rd of the month”), dependencies between tasks, editable subtasks, French public holidays.</li>
 </ul>
 
 <b>Capture without friction (GTD)</b>
@@ -33,4 +33,4 @@ Off by default, team management adds a second space for the manager, who remains
 <li>Brings over your Kairos 2 data.</li>
 </ul>
 
-Kairos is also available for Windows, Linux and macOS, and in the browser. Free software under the MIT licence, in French and English.
+Kairos is also available for Windows, Linux and macOS, and in the browser. Free software under the MIT licence, in French and English (your choice in the settings; English by default if your system is not in French).

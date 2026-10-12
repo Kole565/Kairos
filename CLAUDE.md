@@ -22,6 +22,15 @@ quatre étapes ci-dessous, dans cet ordre.
    Un correctif de bug, un refactor ou une décision technique interne n'y vont
    **pas** (ils sont tracés en spec).
 
+## Pull requests
+
+- **Titre et description des pull requests en anglais** (ainsi que les réponses
+  aux revues sur la PR), même si le code, les specs et les commits restent en
+  français. Les issues des utilisateurs sont en anglais : la PR qui les traite
+  doit se lire de la même façon. Si un gabarit de PR existe, on remplit ses
+  sections en anglais.
+- Les messages de commit ne sont pas concernés par cette règle.
+
 ## Où vivent les specs
 
 - `docs/spec/` : **une spec par domaine fonctionnel** (ordonnancement,
