@@ -505,7 +505,7 @@ aussi son événement de journal dans la même transaction,
   (migration 2 → 3 et 1 → 3 comprises), `TeamMembersUiTest`. Auto-test :
   `desktop-team-members[-narrow].png`, `desktop-team-member-sheet[-narrow].png`,
   `desktop-team-absence[-narrow].png`.
-- Textes : toutes les chaînes en `values/` **et** `values-en/`, apostrophe
+- Textes : toutes les chaînes en `values/` (anglais) **et** `values-fr/`, apostrophe
   typographique (`StringsParityTest`).
 
 ### Décisions et alternatives écartées

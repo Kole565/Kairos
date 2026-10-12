@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.navigation
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosFilterChip
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
@@ -90,7 +91,6 @@ import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.title_day_other
 import com.skohscripts.kairos.ui.generated.resources.title_week_of
-import androidx.compose.ui.text.intl.Locale
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -144,7 +144,7 @@ fun AppShell(
     // Hors des branches de mise en page : un redimensionnement ne rouvre pas l'accueil.
     CompositionLocalProvider(LocalMessages provides showMessage) { WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }) }
 
-    val language = Locale.current.language
+    val language = uiLanguage()
     val today = services.clock.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val day = nav.day
     // Destinations de l'espace courant : la coquille ne connaît que [NavEntry].

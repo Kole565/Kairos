@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosListBlockExtra
 import com.skohscripts.kairos.ui.theme.KairosListSectionExtra
@@ -60,7 +61,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.day.DayFilter
@@ -158,7 +158,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     val view = remember(snapshot, minute, filter, day) { DayView.build(snapshot, day, minute, timeZone, filter, instant = now) }
     val notifyState by services.notifier.state.collectAsState()
     val scope = rememberCoroutineScope()
-    val language = Locale.current.language
+    val language = uiLanguage()
     val showShortcuts = LocalPlatform.current != Platform.ANDROID
 
     // Séries « le N du mois » : l'occurrence du mois courant (n'écrit que s'il y a lieu).
@@ -376,6 +376,8 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 taskTypes = snapshot.settings.taskTypeList,
                 candidates = view.openTasks,
                 blockerIds = view.blockersOf[id].orEmpty().toSet(),
+                // Sous-tâches d'une tâche perso modifiables ici ; une tâche d'équipe a ses propres règles (equipe-backlog-suivi.md).
+                subtasks = if (task.space == TaskSpace.PERSONAL) subtasksOf(id, snapshot.tasks) else emptyList(),
                 dependencies = snapshot.dependencies,
                 titles = remember(snapshot.tasks) { snapshot.tasks.associate { it.id to it.title } },
                 estimates = estimates,

@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.ui.day
 
 import androidx.compose.runtime.Composable
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.duration_hours
 import com.skohscripts.kairos.ui.generated.resources.duration_hours_minutes
@@ -20,7 +21,7 @@ internal object Dates {
     private val FR = listOf("janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc.")
     private val EN = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-    private fun english(language: String) = language.lowercase().startsWith("en")
+    private fun english(language: String) = !UiLanguage.isFrench(language)
 
     fun short(date: LocalDate, language: String): String {
         val month = date.month.ordinal

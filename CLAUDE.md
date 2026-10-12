@@ -83,8 +83,8 @@ bureau Windows/Linux/macOS (JVM), web (Kotlin/Wasm).
   `vX.Y.Z` (ou `vX.Y.Z-beta.N`) déclenche `kmp-release.yml`. L'environnement de
   développement ne peut pas pousser de tag : le propriétaire du dépôt le pose
   sur le commit de la version.
-- **Textes** : aucun texte d'interface en dur. Français (`values/`) **et**
-  anglais (`values-en/`) à chaque ajout, apostrophe typographique `’`
+- **Textes** : aucun texte d'interface en dur. Français (`values-fr/`) **et**
+  anglais (`values/`, langue de repli) à chaque ajout, apostrophe typographique `’`
   (`StringsParityTest`, `docs/spec/i18n.md`).
 - **Vérifier avant de pousser** : `cd kmp && ./gradlew :core:jvmTest :data:jvmTest
   :ui:jvmTest :desktopApp:jvmTest`, et pour l'interface `./gradlew :desktopApp:run

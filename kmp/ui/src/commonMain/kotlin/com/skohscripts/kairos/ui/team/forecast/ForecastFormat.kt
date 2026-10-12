@@ -1,10 +1,11 @@
 package com.skohscripts.kairos.ui.team.forecast
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.intl.Locale
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.core.team.forecast.DataSourceKind
 import com.skohscripts.kairos.core.team.forecast.ForecastModel
 import com.skohscripts.kairos.core.team.forecast.SourceInfo
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.forecast_by_first_many
@@ -30,7 +31,7 @@ import kotlin.math.roundToInt
  * jour de calcul), phrases de source des données.
  */
 
-private fun english(language: String) = language.lowercase().startsWith("en")
+private fun english(language: String) = !UiLanguage.isFrench(language)
 
 /** « 3 200 » (espace insécable, que la ligne ne coupe pas) ou « 3,200 ». */
 internal fun groupedNumber(value: Int, language: String): String {
@@ -99,7 +100,7 @@ internal fun sourceText(source: SourceInfo, model: ForecastModel): String {
 internal fun atLeastText(counts: List<Pair<Int, Int>>): String {
     val (firstCount, firstPercent) = counts.first()
     // « 0 tâche » et « 1 tâche » en français, « 0 tasks » et « 1 task » en anglais.
-    val singular = if (english(Locale.current.language)) firstCount == 1 else firstCount <= 1
+    val singular = if (english(uiLanguage())) firstCount == 1 else firstCount <= 1
     val first = stringResource(
         if (singular) Res.string.forecast_by_first_one else Res.string.forecast_by_first_many,
         firstCount, percentLabel(firstPercent),

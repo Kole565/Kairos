@@ -1,0 +1,1 @@
+Kairos 3.3.0: language choice in Settings (French or English, English by default when the system is not in French; more languages are coming), subtasks editable from their task’s sheet, and a crash report screen on Android.

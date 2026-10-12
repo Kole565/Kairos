@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosListBlockExtra
 import com.skohscripts.kairos.ui.theme.KairosListSectionExtra
 import com.skohscripts.kairos.ui.theme.KairosSpacing
@@ -54,7 +55,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.PRIORITY_VALUES
@@ -138,7 +138,7 @@ fun TeamBacklogScreen(services: AppServices, initialSelection: Set<Long> = empty
     val scope = rememberCoroutineScope()
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(timeZone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     val wide = LocalWindowWidth.current >= WIDE_WINDOW
 
     var text by rememberSaveable { mutableStateOf("") }

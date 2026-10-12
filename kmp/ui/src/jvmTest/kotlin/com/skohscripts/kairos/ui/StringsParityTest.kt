@@ -20,15 +20,15 @@ class StringsParityTest {
 
     @Test
     fun frenchAndEnglishHaveTheSameKeys() {
-        val fr = strings("values")
-        val en = strings("values-en")
+        val fr = strings("values-fr")
+        val en = strings("values")
         assertTrue(fr.isNotEmpty())
         assertEquals(fr.keys.sorted(), en.keys.sorted())
     }
 
     @Test
     fun noEmptyTranslation() {
-        for (folder in listOf("values", "values-en")) {
+        for (folder in listOf("values", "values-fr")) {
             val empty = strings(folder).filterValues { it.isEmpty() }.keys
             assertTrue(empty.isEmpty(), "$folder : chaînes vides $empty")
         }
@@ -38,7 +38,7 @@ class StringsParityTest {
     fun noAndroidStyleEscapes() {
         // Les ressources Compose n'interprètent pas `\'` ni `\"` : ils s'afficheraient
         // tels quels (« Aujourd\'hui »). Apostrophe typographique ’ à la place.
-        for (folder in listOf("values", "values-en")) {
+        for (folder in listOf("values", "values-fr")) {
             val escaped = strings(folder).filterValues { "\\'" in it || "\\\"" in it }.keys
             assertTrue(escaped.isEmpty(), "$folder : échappements Android $escaped")
         }
@@ -47,8 +47,8 @@ class StringsParityTest {
     @Test
     fun placeholdersMatchAcrossLanguages() {
         val placeholder = Regex("""%\d+\$[sd]""")
-        val fr = strings("values")
-        val en = strings("values-en")
+        val fr = strings("values-fr")
+        val en = strings("values")
         for ((key, value) in fr) {
             assertEquals(
                 placeholder.findAll(value).map { it.value }.toSet(),
@@ -63,7 +63,7 @@ class StringsParityTest {
         // « … » et l'espace avant : ; ? ! sont insécables (docs/spec/i18n.md) : sinon un retour à la ligne laisse « » »
         // ou « : » seul en tête de ligne.
         val loose = Regex("""« | [:;?!»]""")
-        val bad = strings("values").filterValues { loose.containsMatchIn(it) }.keys
+        val bad = strings("values-fr").filterValues { loose.containsMatchIn(it) }.keys
         assertTrue(bad.isEmpty(), "espaces sécables avant la ponctuation : $bad")
     }
 }

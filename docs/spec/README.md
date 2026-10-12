@@ -19,10 +19,10 @@ retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
 | [`architecture.md`](architecture.md) | Modules Gradle, pile technique, invariants (pureté de `core`, aucune dépendance non libre), versions. | M0 |
 | [`navigation-theme.md`](navigation-theme.md) | Thème MD3 « miel », typographie, icônes, logo, coquille de navigation (rail, barre haute, barre basse Android), écrans, « À propos et guide ». | M0 |
 | [`densite.md`](densite.md) | Densité visuelle : boutons de 36 dp, puces de 32 dp, segmentés de 40 dp, aire tactile de 48 dp conservée, échelle d'espacement, cartes et champs des Réglages. | passe design |
-| [`i18n.md`](i18n.md) | Langues (français par défaut, anglais), ressources de chaînes, choix de la langue. | M0 |
+| [`i18n.md`](i18n.md) | Langues (français et anglais, repli anglais), ressources de chaînes, choix de la langue dans les Réglages. | M0, 3.3.0 (#70) |
 | [`distribution.md`](distribution.md) | Versionnage, APK Android, installeurs et zips portables de bureau, version web, CI, releases, GitHub Pages. | M0, M1, M6, M7 |
 | [`modele-donnees.md`](modele-donnees.md) | Modèle (tâches, créneaux, dépendances, sessions, notes, réglages), stockage SQLDelight, ouverture et migrations, dépôt, exemples. | M1 |
-| [`vue-jour.md`](vue-jour.md) | Vue Jour : capture (tâche, créneau), « À traiter » et « Comment qualifier ? », « Maintenant », agenda ordonné, sections secondaires, « Pourquoi à cette place ? », filtres, backlog, frise, édition complète (guide des points, durées suggérées), raccourcis, autre jour. | M1, M2, M4 |
+| [`vue-jour.md`](vue-jour.md) | Vue Jour : capture (tâche, créneau), « À traiter » et « Comment qualifier ? », « Maintenant », agenda ordonné, sections secondaires, « Pourquoi à cette place ? », filtres, backlog, frise, édition complète (guide des points, durées suggérées, sous-tâches existantes), raccourcis, autre jour. | M1, M2, M4, 3.3.0 (#69) |
 | [`ordonnancement.md`](ordonnancement.md) | Moteur : score WSJF, placement dans la journée, creux, deep work, jours ouvrés et fériés, ancienneté ; tests différentiels contre Kairos 2. | M2 |
 | [`dependances.md`](dependances.md) | Blocage, cycles, urgence héritée (chemin critique), bloqueurs dans l'édition. | M2 |
 | [`recurrence.md`](recurrence.md) | Tâches récurrentes (à la complétion, « le N du mois »), créneaux récurrents, « Décaler ». | M2 |
@@ -33,7 +33,7 @@ retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
 | [`reglages.md`](reglages.md) | Écran Réglages : sections, champs, bornes de Kairos 2, validation par champ et entre champs, un seul « Enregistrer ». | M5 |
 | [`migration-2x.md`](migration-2x.md) | Migration d'une base Kairos 2 : conversion (toutes générations de schéma), Android automatique, bureau proposé, import manuel, tests sur de vraies bases, passage de l'APK 2.x à la 3. | M5, M7 |
 | [`accueil.md`](accueil.md) | Accueil au premier lancement (présentation, exemples, bilan ou proposition de migration) ; bouton « ? » et aide de l'écran, page Accueil (raison d'être, fonctionnalités), visite guidée. | M5, E6 |
-| [`demarrage.md`](demarrage.md) | Page de démarrage commune (Android, bureau, web) : l'aiguille du cadran fait un tour et se pose sur le logo, pause, fondu ; relais natifs (écran de démarrage Android, chargement web). | après 3.2.0 |
+| [`demarrage.md`](demarrage.md) | Page de démarrage commune (Android, bureau, web) : l'aiguille du cadran fait un tour et se pose sur le logo, pause, fondu ; relais natifs (écran de démarrage Android, chargement web) ; rapport de plantage Android. | après 3.2.0, 3.3.0 (#65) |
 | [`apparence.md`](apparence.md) | Couleur du thème : graines proposées, couleur libre, couleurs du système (Android 12 et plus), schéma MD3 dérivé. | #45 |
 | [`mises-a-jour.md`](mises-a-jour.md) | Vérification des nouvelles versions sur le bureau (GitHub, 6 heures), bandeau, carte des Réglages. | M5 |
 | [`raccourci-portable.md`](raccourci-portable.md) | Copies portables du bureau : détection (marqueur de la release), entrée de menu Linux avec icône et classe de fenêtre, raccourcis Windows (menu Démarrer, Bureau), proposés au lancement, carte des Réglages. | #46 |

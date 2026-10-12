@@ -59,6 +59,8 @@ object DesktopServices {
             firstLaunch = opened.created && !inMemory,
             updates = if (inMemory) null else DesktopUpdates(File(dataDir, "updates.json")),
             shortcuts = portable?.let { PortableShortcuts(it, File(dataDir, "shortcuts.json")) },
+            systemLanguage = language,
+            applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
         )
     }
 }

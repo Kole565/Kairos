@@ -49,7 +49,8 @@ d'en écrire : `StatTile`, `Panel`, `BarRow` (`ui/stats/StatsScreen.kt`),
 
 - Aucun texte en dur : `stringResource(Res.string.…)`.
 - Chaque chaîne dans `kmp/ui/src/commonMain/composeResources/values/strings.xml`
-  **et** `values-en/strings.xml`, apostrophe typographique `’`.
+  (anglais, langue de repli) **et** `values-fr/strings.xml` (français), apostrophe
+  typographique `’`.
   `StringsParityTest` échoue sinon.
 
 ## 5. Mise en page et accessibilité

@@ -28,7 +28,8 @@
         "extraHolidays": "",
         "taskTypes": "Développement,Revue de code,Réunion,Documentation,Administratif,Veille/formation",
         "updateCheckEnabled": true,
-        "themeColor": "#C28417"
+        "themeColor": "#C28417",
+        "language": "system"
     },
     "tasks": [
         {

@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui.team
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.backlog_no_category
@@ -20,7 +21,7 @@ import kotlin.math.roundToInt
 /*
  * Mise en texte des chiffres de charge (docs/spec/equipe-charge.md § Interface) : heures à une décimale au plus
  * (« 96 h », « 13,4 h »), taux entier (« 117 % »), virgule décimale en français. Le code commun n'a pas de
- * formatage localisé : la langue vient de `Locale.current`, comme pour les dates.
+ * formatage localisé : la langue vient de `uiLanguage()`, comme pour les dates.
  */
 
 private fun english(language: String) = language.lowercase().startsWith("en")
@@ -33,7 +34,7 @@ internal fun decimalText(value: Double, language: String): String {
 
 /** « 96 h », « 13,4 h ». */
 @Composable
-internal fun hoursText(hours: Double): String = stringResource(Res.string.load_hours, decimalText(hours, Locale.current.language))
+internal fun hoursText(hours: Double): String = stringResource(Res.string.load_hours, decimalText(hours, uiLanguage()))
 
 /** « 117 % » ; « — » quand le taux est indéfini (capacité nulle). */
 @Composable
@@ -47,7 +48,7 @@ internal fun weeksText(weeks: Int): String =
 /** « ≈ 1,5 semaine » : le singulier jusqu'à 2 en français, à 1 exactement en anglais. */
 @Composable
 internal fun teamWeeksText(weeks: Double): String {
-    val language = Locale.current.language
+    val language = uiLanguage()
     val rounded = round(weeks * 10) / 10
     val singular = if (english(language)) rounded == 1.0 else rounded < 2.0
     return stringResource(if (singular) Res.string.load_weeks_singular else Res.string.load_weeks_plural, decimalText(weeks, language))

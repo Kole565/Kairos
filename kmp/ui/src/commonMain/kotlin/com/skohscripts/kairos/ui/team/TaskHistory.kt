@@ -9,12 +9,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.team.QualifiedField
 import com.skohscripts.kairos.core.team.TeamEvent
 import com.skohscripts.kairos.core.team.TeamEventKind
 import com.skohscripts.kairos.core.team.TeamEvents
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.event_assigned_to
@@ -75,7 +75,7 @@ internal fun TaskHistory(events: List<TeamEvent>, context: AssignContext, today:
 @Composable
 internal fun eventLine(event: TeamEvent, context: AssignContext, today: LocalDate, withTitle: Boolean): String {
     val day = event.at.toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val date = dateSpan(day, day, today, Locale.current.language).first
+    val date = dateSpan(day, day, today, uiLanguage()).first
     val sentence = eventSentence(event, context, today)
     return if (withTitle) stringResource(Res.string.event_line_titled, date, event.taskTitle, sentence) else stringResource(Res.string.event_line, date, sentence)
 }
@@ -83,7 +83,7 @@ internal fun eventLine(event: TeamEvent, context: AssignContext, today: LocalDat
 /** La phrase d'un événement (sans date) : « Assignée à Léa (était : Marc) », « Priorité P2 → P1 »… */
 @Composable
 internal fun eventSentence(event: TeamEvent, context: AssignContext, today: LocalDate): String {
-    val language = Locale.current.language
+    val language = uiLanguage()
     val none = stringResource(Res.string.event_none)
     return when (event.kind) {
         TeamEventKind.CREATED -> stringResource(Res.string.event_created)

@@ -62,4 +62,14 @@ class ExampleDataTest {
         assertTrue(en.tasks.map { it.taskType }.filter { it.isNotEmpty() }.all { it in en.settings.taskTypeList })
         assertTrue(fr.tasks.map { it.taskType }.filter { it.isNotEmpty() }.all { it in fr.settings.taskTypeList })
     }
+
+    @Test
+    fun anyLanguageButFrenchGetsTheEnglishExamples() {
+        // Repli anglais (issue #70) : une langue système autre que le français (russe, allemand…) donne l'anglais.
+        val english = ExampleData.snapshot(today, now, "en").tasks.map { it.title }
+        for (language in listOf("de", "ru", "en-US")) {
+            assertEquals(english, ExampleData.snapshot(today, now, language).tasks.map { it.title }, language)
+        }
+        assertEquals(fr.tasks.map { it.title }, ExampleData.snapshot(today, now, "fr-CA").tasks.map { it.title })
+    }
 }

@@ -1,12 +1,12 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import com.skohscripts.kairos.ui.app.heading
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.ui.text.intl.Locale
 import com.skohscripts.kairos.ui.app.ShortcutCard
 import com.skohscripts.kairos.ui.app.UpdateService
 import com.skohscripts.kairos.ui.app.UpdateStatus
@@ -128,7 +128,7 @@ import org.jetbrains.compose.resources.stringResource
 fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
     val snapshot by services.repository.snapshot.collectAsState()
     val current = snapshot.settings
-    val language = Locale.current.language
+    val language = uiLanguage()
     // Décimales à la virgule en français (« 0,8 », comme l'aide l'écrit) ; la validation lit les deux.
     val saved = remember(current, language) {
         SettingsForm.values(current).mapValues { (key, value) ->
@@ -187,6 +187,9 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
                         values = values + (key to value)
                         errors = errors - key
                     }
+                    LanguageCard(values["language"].orEmpty()) {
+                        values = values + ("language" to it)
+                    }
                     AppearanceCard(values["themeColor"].orEmpty(), errors["themeColor"]) {
                         values = values + ("themeColor" to it)
                         errors = errors - "themeColor"
@@ -241,7 +244,7 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
 private fun UpdatesCard(updates: UpdateService, enabled: String, onEnabled: (String) -> Unit) {
     val status by updates.status.collectAsState()
     val scope = rememberCoroutineScope()
-    val language = Locale.current.language
+    val language = uiLanguage()
     @Composable
     fun at(instant: Instant): String {
         val t = instant.toLocalDateTime(TimeZone.currentSystemDefault())

@@ -39,10 +39,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.app.AppServices
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.day.duration
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -104,7 +104,7 @@ fun StatsScreen(services: AppServices) {
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val now = services.clock.now()
     val today = now.toLocalDateTime(timeZone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     val stats = remember(snapshot, today) { TaskStats.dashboard(snapshot.tasks, snapshot.workSessions, today, snapshot.settings, now, timeZone) }
 
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {

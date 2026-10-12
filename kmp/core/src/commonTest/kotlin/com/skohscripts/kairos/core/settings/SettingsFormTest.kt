@@ -78,6 +78,15 @@ class SettingsFormTest {
     }
 
     @Test
+    fun the_language_is_normalised_and_never_refused() {
+        assertEquals(Settings.LANGUAGE_SYSTEM, SettingsForm.values(base)["language"])
+        assertEquals(Settings.LANGUAGE_FR, validate("language" to " FR ").settings!!.language)
+        assertEquals(Settings.LANGUAGE_EN, validate("language" to "en").settings!!.language)
+        // Une valeur inconnue (base importée d'une version future) suit le système.
+        assertEquals(Settings.LANGUAGE_SYSTEM, validate("language" to "ru").settings!!.language)
+    }
+
+    @Test
     fun the_theme_color_is_normalised_or_refused() {
         assertEquals("#C28417", SettingsForm.values(base)["themeColor"])
         assertEquals("#2F6FED", validate("themeColor" to " 2f6fed ").settings!!.themeColor)

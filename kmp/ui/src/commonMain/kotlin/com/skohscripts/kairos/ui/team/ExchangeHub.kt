@@ -26,8 +26,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -175,7 +175,7 @@ private fun MemberExchangeCard(row: MemberExchange, onOpen: () -> Unit, onSend: 
 /** « 28 sept. 14:05 », comme la date du dernier rapport de la fiche d'un membre. */
 @Composable
 private fun dayAndTime(at: Instant): String {
-    val language = Locale.current.language
+    val language = uiLanguage()
     val local = at.toLocalDateTime(TimeZone.currentSystemDefault())
     return "${Dates.short(local.date, language)} ${Dates.time(local, language)}"
 }

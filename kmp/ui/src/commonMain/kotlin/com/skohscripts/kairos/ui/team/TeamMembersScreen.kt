@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -73,7 +74,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -283,7 +283,7 @@ private fun MemberCard(member: TeamMember, absence: MemberAbsence?, today: Local
                     Text(member.role, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text(
-                    stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, Locale.current.language)),
+                    stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, uiLanguage())),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (absence != null) {

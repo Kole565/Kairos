@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,10 +24,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.TeamSettings
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.LocalStartupSplash
+import com.skohscripts.kairos.ui.app.LocalUiLanguage
 import com.skohscripts.kairos.ui.app.StartupSplash
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.error_open_title
@@ -87,10 +91,20 @@ fun KairosApp(
                 CompositionLocalProvider(LocalStartupSplash provides !splashDone) {
                     when {
                         ready != null -> {
-                            // Thème des réglages dès qu'ils sont lus ; le miel de la charte pendant le chargement.
-                            val themeColor = ready.repository.snapshot.collectAsState().value.settings.themeColor
+                            // Thème et langue des réglages dès qu'ils sont lus ; le miel de la charte et la langue du système
+                            // pendant le chargement.
+                            val settings = ready.repository.snapshot.collectAsState().value.settings
+                            val themeColor = settings.themeColor
                             val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
-                            KairosTheme(scheme) { KairosShell(platform, ready, initialDestination, initialTeamDestination, initialSecondary) }
+                            // La langue du système est lue une fois, avant la première surcharge : `Locale.current` la
+                            // reflèterait ensuite la langue choisie (docs/spec/i18n.md § Choix de la langue).
+                            val system = remember(ready) { ready.systemLanguage ?: Locale.current.language }
+                            val language = UiLanguage.resolve(settings.language, system)
+                            // Posée pendant la composition, avant que l'interface (en dessous) lise la locale.
+                            remember(language) { ready.applyLanguage(language) }
+                            CompositionLocalProvider(LocalUiLanguage provides language) {
+                                KairosTheme(scheme) { KairosShell(platform, ready, language, initialDestination, initialTeamDestination, initialSecondary) }
+                            }
                         }
                         failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
                         else -> Status(stringResource(Res.string.loading), null, progress = true)
@@ -107,6 +121,8 @@ fun KairosApp(
 private fun KairosShell(
     platform: Platform,
     services: AppServices,
+    /** Langue de l'interface (`fr` ou `en`) : la coquille est recomposée quand elle change. */
+    language: String,
     initialDestination: Destination,
     initialTeamDestination: TeamDestination,
     initialSecondary: Secondary?,
@@ -155,59 +171,63 @@ private fun KairosShell(
     BoxWithConstraints {
         // Largeur de la fenêtre pour les écrans qui choisissent plein écran ou dialogue (fiche membre).
         CompositionLocalProvider(LocalWindowWidth provides maxWidth) {
-            AppShell(
-                layout = NavigationLayout.choose(platform, maxWidth),
-                services = services,
-                space = space,
-                destination = destination,
-                teamDestination = teamDestination,
-                teamModeEnabled = teamEnabled,
-                teamName = team?.name.orEmpty(),
-                secondary = secondary,
-                nav = nav,
-                onNavigate = {
-                    // La navigation principale ramène à aujourd'hui et à la semaine courante.
-                    nav.day = null
-                    nav.week = null
-                    destination = it
-                    secondary = null
-                    secondaryParent = null
-                },
-                onNavigateTeam = {
-                    teamDestination = it
-                    secondary = null
-                    secondaryParent = null
-                },
-                onSpaceChange = {
-                    // Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou Suivi), pas son Accueil.
-                    nav.day = null
-                    nav.week = null
-                    destination = Destination.WORK
-                    teamDestination = TeamDestination.START
-                    secondary = null
-                    secondaryParent = null
-                    chosenSpace = it
-                    persistSpace(it)
-                },
-                onOpenDay = { day ->
-                    nav.day = day
-                    destination = Destination.DAY
-                    secondary = null
-                    secondaryParent = null
-                },
-                onOpenSettings = {
-                    secondary = Secondary.SETTINGS
-                    secondaryParent = null
-                },
-                onOpenAbout = {
-                    secondaryParent = secondary
-                    secondary = Secondary.ABOUT
-                },
-                onCloseSecondary = {
-                    secondary = secondaryParent
-                    secondaryParent = null
-                },
-            )
+            // Les textes des ressources lisent la locale à la composition : changer de langue recrée la coquille (écran
+            // courant conservé : la navigation est mémorisée au-dessus, seul l'état interne des écrans repart).
+            key(language) {
+                AppShell(
+                    layout = NavigationLayout.choose(platform, maxWidth),
+                    services = services,
+                    space = space,
+                    destination = destination,
+                    teamDestination = teamDestination,
+                    teamModeEnabled = teamEnabled,
+                    teamName = team?.name.orEmpty(),
+                    secondary = secondary,
+                    nav = nav,
+                    onNavigate = {
+                        // La navigation principale ramène à aujourd'hui et à la semaine courante.
+                        nav.day = null
+                        nav.week = null
+                        destination = it
+                        secondary = null
+                        secondaryParent = null
+                    },
+                    onNavigateTeam = {
+                        teamDestination = it
+                        secondary = null
+                        secondaryParent = null
+                    },
+                    onSpaceChange = {
+                        // Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou Suivi), pas son Accueil.
+                        nav.day = null
+                        nav.week = null
+                        destination = Destination.WORK
+                        teamDestination = TeamDestination.START
+                        secondary = null
+                        secondaryParent = null
+                        chosenSpace = it
+                        persistSpace(it)
+                    },
+                    onOpenDay = { day ->
+                        nav.day = day
+                        destination = Destination.DAY
+                        secondary = null
+                        secondaryParent = null
+                    },
+                    onOpenSettings = {
+                        secondary = Secondary.SETTINGS
+                        secondaryParent = null
+                    },
+                    onOpenAbout = {
+                        secondaryParent = secondary
+                        secondary = Secondary.ABOUT
+                    },
+                    onCloseSecondary = {
+                        secondary = secondaryParent
+                        secondaryParent = null
+                    },
+                )
+            }
         }
     }
 }

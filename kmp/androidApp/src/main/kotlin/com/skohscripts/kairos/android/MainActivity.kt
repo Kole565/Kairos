@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.android
 
 import android.Manifest
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -12,7 +13,9 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.ui.platform.LocalContext
 import com.skohscripts.kairos.ui.KairosApp
 import com.skohscripts.kairos.ui.Platform
+import com.skohscripts.kairos.ui.app.CrashReportScreen
 import com.skohscripts.kairos.ui.app.FileService
+import com.skohscripts.kairos.ui.theme.KairosTheme
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,6 +23,8 @@ import kotlinx.coroutines.withContext
 
 /** Seule activité : l'interface Compose commune, bord à bord (docs/spec/distribution.md § Android). */
 class MainActivity : ComponentActivity(), FileService {
+    /** Rapport du plantage précédent affiché à la place de l'application (`null` : lancement normal). */
+    private var crashReport: String? = null
     private var pendingSave: CompletableDeferred<Uri?>? = null
     private var pendingOpen: CompletableDeferred<Uri?>? = null
 
@@ -39,6 +44,16 @@ class MainActivity : ComponentActivity(), FileService {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         KairosProcess.activity = this
+        // Un plantage au lancement précédent : son rapport remplace l'application, base fermée (issue #65).
+        crashReport = KairosCrash.pending(this)
+        crashReport?.let { report ->
+            setContent {
+                KairosTheme {
+                    CrashReportScreen(report, onShare = { share(report) }, onContinue = { KairosCrash.clear(this); recreate() })
+                }
+            }
+            return
+        }
         val services = KairosProcess.services(this)
         setContent {
             // Couleurs du fond d'écran (Material You), proposées dans Réglages → Apparence
@@ -51,6 +66,7 @@ class MainActivity : ComponentActivity(), FileService {
     override fun onResume() {
         super.onResume()
         KairosProcess.activity = this
+        if (crashReport != null) return
         // L'utilisateur a pu changer l'autorisation dans les réglages du système.
         KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().notifier as? AndroidNotifier)?.refresh() }
     }
@@ -58,6 +74,12 @@ class MainActivity : ComponentActivity(), FileService {
     override fun onDestroy() {
         if (KairosProcess.activity === this) KairosProcess.activity = null
         super.onDestroy()
+    }
+
+    /** Confie le rapport de plantage au partage du système : rien ne part sans le geste de l'utilisateur. */
+    private fun share(report: String) {
+        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, report)
+        startActivity(Intent.createChooser(send, null))
     }
 
     /** Demande `POST_NOTIFICATIONS` (Android 13+) ; `true` si accordée. */

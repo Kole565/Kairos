@@ -8,6 +8,7 @@ import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskDependency
 import com.skohscripts.kairos.core.model.TimeBlock
+import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -25,7 +26,7 @@ import kotlin.time.Instant
  */
 object ExampleData {
     fun snapshot(today: LocalDate, now: Instant, language: String): KairosSnapshot {
-        val t = if (language.lowercase().startsWith("en")) Texts.EN else Texts.FR
+        val t = if (UiLanguage.isFrench(language)) Texts.FR else Texts.EN
         val soon = today.plus(DatePeriod(days = 2))
         val later = today.plus(DatePeriod(days = 7))
         fun at(hour: Int, minute: Int = 0) = LocalDateTime(today, LocalTime(hour, minute))

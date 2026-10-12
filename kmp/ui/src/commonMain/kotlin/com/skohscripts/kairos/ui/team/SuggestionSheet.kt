@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -34,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -97,7 +97,7 @@ internal fun SuggestionSheet(services: AppServices, taskIds: Set<Long>?, onDismi
     val snapshot by repository.snapshot.collectAsState()
     val zone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(zone).date
-    val language = Locale.current.language
+    val language = uiLanguage()
     val scope = rememberCoroutineScope()
     val compact = LocalWindowWidth.current.isCompactWidth
 
