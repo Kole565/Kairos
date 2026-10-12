@@ -24,12 +24,12 @@ class SettingsFormTest {
     fun values_are_parsed_and_decimals_accept_a_comma() {
         val s = validate(
             "workdayStartHour" to " 8 ", "priorityValueBase" to "2,5", "cognitiveDipEnabled" to "false",
-            "taskTypes" to " Dev, Ops ", "extraHolidays" to " 2026-12-24 ,, 2026-12-31 ",
+            "taskTypes" to " Dev, Ops ,Dev, ,", "extraHolidays" to " 2026-12-24 ,, 2026-12-31 ,2026-12-24",
         ).settings!!
         assertEquals(8, s.workdayStartHour)
         assertEquals(2.5, s.priorityValueBase)
         assertEquals(false, s.cognitiveDipEnabled)
-        assertEquals("Dev, Ops", s.taskTypes)
+        assertEquals("Dev,Ops", s.taskTypes) // doublon et vides écartés
         assertEquals("2026-12-24,2026-12-31", s.extraHolidays)
     }
 

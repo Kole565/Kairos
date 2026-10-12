@@ -111,7 +111,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   réglages complets, ou `null` à la moindre erreur. `ExportCodec.decode`
   s'en sert aussi pour refuser un export aux réglages hors bornes.
 - Nettoyage à l'écriture : textes sans espaces de bord ; dates
-  supplémentaires sans vides, séparées par « , » ; couleur normalisée en
+  supplémentaires et types proposés sans vides **ni doublons** (le premier
+  reste), séparés par « , » (`normalizeList`) ; couleur normalisée en
   `#RRGGBB` majuscules (`apparence.md`).
 
 ### Écran (`SettingsScreen`, `ui`)

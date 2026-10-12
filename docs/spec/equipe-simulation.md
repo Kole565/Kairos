@@ -424,3 +424,10 @@ Reportés au jalon E5 : `reglages.md` (réglages de simulation),
 `modele-donnees.md` (`team_scenario`, `4.sqm`), `export-import.md`
 (`teamScenarios`), `architecture.md` (`core/team/forecast/`),
 `navigation-theme.md` (icônes).
+
+### Arbitrage du 12/10 (passe QA)
+
+- Une échéance **déjà passée** s'affiche « 0 % · en danger » dans les
+  prévisions (probabilité de tenir = 0, sous le seuil), pas « en retard » : le
+  mot « en retard » est réservé au plan de charge déterministe
+  (`equipe-charge.md`), les prévisions ne parlent que de probabilités.

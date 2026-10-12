@@ -113,13 +113,13 @@ object SettingsForm {
         int("staleOverdueDays", 0, get = { it.staleOverdueDays }) { s, v -> s.copy(staleOverdueDays = v) },
         int("staleUntouchedDays", 0, get = { it.staleUntouchedDays }) { s, v -> s.copy(staleUntouchedDays = v) },
         int("priorityOverloadThreshold", 0, get = { it.priorityOverloadThreshold }) { s, v -> s.copy(priorityOverloadThreshold = v) },
-        text("taskTypes", FieldKind.TEXT, { it.taskTypes }) { s, v -> s.copy(taskTypes = v) },
+        text("taskTypes", FieldKind.TEXT, { it.taskTypes }) { s, v -> s.copy(taskTypes = normalizeList(v)) },
         int("statsWindowWeeks", 1, get = { it.statsWindowWeeks }) { s, v -> s.copy(statsWindowWeeks = v) },
         int("timerIdleAlertMinutes", 0, get = { it.timerIdleAlertMinutes }) { s, v -> s.copy(timerIdleAlertMinutes = v) },
         int("pomodoroFocusMinutes", 0, get = { it.pomodoroFocusMinutes }) { s, v -> s.copy(pomodoroFocusMinutes = v) },
         bool("timerAlertSound", { it.timerAlertSound }) { s, v -> s.copy(timerAlertSound = v) },
         bool("holidaysFr", { it.holidaysFr }) { s, v -> s.copy(holidaysFr = v) },
-        text("extraHolidays", FieldKind.DATES, { it.extraHolidays }) { s, v -> s.copy(extraHolidays = normalizeDates(v)) },
+        text("extraHolidays", FieldKind.DATES, { it.extraHolidays }) { s, v -> s.copy(extraHolidays = normalizeList(v)) },
         bool("updateCheckEnabled", { it.updateCheckEnabled }) { s, v -> s.copy(updateCheckEnabled = v) },
         SettingField(
             "themeColor", FieldKind.COLOR,
@@ -209,8 +209,8 @@ object SettingsForm {
 
     private fun parseDate(text: String): LocalDate? = runCatching { LocalDate.parse(text) }.getOrNull()
 
-    /** Dates nettoyées : espaces retirés, vides écartés, séparées par « , ». */
-    private fun normalizeDates(text: String): String = text.split(',').map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
+    /** Liste (dates, types) nettoyée : espaces retirés, vides et doublons écartés (le premier reste), séparée par « , ». */
+    private fun normalizeList(text: String): String = text.split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinct().joinToString(",")
 
     /**
      * Couleur du thème (docs/spec/apparence.md) : `system`, ou six chiffres

@@ -213,3 +213,17 @@ champs à contour).
   dessinée.
 - `reglages.md` : cartes pleines, largeur des champs numériques.
 - Index `docs/spec/README.md`.
+
+### Arbitrages de la passe QA du 12/10 (à ne pas rouvrir sans raison)
+
+- **Cible mobile = 360 dp.** Sous cette largeur (320 dp : titre « Aujourd’hui »
+  très serré, dialogues sans marge latérale), le rendu reste utilisable (aucun
+  débordement de page, tout défile) mais n'est pas garanti au pixel ; aucun
+  composant n'est contorsionné pour 320 dp. Le titre de la barre passe en corps
+  `titleMedium` quand le sélecteur d'espace la partage (`navigation-theme.md`).
+- **Types de tâche par défaut sans espace après la virgule** (« Développement,
+  Revue de code,Réunion,… ») : conservés tels quels. C'est le format de Kairos 2
+  (parité des exports et des bases migrées) ; l'affichage en pastilles coupe sur
+  les virgules, jamais sur le texte saisi.
+- **Badges d'une ligne de tâche** : en `FlowRow` (score, priorité, points
+  passent à la ligne) et « N pts » en une seule ligne (`Badge(nowrap = true)`).

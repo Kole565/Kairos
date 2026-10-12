@@ -505,3 +505,11 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
 - `accueil.md` : bouton « ? », page Accueil, visite guidée (onglet « Échanges »
   de la visite de l'espace Équipe) ; `navigation-theme.md` : « ? » et écran
   secondaire `Secondary` ; `equipe.md` : écran Équipe à deux onglets.
+
+### Arbitrage du 12/10 (passe QA)
+
+- Un avancement rapporté à 100 % (ou borné à 100 % depuis une valeur aberrante)
+  **ne termine pas** la tâche : l'état « fait » ne vient que du statut du rapport
+  (`ReportMerge`), jamais du pourcentage. Une tâche « En cours à 100 % » est un
+  état valide (le membre n'a pas encore clos), le manager la voit et peut la
+  terminer depuis le Suivi.
