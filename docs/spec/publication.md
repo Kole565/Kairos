@@ -40,6 +40,9 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   Kairos en trois points, propose le bon fichier par système (celui du
   visiteur mis en avant), montre les captures, et explique la première
   installation (Gatekeeper, SmartScreen, Android, reprise de Kairos 2).
+- Le dépôt GitHub se présente en **anglais** (`README.md`, affiché par défaut) et en
+  français (`README.fr.md`), avec un lien de langue en tête de chacun : un
+  visiteur venu de F-Droid ou de l'étranger arrive sur de l'anglais.
 - Tant que Kairos 3 n'est pas sorti, la page le dit et renvoie vers la
   dernière préversion ; ensuite, vers la dernière version stable.
 
@@ -227,6 +230,14 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 
 ### Décisions et pièges tracés
 
+- **README bilingue** (demande du 2026-10-12, ouverture à l'international via
+  F-Droid) : `README.md` en anglais, `README.fr.md` en français, mêmes sections
+  dans le même ordre ; toute feature se décrit dans les deux (`CLAUDE.md`, étape 4).
+  Les libellés d'interface cités reprennent ceux de `values/strings.xml`
+  (« To process », « Why this position? », « This is me »…). Écarté : garder le
+  français par défaut avec un `README.en.md` (le visiteur étranger arrive d'abord
+  sur du français). Restent en français, signalé dans le README : `docs/`
+  (spécifications, charte), `CLAUDE.md` et le dossier F-Droid `fdroid/README.md`.
 - **Pas d'IzzyOnDroid** : la demande d'inclusion envoyée pour la 3.0.0 a été
   refusée le 2026-09-30, en raison de la part d'IA dans le développement de
   Kairos. F-Droid et les releases GitHub restent les deux canaux Android ;

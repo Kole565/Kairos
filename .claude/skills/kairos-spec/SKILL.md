@@ -83,7 +83,7 @@ Checklist avant de pousser :
 
 ## 4. README : seulement si c'est une feature
 
-- Fonctionnalité visible par l'utilisateur → `README.md` (FR), en termes
+- Fonctionnalité visible par l'utilisateur → `README.md` (EN) **et** `README.fr.md` (FR), en termes
   d'usage.
 - Correctif, refactor, décision technique → **pas** de README, seulement la
   spec.

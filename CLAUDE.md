@@ -18,9 +18,11 @@ quatre étapes ci-dessous, dans cet ordre.
    code (le commentaire porte le « pourquoi » local) ; la spec en est le
    registre consolidé au niveau conception.
 4. **Documenter dans le README si — et seulement si — c'est une feature.** Seules
-   les fonctionnalités pertinentes pour l'utilisateur entrent dans `README.md`.
-   Un correctif de bug, un refactor ou une décision technique interne n'y vont
-   **pas** (ils sont tracés en spec).
+   les fonctionnalités pertinentes pour l'utilisateur entrent dans le README, **dans
+   les deux langues** : `README.md` (anglais, affiché par défaut sur GitHub) et
+   `README.fr.md` (français), qui se répondent section pour section. Un correctif
+   de bug, un refactor ou une décision technique interne n'y vont **pas** (ils sont
+   tracés en spec).
 
 ## Pull requests
 
