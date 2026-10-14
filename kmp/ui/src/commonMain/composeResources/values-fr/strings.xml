@@ -1155,4 +1155,9 @@
     <string name="date_clear">Effacer</string>
     <string name="date_pick">Choisir une date</string>
     <string name="field_date_invalid">Date illisible : essaie 30/09/2026 ou le sélecteur de date</string>
+    <string name="action_move">Déplacer vers un autre jour…</string>
+    <string name="date_choose">Choisir une date…</string>
+    <string name="task_moved">« %1$s » déplacée au %2$s.</string>
+    <string name="action_revert">Annuler</string>
+    <string name="week_scheduled">Programmée</string>
 </resources>

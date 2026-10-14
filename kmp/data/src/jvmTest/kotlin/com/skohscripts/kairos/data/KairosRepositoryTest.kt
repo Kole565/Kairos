@@ -288,6 +288,19 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun scheduleMovesAPersonalTaskWithoutTouchingItsDeadline() = runTest {
+        val repo = empty()
+        val id = repo.createTask("T")!!
+        repo.updateTask(id, edit(changes = arrayOf({ it.copy(deadline = LocalDate(2026, 10, 30)) })))
+        repo.schedule(id, LocalDate(2026, 10, 5))
+        val moved = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 10, 5), moved.scheduledDate)
+        assertEquals(LocalDate(2026, 10, 30), moved.deadline)
+        repo.schedule(id, null) // « Annuler » : la date programmée d'avant (aucune) revient
+        assertEquals(null, repo.snapshot.value.tasks.single().scheduledDate)
+    }
+
+    @Test
     fun blockersAreATargetSetAndCyclesAreIgnored() = runTest {
         val repo = empty()
         val a = repo.createTask("A")!!

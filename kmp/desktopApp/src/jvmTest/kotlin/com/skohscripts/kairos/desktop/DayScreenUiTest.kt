@@ -136,6 +136,29 @@ class DayScreenUiTest {
     }
 
     @Test
+    fun moveSchedulesATaskOnAnotherDayAndCanBeUndone() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        runBlocking {
+            val id = repository.createTask("Call back")!!
+            repository.setPriority(id, 1)
+            repository.setPoints(id, 2)
+        }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Move to another day…").fetchSemanticsNodes().isNotEmpty() }
+        onAllNodesWithContentDescription("Move to another day…")[0].performClick()
+        // Mardi 29 septembre : demain est le mercredi 30.
+        onNodeWithText("Tomorrow", substring = true).performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single().scheduledDate != null }
+        assertEquals("2026-09-30", repository.snapshot.value.tasks.single().scheduledDate.toString())
+        // Programmée plus tard : la tâche quitte « Aujourd'hui », l'échéance n'a pas bougé, et le message propose d'annuler.
+        assertEquals(null, repository.snapshot.value.tasks.single().deadline)
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Undo").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithText("Undo").performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single().scheduledDate == null }
+    }
+
+    @Test
     fun blockCaptureAppearsInTheDayList() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }

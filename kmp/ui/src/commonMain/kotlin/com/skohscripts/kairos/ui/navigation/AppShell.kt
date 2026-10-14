@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateListOf
@@ -47,6 +48,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.LocalMessages
+import com.skohscripts.kairos.ui.app.LocalUndoMessages
 import com.skohscripts.kairos.ui.app.WelcomeDialog
 import com.skohscripts.kairos.ui.app.ShortcutBanner
 import com.skohscripts.kairos.ui.app.UpdateBanner
@@ -140,6 +142,10 @@ fun AppShell(
     UpdateWatcher(services)
     val scope = rememberCoroutineScope()
     val showMessage: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
+    // Message avec une action : l'action n'est jouée que si l'utilisateur la choisit avant la fin du message.
+    val showUndo: (String, String, () -> Unit) -> Unit = { message, label, action ->
+        scope.launch { if (snackbar.showSnackbar(message, actionLabel = label) == SnackbarResult.ActionPerformed) action() }
+    }
     val linkFailure = stringResource(Res.string.link_unavailable)
     // Hors des branches de mise en page : un redimensionnement ne rouvre pas l'accueil.
     CompositionLocalProvider(LocalMessages provides showMessage) { WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }) }
@@ -251,7 +257,7 @@ fun AppShell(
             CompositionLocalProvider(LocalMessages provides showMessage) { UpdateBanner(services) }
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                CompositionLocalProvider(LocalMessages provides showMessage) {
+                CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo) {
                     val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout) }
                     when {
                         secondary == Secondary.SETTINGS -> SettingsScreen(services, onOpenAbout)

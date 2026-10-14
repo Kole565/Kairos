@@ -21,6 +21,26 @@ class WeekViewTest {
         Task(id, "T$id", priority = p, deadline = deadline, status = status, taskType = type, createdAt = t0, updatedAt = updated)
 
     @Test
+    fun scheduled_tasks_appear_on_their_day_once() {
+        val wed = LocalDate(2026, 9, 30)
+        val thu = LocalDate(2026, 10, 1)
+        val snapshot = KairosSnapshot(
+            tasks = listOf(
+                task(1).copy(scheduledDate = wed), // programmée seulement : ce jour-là
+                task(2, deadline = wed).copy(scheduledDate = wed), // échéance le même jour : une seule ligne (l'échéance)
+                task(3, deadline = thu).copy(scheduledDate = wed), // programmée avant son échéance : aux deux jours
+                task(4, status = TaskStatus.DONE).copy(scheduledDate = wed), // faite : pas programmée
+                task(5).copy(scheduledDate = LocalDate(2026, 10, 7)), // semaine suivante
+            ),
+        )
+        val view = WeekView.build(snapshot, wed, t0, TimeZone.UTC)
+        val day = view.days.single { it.date == wed }
+        assertEquals(listOf(1L, 3L), day.scheduled.map { it.id })
+        assertEquals(listOf(2L), day.tasks.map { it.id })
+        assertEquals(listOf(3L), view.days.single { it.date == thu }.tasks.map { it.id })
+    }
+
+    @Test
     fun seven_days_with_deadlines_done_and_blocks() {
         val wed = LocalDate(2026, 9, 30)
         val snapshot = KairosSnapshot(

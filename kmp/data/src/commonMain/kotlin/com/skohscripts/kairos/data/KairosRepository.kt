@@ -231,6 +231,16 @@ class KairosRepository(
     }
 
     /**
+     * « Déplacer… » : programme une tâche personnelle pour [date] (`null` : retire la date programmée). Elle quitte
+     * « Aujourd'hui » jusqu'à ce jour ; l'échéance ne change pas. Sans effet sur une tâche d'équipe (`scheduledDate`
+     * n'est pas un champ d'équipe, docs/spec/planning-personnalise.md).
+     */
+    suspend fun schedule(taskId: Long, date: LocalDate?) {
+        if (find(taskId)?.space != TaskSpace.PERSONAL) return
+        modify(taskId) { it.copy(scheduledDate = date) }
+    }
+
+    /**
      * Occurrences du mois de [today] des séries « le N du mois »
      * (`ensure_calendar_occurrences`). N'écrit rien s'il n'y a rien à créer :
      * appelé à chaque affichage de la vue Jour.

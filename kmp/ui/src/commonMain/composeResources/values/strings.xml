@@ -1153,4 +1153,9 @@
     <string name="date_clear">Clear</string>
     <string name="date_pick">Pick a date</string>
     <string name="field_date_invalid">Unreadable date: try 2026-09-30 or the date picker</string>
+    <string name="action_move">Move to another day…</string>
+    <string name="date_choose">Choose a date…</string>
+    <string name="task_moved">“%1$s” moved to %2$s.</string>
+    <string name="action_revert">Undo</string>
+    <string name="week_scheduled">Scheduled</string>
 </resources>
