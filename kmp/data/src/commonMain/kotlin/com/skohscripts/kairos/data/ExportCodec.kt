@@ -237,6 +237,8 @@ private data class TaskJson(
     // Travail perso de « moi » (docs/spec/equipe-moi.md) : écrit seulement s'il est vrai, mêmes règles ; une tâche
     // exclue fait de l'export un export d'équipe (`Workspaces.hasTeamData`).
     val teamExcluded: Boolean? = null,
+    // Série d'une tâche récurrente (docs/spec/durees-apprises.md) : nul, donc omis, pour toute tâche d'avant la 3.4.
+    val seriesId: Long? = null,
 ) {
     fun toModel() = Task(
         id = id,
@@ -268,6 +270,7 @@ private data class TaskJson(
         originRemoved = originRemoved == true,
         reportedMinutes = reportedMinutes,
         teamExcluded = teamExcluded == true,
+        seriesId = seriesId,
     )
 
     companion object {
@@ -278,6 +281,7 @@ private data class TaskJson(
             t.manualTimeSpentMinutes, t.createdAt.toString(), t.updatedAt.toString(),
             encodeSpace(t.space), t.assigneeId, t.progressPercent, t.startedOn?.toString(), t.teamUid,
             t.origin, if (t.originRemoved) true else null, t.reportedMinutes, if (t.teamExcluded) true else null,
+            t.seriesId,
         )
     }
 }

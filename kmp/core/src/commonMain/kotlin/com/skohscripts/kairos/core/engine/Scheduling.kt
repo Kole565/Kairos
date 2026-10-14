@@ -182,9 +182,12 @@ object Scheduling {
         return !hidden
     }
 
-    /** Durée de placement : estimée, sinon (absente ou 0) le réglage par défaut. */
-    fun durationMinutes(task: Task, settings: Settings): Int =
-        task.estimatedMinutes?.takeIf { it != 0 } ?: settings.defaultTaskDurationMinutes
+    /**
+     * Durée de placement : estimée, sinon (absente ou 0) la durée **apprise** de [learned] si la tâche en a une (docs/spec/durees-apprises.md),
+     * sinon le réglage par défaut. Une estimation explicite l'emporte toujours ; sans [learned], le code est celui d'avant.
+     */
+    fun durationMinutes(task: Task, settings: Settings, learned: Map<Long, Int> = emptyMap()): Int =
+        task.estimatedMinutes?.takeIf { it != 0 } ?: learned[task.id] ?: settings.defaultTaskDurationMinutes
 
     // --- Résultat ----------------------------------------------------------------
 
@@ -250,6 +253,8 @@ object Scheduling {
         settings: Settings,
         blockedIds: Set<Long> = emptySet(),
         urgencyKeys: Map<Long, SortKey> = emptyMap(),
+        /** Durées apprises à appliquer (minutes par tâche, [DurationEstimator.appliedMinutes]) ; vide : comme avant. */
+        learned: Map<Long, Int> = emptyMap(),
     ): ScheduledDay {
         fun key(task: Task) = urgencyKeys[task.id] ?: sortKey(task, day, settings)
 
@@ -294,7 +299,7 @@ object Scheduling {
         // 1. Épinglées : à leur heure, chevauchements signalés.
         val obstacles = dayBlocks.map { Obstacle(it.start, it.end, it.title, buffer, ObstacleKind.BUSY) }.toMutableList()
         for (task in pinnedToday.sortedBy { it.pinnedStart!! }) {
-            val duration = durationMinutes(task, settings)
+            val duration = durationMinutes(task, settings, learned)
             val start = task.pinnedStart!!
             val end = start.plusMinutes(duration)
             val clash = dayBlocks.firstOrNull { it.start < end && it.end > start }
@@ -308,7 +313,7 @@ object Scheduling {
             var slot = block.start
             while (slot < block.end) {
                 val candidate = auto.firstOrNull { it.id !in assigned } ?: break
-                val duration = durationMinutes(candidate, settings)
+                val duration = durationMinutes(candidate, settings, learned)
                 if (slot.plusMinutes(duration) > block.end) break
                 scheduled += ScheduledTask(candidate, slot, duration, deepwork = true)
                 assigned += candidate.id
@@ -329,7 +334,7 @@ object Scheduling {
             val urgencyPick = if (dipActive) remaining.minWith(compareBy { urgencyKeys[it.id] ?: sortKey(it, day, settings) }) else task
             remaining.removeAt(chosenIndex)
 
-            val duration = durationMinutes(task, settings)
+            val duration = durationMinutes(task, settings, learned)
             var start = cursor
             var pushedAfter: Obstacle? = null
             while (true) {
@@ -355,7 +360,7 @@ object Scheduling {
         scheduled.sortBy { it.start }
 
         // 3. Charge : requis (unités de travail du jour) vs disponible (fenêtre restante − occupé).
-        val required = schedulable.sumOf { durationMinutes(it, settings) }
+        val required = schedulable.sumOf { durationMinutes(it, settings, learned) }
         val windowMinutes = maxOf(0L, minutesBetween(effectiveStart, workdayEnd)).toInt()
         val busyMinutes = busyMinutesInWindow(dayBlocks, effectiveStart, workdayEnd)
         return ScheduledDay(

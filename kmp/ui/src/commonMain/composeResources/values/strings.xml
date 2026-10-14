@@ -1181,4 +1181,18 @@
     <string name="schedule_day_5">Saturday</string>
     <string name="schedule_day_6">Sunday</string>
     <string name="timeline_free_day">Day off: nothing is scheduled automatically, tasks stay under “No slot today”.</string>
+    <string name="learned_badge_description">Estimated from your last %1$d timed occurrences (median)</string>
+    <string name="learned_use">Use %1$s (your last %2$d)</string>
+    <string name="learned_weak">Not reliable yet: only %1$d timed occurrence(s) of this task.</string>
+    <string name="why_learned">Duration: %1$s, learned from your last %2$d timed occurrences (median).</string>
+    <string name="why_learned_weak">Duration: not learned yet (%1$d timed occurrence(s), %2$d needed).</string>
+    <string name="settings_section_learning">Learned durations</string>
+    <string name="settings_section_learning_body">A task without an estimate takes the median real time of its last timed occurrences (recurring or same-title tasks) when there are enough of them. An estimate you type always wins.</string>
+    <string name="setting_learning_enabled">Learn durations from past occurrences</string>
+    <string name="setting_learning_enabled_help">Off: a task without an estimate takes the default duration, as before.</string>
+    <string name="setting_learning_history">Occurrences considered</string>
+    <string name="setting_learning_history_help">The most recent timed occurrences kept for the median (3 or more).</string>
+    <string name="setting_learning_min">Occurrences needed</string>
+    <string name="setting_learning_min_help">Timed occurrences required before a learned duration is used (2 or more, at most the number considered).</string>
+    <string name="effort_learned">%1$s, learned from past occurrences</string>
 </resources>

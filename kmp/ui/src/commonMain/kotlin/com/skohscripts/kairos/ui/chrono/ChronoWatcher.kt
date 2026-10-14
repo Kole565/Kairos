@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.alerts.ChronoAlerts
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.WorkSession
@@ -70,12 +71,14 @@ fun ChronoWatcher(services: AppServices, alerts: SnapshotStateList<String>) {
     val notifier = services.notifier
     val clock = services.clock
 
-    LaunchedEffect(running?.id, task?.title, task?.estimatedMinutes, base, settings.timerIdleAlertMinutes, settings.pomodoroFocusMinutes, settings.timerAlertSound) {
+    // L'estimation attendue : explicite, sinon la durée apprise fiable (docs/spec/durees-apprises.md) ; l'alerte « dépassement » la suit.
+    val expected = task?.let { DurationEstimator.effectiveMinutes(it, snapshot, services.clock.now()) }
+    LaunchedEffect(running?.id, task?.title, expected, base, settings.timerIdleAlertMinutes, settings.pomodoroFocusMinutes, settings.timerAlertSound) {
         if (running == null || task == null) {
             notifier.setTitle(null)
             return@LaunchedEffect
         }
-        val thresholds = ChronoAlerts.thresholds(running.startedAt, base, task.estimatedMinutes, settings.timerIdleAlertMinutes, settings.pomodoroFocusMinutes)
+        val thresholds = ChronoAlerts.thresholds(running.startedAt, base, expected, settings.timerIdleAlertMinutes, settings.pomodoroFocusMinutes)
         var since = clock.now()
         var flashUntil = Instant.DISTANT_PAST
         var flashText = ""

@@ -45,6 +45,7 @@ object KairosStore {
      * `KairosStoreTest.everyMigrationHasAMarker` échoue.
      */
     private val MARKERS: List<Pair<Long, String>> = listOf(
+        8L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'series_id'",
         7L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'team_excluded'",
         6L to "SELECT count(*) FROM pragma_table_info('task') WHERE name = 'origin'",
         5L to "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'team_scenario'",

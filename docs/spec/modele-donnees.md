@@ -96,7 +96,9 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   n'a jamais été activé, `equipe.md` § Modèle ; `teamModeEnabled` en est
   la lecture), `schedule` (`ScheduleSettings?`, nul tant qu'aucun jour de la
   semaine n'a d'horaire propre : `weekdays` = jours 0 (lundi) à 6 (dimanche) → `DaySchedule(free, startHour, endHour)` ;
-  `planning-personnalise.md` § Lot B1 ; non écrit dans l'export tant qu'il est nul).
+  `planning-personnalise.md` § Lot B1 ; non écrit dans l'export tant qu'il est nul), `learning` (`LearningSettings?` : `enabled` vrai,
+  `history` 5, `minSamples` 3 ; nul = valeurs par défaut, non écrit dans l'export tant qu'il est nul, `durees-apprises.md`) ;
+  `Task.seriesId` (identifiant de la première tâche d'une série récurrente, nul par défaut).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,
   `availabilityPercent`, `hoursPerDay`, `isSelf`, `archived`, `createdAt`,
   `updatedAt` (`equipe.md`), `lastReportAt` (dernier rapport intégré, jalon
@@ -150,7 +152,7 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
 3. `PRAGMA user_version` = version du schéma.
 
 `actualVersion` teste des marqueurs, du plus récent au plus ancien : colonne
-`task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
+`task.series_id` (8), `task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
 `task.progress_percent` (4), table `member_absence` (3), `task.space` (2),
 sinon 1. Chaque nouveau fichier `.sqm` ajoute son marqueur à
 `KairosStore.MARKERS` ; `ExchangeMigrationTest.everyMigrationHasAMarker`
@@ -165,7 +167,8 @@ Schéma 5 : `4.sqm` (jalon E5) ajoute `team_scenario`. Schéma 6 : `5.sqm`
 (jalon E6) ajoute `task.origin`, `task.origin_removed`,
 `task.reported_minutes` et `team_member.last_report_at` (en fin de table).
 Schéma 7 : `6.sqm` ajoute `task.team_excluded` (0 par défaut, en fin de
-table, `equipe-moi.md`).
+table, `equipe-moi.md`). Schéma 8 : `7.sqm` ajoute `task.series_id` (nulle, en fin de
+table, sans rétro-remplissage, `durees-apprises.md`).
 Les
 schémas de référence de chaque version
 (`data/src/commonMain/sqldelight/databases/<n>.db`, générés par

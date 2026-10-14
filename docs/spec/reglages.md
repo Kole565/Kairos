@@ -37,7 +37,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
   défaut), **Creux de l'après-midi** (activé, début, creux le plus profond,
   fin, force de la pénalité), **Garde-fous** (seuils « traîne » en retard et
-  sans date, seuil de surcharge P0), **Types de tâches**, **Statistiques**
+  sans date, seuil de surcharge P0), **Types de tâches**, **Statistiques**, **Durées apprises** (3.4, `durees-apprises.md` : interrupteur `learning.enabled`, occurrences considérées `learning.history` ≥ 3, occurrences nécessaires `learning.minSamples` ≥ 2 et au plus `history`, sinon `TOO_LARGE` sur `learning.minSamples` ; `Settings.learning` reste nul tant que les trois valent leur défaut)
   (fenêtre en semaines), **Alertes du chrono** (chrono oublié, pause
   suggérée, son de secours), **Jours fériés** (français, dates
   supplémentaires), **Langue** (Système, Français ou English, avant
@@ -92,6 +92,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Un jour personnalisé et un jour libre s'enregistrent d'un coup ; une fin avant le début est refusée sur son champ ; `schedule`
   reste nul tant qu'aucun jour n'est propre (`M5ScreensUiTest.aCustomDayAndADayOffAreSavedAsTheSchedule`,
   `anEndBeforeTheStartIsRefusedOnItsField`, `SettingsFormTest.theScheduleStaysNullUntilADayIsCustomised`).
+- L'interrupteur « Apprendre les durées… » se coupe et s'enregistre sans toucher aux autres bornes
+  (`LearnedDurationsUiTest.switchingTheFeatureOffHidesTheBadgeAndTheSettingIsSaved`).
 - Heure 25 refusée, début après la fin refusé, puis 8 h, base 2,5 et creux
   désactivé (dans le groupe « Avancé », ouvert à la main) enregistrés d'un coup (`M5ScreensUiTest`).
 - « Restaurer les valeurs par défaut » remplit le formulaire sans rien enregistrer ; « Enregistrer » les pose

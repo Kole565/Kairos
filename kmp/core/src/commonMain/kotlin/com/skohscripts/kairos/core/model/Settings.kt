@@ -55,6 +55,11 @@ data class Settings(
      * personnalisé : même règle que [team], pour que l'export et la base d'une installation qui n'y touche pas ne changent pas.
      */
     val schedule: ScheduleSettings? = null,
+    /**
+     * Durées apprises des tâches sans estimation (docs/spec/durees-apprises.md). `null` = les valeurs par défaut de
+     * [LearningSettings] (actif) ; même règle que [team] : sauver le formulaire sans y toucher n'en crée jamais.
+     */
+    val learning: LearningSettings? = null,
 ) {
     /** L'espace Équipe est activé (valeur enregistrée). */
     val teamModeEnabled: Boolean get() = team?.enabled == true

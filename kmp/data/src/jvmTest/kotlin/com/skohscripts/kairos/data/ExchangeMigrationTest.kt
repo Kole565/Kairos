@@ -157,8 +157,8 @@ class ExchangeMigrationTest {
         for (table in listOf("task", "team_member", "team_event", "member_absence", "team_scenario")) {
             assertEquals(columns(fresh, table), columns(migrated, table), table)
         }
-        // Les colonnes du jalon E6, suivies de `team_excluded` (6.sqm).
-        assertEquals(listOf("origin", "origin_removed", "reported_minutes", "team_excluded"), columns(fresh, "task").takeLast(4))
+        // Les colonnes du jalon E6, suivies de `team_excluded` (6.sqm) et de `series_id` (7.sqm).
+        assertEquals(listOf("origin", "origin_removed", "reported_minutes", "team_excluded", "series_id"), columns(fresh, "task").takeLast(5))
         assertEquals("last_report_at", columns(fresh, "team_member").last())
         migrated.delete()
         fresh.delete()

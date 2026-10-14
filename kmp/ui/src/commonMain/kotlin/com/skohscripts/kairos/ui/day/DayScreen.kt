@@ -74,6 +74,7 @@ import com.skohscripts.kairos.core.day.DayView
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
+import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TimeBlock
@@ -253,6 +254,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
             onEdit = { t -> editingId = t.id },
             onToggleTimer = toggleTimer,
             clock = services.clock,
+            learning = snapshot.settings.learning ?: LearningSettings(),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxHeight()) {
             LazyColumn(
@@ -393,6 +395,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 task = task,
                 day = day,
                 today = today,
+                learned = view.learned[id],
                 taskTypes = snapshot.settings.taskTypeList,
                 candidates = view.openTasks,
                 blockerIds = view.blockersOf[id].orEmpty().toSet(),

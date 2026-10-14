@@ -48,7 +48,10 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.day.DayView
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
+import com.skohscripts.kairos.core.engine.DurationEstimator
+import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.ui.generated.resources.learned_badge_description
 import com.skohscripts.kairos.ui.generated.resources.action_move
 import com.skohscripts.kairos.ui.generated.resources.tag_blocks_many
 import com.skohscripts.kairos.ui.generated.resources.tag_blocks_one
@@ -101,6 +104,8 @@ internal class RowContext(
     /** Démarre le chrono sur la tâche, ou l'arrête si c'est elle qui tourne. */
     val onToggleTimer: (Task) -> Unit = {},
     val clock: Clock = Clock.System,
+    /** Réglages des durées apprises (seuil de fiabilité affiché par « Pourquoi à cette place ? »). */
+    val learning: LearningSettings = LearningSettings(),
 )
 
 /**
@@ -252,6 +257,23 @@ private fun Title(task: Task, ctx: RowContext, time: LocalDateTime?, done: Boole
     )
 }
 
+/**
+ * Durée apprise appliquée à une tâche sans estimation (docs/spec/durees-apprises.md) : « ~45 min » avec l'icône d'horloge, et
+ * pour le lecteur d'écran d'où elle vient. Jamais la couleur seule (la valeur est écrite).
+ */
+@Composable
+internal fun LearnedBadge(estimate: DurationEstimator.Estimate) {
+    val description = stringResource(Res.string.learned_badge_description, estimate.samples)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.semantics { contentDescription = description },
+    ) {
+        Icon(KairosIcons.Schedule, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+        Muted("~" + duration(estimate.minutes))
+    }
+}
+
 /** Étiquettes de contexte : projet, type, durée, dates, récurrence, ancienneté. */
 @Composable
 private fun TaskTags(task: Task, ctx: RowContext) {
@@ -262,6 +284,7 @@ private fun TaskTags(task: Task, ctx: RowContext) {
     if (task.projectTag.isNotEmpty()) Badge(task.projectTag)
     if (task.taskType.isNotEmpty()) Badge(task.taskType)
     task.estimatedMinutes?.takeIf { it > 0 }?.let { Muted(duration(it)) }
+        ?: ctx.view.learned[task.id]?.takeIf { it.reliable && task.status == TaskStatus.TODO }?.let { LearnedBadge(it) }
     task.deadline?.let { Muted(stringResource(Res.string.deadline_badge, Dates.short(it, ctx.language, ctx.view.day))) }
     task.scheduledDate?.let { Muted(stringResource(Res.string.tag_scheduled, Dates.short(it, ctx.language, ctx.view.day))) }
     if (task.recurrence != TaskRecurrence.NONE) {
@@ -373,7 +396,7 @@ private fun TimeSpent(task: Task, ctx: RowContext) {
 private fun KeyBadges(task: Task, ctx: RowContext) {
     // FlowRow : à 360 dp, score, priorité et points passent à la ligne plutôt que d'écraser un libellé.
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-        if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language) }
+        if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language, ctx.view.learned[task.id], ctx.learning) }
         task.priority?.let { PriorityBadge(it) }
         task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it), nowrap = true) }
     }
