@@ -6,11 +6,12 @@ Fichiers couverts : `kmp/core/src/commonMain/.../core/stats/TaskStats.kt`
 (calcul pur), `kmp/ui/.../stats/StatsScreen.kt`. Les repères du guide des
 points et les durées suggérées qui en découlent sont affichés par la vue
 Jour (`vue-jour.md`). Tests : `core/.../stats/StatsDifferentialTest.kt`
-(200 cas contre Kairos 2), `M4ScreensUiTest.statsShowWhatWasDoneAndTimed`
+(200 cas contre les fichiers d'or `stats.json`), `M4ScreensUiTest.statsShowWhatWasDoneAndTimed`
 et `calibratedPointsSuggestTheDurationAndFeedTheGuide`._
 
-État : **jalon M4**, portage de `app/tasks_stats.py` (spec Kairos 2
-`docs/spec/statistiques.md`).
+État : **jalon M4**. Les sorties sont figées par les fichiers d'or de
+`StatsDifferentialTest` (`stats.json`, source de vérité depuis
+`retrait-kairos2.md`).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -53,7 +54,7 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
 
 ### Critères de succès
 
-- Sorties identiques à Kairos 2 (tableau de bord, repères du guide,
+- Sorties identiques aux fichiers d'or (tableau de bord, repères du guide,
   calibration par type) sur 200 historiques aléatoires
   (`StatsDifferentialTest`).
 - Une tâche terminée et chronométrée apparaît dans le débit et dans la
@@ -64,7 +65,7 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
 ### Hors périmètre / différé
 
 - Graphiques temporels fins, export, estimation par apprentissage, filtres
-  interactifs (comme Kairos 2).
+  interactifs.
 
 ## 2. Solution technique
 
@@ -74,13 +75,13 @@ Depuis le jalon E1 de l'espace Équipe, l'écran Stats lit `repository.personalS
 
 Pur : tâches, sessions, jour, instant, fuseau et réglages en paramètres.
 `dashboard(tâches, sessions, aujourd'hui, réglages, maintenant, fuseau)`
-reçoit **toutes** les tâches, archivées comprises (comme Kairos 2).
+reçoit **toutes** les tâches, archivées comprises.
 
 - Fenêtre : `weeks = max(1, statsWindowWeeks)`, début = lundi de la semaine
   courante moins `weeks − 1` semaines. Sessions de la fenêtre :
   `TimeTracking.sessionsInRange` (date locale du début).
 - Date de complétion d'une tâche faite = date locale de `updatedAt` (pas
-  d'horodatage dédié, comme Kairos 2).
+  d'horodatage dédié).
 - `throughputByWeek` : `WeekThroughput(lundi, terminées, points)` pour
   chaque semaine de la fenêtre, zéro compris.
 - `fibonacciCalibration` : tâches faites avec points (≠ 0) et temps passé
@@ -100,8 +101,8 @@ reçoit **toutes** les tâches, archivées comprises (comme Kairos 2).
 - `fibonacciReferences` : par palier ayant des tâches faites, la
   calibration du palier et les titres des deux plus récentes (par
   `updatedAt`), chronométrées ou non.
-- Arrondis : `pyRound` (`kotlin.math.round`, au pair le plus proche comme
-  le `round` de Python), médiane d'un effectif pair = moyenne des deux
+- Arrondis : `pyRound` (`kotlin.math.round`, au pair le plus proche : comportement propre de
+  Kairos, figé par les fichiers d'or), médiane d'un effectif pair = moyenne des deux
   valeurs centrales.
 
 ### Écran (`StatsScreen`, `ui`)
@@ -133,19 +134,19 @@ reçoit **toutes** les tâches, archivées comprises (comme Kairos 2).
 
 ### Décisions et pièges tracés
 
-- **Tests différentiels en UTC, écran en fuseau local** : le générateur
-  (`kmp/tools/gen_fixtures.py`, `stats_case`) produit des horodatages UTC
-  (Kairos 2 comparait des dates naïves) ; l'application passe le fuseau du
-  système, comme partout (écart volontaire déjà tracé dans `vue-jour.md`).
+- **Tests différentiels en UTC, écran en fuseau local** : les fichiers d'or
+  (`stats.json`) portent des horodatages UTC, lus comme tels par
+  `StatsDifferentialTest` ; l'application passe le fuseau du
+  système, comme partout (règle tracée dans `vue-jour.md`).
 - **Barres d'une seule teinte, pas de légende** : une série par graphique ;
   la couleur n'encode rien que le texte ne dise déjà (charte : pas d'ambre,
   alertes par la forme).
 - **Alertes par contour et icône**, y compris pour « en retard » et les
-  échéances tenues que Kairos 2 teintait en rouge ou vert : un chiffre
+  échéances tenues : un chiffre
   statistique n'est pas une erreur ; le rouge reste aux lignes de tâches
   en retard.
 - **Pas de bibliothèque de graphiques** : des `Box` suffisent (dépendances
   libres et minimales, `architecture.md`).
-- **Guide et durées suggérées sur tout l'historique**, archivées comprises
-  (calcul de Kairos 2) : une tâche archivée a été réellement faite ou
+- **Guide et durées suggérées sur tout l'historique**, archivées comprises :
+  une tâche archivée a été réellement faite ou
   chronométrée.

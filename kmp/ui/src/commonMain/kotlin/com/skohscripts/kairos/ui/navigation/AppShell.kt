@@ -181,7 +181,7 @@ fun AppShell(
     } else {
         null
     }
-    // Titre fidèle à ce qui est affiché : « Aujourd'hui » seulement si c'est vrai (Kairos 2).
+    // Titre fidèle à ce qui est affiché : « Aujourd'hui » seulement si c'est vrai.
     val title = when {
         secondary == Secondary.SETTINGS -> stringResource(Res.string.title_settings)
         secondary == Secondary.ABOUT -> stringResource(Res.string.title_about)

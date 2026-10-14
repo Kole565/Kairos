@@ -6,11 +6,7 @@ parties (besoin métier, puis solution technique), **bijective** avec le code.
 
 Depuis la bascule `v3.0.0` (jalon M7 de
 [`docs/plan-v3-kotlin.md`](../plan-v3-kotlin.md)), ce registre, tenu jusque-là
-dans `docs/spec-v3/`, est le seul. Kairos 2 (Python) n'est plus dans le dépôt :
-son code et ses specs (`vue-jour-gtd.md`, `accueil-navigation.md`,
-`reglages-secrets.md`…) se lisent au tag `v2.6.0`. Les specs ci-dessous y
-renvoient quand elles en reprennent le besoin métier, moins le périmètre
-retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
+dans `docs/spec-v3/`, est le seul.
 
 ## Domaines
 
@@ -23,16 +19,15 @@ retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
 | [`distribution.md`](distribution.md) | Versionnage, APK Android, installeurs et zips portables de bureau, version web, CI, releases, GitHub Pages. | M0, M1, M6, M7 |
 | [`modele-donnees.md`](modele-donnees.md) | Modèle (tâches, créneaux, dépendances, sessions, notes, réglages), stockage SQLDelight, ouverture et migrations, dépôt, exemples. | M1 |
 | [`vue-jour.md`](vue-jour.md) | Vue Jour : capture (tâche, créneau), « À traiter » et « Comment qualifier ? », « Maintenant », agenda ordonné, sections secondaires, « Pourquoi à cette place ? », filtres, backlog, frise, édition complète (guide des points, durées suggérées, sous-tâches existantes), raccourcis, autre jour. | M1, M2, M4, 3.3.0 (#69) |
-| [`ordonnancement.md`](ordonnancement.md) | Moteur : score WSJF, placement dans la journée, creux, deep work, jours ouvrés et fériés, ancienneté ; tests différentiels contre Kairos 2. | M2 |
+| [`ordonnancement.md`](ordonnancement.md) | Moteur : score WSJF, placement dans la journée, creux, deep work, jours ouvrés et fériés, ancienneté ; tests sur fichiers d'or figés. | M2 |
 | [`dependances.md`](dependances.md) | Blocage, cycles, urgence héritée (chemin critique), bloqueurs dans l'édition. | M2 |
 | [`recurrence.md`](recurrence.md) | Tâches récurrentes (à la complétion, « le N du mois »), créneaux récurrents, « Décaler ». | M2 |
 | [`temps-reel-chrono.md`](temps-reel-chrono.md) | Chrono (une session à la fois), temps passé et temps du jour, trois alertes, notifications Android (permanente, alarmes, redémarrage), bureau (plateau) et web. | M3 |
 | [`notes-capture.md`](notes-capture.md) | Notes : capture libre, conversion en tâche (titre et description), modification, archivage, suppression. | M4 |
 | [`vue-semaine.md`](vue-semaine.md) | Vue Semaine : sept jours (échéances, fait, créneaux), temps réel de la semaine, navigation vers un autre jour. | M4 |
-| [`statistiques.md`](statistiques.md) | Statistiques : chiffres clés, débit, calibration et biais, temps par type, flux, complétude ; repères du guide des points ; tests différentiels. | M4 |
-| [`reglages.md`](reglages.md) | Écran Réglages : sections, champs, bornes de Kairos 2, validation par champ et entre champs, un seul « Enregistrer ». | M5 |
-| [`migration-2x.md`](migration-2x.md) | Migration d'une base Kairos 2 : conversion (toutes générations de schéma), Android automatique, bureau proposé, import manuel, tests sur de vraies bases, passage de l'APK 2.x à la 3. | M5, M7 |
-| [`accueil.md`](accueil.md) | Accueil au premier lancement (présentation, exemples, bilan ou proposition de migration) ; bouton « ? » et aide de l'écran, page Accueil (raison d'être, fonctionnalités), visite guidée. | M5, E6 |
+| [`statistiques.md`](statistiques.md) | Statistiques : chiffres clés, débit, calibration et biais, temps par type, flux, complétude ; repères du guide des points ; tests sur fichiers d'or figés. | M4 |
+| [`reglages.md`](reglages.md) | Écran Réglages : sections, champs, bornes, validation par champ et entre champs, un seul « Enregistrer ». | M5 |
+| [`accueil.md`](accueil.md) | Accueil au premier lancement (présentation, exemples) ; bouton « ? » et aide de l'écran, page Accueil (raison d'être, fonctionnalités), visite guidée. | M5, E6 |
 | [`demarrage.md`](demarrage.md) | Page de démarrage commune (Android, bureau, web) : l'aiguille du cadran fait un tour et se pose sur le logo, pause, fondu ; relais natifs (écran de démarrage Android, chargement web) ; rapport de plantage Android. | après 3.2.0, 3.3.0 (#65) |
 | [`apparence.md`](apparence.md) | Couleur du thème : graines proposées, couleur libre, couleurs du système (Android 12 et plus), schéma MD3 dérivé. | #45 |
 | [`mises-a-jour.md`](mises-a-jour.md) | Vérification des nouvelles versions sur le bureau (GitHub, 6 heures), bandeau, carte des Réglages. | M5 |
@@ -45,7 +40,7 @@ retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
 | [`durees-apprises.md`](durees-apprises.md) | **Spécifiée, non implémentée.** Durées apprises des tâches récurrentes (port d'estimation, série stable, repli, provenance), future version majeure à modèle d'apprentissage. | #64, 3.4 |
 | [`visite-guidee.md`](visite-guidee.md) | **Spécifiée, non implémentée.** Catalogue de fonctionnalités, visite enrichie, hub « Découvrir Kairos », « Nouveau dans cette version ». | #64, 3.4 |
 | [`premiere-tache.md`](premiere-tache.md) | **Spécifiée, non implémentée.** Accompagnement de la création de la première tâche (champs, priorité, points, estimation, placement, félicitations). | #64, 3.4 |
-| [`retrait-kairos2.md`](retrait-kairos2.md) | **Spécifiée, non implémentée.** Retrait de Kairos 2 : import, écrans, textes, tests différentiels sur fichiers d'or. | #64, 3.4 |
+| [`retrait-kairos2.md`](retrait-kairos2.md) | Retrait de l'ancienne version (Python) : import, écrans, textes, tests différentiels devenus tests sur fichiers d'or figés, test de garde. | #64, 3.4 |
 
 ## Chantier « Espace Équipe »
 

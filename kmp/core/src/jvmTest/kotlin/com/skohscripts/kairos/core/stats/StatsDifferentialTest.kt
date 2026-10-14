@@ -23,9 +23,9 @@ import kotlin.test.assertEquals
 import kotlin.time.Instant
 
 /**
- * Statistiques contre Kairos 2 (`kmp/tools/gen_fixtures.py`, `stats.json`) :
+ * Statistiques contre les fichiers d'or figés (`stats.json`, docs/spec/retrait-kairos2.md) :
  * tableau de bord, repères du guide des points, calibration par type, en UTC
- * comme les horodatages naïfs de Kairos 2.
+ * comme les horodatages naïfs des fichiers d'or.
  */
 class StatsDifferentialTest {
     private val json = Json
@@ -59,7 +59,7 @@ class StatsDifferentialTest {
     }
 
     @Test
-    fun dashboard_matches_kairos2() {
+    fun dashboard_matches_golden() {
         val cases = json.parseToJsonElement(javaClass.getResource("/fixtures/stats.json")!!.readText()).jsonArray
         check(cases.size >= 200)
         val utc = TimeZone.UTC

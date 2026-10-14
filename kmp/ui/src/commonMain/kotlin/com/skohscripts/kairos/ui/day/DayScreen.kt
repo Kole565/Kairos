@@ -122,10 +122,10 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Largeur à partir de laquelle la frise passe à droite de la liste (860 px en Kairos 2). */
+/** Largeur à partir de laquelle la frise passe à droite de la liste. */
 private val TWO_COLUMNS = 900.dp
 
-/** En dessous, priorité et points passent sous le corps de la ligne (720 px en Kairos 2, 600 dp ici). */
+/** En dessous, priorité et points passent sous le corps de la ligne (600 dp). */
 private val COMPACT_ROWS = 600.dp
 
 /**
@@ -177,7 +177,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     val toggleTimer: (Task) -> Unit = { t ->
         scope.launch { if (view.running?.taskId == t.id) repository.stopTimer() else repository.startTimer(t.id) }
     }
-    // Sections repliées par défaut, sauf « Sans créneau aujourd'hui » (audit UI de Kairos 2).
+    // Sections repliées par défaut, sauf « Sans créneau aujourd'hui ».
     val sectionOpen = remember { mutableStateMapOf("unscheduled" to true) }
 
     LaunchedEffect(captureRequest) {
@@ -213,7 +213,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
             .pointerInput(Unit) { detectTapGestures { runCatching { rootFocus.requestFocus() } } }
             .onKeyEvent { e ->
             // `N` : capture ; `/` : recherche. Un champ de saisie consomme la frappe avant
-            // l'écran : les raccourcis sont donc inactifs pendant la saisie (Kairos 2).
+            // l'écran : les raccourcis sont donc inactifs pendant la saisie.
             if (e.type != KeyEventType.KeyDown || e.isCtrlPressed || e.isMetaPressed || e.isAltPressed) return@onKeyEvent false
             when (e.key) {
                 Key.N -> { capture.focusTask(); captureRequest++; true }

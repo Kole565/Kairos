@@ -20,10 +20,6 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.welcome_body
 import com.skohscripts.kairos.ui.generated.resources.welcome_examples
-import com.skohscripts.kairos.ui.generated.resources.welcome_keep_examples
-import com.skohscripts.kairos.ui.generated.resources.welcome_legacy_found
-import com.skohscripts.kairos.ui.generated.resources.welcome_legacy_import
-import com.skohscripts.kairos.ui.generated.resources.welcome_migrated
 import com.skohscripts.kairos.ui.generated.resources.welcome_start
 import com.skohscripts.kairos.ui.generated.resources.welcome_title
 import com.skohscripts.kairos.ui.generated.resources.welcome_tour
@@ -32,19 +28,13 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Accueil du premier lancement (docs/spec/accueil.md), une seule fois :
- * ce que fait Kairos et les exemples (avec « Visite guidée », [onStartGuide]) ; sur Android, le bilan de la migration
- * automatique de Kairos 2 ; sur le bureau, la proposition d'importer la base
- * Kairos 2 trouvée à son emplacement habituel.
+ * ce que fait Kairos et les exemples (avec « Visite guidée », [onStartGuide]).
  */
 @Composable
 fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
     var open by rememberSaveable { mutableStateOf(services.firstLaunch) }
-    val legacy = rememberLegacyImport(services)
-    LegacyImportDialog(legacy)
     // Un dialogue passe au-dessus de tout : il attend la fin de la page de démarrage (docs/spec/demarrage.md).
     if (!open || LocalStartupSplash.current) return
-    val migrated = services.migrated
-    val found = services.legacy?.found.takeIf { migrated == null }
     AlertDialog(
         onDismissRequest = { open = false },
         icon = { Image(KairosLogo, contentDescription = null, modifier = Modifier.size(48.dp)) },
@@ -53,29 +43,10 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
             // Défile sur un écran bas (téléphone en paysage, fenêtre réduite) : rien n’est coupé.
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(Res.string.welcome_body), style = MaterialTheme.typography.bodyMedium)
-                when {
-                    migrated != null -> Text(
-                        stringResource(Res.string.welcome_migrated, migrated.tasks, migrated.notes, migrated.sessions),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    found != null -> Text(stringResource(Res.string.welcome_legacy_found, found), style = MaterialTheme.typography.bodyMedium)
-                    else -> Text(stringResource(Res.string.welcome_examples), style = MaterialTheme.typography.bodyMedium)
-                }
+                Text(stringResource(Res.string.welcome_examples), style = MaterialTheme.typography.bodyMedium)
             }
         },
-        confirmButton = {
-            if (found != null) {
-                KairosTextButton(onClick = { open = false; legacy.importFound() }) { Text(stringResource(Res.string.welcome_legacy_import)) }
-            } else {
-                KairosTextButton(onClick = { open = false }) { Text(stringResource(Res.string.welcome_start)) }
-            }
-        },
-        dismissButton = {
-            if (found != null) {
-                KairosTextButton(onClick = { open = false }) { Text(stringResource(Res.string.welcome_keep_examples)) }
-            } else if (migrated == null) {
-                KairosTextButton(onClick = { open = false; onStartGuide() }) { Text(stringResource(Res.string.welcome_tour)) }
-            }
-        },
+        confirmButton = { KairosTextButton(onClick = { open = false }) { Text(stringResource(Res.string.welcome_start)) } },
+        dismissButton = { KairosTextButton(onClick = { open = false; onStartGuide() }) { Text(stringResource(Res.string.welcome_tour)) } },
     )
 }

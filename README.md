@@ -74,13 +74,6 @@ in the [GitHub releases](https://github.com/SKOHscripts/Kairos/releases).
 - **Android**: allow installation from the browser or the file manager when
   Android asks (not needed from F-Droid).
 
-**From Kairos 2.** On Android, install Kairos 3 (APK or F-Droid) over Kairos 2:
-it picks up its data automatically on first launch. On the desktop, it offers
-on first launch to import the Kairos 2 database found at its usual location;
-you can also import it later (Settings → Data → "Import a Kairos 2.x
-database"). The old database is never modified. Not carried over: TimeTree and
-the GitLab import, which were removed from Kairos 3.
-
 **Updates.** On Android, through F-Droid or a new APK. On the desktop, Kairos
 checks every 6 hours for a new version and announces it in a banner
 ("Download" opens its page); setting in Settings → Updates. The web version is

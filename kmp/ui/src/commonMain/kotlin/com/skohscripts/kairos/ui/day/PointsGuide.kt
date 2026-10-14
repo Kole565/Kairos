@@ -118,7 +118,7 @@ private fun Small(text: String) {
 
 /**
  * Repères d'estimation tirés de l'historique (toutes les tâches, archivées
- * comprises, comme Kairos 2) : guide des points et durées suggérées du
+ * comprises) : guide des points et durées suggérées du
  * dialogue d'édition. Seules les médianes fiables (`reliable`) sont suggérées.
  */
 internal data class Estimates(

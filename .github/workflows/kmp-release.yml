@@ -48,8 +48,8 @@ jobs:
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-37.0" > /dev/null
       - name: Tests
         run: ./gradlew --no-daemon :core:jvmTest :data:jvmTest :ui:jvmTest :desktopApp:jvmTest
-      # Même keystore que Kairos 2 (mêmes secrets) : la 3.0.0 s'installe par-dessus
-      # l'APK 2.x. Un tag DOIT être signé ; un lancement manuel sans secrets
+      # Toujours le même keystore (mêmes secrets) : chaque version s'installe par-dessus
+      # la précédente. Un tag DOIT être signé ; un lancement manuel sans secrets
       # produit un APK non signé de validation.
       - name: Keystore de signature
         id: keystore

@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class DataDirectoryTest {
     @Test
-    fun followsPlatformdirsOfKairos2PlusV3() {
+    fun followsPlatformdirsPlusV3() {
         assertEquals(
             File("C:\\Users\\a\\AppData\\Local", "Kairos/v3"),
             DataDirectory.resolve(mapOf("LOCALAPPDATA" to "C:\\Users\\a\\AppData\\Local"), "Windows 11", "C:\\Users\\a"),

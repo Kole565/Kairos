@@ -4,10 +4,9 @@ import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.serialization.Serializable
 
 /**
- * Réglages de Kairos (docs/spec/modele-donnees.md § Réglages) : ceux de
- * Kairos 2 que la v3 garde (plan § 2.3), mêmes noms (en camelCase) et mêmes
- * valeurs par défaut. Stockés en JSON dans la base ; un champ absent du JSON
- * prend sa valeur par défaut (ajout de réglage sans migration).
+ * Réglages de Kairos (docs/spec/modele-donnees.md § Réglages) avec leurs valeurs par
+ * défaut (celles de l'ordonnancement sont figées par les fichiers d'or, docs/spec/ordonnancement.md).
+ * Stockés en JSON dans la base ; un champ absent du JSON prend sa valeur par défaut (ajout de réglage sans migration).
  * Bornes, validation par champ et écran : `settings/SettingsForm`
  * (docs/spec/reglages.md).
  */
@@ -70,7 +69,7 @@ data class Settings(
         const val LANGUAGE_FR = "fr"
         const val LANGUAGE_EN = "en"
 
-        /** Types par défaut de Kairos 2, moins « Pilotage/dette technique » (périmètre retiré). */
+        /** Types de tâche par défaut. */
         const val DEFAULT_TASK_TYPES_FR =
             "Développement,Revue de code,Réunion,Documentation,Administratif,Veille/formation"
         const val DEFAULT_TASK_TYPES_EN =

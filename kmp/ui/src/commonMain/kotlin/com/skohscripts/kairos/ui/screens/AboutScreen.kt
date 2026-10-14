@@ -57,7 +57,7 @@ const val SOURCE_URL = "https://github.com/SKOHscripts/Kairos"
 const val DONATE_URL = "https://skohscripts.github.io/donate.github.io/"
 
 /**
- * « À propos et guide » : remplace la page d'accueil de Kairos 2 (qui rendait
+ * « À propos et guide » : remplace l'ancienne page d'accueil (qui rendait
  * le README). Contenu natif et traduit : ce que fait Kairos, le score, le nom,
  * la version, la licence (docs/spec/navigation-theme.md § À propos).
  */

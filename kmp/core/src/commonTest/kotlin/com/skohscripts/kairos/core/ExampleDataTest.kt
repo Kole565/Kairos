@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
-/** Parité avec tests/test_tasks_seed.py (Kairos 2), plus la traduction. */
+/** Jeu d'exemples (docs/spec/modele-donnees.md § Exemples) et sa traduction. */
 class ExampleDataTest {
     private val today = LocalDate(2026, 9, 28)
     private val now = Instant.parse("2026-09-28T07:00:00Z")
@@ -38,7 +38,7 @@ class ExampleDataTest {
     }
 
     @Test
-    fun blocksMatchKairos2() {
+    fun blocksOfTheExamples() {
         val meeting = fr.timeBlocks.single { it.start.hour == 13 }
         assertEquals(14, meeting.end.hour)
         assertEquals(BlockKind.DEEPWORK, fr.timeBlocks.single { it.start.hour == 10 }.kind)

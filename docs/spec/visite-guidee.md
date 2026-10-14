@@ -20,7 +20,7 @@ La visite actuelle compte deux listes de six étapes fixes. Elle ne parle ni de
 l'équipe, ni des sous-tâches, ni de la frise et du temps réel, ni des
 statistiques, ni des réglages, et rien ne dit ce qui est nouveau d'une version à
 l'autre. Les chantiers de la 3.4 (horaires par jour, durées apprises, déplacer
-une tâche, retrait de Kairos 2…) ajoutent des fonctionnalités qu'il faut faire
+une tâche…) ajoutent des fonctionnalités qu'il faut faire
 découvrir sans que l'utilisateur ait à lire une documentation.
 
 ### Comportement attendu (utilisateur)

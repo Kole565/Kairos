@@ -7,7 +7,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.toLocalDateTime
 
 /**
- * Tâches qui traînent (`app/tasks_staleness.py`, Kairos 2) : signal d'affichage
+ * Tâches qui traînent : signal d'affichage
  * seulement, jamais une clé de tri.
  */
 object Staleness {
@@ -15,8 +15,8 @@ object Staleness {
      * Jours « de trop » si la tâche traîne, sinon `null` : échéance ou date
      * programmée dépassée depuis plus de [overdueDays] (la plus ancienne des deux
      * fait foi), ou, sans aucune des deux, pas modifiée depuis plus de
-     * [untouchedDays]. La date de `updatedAt` est prise **en UTC**, comme Kairos 2
-     * (`updated_at.date()` sur un horodatage UTC naïf).
+     * [untouchedDays]. La date de `updatedAt` est prise **en UTC**
+     * (la date de l'instant UTC).
      */
     fun daysStale(task: Task, today: LocalDate, overdueDays: Int, untouchedDays: Int): Int? {
         val overdue = listOfNotNull(task.deadline, task.scheduledDate).filter { it <= today }

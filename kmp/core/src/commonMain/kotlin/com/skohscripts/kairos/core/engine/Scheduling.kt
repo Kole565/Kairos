@@ -14,9 +14,8 @@ import kotlinx.datetime.daysUntil
 import kotlin.math.pow
 
 /**
- * Ordonnancement de la journée (docs/spec/ordonnancement.md) : portage
- * **à l'identique** de `app/tasks_scheduling.py` (Kairos 2), vérifié par les
- * tests différentiels (`kmp/tools/gen_fixtures.py`). Pur : aucune horloge,
+ * Ordonnancement de la journée (docs/spec/ordonnancement.md) : comportement
+ * figé par les fichiers d'or des tests différentiels (`fixtures/scheduling.json`, docs/spec/retrait-kairos2.md). Pur : aucune horloge,
  * aucun accès aux données ; le jour, l'heure et les réglages sont passés.
  *
  * Deux mécanismes :
@@ -189,7 +188,7 @@ object Scheduling {
 
     // --- Résultat ----------------------------------------------------------------
 
-    /** [DEEPWORK] : fenêtre de deep work (Kairos 2 la rangeait avec les épinglées ; la note de la vue Jour les distingue). */
+    /** [DEEPWORK] : fenêtre de deep work (rangée avec les épinglées dans les fichiers d'or ; la note de la vue Jour les distingue). */
     enum class ObstacleKind { BUSY, PINNED, DEEPWORK }
 
     data class ScheduledTask(
@@ -278,7 +277,7 @@ object Scheduling {
         val inWindow = busyBlocks.filter { it.start < workdayEnd && it.end > workdayStart }
         val dayBlocks = inWindow.filter { it.kind != BlockKind.DEEPWORK }
         // Fenêtres de deep work rognées à maintenant (aujourd'hui) : leur part passée n'accueille plus de tâche, une
-        // fenêtre déjà finie disparaît (écart volontaire avec Kairos 2, qui remplissait la fenêtre entière, passé compris).
+        // fenêtre déjà finie disparaît (écart volontaire avec les fichiers d'or, qui remplissent la fenêtre entière, passé compris).
         val nowToday = now?.takeIf { it.date == day }
         val deepworkBlocks = inWindow.filter { it.kind == BlockKind.DEEPWORK }
             .map { b -> if (nowToday != null && nowToday > b.start) b.copy(start = nowToday) else b }

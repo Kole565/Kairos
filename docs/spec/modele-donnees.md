@@ -9,9 +9,6 @@ l'écrit, et les données d'exemple d'une base neuve. Fichiers couverts :
 `Mappers.kt`). L'export et l'import (format JSON), ainsi que la persistance
 propre à la version web, sont dans `export-import.md`._
 
-Reprend `docs/spec/modele-donnees.md` (Kairos 2), moins les intégrations
-retirées.
-
 ## 1. Besoin métier (cahier des charges)
 
 ### Objectif / problème
@@ -37,9 +34,8 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
 - Base neuve : exemples posés ; réouverture, même vide : rien de reposé
   (`KairosRepositoryTest.newDatabaseGetsTheExamplesOnceOnly`).
 - Une erreur pendant la pose des exemples n'empêche jamais le démarrage.
-- Mêmes tables, mêmes champs et mêmes codes (statuts, récurrences, types de
-  créneau) que Kairos 2, pour que l'import d'une base 2.x
-  (`migration-2x.md`) soit une simple copie.
+- Les codes stockés (statuts, récurrences, types de créneau) sont des valeurs
+  stables : elles sont écrites telles quelles en base et dans l'export.
 
 ### Hors périmètre
 
@@ -72,14 +68,13 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   la charge et des prévisions de « moi », faux par défaut, `equipe-moi.md`).
   - Dates et heures « métier » **locales naïves** (`LocalDate`,
     `LocalDateTime`) ; horodatages techniques en instants UTC (`Instant`).
-    Convention de Kairos 2.
+    Convention de Kairos.
   - `needsProcessing` : il manque la priorité **ou** les points (règle du
-    code de Kairos 2, `tasks_scheduling.py`).
+    code, `Task.needsProcessing`).
   - `missingQualification` : `PRIORITY`, `POINTS` ou `BOTH`, pour le libellé
     de la boîte de réception.
-  - `archived` n'est jamais produit par la v3 (il venait des imports GitLab) ;
-    il est conservé pour lire les bases 2.x, et une tâche archivée n'est ni
-    affichée ni basculée.
+  - `archived` n'est jamais produit par Kairos ; la valeur reste lisible, et
+    une tâche archivée n'est ni affichée ni basculée.
 - `TimeBlock` : `id`, `title`, `start`, `end` (locales), `kind`
   (`BlockKind` : `busy`, `deepwork`), `recurrence` (`BlockRecurrence` : `""`,
   `daily`, `weekdays`, `weekly`), `createdAt`.
@@ -89,12 +84,12 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
 - Codes inconnus à la lecture : valeur par défaut (`todo`, `""`, `busy`,
   `open`) plutôt qu'une erreur.
 - `FIBONACCI_SCALE` = 1, 2, 3, 5, 8, 13, 21 ; `PRIORITY_VALUES` = 0, 1, 2.
-- `Settings` (sérialisable) : les réglages gardés de Kairos 2 (plan § 2.3),
-  mêmes valeurs par défaut. Un champ absent prend sa valeur par défaut, un
+- `Settings` (sérialisable) : les réglages de l'application, avec leurs
+  valeurs par défaut. Un champ absent prend sa valeur par défaut, un
   champ inconnu est ignoré : ajouter un réglage ne demande pas de migration.
   `Settings.defaults(langue)` : types de tâche dans la langue de l'interface
-  (français : ceux de Kairos 2 moins « Pilotage/dette technique » ; anglais :
-  traduction). Bornes, validation et écran : `reglages.md`. Réglages ajoutés
+  (français : Développement, Revue de code, Réunion, Documentation,
+  Administratif, Veille/formation ; anglais : traduction). Bornes, validation et écran : `reglages.md`. Réglages ajoutés
   depuis : `updateCheckEnabled` (`mises-a-jour.md`), `themeColor`
   (`apparence.md`), `language` (`system` par défaut, `fr` ou `en` ; `i18n.md`
   § Choix de la langue), `team` (`TeamSettings?`, nul tant que l'espace Équipe
@@ -132,7 +127,7 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
   `task_dependency.task_id` et `.blocker_id`, `work_session.task_id`,
   `note.status`. Les colonnes `task.space` et `task.assignee_id` sont **en
   fin de table**, dans une base neuve comme dans une base migrée : les
-  insertions avec identifiant sont positionnelles. Références **sans** `FOREIGN KEY` (parti pris de Kairos 2).
+  insertions avec identifiant sont positionnelles. Références **sans** `FOREIGN KEY` (parti pris de Kairos).
 - Types stockés : dates `TEXT` « 2026-09-28 », heures locales `TEXT`
   « 2026-09-28T09:30 », instants `TEXT` ISO UTC (`Mappers.kt`).
 - Code **asynchrone** (`generateAsync`), exigé par le pilote web, utilisé
@@ -223,7 +218,7 @@ de SQLDelight.
     n'est pas après le début ; un récurrent modifié ou supprimé l'est pour
     toutes ses occurrences (seul le modèle est stocké).
   - `deleteTask` : supprime la tâche et les dépendances où elle figure ; ses
-    sous-tâches et sessions restent (comme `delete_task` de Kairos 2).
+    sous-tâches et sessions restent (comportement propre de Kairos).
   - Notes : `createNote`, `editNote`, `convertNote`, `archiveNote`,
     `deleteNote` (`notes-capture.md`).
   - `updateSettings` : si `team` existe sans identité, en pose une (UUID
@@ -285,6 +280,5 @@ de SQLDelight.
   paresseux passé directement à `SqlDriver.executeQuery` est évalué après la
   fermeture du curseur par le pilote JDBC synchrone, et lit toujours 0. Bug
   constaté (base recréée à chaque réouverture) et corrigé.
-- **Règle « À traiter »** : la spec `ordonnancement.md` de Kairos 2 dit
-  « sans priorité **ni** points », son code dit « sans priorité **ou** sans
-  points ». Le code fait foi.
+- **Règle « À traiter »** : « sans priorité **ou** sans points » (pas
+  « ni »). Une tâche à qualifier manque au moins l'un des deux.

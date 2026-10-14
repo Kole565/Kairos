@@ -15,9 +15,8 @@ la section « Alertes du chrono » des Réglages (`reglages.md`), et par platefo
 `ChronoAlertsTest`, `KairosRepositoryTest`, `DayScreenUiTest`
 (`timerRunsAlertsAndStops`)._
 
-État : **jalon M3**. Reprend le besoin de `docs/spec/temps-reel-chrono.md`
-(Kairos 2), sans serveur : la voie de secours « notification émise par le
-serveur » (issue #34) devient la notification native de chaque plateforme.
+État : **jalon M3**. Sans serveur : la notification d'alerte est la notification
+native de chaque plateforme (issue #34).
 L'ancienneté (« traîne depuis ») et le bandeau de surcharge sont décrits par
 `ordonnancement.md`.
 
@@ -27,8 +26,8 @@ L'ancienneté (« traîne depuis ») et le bandeau de surcharge sont décrits pa
 
 Comparer le temps réel à l'estimation, savoir où va la journée, et ne pas
 laisser un chrono tourner en silence : dépassement de l'estimé, chrono
-oublié, besoin d'une pause. Kairos 2 perdait ses alertes quand la page ou
-l'APK était en arrière-plan ; Kairos 3 les confie au système.
+oublié, besoin d'une pause. Les alertes ne doivent pas se perdre quand
+l'application est en arrière-plan : Kairos les confie au système.
 
 ### Comportement attendu (utilisateur)
 
@@ -85,7 +84,7 @@ l'APK était en arrière-plan ; Kairos 3 les confie au système.
 - Temps de la **semaine** par type : calculé ici (`TimeTracking`), affiché
   par la vue Semaine (`vue-semaine.md`).
 - Mode focus plein écran, notification vers un autre appareil, rappels
-  hors d'un chrono en cours (comme Kairos 2).
+  hors d'un chrono en cours.
 - Alarmes exactes (voir Décisions).
 
 ## 2. Solution technique
@@ -135,7 +134,7 @@ ferme toute session ouverte ; n'écrit rien s'il n'y en a pas.
   (« ⚠ Tâche · message ») une minute et `beep` si le son est activé. À
   l'arrêt, le titre redevient normal.
 - `ChronoTexts` : textes hors composition (durées, titre et corps des
-  alertes, libellés des notifications Android), mêmes phrases que Kairos 2.
+  alertes, libellés des notifications Android).
 - `rememberLiveMinutes` : minuteur vivant (une seconde) du badge de ligne et
   de « En ce moment ».
 - Réglages : les deux seuils et le son, section « Alertes du chrono » du
@@ -192,8 +191,9 @@ est en HTTPS), état relu à chaque notification, autorisation à l'opt-in ;
   dessiné par le système ; rien ne tourne dans l'application.
 - **Un seuil franchi pendant que le téléphone est éteint** n'est pas
   rattrapé au redémarrage (seuls les seuils à venir sont reprogrammés).
-- **Temps du jour en date locale** : Kairos 2 prenait la date UTC du début
-  (même écart volontaire que « Fait » dans `vue-jour.md`).
+- **Temps du jour en date locale** : la date est celle du début de
+  session dans le fuseau local, pas en UTC (même règle que « Fait » dans
+  `vue-jour.md`).
 - **Double notification évitée sur Android** : quand le système notifie par
   alarme, la veille n'appelle pas `notify`.
 - **Tests d'interface avec une horloge simulée** : `AppServices.clock` et un

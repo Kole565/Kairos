@@ -2,7 +2,7 @@ package com.skohscripts.kairos.core.notes
 
 /**
  * Tâche issue d'une note (docs/spec/notes-capture.md § Conversion), règle
- * de Kairos 2 (issue #32), strictement conservative : titre = première ligne
+ * (issue #32), strictement conservative : titre = première ligne
  * non blanche (sans ses espaces de bord), tronquée à [TITLE_MAX] caractères ;
  * description = tout ce qui suit, tel quel, moins les lignes entièrement
  * blanches de tête et de queue. Une première ligne tronquée est reprise en

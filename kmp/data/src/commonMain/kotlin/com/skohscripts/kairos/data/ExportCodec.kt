@@ -38,7 +38,7 @@ import kotlin.time.Instant
  * Format d'export de Kairos 3 (docs/spec/export-import.md § Format) : un
  * fichier JSON UTF-8 lisible, versionné (`formatVersion`), qui contient toutes
  * les tables et les réglages. Les codes (statut, récurrence, type de créneau)
- * sont ceux de la base, identiques à Kairos 2.
+ * sont ceux de la base, ceux de la base.
  *
  * Isolation du mode solo (docs/spec/equipe.md § Export) : une base **sans
  * donnée d'équipe** s'exporte en `formatVersion` 1, sans aucun champ d'équipe,

@@ -47,7 +47,7 @@ object TimeTracking {
     /**
      * Sessions dont le **début** tombe dans `[start, end]`, dates locales de
      * [timeZone]. C'est ce filtre qui fait du « temps travaillé aujourd'hui »
-     * le temps du jour, et non tout l'historique (bogue de Kairos 2, phase 7).
+     * le temps du jour, et non tout l'historique.
      */
     fun sessionsInRange(sessions: List<WorkSession>, start: LocalDate, end: LocalDate, timeZone: TimeZone): List<WorkSession> =
         sessions.filter { it.startedAt.toLocalDateTime(timeZone).date in start..end }

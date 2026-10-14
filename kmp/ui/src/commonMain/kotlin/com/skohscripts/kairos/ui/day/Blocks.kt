@@ -85,7 +85,7 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Saisie d'un créneau (création et modification) : titre, jour, début, fin,
  * deep work, récurrence. Le jour et les heures sont saisis à part (le
- * `datetime-local` de Kairos 2 n'a pas d'équivalent commun) ; la fin doit
+ * `datetime-local` du web n'a pas d'équivalent commun) ; la fin doit
  * suivre le début, le même jour.
  */
 internal class BlockFormState(title: String, day: LocalDate, start: LocalTime?, end: LocalTime?, deepwork: Boolean, recurrence: BlockRecurrence) {

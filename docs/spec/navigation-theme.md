@@ -9,11 +9,6 @@ d'application, retour), plus l'écran « À propos et guide ». Fichiers couvert
 Les valeurs de la charte (rôles, formes, « où va la couleur ») viennent de
 [`docs/DESIGN_SYSTEM.md`](../DESIGN_SYSTEM.md), cité ici plutôt que recopié._
 
-Reprend le besoin de `docs/spec/accueil-navigation.md` (Kairos 2, tag
-`v2.6.0`), moins ce qui
-tenait au rendu serveur (bouton « Quitter », restauration du défilement,
-rendu du README) et avec **cinq** destinations au lieu de six.
-
 ## 1. Besoin métier (cahier des charges)
 
 ### Objectif / problème
@@ -41,7 +36,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   - Android en largeur compacte : **barre de navigation basse** ;
   - bureau ou navigateur en fenêtre étroite : **barre horizontale en haut**
     (pastilles défilantes). **Jamais** de barre basse hors d'Android, même
-    dans une fenêtre rétrécie (règle reprise de Kairos 2).
+    dans une fenêtre rétrécie (règle de Kairos).
 - Une **barre d'application** en haut affiche le titre de l'écran (« Aujourd'hui »
   pour Jour). Sans rail, le logo y porte l'identité.
 - **Aide** (`accueil.md`) : un bouton « ? » (`KairosIcons.Help`,
@@ -188,7 +183,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   destination ferme l'écran secondaire (Réglages ou « À propos ») et ramène à
   aujourd'hui et à la semaine courante ; `onOpenDay(jour)` ouvre la vue Jour d'un jour donné.
 - `AppShell` :
-  - `TopAppBar` avec le titre, fidèle à ce qui est affiché (Kairos 2) :
+  - `TopAppBar` avec le titre, fidèle à ce qui est affiché :
     « Réglages », « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
     autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »
     (sans rail : `Dates.dayShort` et `Dates.short`, la date longue tenait sur
@@ -254,9 +249,8 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 ### Décisions et pièges tracés
 
 - **Cinq destinations** (décision du plan, § 3 point 4, validée le
-  2026-09-28) : MD3 limite une barre de navigation à cinq entrées. L'accueil
-  de Kairos 2 (qui rendait le README) devient « À propos et guide », dans
-  Réglages.
+  2026-09-28) : MD3 limite une barre de navigation à cinq entrées. Le guide
+  d'utilisation vit dans « À propos et guide », dans Réglages.
 - **Accueil en destination, Réglages dans la barre du haut** (2026-10-10,
   demande explicite) : l'Accueil, ouvert jusque-là depuis le « ? »
   seulement, devient la première destination des deux espaces et l'écran
@@ -267,13 +261,10 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   Suivi) et non son Accueil : on change d'espace pour travailler. Écartés :
   garder l'ouverture sur Jour avec un Accueil en onglet (l'Accueil doit être
   la première chose vue) ; une sixième destination (limite MD3).
-- **Seuil 600 dp** (MD3, compact / moyen) au lieu des 720 px de Kairos 2 :
-  le rail tient dès 600 dp en Compose, et c'est le seuil standard des classes
+- **Seuil 600 dp** (MD3, compact / moyen) : le rail tient dès 600 dp en Compose, et c'est le seuil standard des classes
   de taille de fenêtre.
 - **Règle « jamais de barre basse hors Android » conservée**, mais décidée
-  côté client par `Platform`, puisqu'il n'y a plus de serveur. Pour la même
-  raison, la règle Kairos 2 « aucune détection de plateforme côté serveur »
-  n'a plus d'objet.
+  côté client par `Platform`, puisqu'il n'y a pas de serveur.
 - **Navigation par état plutôt que par bibliothèque** : cinq destinations de
   premier niveau et deux écrans secondaires (Réglages, « À propos »). À réévaluer si des écrans
   imbriqués apparaissent (détail d'une tâche en plein écran, par exemple).

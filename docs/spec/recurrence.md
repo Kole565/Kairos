@@ -8,8 +8,9 @@ Fichiers couverts : `kmp/core/src/commonMain/.../core/engine/Recurrence.kt`
 `core/src/commonTest/.../engine/RecurrenceTest.kt`, partie calendaire de
 `DifferentialTest`, `data/.../KairosRepositoryTest.kt`._
 
-État : **jalon M2**, portage de `app/tasks_recurrence.py` (spec Kairos 2
-`docs/spec/recurrence.md`).
+État : **jalon M2**. La partie calendaire est figée par les fichiers d'or de
+`DifferentialTest` (`calendar.json`, source de vérité depuis
+`retrait-kairos2.md`).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -60,17 +61,16 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 ### Critères de succès
 
-- Les critères de Kairos 2 (`docs/spec/recurrence.md`), sauf ceux de
-  l'import GitLab retiré, vérifiés par `RecurrenceTest` et
+- Les comportements décrits ci-dessus sont vérifiés par `RecurrenceTest` et
   `KairosRepositoryTest`.
 - Échéances suivantes, jours ouvrés, décalage et créneaux récurrents
-  identiques à Kairos 2 sur le jeu calendaire différentiel.
+  identiques aux fichiers d'or sur le jeu calendaire
+  (`DifferentialTest.calendar_matches_golden`).
 
 ### Hors périmètre / différé
 
 - Créneaux mensuels, fériés dans la règle « jours ouvrés » des créneaux,
-  modification d'une seule occurrence, rattrapage des mois manqués (comme
-  Kairos 2).
+  modification d'une seule occurrence, rattrapage des mois manqués.
 
 ## 2. Solution technique
 
@@ -108,24 +108,22 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   hebdomadaire (jour de l'échéance) et ne garde le jour du mois que pour
   « le … du mois », dans 1-31.
 - La vue Jour appelle `ensureCalendarOccurrences` quand le jour ou les
-  tâches changent (Kairos 2 : à chaque affichage de page).
+  tâches changent.
 
 ### Décisions et pièges tracés
 
 - **« Jours ouvrés » saute les fériés** (2026-10-12, demande explicite après le test
-  exploratoire : l'occurrence suivant le mardi 10 nov. tombait le mercredi 11, férié ;
-  Kairos 2 ne sautait que les week-ends). Écart volontaire : `nextDeadline` reçoit les
+  exploratoire : l'occurrence suivant le mardi 10 nov. tombait le mercredi 11, férié).
+  `nextDeadline` reçoit les
   fériés des réglages (`Workdays.holidaysFor`), passés par `nextOccurrence`, les deux
   chemins de complétion du dépôt (`toggleDone`, intégration d'un rapport) et la
-  projection des séries d'équipe (`TeamWork.seriesDates`). Les tests différentiels de
-  Kairos 2 n'en passent pas (ensemble vide par défaut) et restent identiques.
-- **Jour du mois limité à 1-31** : Kairos 2 ne le validait pas et un 0
-  aurait fait échouer le calcul de la date ; le dialogue refuse
+  projection des séries d'équipe (`TeamWork.seriesDates`). Les fichiers d'or
+  n'en passent pas (ensemble vide par défaut) et restent identiques.
+- **Jour du mois limité à 1-31** : un 0 ferait échouer le calcul de la date ;
+  le dialogue refuse
   l'enregistrement et le dépôt vide une valeur hors bornes. Choisir
   « le … du mois » avec un champ vide le pré-remplit du jour de l'échéance
   (sinon du jour affiché) : pas de champ en erreur avant toute saisie.
 - **L'origine d'un créneau est la date de son début** : un créneau
   récurrent modifié avec une autre date change donc aussi son point de
-  départ (comme Kairos 2).
-- **Pas de `sourceId` ni d'identifiant externe** : l'import GitLab n'existe
-  plus, toute occurrence est native.
+  départ.

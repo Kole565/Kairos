@@ -36,7 +36,7 @@ object ChronoTexts {
 
     suspend fun alertTitle(taskTitle: String): String = getString(Res.string.alert_title, taskTitle)
 
-    /** Corps de l'alerte (textes de Kairos 2) : durées au moment du franchissement. */
+    /** Corps de l'alerte : durées au moment du franchissement. */
     suspend fun alertBody(alert: ChronoAlert): String = when (alert.kind) {
         ChronoAlertKind.OVER -> getString(Res.string.alert_over, duration(alert.minutes), duration(alert.minutes))
         ChronoAlertKind.IDLE -> getString(Res.string.alert_idle, duration(alert.minutes))

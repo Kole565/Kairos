@@ -76,14 +76,6 @@ bon fichier pour ton système. Tous les fichiers, et leurs sommes de contrôle
 - **Android** : autoriser l’installation depuis le navigateur ou le
   gestionnaire de fichiers quand Android le demande (inutile depuis F-Droid).
 
-**Depuis Kairos 2.** Sur Android, installe Kairos 3 (APK ou F-Droid) par-dessus
-Kairos 2 : il reprend ses données automatiquement au premier lancement. Sur le bureau, il
-propose au premier lancement d’importer la base Kairos 2 trouvée à son
-emplacement habituel ; on peut aussi l’importer plus tard (Réglages →
-Données → « Importer une base Kairos 2.x »). L’ancienne base n’est jamais
-modifiée. Ne sont pas repris : TimeTree et l’import GitLab, retirés de
-Kairos 3.
-
 **Mises à jour.** Sur Android, par F-Droid ou un nouvel APK. Sur
 le bureau, Kairos vérifie toutes les 6 heures s’il existe une nouvelle version
 et l’annonce dans un bandeau (« Télécharger » ouvre sa page) ; réglage dans

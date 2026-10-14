@@ -21,7 +21,7 @@ import kotlin.time.Instant
  * Statistiques (docs/spec/statistiques.md), portage de `app/tasks_stats.py`
  * vérifié par tests différentiels. Pur : jour, instant et fuseau en paramètres.
  * Date de complétion d'une tâche faite = date de sa dernière modification
- * (pas d'horodatage dédié, comme Kairos 2).
+ * (pas d'horodatage dédié).
  */
 object TaskStats {
     /** En dessous de cet effectif, un agrégat est marqué « peu fiable » (affiché quand même). */
@@ -220,7 +220,7 @@ object TaskStats {
         )
     }
 
-    /** Tableau de bord complet (`compute_dashboard_stats`). [tasks] : toutes, archivées comprises, comme Kairos 2. */
+    /** Tableau de bord complet (`compute_dashboard_stats`). [tasks] : toutes, archivées comprises. */
     fun dashboard(tasks: List<Task>, sessions: List<WorkSession>, today: LocalDate, settings: Settings, now: Instant, tz: TimeZone): Dashboard {
         val weeks = maxOf(1, settings.statsWindowWeeks)
         val windowStart = monday(today).minus(DatePeriod(days = 7 * (weeks - 1)))

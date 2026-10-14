@@ -7,10 +7,10 @@ partie 2. Tests : `DifferentialTest`, `StatsDifferentialTest` (refaits sur
 fichiers d'or figés), `LegacyMigrationTest` (supprimé), test de garde
 `NoKairos2MentionTest`._
 
-État : **issue #64 (retour du propriétaire)**, **spécifiée le 2026-10-13, non
-implémentée**. Livraison visée : **3.4.0**, en **premier** chantier de la
-version (il allège les autres). **Rouvre explicitement** les décisions qui
-reposaient sur « parce que Kairos 2 » (voir « Décisions »).
+État : **issue #64 (retour du propriétaire)**, **implémentée en 3.4.0**, en
+**premier** chantier de la version (il allège les autres). **Rouvre
+explicitement** les décisions qui reposaient sur « parce que Kairos 2 » (voir
+« Décisions »).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -64,18 +64,20 @@ de lever les blocages liés à cette version.
 
 ## 2. Solution technique
 
-### Inventaire (état du dépôt au 2026-10-13)
+### Inventaire (réalisé)
 
 **Supprimer**
 
 - Code : `core/legacy/Kairos2Import.kt` ; `androidApp/.../AndroidLegacy.kt` ;
-  `desktopApp/.../LegacyFiles.kt` ; `ui/app/Replace.kt` (dialogue d'import) ;
+  `desktopApp/.../LegacyFiles.kt` ; le flux d'import de `ui/app/Replace.kt` (le fichier reste : `fileStamp`, `fileSlug`,
+  `saveBackup`, `replaceWithBackup`, `clearTeamDataWithBackup`) ;
   `MainActivity.openFileInto` ; les champs `legacy` et `migrated` d'`AppServices`
   et leur câblage dans `AndroidServices`, `DesktopServices`, `DataDirectory` ;
   `kmp/tools/gen_legacy_db.py`.
-- Interface : `rememberLegacyImport` / `LegacyImportDialog` et les chaînes
-  `welcome_legacy_*`, `welcome_migrated` (FR et EN) ; l'accueil ne garde que le
-  cas « exemples ».
+- Interface : `rememberLegacyImport` / `LegacyImportDialog`, le bouton « Importer une base
+  Kairos 2.x » de la carte Données des Réglages, et les chaînes `legacy_*`,
+  `welcome_legacy_*`, `welcome_migrated`, `welcome_keep_examples` (FR et EN) ;
+  l'accueil ne garde que le cas « exemples ».
 - Tests : `LegacyMigrationTest`, les cas Kairos 2 de `M5ScreensUiTest`,
   `DesktopTest`, `ExampleDataTest` ; la spec `migration-2x.md` (remplacée par la
   présente spec ; l'historique de la migration reste dans `git` et les tags
@@ -109,13 +111,16 @@ de lever les blocages liés à cette version.
 
 ### Tests différentiels → fichiers d'or figés
 
-`DifferentialTest`, `StatsDifferentialTest` et le test du calendrier lisent déjà
-des fixtures générées par `kmp/tools/gen_fixtures.py` (qui exige un dépôt
-Kairos 2, `KAIROS2_SRC`). Les fixtures **restent** (`core/src/jvmTest/resources/fixtures/scheduling.json`
-et voisines) mais deviennent la **source de vérité** : elles sont renommées
-« références figées », le script de génération est retiré (ou conservé comme
-archive hors build, au choix à l'implémentation), et chaque test garde ses
-assertions. Ils servent alors d'invariant « rien ne change sans réglage » pour
+`DifferentialTest`, `StatsDifferentialTest` et le test du calendrier lisaient
+des fixtures générées par un script Python qui exigeait un dépôt de la version
+précédente. Les fixtures **restent** (`core/src/jvmTest/resources/fixtures/`
+`scheduling.json`, `dependencies.json`, `calendar.json`, `stats.json`) et
+deviennent la **source de vérité** : le script de génération est supprimé (son
+historique reste dans `git`, au tag `v3.3.0`), les fixtures ne se régénèrent plus (un
+changement voulu de comportement les édite, avec sa justification en spec), et
+chaque test garde ses assertions ; les méthodes sont renommées `*_matches_golden`
+(`scheduling`, `dependencies`, `calendar`, `dashboard`) et
+`thresholds_follow_the_reference`. Ils servent alors d'invariant « rien ne change sans réglage » pour
 les chantiers de la 3.4 (`planning-personnalise.md`, `durees-apprises.md`).
 
 ### Décisions et pièges tracés
@@ -134,13 +139,10 @@ les chantiers de la 3.4 (`planning-personnalise.md`, `durees-apprises.md`).
   casserait l'ouverture de bases réelles (leçon de `demarrage.md`).
 - **Aucun effacement de fichier utilisateur** : un `tasks.db` hérité devient
   simplement inutilisé.
-- **Test de garde** pour que la mention ne revienne pas par habitude.
-
-### Impacts sur les specs existantes (à reporter à l'implémentation)
-
-`accueil.md` (accueil sans migration), `demarrage.md`, `distribution.md`,
-`publication.md`, `architecture.md`, `modele-donnees.md`, `export-import.md`,
-`ordonnancement.md`, `statistiques.md`, `README.md` de l'index (retirer la ligne
-de `migration-2x.md`), `i18n.md`, `reglages.md`, `equipe*.md`, `densite.md`,
-`navigation-theme.md` et les autres specs citant Kairos 2 (liste en tête de cette
-section). `CLAUDE.md` : retirer les mentions de parité.
+- **Test de garde** `NoKairos2MentionTest` (`core/src/jvmTest`) : balaie `kmp/`,
+  `docs/`, `site/`, `fdroid/`, `fastlane/`, `.github/`, `.claude/`, les README et
+  `CLAUDE.md` à la recherche de la mention ; liste blanche : cette spec,
+  `docs/plan-v3-kotlin.md`, les notes de version publiées (`changelogs/`) et le test
+  lui-même. Le nom de fichier `retrait-kairos2.md` n'est pas une mention.
+- **Chemin des données du bureau inchangé** : `DataDirectory` garde la racine
+  `Kairos` de platformdirs et le sous-dossier `v3` ; seuls ses commentaires changent.

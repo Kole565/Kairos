@@ -93,7 +93,7 @@ internal class RowContext(
 
 /**
  * Ligne de tâche en colonnes fixes (docs/spec/vue-jour.md § Ligne de
- * tâche, issue #33 de Kairos 2) : [coche] [corps : heure et titre,
+ * tâche, issue #33) : [coche] [corps : heure et titre,
  * étiquettes, description] [score, priorité, points] [décaler, modifier]. Le
  * corps grandit vers le bas, jamais vers la droite : les colonnes de droite
  * restent alignées d'une ligne à l'autre. En largeur étroite, la colonne
@@ -122,7 +122,7 @@ internal fun TaskRow(
     val errorColor = scheme.error
     Surface(
         // Bloquée : fond de surface et contour, jamais d'opacité (décision tracée dans
-        // docs/spec/vue-jour-gtd.md de Kairos 2, reprise telle quelle ; docs/spec/vue-jour.md).
+        // docs/spec/vue-jour.md).
         color = if (blocked) scheme.surface else scheme.surfaceContainerLow,
         border = if (blocked) BorderStroke(1.dp, scheme.outlineVariant) else null,
         shape = MaterialTheme.shapes.medium,
@@ -213,7 +213,7 @@ private fun Title(task: Task, ctx: RowContext, time: LocalDateTime?, done: Boole
     )
 }
 
-/** Étiquettes de contexte (`task_tags` de Kairos 2) : projet, type, durée, dates, récurrence, ancienneté. */
+/** Étiquettes de contexte : projet, type, durée, dates, récurrence, ancienneté. */
 @Composable
 private fun TaskTags(task: Task, ctx: RowContext) {
     // Tâche d'équipe assignée à « moi » (seule façon d'en voir une dans l'espace Perso).
@@ -297,7 +297,7 @@ internal fun ReceivedMark(origin: TeamOrigin, removed: Boolean) {
 }
 
 /**
- * Temps passé (`time_spent` de Kairos 2) : minuteur vivant si le chrono
+ * Temps passé : minuteur vivant si le chrono
  * tourne sur la tâche ; sinon « 40 min / 30 » (rouge au-delà de l'estimé).
  */
 @Composable
@@ -332,7 +332,7 @@ private fun KeyBadges(task: Task, ctx: RowContext) {
 }
 
 /**
- * Description dans la ligne (issue #32 de Kairos 2) : une ligne atténuée,
+ * Description dans la ligne (issue #32) : une ligne atténuée,
  * dépliable sur place (retours à la ligne préservés). Rien si elle est vide.
  */
 @Composable

@@ -5,11 +5,9 @@ import kotlinx.datetime.LocalDateTime
 import kotlin.time.Instant
 
 /**
- * Tâche (docs/spec/modele-donnees.md). Mêmes champs que la table `task` de
- * Kairos 2, moins ceux des intégrations retirées (`source`, `external_id`,
- * `linked_ticket_id`).
+ * Tâche (docs/spec/modele-donnees.md). Mêmes champs que la table `task`.
  *
- * Conventions reprises de Kairos 2 : les dates et heures « métier » (échéance,
+ * Conventions : les dates et heures « métier » (échéance,
  * date programmée, épinglage) sont **locales et naïves** ; les horodatages
  * techniques (`createdAt`, `updatedAt`) sont des instants UTC.
  */
@@ -30,7 +28,7 @@ data class Task(
     val recurrence: TaskRecurrence = TaskRecurrence.NONE,
     val scheduledDate: LocalDate? = null,
     val recurrenceDayOfMonth: Int? = null,
-    /** 0 = lundi … 6 = dimanche (convention de Kairos 2). */
+    /** 0 = lundi … 6 = dimanche (convention du projet). */
     val recurrenceDayOfWeek: Int? = null,
     val recurrencePeriod: String = "",
     val taskType: String = "",
@@ -70,8 +68,7 @@ data class Task(
 ) {
     /**
      * Pas encore clarifiée (GTD) : il manque la priorité **ou** les points. Elle
-     * reste dans « À traiter » et n'entre dans aucun tri (règle de
-     * `tasks_scheduling.py` de Kairos 2 : `priority is None or fibonacci_points is None`).
+     * reste dans « À traiter » et n'entre dans aucun tri (règle : `priority == null || fibonacciPoints == null`).
      */
     val needsProcessing: Boolean get() = priority == null || fibonacciPoints == null
 
@@ -102,12 +99,12 @@ enum class TaskSpace(val code: Int) {
 
 enum class MissingQualification { PRIORITY, POINTS, BOTH }
 
-/** Statut d'une tâche ; [code] = valeur stockée (identique à Kairos 2). */
+/** Statut d'une tâche ; [code] = valeur stockée (valeur stockée, figée). */
 enum class TaskStatus(val code: String) {
     TODO("todo"),
     DONE("done"),
 
-    /** Kairos 2 : tâche importée disparue de sa source. Conservée pour l'import, jamais produite en v3. */
+    /** Tâche archivée : conservée dans la base et l'export, jamais produite par l'interface actuelle. */
     ARCHIVED("archived"),
     ;
 
@@ -117,7 +114,7 @@ enum class TaskStatus(val code: String) {
 }
 
 /**
- * Récurrence d'une tâche ; [code] = valeur stockée (identique à Kairos 2).
+ * Récurrence d'une tâche ; [code] = valeur stockée (valeur stockée, figée).
  * `MONTHLY_ON_DAY` est calendaire, les autres se recréent à la complétion
  * (moteur au jalon M2, docs/spec/recurrence.md).
  */

@@ -56,7 +56,7 @@ import kotlin.time.Clock
 
 /**
  * Alertes du chrono : bouton d'autorisation tant qu'elle est à demander,
- * sinon ce qui va réellement se passer (Kairos 2, issue #34).
+ * sinon ce qui va réellement se passer (issue #34).
  */
 @Composable
 private fun AlertsOptIn(state: NotifyState, onEnable: () -> Unit) {

@@ -8,7 +8,6 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
-import com.skohscripts.kairos.core.legacy.Kairos2Import
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.db.KairosDatabase
@@ -36,7 +35,6 @@ object AndroidServices {
         context: Context,
         files: FileService,
         notifier: ChronoNotifier,
-        pickFile: suspend (File) -> Boolean,
     ): AppServices = withContext(Dispatchers.IO) {
         val clock = Clock.System
         // Langue du système lue dans la configuration du système, pas dans `Locale.getDefault()` : celle-ci porte
@@ -45,18 +43,7 @@ object AndroidServices {
         val driver = AndroidSqliteDriver(DeferredSchema, context, DATABASE_NAME)
         val opened = KairosStore.open(driver)
         val examples = { ExampleData.snapshot(clock.todayIn(TimeZone.currentSystemDefault()), clock.now(), language) }
-        // Base v3 neuve et base Kairos 2 héritée de l'APK Python : migration automatique
-        // (docs/spec/migration-2x.md § Android). Illisible : les exemples, comme sans elle.
-        val legacyFile = AndroidLegacy.installed(context).takeIf { opened.created }
-        val migration = legacyFile?.let { file ->
-            runCatching {
-                Kairos2Import.convert(AndroidLegacy.read(file, File(AndroidLegacy.folder(context), "settings.json")), language, clock.now())
-            }.getOrNull()
-        }
-        val repository = KairosRepository.open(opened, examples = { migration?.first ?: examples() }, clock = clock)
-        // Renommée seulement si la base v3 contient bien ce qui a été migré.
-        val report = migration?.second?.takeIf { repository.snapshot.value.tasks.size == it.tasks }
-        if (report != null) legacyFile?.let(AndroidLegacy::markMigrated)
+        val repository = KairosRepository.open(opened, examples = examples, clock = clock)
         AppServices(
             repository = repository,
             files = files,
@@ -64,9 +51,7 @@ object AndroidServices {
             dataLocation = null,
             clock = clock,
             notifier = notifier,
-            legacy = AndroidLegacyImport(context, pickFile),
             firstLaunch = opened.created,
-            migrated = report,
             systemLanguage = language,
             applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
         )

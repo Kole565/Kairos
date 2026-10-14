@@ -10,8 +10,8 @@ réseau, état), `kmp/ui/.../app/Updates.kt` (`UpdateService`,
 (`desktopApp/build.gradle.kts`). Tests : `UpdateCheckTest`,
 `DesktopUpdatesTest`, `M5ScreensUiTest.anAvailableVersionShowsABannerUntilLater`._
 
-État : **jalon M5**, plan § 6.2. Reprend le besoin d'alerte de
-`docs/spec/mises-a-jour.md` (Kairos 2), sans l'installation en un clic.
+État : **jalon M5**, plan § 6.2. Alerte de nouvelle version, sans
+installation en un clic.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -42,8 +42,8 @@ savoir.
 ### Critères de succès
 
 - Préversions, brouillons, tags qui ne sont pas des versions, liens hors
-  `github.com`, réponses illisibles : ignorés ; une 2.x n'est jamais proposée
-  à une 3.0.0-alpha (`UpdateCheckTest`).
+  `github.com`, réponses illisibles : ignorés ; une version plus ancienne n'est
+  jamais proposée (`UpdateCheckTest`).
 - Une vérification, pas une autre avant 6 heures, même après relance ;
   « Vérifier maintenant » passe outre ; 404 = à jour, autre code ou exception
   = échec ; « Plus tard » survit à la relance (`DesktopUpdatesTest`).
@@ -52,12 +52,9 @@ savoir.
 ### Hors périmètre / différé
 
 - Téléchargement, vérification de somme et remplacement automatiques
-  (Kairos 2) : **régression assumée** (plan § 6.2) ; l'installeur du système
-  remplace l'application.
-- Notification système d'une nouvelle version (Kairos 2 en émettait une) :
-  le bandeau suffit.
-- Source ou jeton configurables (GitLab d'entreprise) : Kairos 3 est publié
-  sur GitHub seulement.
+  (plan § 6.2) : l'installeur du système remplace l'application.
+- Notification système d'une nouvelle version : le bandeau suffit.
+- Source ou jeton configurables : Kairos est publié sur GitHub seulement.
 
 ## 2. Solution technique
 
@@ -88,4 +85,4 @@ savoir.
 - **`java.net.http` ajouté au runtime réduit** (`modules(...)` de jpackage) :
   sans lui, l'application empaquetée échouerait à la première vérification.
 - **Bannière neutre** (charte : pas de couleur pour une information), comme
-  les bandeaux de dégradation de Kairos 2.
+  les autres bandeaux d'information.

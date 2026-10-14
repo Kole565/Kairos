@@ -30,7 +30,6 @@ Off by default, team management adds a second space for the manager, who remains
 <ul>
 <li>No account, no ads, no trackers, no network permission.</li>
 <li>Export and import a JSON file, to back up or switch devices.</li>
-<li>Brings over your Kairos 2 data.</li>
 </ul>
 
 Kairos is also available for Windows, Linux and macOS, and in the browser. Free software under the MIT licence, in French and English (your choice in the settings; English by default if your system is not in French).

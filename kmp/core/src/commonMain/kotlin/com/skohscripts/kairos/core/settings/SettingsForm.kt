@@ -9,7 +9,7 @@ enum class FieldKind { INT, DECIMAL, BOOL, TEXT, DATES, COLOR }
 
 /**
  * Un réglage éditable (docs/spec/reglages.md) : clé stable (nom du champ
- * de [Settings]), nature, bornes **incluses** de Kairos 2 (`ge`/`le`), ou
+ * de [Settings]), nature, bornes **incluses**, ou
  * borne basse exclue (`gt`) si [minExclusive]. La valeur circule en texte :
  * celui du formulaire.
  */
@@ -28,7 +28,7 @@ enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LA
 /** Erreur d'un champ ; [bound] est la borne franchie (« 0 », « 23 ») ou la date illisible. */
 data class FieldError(val kind: FieldErrorKind, val bound: String? = null)
 
-/** Règles entre champs (clé `_general` de Kairos 2), vérifiées seulement si chaque champ est valide. */
+/** Règles entre champs, vérifiées seulement si chaque champ est valide. */
 enum class GeneralError { WORKDAY_ORDER, DIP_ORDER }
 
 data class SettingsValidation(
@@ -40,8 +40,8 @@ data class SettingsValidation(
 
 /**
  * Formulaire des Réglages, pur : valeurs affichées ([values]) et validation
- * par champ ([validate]), mêmes bornes et mêmes règles inter-champs que
- * `app/config.py` (Kairos 2). Un nombre décimal accepte la virgule.
+ * par champ ([validate]) : bornes incluses et règles entre champs
+ * (docs/spec/reglages.md). Un nombre décimal accepte la virgule.
  */
 object SettingsForm {
     private fun int(key: String, min: Int?, max: Int? = null, get: (Settings) -> Int, set: (Settings, Int) -> Settings) =

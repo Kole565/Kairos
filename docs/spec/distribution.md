@@ -1,6 +1,6 @@
 # Distribution : versions, Android, bureau, web, CI
 
-_Rôle : comment Kairos 3 est versionné, construit, testé, empaqueté et
+_Rôle : comment Kairos est versionné, construit, testé, empaqueté et
 publié sur chaque cible. Fichiers couverts : `kmp/gradle.properties`
 (version), `kmp/core/src/commonMain/.../AppVersion.kt`, `kmp/androidApp/`,
 `kmp/desktopApp/` (dont `Main.kt`, `DataDirectory.kt`, `SingleInstance.kt`,
@@ -11,7 +11,7 @@ partie version web). Les services de fichiers et de sauvegarde de chaque platefo
 sont décrits par `export-import.md` ; F-Droid, fiches Fastlane et
 page de téléchargement par `publication.md`._
 
-État : **jalon M7** (`3.0.0`, bascule : Kairos 3 remplace Kairos 2).
+État : **jalon M7** (`3.0.0`, bascule : version de référence du dépôt).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -22,13 +22,11 @@ utilisateurs travaillent :
 
 - sur Android, depuis F-Droid ou l'APK des releases ;
 - sur un poste Windows, Linux ou macOS, par un installeur classique ;
-- sur un **poste professionnel verrouillé**, sans droit d'installation, où
-  l'exécutable de Kairos 2 tourne déjà : par un **zip portable** ou par la
-  **version web** dans Edge ou Chrome.
+- sur un **poste professionnel verrouillé**, sans droit d'installation : par un
+  **zip portable** ou par la **version web** dans Edge ou Chrome.
 
-Pendant la réécriture, chaque jalon devait produire une version installable
-**à côté** de Kairos 2, qui restait l'outil du quotidien ; la 3.0.0, elle,
-**remplace** Kairos 2 en s'installant par-dessus.
+Une préversion doit s'installer **à côté** de la version stable, sans la
+remplacer ; une version stable s'installe par-dessus la précédente.
 
 ### Comportement attendu (utilisateur)
 
@@ -36,7 +34,7 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   `vX.Y.Z-beta.N`) est publiée en **préversion GitHub**, une version finale
   (`vX.Y.Z`) en release GitHub, avec tous les fichiers.
 - **Android** : un APK. Tant que la version est une préversion, l'application
-  s'appelle « Kairos Preview » et s'installe à côté de Kairos 2. Aucune
+  s'appelle « Kairos Preview » et s'installe à côté de la version stable. Aucune
   permission réseau ; deux permissions pour le chrono (notifier, reprendre
   après un redémarrage), voir `temps-reel-chrono.md`.
 - **Bureau** : un installeur par OS (`.msi`, `.deb`, `.dmg`), qui n'exige pas
@@ -52,11 +50,10 @@ Pendant la réécriture, chaque jalon devait produire une version installable
 ### Critères de succès
 
 - Le tag et la version déclarée ne peuvent pas diverger (la release échoue).
-- Chaque `versionCode` Android est strictement supérieur au précédent, et à
-  tous ceux de Kairos 2 (20600 pour 2.6.0).
+- Chaque `versionCode` Android est strictement supérieur au précédent.
 - Chaque image de bureau empaquetée est **lancée en CI** sur son OS (auto-test)
   avant publication ; un auto-test en échec bloque la release.
-- Un tag produit un APK **signé**, avec la même clé que Kairos 2.
+- Un tag produit un APK **signé**, avec toujours la même clé (chaque version s'installe par-dessus la précédente).
 - Les fichiers publiés ont des noms fixes (liens stables) et un `SHA256SUMS`.
 
 ### Hors périmètre (à ce jalon)
@@ -82,7 +79,7 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   `X.Y.Z-beta.N` (préfixe `v` toléré ; `Y`, `Z` ≤ 99 ; `N` de 1 à 499).
 - `versionCode` (`AppVersion.versionCode`) : `X*10000 + Y*100 + Z` ; alpha :
   − 1000 + N ; beta : − 500 + N. Ainsi 3.0.0-alpha.1 = 29001 <
-  3.0.0-beta.1 = 29501 < 3.0.0 = 30000, et tout 3.x > 20600 (Kairos 2.6.0).
+  3.0.0-beta.1 = 29501 < 3.0.0 = 30000.
   `AppVersionTest.buildVersionIsConsistent` échoue si `gradle.properties` ne
   suit pas la formule.
 - `KairosBuild` (généré par `core`) expose la version au code commun.
@@ -94,7 +91,7 @@ Pendant la réécriture, chaque jalon devait produire une version installable
 
 ### Android (`kmp/androidApp`)
 
-- `applicationId` `com.skohscripts.kairos` (celui de Kairos 2), suffixé
+- `applicationId` `com.skohscripts.kairos`, suffixé
   `.preview` si la version contient `-` ; nom `Kairos Preview` ou `Kairos`
   (`resValue app_name`). La propriété Gradle `kairos.preview` (`true` ou
   `false`) force l'un ou l'autre (vérification F-Droid d'une bêta,
@@ -121,14 +118,14 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   (activité, alarme, redémarrage). `KairosApplication` (`android:name`) pose le
   rapport de plantage local avant tout composant : `demarrage.md` § Rapport de
   plantage (toujours sans réseau ni permission).
-- Thème de fenêtre `Theme.Kairos` (reprise de Kairos 2) :
+- Thème de fenêtre `Theme.Kairos` :
   `forceDarkAllowed=false` ; avant l'API 31, `windowBackground` =
   `kairos_launch_background` (fond `#FFF8F4` + cadran vide
   `kairos_splash_dial` centré 288 dp) ; API 31+ (`values-v31`), écran de
   démarrage système avec ce même cadran, statique. Ce ne sont que les relais
   de la page de démarrage Compose (`demarrage.md`), qui anime l'aiguille.
 - Icône adaptative `mipmap-anydpi/ic_launcher.xml` (fond `#FFEEDC`, premier
-  plan `ic_launcher_foreground`), ressources reprises de Kairos 2.
+  plan `ic_launcher_foreground`).
 - Release : R8 (`isMinifyEnabled`, `isShrinkResources`) ; signature par les
   variables `KAIROS_KEYSTORE_FILE`, `KAIROS_KEYSTORE_PASSWORD`,
   `KAIROS_KEY_ALIAS`, `KAIROS_KEY_PASSWORD` si présentes, APK non signé
@@ -153,7 +150,7 @@ Pendant la réécriture, chaque jalon devait produire une version installable
   `<données>/kairos.db` (ou en mémoire pour l'auto-test), exemples dans la
   langue de la JVM, dossier des données affiché dans la carte Données.
 - **Dossier de données** : `KAIROS_DATA_DIR` s'il est défini, sinon la racine
-  Kairos de `platformdirs` (celle de Kairos 2) + `v3` :
+  Kairos de `platformdirs` + `v3` :
   - Windows : `%LOCALAPPDATA%\Kairos\v3` ;
   - macOS : `~/Library/Application Support/Kairos/v3` ;
   - Linux : `$XDG_DATA_HOME/Kairos/v3`, par défaut `~/.local/share/Kairos/v3`.
@@ -267,19 +264,15 @@ Pendant la réécriture, chaque jalon devait produire une version installable
     captures en artefacts `screens-<id>` ;
   - `release` (tag seulement) : `SHA256SUMS` de tous les `Kairos-*`, release
     GitHub « Kairos <version> » (préversion si suffixe), notes générées. Un
-    seul APK par release (pas de copie pour la mise à jour intégrée de
-    Kairos 2, `migration-2x.md` § Pas de pont de mise à jour).
-- Kairos 2 (Python) n'est plus dans le dépôt depuis la bascule : son code se
-  lit au tag `v2.6.0`, ses releases `v1.*` et `v2.*` restent publiées, et son
-  workflow de release (`release.yml`) comme sa CI (`ci.yml`) sont supprimés.
+    seul APK par release.
 
 ### Décisions et pièges tracés
 
-- **Préversions installables à côté de Kairos 2** : identifiant Android
-  `.preview`, produit de bureau distinct. Seule la 3.0.0 reprend les
-  identifiants définitifs, pour s'installer par-dessus Kairos 2 (plan § 5.4).
-- **Dossier de données `…/Kairos/v3`** : la base Kairos 2 (`…/Kairos/tasks.db`)
-  n'est jamais touchée, et reste à portée de la migration (M5).
+- **Préversions installables à côté de la version stable** : identifiant
+  Android `.preview`, produit de bureau distinct ; les versions finales
+  utilisent les identifiants définitifs.
+- **Dossier de données `…/Kairos/v3`** : chemin inchangé depuis la 3.0.0, c'est
+  là que vivent les données des utilisateurs.
 - **Instance unique par fichier surveillé, pas par socket** : aucun port
   ouvert, rien qu'un pare-feu d'entreprise puisse bloquer.
 - **Auto-test sans fenêtre** : `ImageComposeScene` fait le rendu en mémoire

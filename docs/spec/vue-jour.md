@@ -12,8 +12,7 @@ clavier réels), `desktopApp/.../M4ScreensUiTest.kt` (autre jour, guide des
 points, durée suggérée), `data/.../SubtaskEditTest.kt` (sous-tâches
 existantes), `desktopApp/.../SubtaskEditUiTest.kt` (section « Sous-tâches »)._
 
-État : **jalons M2 et M4**. Reprend le besoin de `docs/spec/vue-jour-gtd.md`
-(Kairos 2, tag `v2.6.0`). Le moteur est décrit par `ordonnancement.md`, `dependances.md`
+État : **jalons M2 et M4**. Le moteur est décrit par `ordonnancement.md`, `dependances.md`
 et `recurrence.md`. Le chrono (bouton de chaque ligne, « Démarrer le
 chrono » de « Maintenant », carte « En ce moment », temps passé, temps du
 jour par type, rail du réel sur la frise, alertes) est décrit par
@@ -58,7 +57,7 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    score ; étiquettes « épinglée », « deep work », « chemin critique » ;
    notes « à partir de 14h05, après « Réunion » » (« (épinglée) » si
    l'obstacle est une tâche épinglée, jamais pour une fenêtre de deep work :
-  `ObstacleKind.DEEPWORK`, que le test différentiel range avec `PINNED`, comme Kairos 2), « créneau creux (~15 h) : tâche
+  `ObstacleKind.DEEPWORK`, que le test différentiel range avec `PINNED`), « créneau creux (~15 h) : tâche
    légère privilégiée », « chevauche « Réunion » ». Vide : « Aucune tâche à
    faire n'est actuellement planifiée ».
 7. **Sections secondaires**, chacune avec son compte et une phrase de rôle,
@@ -183,7 +182,7 @@ Une tâche mère bloquée n'est que dans `blocked`, pas dans `parents`
 (une tâche ouverte, une seule section).
 Pour un autre jour que celui de l'heure courante, le placement part du
 début de la journée de travail (`Scheduling.buildDaySchedule` n'utilise
-l'heure que si elle tombe ce jour-là, comme Kairos 2).
+l'heure que si elle tombe ce jour-là).
 `DayFilter` : recherche insensible à la casse sur titre, description et
 projet ; `active` si la recherche n'est pas vide ou qu'une facette est
 posée.
@@ -302,33 +301,31 @@ posée.
   pas.
 - **Focus racine après la première image** : demandé plus tôt, l'écran
   n'est pas encore attaché et les raccourcis restaient sourds.
-- **« Fait » du jour en heure locale** (fuseau injecté) : Kairos 2 comparait
-  la date UTC de modification, si bien qu'une tâche faite à 0 h 30 à Paris
-  tombait la veille. Écart volontaire.
-- **Pas de « Décaler » sur une tâche faite** (Kairos 2 l'affichait aussi
-  dans « Fait », sans utilité).
+- **« Fait » du jour en heure locale** (fuseau injecté) : comparer la
+  date UTC de modification ferait tomber la veille une tâche faite à 0 h 30 à
+  Paris.
+- **Pas de « Décaler » sur une tâche faite** (sans utilité dans « Fait »).
 - **Score affiché « 16 », pas « 16.0 »** : même format que « Pourquoi à
-  cette place ? » (Kairos 2 affichait l'arrondi Python brut dans le badge).
+  cette place ? » (le badge n'affiche pas l'arrondi brut).
 - **Sections repliables sans carte englobante** : dans une liste paresseuse,
   une carte ne peut pas contenir plusieurs éléments ; titre cliquable avec
   chevron, puis lignes.
 - **Un autre jour, pas de navigation jour par jour** : on y arrive par la vue
-  Semaine (comme Kairos 2, `/kairos/day?day=`), sans flèches « veille /
+  Semaine sans flèches « veille /
   lendemain » dans la vue Jour. La décision M2 « aujourd'hui seulement » est
   levée par la vue Semaine.
-- **Durée suggérée : le palier remplace, le type complète** (décisions de
-  Kairos 2, issues #15.6 et #7) : choisir un palier est un geste
+- **Durée suggérée : le palier remplace, le type complète** (issues #15.6 et #7) : choisir un palier est un geste
   d'estimation, qui doit changer la durée ; un type n'est qu'un indice, qui ne
   doit jamais écraser une estimation saisie. Les pastilles de « À traiter »
   ne touchent jamais à la durée.
 - **Guide replié par défaut**, dans le dialogue comme dans « À traiter » :
   il est long, et la phrase d'aide courte reste visible.
-- **Jour et heures saisis à part** pour un créneau : le `datetime-local` de
-  Kairos 2 n'a pas d'équivalent commun à Compose.
-- **Projet dans les options avancées** (comme Kairos 2) ; le type garde une
+- **Jour et heures saisis à part** pour un créneau : un champ
+  `datetime-local` n'a pas d'équivalent commun à Compose.
+- **Projet dans les options avancées** ; le type garde une
   valeur retirée de la liste des réglages (décision M1).
-- **Opacité interdite sur une ligne bloquée** : décision de Kairos 2 reprise
+- **Opacité interdite sur une ligne bloquée** : on ne baisse pas l'opacité
   (fond et contour à la place), même si le dialogue de Compose, fenêtre à
   part, n'hérite pas de l'opacité.
-- **Priorité et points passent sous le corps en largeur étroite** (comme
-  Kairos 2) : décision M1 rouverte et tranchée au jalon M2.
+- **Priorité et points passent sous le corps en largeur étroite** :
+  décision M1 rouverte et tranchée au jalon M2.

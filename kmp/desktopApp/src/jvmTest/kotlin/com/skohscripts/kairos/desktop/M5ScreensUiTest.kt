@@ -34,15 +34,12 @@ import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
-import com.skohscripts.kairos.ui.app.LegacyImport
 import com.skohscripts.kairos.ui.app.ShortcutService
 import com.skohscripts.kairos.ui.app.ShortcutStatus
 import com.skohscripts.kairos.ui.app.ShortcutTarget
 import com.skohscripts.kairos.ui.app.UpdateService
 import com.skohscripts.kairos.ui.app.UpdateStatus
 import kotlinx.coroutines.flow.MutableStateFlow
-import com.skohscripts.kairos.core.legacy.LegacyDatabase
-import java.io.File
 import kotlinx.coroutines.runBlocking
 import java.util.Locale
 import kotlin.test.AfterTest
@@ -71,27 +68,13 @@ class M5ScreensUiTest {
 
     private val backups = mutableListOf<String>()
 
-    private fun services(firstLaunch: Boolean = false, legacy: LegacyImport? = null): AppServices = runBlocking {
+    private fun services(firstLaunch: Boolean = false): AppServices = runBlocking {
         val repository = KairosRepository.open(KairosStore.open(JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)), { KairosSnapshot() }, clock)
         val files = object : FileService {
             override suspend fun saveText(suggestedName: String, text: String) = false
             override suspend fun openText(): String? = null
         }
-        AppServices(repository, files, { name, _ -> backups += name }, clock = clock, legacy = legacy, firstLaunch = firstLaunch)
-    }
-
-    /** La vraie base Kairos 2 de `gen_legacy_db.py` (schéma final), trouvée « à son emplacement habituel ». */
-    private val kairos2 = object : LegacyImport {
-        override val found = "/home/moi/.local/share/Kairos/tasks.db"
-
-        override suspend fun readFound(): LegacyDatabase {
-            fun copy(name: String) = File.createTempFile("kairos2", name).also { f ->
-                javaClass.getResourceAsStream("/legacy/current/$name")!!.use { input -> f.outputStream().use { input.copyTo(it) } }
-            }
-            return LegacyFiles.read(copy("tasks.db"), copy("settings.json"))
-        }
-
-        override suspend fun pick(): LegacyDatabase = readFound()
+        AppServices(repository, files, { name, _ -> backups += name }, clock = clock, firstLaunch = firstLaunch)
     }
 
     // L'attente nomme le texte attendu : un dépassement de délai en CI dit alors quelle étape a manqué.
@@ -185,34 +168,6 @@ class M5ScreensUiTest {
         onNodeWithText("[Example]", substring = true).assertExists()
         onNodeWithText("Get started").performClick()
         waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Welcome to Kairos").fetchSemanticsNodes().isEmpty() }
-    }
-
-    @Test
-    fun aKairos2DatabaseFoundAtFirstLaunchIsImportedAfterABackup() = runComposeUiTest {
-        val services = services(firstLaunch = true, legacy = kairos2)
-        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        waitText("A Kairos 2 database was found", substring = true)
-        onNodeWithText("Import the Kairos 2 database").performClick()
-        waitText("Import the Kairos 2 database?")
-        onNodeWithText("5 task(s), 2 note(s), 2 timer session(s) and 1 time slot(s)", substring = true).assertExists()
-        onNodeWithText("Import").performClick()
-        waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.size == 5 }
-        assertEquals(1, backups.size)
-        assertEquals(8, services.repository.snapshot.value.settings.workdayStartHour)
-        waitText("Kairos 2 database imported: 5 task(s), 2 note(s), 2 session(s).")
-    }
-
-    @Test
-    fun settingsImportAKairos2Database() = runComposeUiTest {
-        val services = services(legacy = kairos2)
-        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Import a Kairos 2.x database")
-        onNodeWithText("Import a Kairos 2.x database").performScrollTo().performClick()
-        waitText("Import the Kairos 2 database?")
-        // « Import » de l'export JSON reste à l'écran derrière le dialogue : le bouton du dialogue est le dernier.
-        onAllNodesWithText("Import").onLast().performClick()
-        waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.notes.size == 2 }
     }
 
     @Test

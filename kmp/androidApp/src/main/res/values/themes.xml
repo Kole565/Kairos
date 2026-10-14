@@ -3,7 +3,7 @@
     <!-- Thème de fenêtre (docs/spec/distribution.md § Android) : l'interface
          elle-même est dessinée par Compose (KairosTheme). Un seul thème clair :
          forceDarkAllowed=false refuse l'assombrissement automatique de certains
-         constructeurs (décision reprise de Kairos 2). Avant l'API 31, la fenêtre
+         constructeurs. Avant l'API 31, la fenêtre
          de démarrage du système est windowBackground : fond de l'app + cadran vide centré
          (relais de la page de démarrage, docs/spec/demarrage.md). -->
     <style name="Theme.Kairos" parent="android:Theme.Material.Light.NoActionBar">

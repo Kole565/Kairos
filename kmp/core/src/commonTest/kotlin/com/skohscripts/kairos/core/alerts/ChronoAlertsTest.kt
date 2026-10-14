@@ -9,7 +9,7 @@ class ChronoAlertsTest {
     private val start = Instant.parse("2026-07-02T09:00:00Z")
 
     @Test
-    fun thresholds_follow_kairos2() {
+    fun thresholds_follow_the_reference() {
         val alerts = ChronoAlerts.thresholds(start, baseMinutes = 20, estimateMinutes = 45, idleMinutes = 180, pomodoroMinutes = 50)
         assertEquals(
             listOf(

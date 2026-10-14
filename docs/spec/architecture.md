@@ -11,22 +11,19 @@ par `distribution.md`), `kmp/tools/`._
 
 ### Objectif / problème
 
-Kairos 2 est une application web Python servie en local (Starlette +
-uvicorn) puis empaquetée trois fois de trois façons différentes (PyInstaller
-pour le bureau, Chaquopy + WebView pour Android). Cela coûte :
-
-- un démarrage lent sur Android (jusqu'à une minute au premier lancement) ;
-- une distribution impossible sur F-Droid (CPython et wheels précompilés) ;
-- une interface web contrainte (JavaScript facultatif, rechargements de page).
-
-Kairos 3 doit tourner **nativement** sur Android, sur le bureau (Windows,
-Linux, macOS) et dans un navigateur récent, à partir d'**un seul code**.
+Kairos doit tourner **nativement** sur Android, sur le bureau (Windows,
+Linux, macOS) et dans un navigateur récent, à partir d'**un seul code**,
+sans serveur local ni interpréteur embarqué. Il doit démarrer vite, se
+distribuer sur F-Droid (aucune dépendance non libre ni précompilée) et
+offrir une interface native plutôt qu'une page web rechargée.
 
 ### Comportement attendu
 
 - Un seul code métier et un seul code d'interface pour les quatre cibles.
 - Le code métier est testable seul, sans interface, sans base, sans horloge
-  réelle. Ce sont ces tests qui prouvent la parité avec Kairos 2 (plan § 7).
+  réelle. Ce sont ces tests, dont ceux sur fichiers d'or figés
+  (`core/src/jvmTest/resources/fixtures/`), qui prouvent que le moteur ne
+  change pas sans décision.
 - Les dépendances sont toutes libres, pour que l'APK soit accepté par F-Droid.
 
 ### Critères de succès
@@ -49,11 +46,11 @@ Linux, macOS) et dans un navigateur récent, à partir d'**un seul code**.
 
 | Module | Plugin(s) | Cibles | Rôle |
 |---|---|---|---|
-| `core` | KMP + bibliothèque Android KMP + sérialisation | JVM, Android, wasmJs | Code métier **pur** : `AppVersion`, `KairosBuild` (version, générée), modèle (`model/`), données d'exemple, moteur (`engine/` : jours ouvrés, dépendances, récurrence, ancienneté, ordonnancement, temps réel, voir `ordonnancement.md` et `temps-reel-chrono.md`), seuils du chrono (`alerts/`), modèle de la vue Jour (`day/DayView`), statistiques (`stats/TaskStats`, `statistiques.md`), conversion d'une note (`notes/NoteConversion`), modèle de la vue Semaine (`week/WeekView`), champs et validation des réglages (`settings/SettingsForm`, `reglages.md`), conversion d'une base Kairos 2 (`legacy/Kairos2Import`, `migration-2x.md`), lecture de la dernière version publiée (`updates/UpdateCheck`, `mises-a-jour.md`), espace Équipe (`team/` : membres, filtre `Workspaces`, suivi, charge ; `team/forecast/` : simulation Monte Carlo et scénarios, `equipe.md`). |
+| `core` | KMP + bibliothèque Android KMP + sérialisation | JVM, Android, wasmJs | Code métier **pur** : `AppVersion`, `KairosBuild` (version, générée), modèle (`model/`), données d'exemple, moteur (`engine/` : jours ouvrés, dépendances, récurrence, ancienneté, ordonnancement, temps réel, voir `ordonnancement.md` et `temps-reel-chrono.md`), seuils du chrono (`alerts/`), modèle de la vue Jour (`day/DayView`), statistiques (`stats/TaskStats`, `statistiques.md`), conversion d'une note (`notes/NoteConversion`), modèle de la vue Semaine (`week/WeekView`), champs et validation des réglages (`settings/SettingsForm`, `reglages.md`), lecture de la dernière version publiée (`updates/UpdateCheck`, `mises-a-jour.md`), espace Équipe (`team/` : membres, filtre `Workspaces`, suivi, charge ; `team/forecast/` : simulation Monte Carlo et scénarios, `equipe.md`). |
 | `data` | KMP + bibliothèque Android KMP + SQLDelight + sérialisation | JVM, Android, wasmJs | Schéma et requêtes SQLDelight (asynchrones), ouverture et migrations (`KairosStore`), dépôt (`KairosRepository`), format d'export (`ExportCodec`). Sans pilote : chaque application fournit le sien. |
 | `ui` | KMP + bibliothèque Android KMP + Compose | JVM, Android, wasmJs | Interface commune : thème, icônes, logo, navigation (espaces Perso et Équipe), écrans (dont `team/`, `equipe.md`), chaînes FR/EN, polices ; contrat des services de plateforme (`app/AppServices.kt`). |
-| `androidApp` | application Android + compilateur Compose | Android | Activité, services Android (pilote SQLite, sélecteurs de fichiers, lecture et migration automatique d'une base Kairos 2), ressources de lancement. |
-| `desktopApp` | KMP + Compose Desktop + sérialisation | JVM | `main()`, fenêtre, services du bureau (pilote JDBC, boîtes de dialogue, base Kairos 2, vérification des mises à jour), instance unique, journal de crash, auto-test, installeurs et image portable. |
+| `androidApp` | application Android + compilateur Compose | Android | Activité, services Android (pilote SQLite, sélecteurs de fichiers), ressources de lancement. |
+| `desktopApp` | KMP + Compose Desktop + sérialisation | JVM | `main()`, fenêtre, services du bureau (pilote JDBC, boîtes de dialogue, vérification des mises à jour), instance unique, journal de crash, auto-test, installeurs et image portable. |
 | `webApp` | KMP + Compose | wasmJs | `main()` navigateur, services web (worker sql.js, OPFS, fichier lié), `index.html`, scripts navigateur. |
 
 Graphe : `androidApp`, `desktopApp` et `webApp` → `ui` → `data` → `core`
@@ -90,7 +87,7 @@ asynchrone de la base).
 - **`core` est pur** : ni Compose, ni Android, ni `java.*`, ni horloge
   système, ni réseau, ni fichier. L'heure courante et les réglages sont
   toujours passés en paramètre. C'est ce qui rend possibles les tests
-  différentiels contre le moteur Python (plan § 7).
+  déterministes du moteur, dont ceux sur fichiers d'or figés.
 - **Version en source unique** : `kmp/gradle.properties`
   (`kairos.versionName`, `kairos.versionCode`). `core` en génère
   `KairosBuild` (tâche `generateKairosBuild`, dossier `build/generated`),
@@ -120,21 +117,17 @@ asynchrone de la base).
 | `make_app_icons.py` | `desktopApp/icons/kairos.{png,ico,icns}`, favicon et icônes de `webApp`, icônes des fiches Fastlane (512 px) et de la page `site/`. | Pillow |
 | `validate_fastlane.py` | Vérifie les fiches `fastlane/metadata/android/` (`publication.md`). | aucune |
 | `fdroid_check.sh` | `fdroid lint` et `fdroid build` de la recette dans l'image des serveurs F-Droid (`publication.md`). | Docker, image `fdroidserver:buildserver` |
-| `gen_fixtures.py` | Fixtures des tests différentiels (`core/src/jvmTest/resources/fixtures/`). | le Python de Kairos 2, checkout du tag `v2.6.0` désigné par `KAIROS2_SRC` |
-| `gen_legacy_db.py` | Vraies bases Kairos 2 pour les tests de migration (`desktopApp/src/jvmTest/resources/legacy/`). | idem (avec SQLAlchemy) |
 
-Fixtures et bases générées sont commitées : les tests n'ont jamais besoin de
-Kairos 2. Depuis la bascule 3.0.0, le Python n'est plus dans le dépôt ; les
-deux générateurs refusent de tourner sans un `app/` de Kairos 2 lisible
-(`KAIROS2_SRC`, par défaut la racine du dépôt). Les mentions `app/…` et
-`tests/…` des commentaires de `kmp/` (« portage de `app/tasks_scheduling.py` »)
-désignent ce code de Kairos 2, au tag `v2.6.0`.
+Les fichiers d'or des tests du moteur (`core/src/jvmTest/resources/fixtures/` :
+`scheduling.json`, `dependencies.json`, `calendar.json`, `stats.json`) sont
+commités et figés : ils sont la source de vérité, il n'y a plus de script de
+génération. Leur historique de génération reste dans
+`git`, au tag `v3.3.0`.
 
 ### Décisions et pièges tracés
 
 - **Pourquoi SQLDelight et non Room** (décidé au plan, appliqué en M1) : Room
-  n'a pas de cible web ; SQLDelight garde un SQL explicite, utile pour
-  importer une base Kairos 2.
+  n'a pas de cible web ; SQLDelight garde un SQL explicite.
 - **AGP 9 et KMP** : le plugin `com.android.application` ne s'applique plus à
   un module multiplateforme. L'application Android est donc un module séparé
   (`androidApp`), et les bibliothèques partagées utilisent le plugin

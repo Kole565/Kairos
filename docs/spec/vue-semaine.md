@@ -8,9 +8,7 @@ câblage dans `KairosApp.kt`, `AppShell.kt` (titre) et
 `screens/DestinationScreen.kt`. Tests : `core/.../week/WeekViewTest.kt`,
 `M4ScreensUiTest.weekOpensAnotherDayAndComesBack`._
 
-État : **jalon M4**. Reprend la vue Semaine de Kairos 2
-(`_build_week_view`, `docs/spec/vue-jour-gtd.md` au tag `v2.6.0`), sans les puces
-« journée entière » (événements TimeTree, retirés). Le temps de la semaine
+État : **jalon M4**. Le temps de la semaine
 par type, calculé au jalon M3 (`temps-reel-chrono.md`), s'affiche ici.
 
 ## 1. Besoin métier (cahier des charges)
@@ -60,9 +58,9 @@ un autre jour.
 
 ### Hors périmètre / différé
 
-- Glisser une tâche d'un jour à l'autre, vue mois (comme Kairos 2).
+- Glisser une tâche d'un jour à l'autre, vue mois.
 - Tâches programmées (`scheduledDate`) dans la grille : seule l'échéance
-  place une tâche dans un jour (comme Kairos 2).
+  place une tâche dans un jour.
 
 ## 2. Solution technique
 
@@ -98,9 +96,9 @@ Depuis le jalon E1 de l'espace Équipe, l'écran de la vue Semaine lit `reposito
 
 ### Décisions et pièges tracés
 
-- **« Fait » du jour en date locale** : Kairos 2 comparait la date UTC de
-  modification (même écart volontaire que `vue-jour.md`).
-- **Pas de puces « journée entière »** : elles venaient de TimeTree, retiré.
+- **« Fait » du jour en date locale** : la date de
+  modification est lue dans le fuseau local, pas en UTC (même règle que
+  `vue-jour.md`).
 - **Colonnes égales plutôt que cartes fixes en largeur bureau** : à
   1 200 px, sept cartes de 184 dp renvoyaient le dimanche seul sur une
   deuxième ligne (constaté sur la capture de l'auto-test).

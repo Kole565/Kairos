@@ -59,7 +59,7 @@ data class ParentProgress(val task: Task, val done: Int, val total: Int)
 
 /**
  * Tout ce qu'affiche la vue Jour pour [day], dérivé d'un seul état de la base
- * (`_build_kairos_context` de Kairos 2, partie Jour). Pur : l'heure, le fuseau
+ * (partie Jour du contexte). Pur : l'heure, le fuseau
  * et le filtre sont des paramètres.
  */
 data class DayView(

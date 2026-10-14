@@ -3,12 +3,12 @@ package com.skohscripts.kairos.desktop
 import java.io.File
 
 /**
- * Dossier des données de Kairos 3 sur le bureau (docs/spec/distribution.md
- * § Bureau). Même dossier racine que Kairos 2 (`platformdirs.user_data_dir(
- * "Kairos")`), sous-dossier `v3` : l'ancienne base n'est jamais touchée, et
- * reste trouvable pour la migration (`LegacyFiles`, docs/spec/migration-2x.md).
+ * Dossier des données sur le bureau (docs/spec/distribution.md § Bureau) : la
+ * racine `Kairos` de platformdirs (`user_data_dir("Kairos")`), sous-dossier
+ * `v3`. Ce chemin ne change pas : c'est là que vivent les données des
+ * utilisateurs.
  *
- * `KAIROS_DATA_DIR` prime (mode portable, tests), comme en Kairos 2.
+ * `KAIROS_DATA_DIR` prime (mode portable, tests).
  */
 object DataDirectory {
     fun resolve(
@@ -20,7 +20,7 @@ object DataDirectory {
         return File(kairosRoot(env, osName, home), "v3")
     }
 
-    /** Racine `Kairos` de platformdirs (Kairos 2) pour cet OS. */
+    /** Racine `Kairos` de platformdirs pour cet OS. */
     fun kairosRoot(env: Map<String, String>, osName: String, home: String): File {
         val os = osName.lowercase()
         return when {

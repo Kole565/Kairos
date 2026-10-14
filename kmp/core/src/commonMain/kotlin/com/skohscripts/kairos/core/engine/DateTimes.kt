@@ -6,8 +6,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 /**
- * Arithmétique d'heures **naïves** (heure locale sans fuseau, convention de
- * Kairos 2 pour les créneaux et l'épinglage) : calculée en UTC pour ne jamais
+ * Arithmétique d'heures **naïves** (heure locale sans fuseau, convention
+ * des créneaux et de l'épinglage) : calculée en UTC pour ne jamais
  * subir de changement d'heure.
  */
 internal fun LocalDateTime.plusMinutes(minutes: Long): LocalDateTime =
