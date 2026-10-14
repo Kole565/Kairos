@@ -23,6 +23,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.skohscripts.kairos.core.KairosBuild
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +43,9 @@ import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.app_name
 import com.skohscripts.kairos.ui.generated.resources.app_tagline
 import com.skohscripts.kairos.ui.generated.resources.home_about
+import com.skohscripts.kairos.ui.generated.resources.home_discover
+import com.skohscripts.kairos.ui.generated.resources.home_new_hide
+import com.skohscripts.kairos.ui.generated.resources.home_new_title
 import com.skohscripts.kairos.ui.generated.resources.home_feature_capture_body
 import com.skohscripts.kairos.ui.generated.resources.home_feature_capture_title
 import com.skohscripts.kairos.ui.generated.resources.home_feature_do_body
@@ -59,6 +68,7 @@ import com.skohscripts.kairos.ui.generated.resources.home_team_tour
 import com.skohscripts.kairos.ui.generated.resources.home_tour
 import com.skohscripts.kairos.ui.generated.resources.home_why_body
 import com.skohscripts.kairos.ui.generated.resources.home_why_title
+import com.skohscripts.kairos.ui.guide.FeatureCatalog
 import com.skohscripts.kairos.ui.guide.GuideKind
 import com.skohscripts.kairos.ui.guide.GuideTarget
 import com.skohscripts.kairos.ui.icons.KairosIcons
@@ -88,7 +98,18 @@ private val FEATURES = listOf(
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun HomeScreen(teamEnabled: Boolean, onOpen: (GuideTarget) -> Unit, onTour: (GuideKind) -> Unit, onAbout: () -> Unit) {
+fun HomeScreen(
+    teamEnabled: Boolean,
+    onOpen: (GuideTarget) -> Unit,
+    onTour: (GuideKind) -> Unit,
+    onAbout: () -> Unit,
+    /** Ouvre le hub « Découvrir Kairos » (docs/spec/visite-guidee.md). */
+    onDiscover: () -> Unit = {},
+    /** Version de l'application : les cartes que cette version ajoute ouvrent la section « Nouveau dans cette version ». */
+    version: String = KairosBuild.VERSION_NAME,
+) {
+    val news = remember(version) { FeatureCatalog.newIn(version) }
+    var newsHidden by rememberSaveable { mutableStateOf(false) }
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(
             verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
@@ -109,6 +130,24 @@ fun HomeScreen(teamEnabled: Boolean, onOpen: (GuideTarget) -> Unit, onTour: (Gui
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(Res.string.home_why_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
                     Text(stringResource(Res.string.home_why_body), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+            // « Nouveau dans cette version » : les cartes que la version courante ajoute au catalogue ; masquable pour la session, rien n'est mémorisé.
+            if (news.isNotEmpty() && !newsHidden) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stringResource(Res.string.home_new_title, version.substringBefore('-')), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading().weight(1f))
+                    KairosTextButton(onClick = { newsHidden = true }) { Text(stringResource(Res.string.home_new_hide)) }
+                }
+                news.forEach { card ->
+                    OutlinedCard(onClick = { onOpen(card.target) }, modifier = Modifier.fillMaxWidth()) {
+                        ListItem(
+                            leadingContent = { Icon(card.icon(), contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                            headlineContent = { Text(stringResource(card.title)) },
+                            supportingContent = { Text(stringResource(card.body)) },
+                            trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        )
+                    }
                 }
             }
             Text(stringResource(Res.string.home_features_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
@@ -141,6 +180,7 @@ fun HomeScreen(teamEnabled: Boolean, onOpen: (GuideTarget) -> Unit, onTour: (Gui
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 KairosButton(onClick = { onTour(GuideKind.PERSONAL) }) { Text(stringResource(Res.string.home_tour)) }
                 if (teamEnabled) KairosOutlinedButton(onClick = { onTour(GuideKind.TEAM) }) { Text(stringResource(Res.string.home_team_tour)) }
+                KairosOutlinedButton(onClick = onDiscover) { Text(stringResource(Res.string.home_discover)) }
                 KairosTextButton(onClick = onAbout) { Text(stringResource(Res.string.home_about)) }
             }
         }

@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.welcome_body
 import com.skohscripts.kairos.ui.generated.resources.welcome_examples
+import com.skohscripts.kairos.ui.generated.resources.welcome_first_task
+import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import com.skohscripts.kairos.ui.generated.resources.welcome_start
 import com.skohscripts.kairos.ui.generated.resources.welcome_title
 import com.skohscripts.kairos.ui.generated.resources.welcome_tour
@@ -28,10 +30,11 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Accueil du premier lancement (docs/spec/accueil.md), une seule fois :
- * ce que fait Kairos et les exemples (avec « Visite guidée », [onStartGuide]).
+ * ce que fait Kairos et les exemples (avec « Visite guidée », [onStartGuide], et « Créer ma première tâche », [onFirstTask] :
+ * l'accompagnement de docs/spec/premiere-tache.md).
  */
 @Composable
-fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
+fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit, onFirstTask: () -> Unit = {}) {
     var open by rememberSaveable { mutableStateOf(services.firstLaunch) }
     // Un dialogue passe au-dessus de tout : il attend la fin de la page de démarrage (docs/spec/demarrage.md).
     if (!open || LocalStartupSplash.current) return
@@ -44,6 +47,7 @@ fun WelcomeDialog(services: AppServices, onStartGuide: () -> Unit) {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(Res.string.welcome_body), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(Res.string.welcome_examples), style = MaterialTheme.typography.bodyMedium)
+                KairosOutlinedButton(onClick = { open = false; onFirstTask() }) { Text(stringResource(Res.string.welcome_first_task)) }
             }
         },
         confirmButton = { KairosTextButton(onClick = { open = false }) { Text(stringResource(Res.string.welcome_start)) } },

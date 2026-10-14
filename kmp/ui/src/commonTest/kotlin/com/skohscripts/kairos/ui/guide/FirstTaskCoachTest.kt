@@ -1,0 +1,46 @@
+package com.skohscripts.kairos.ui.guide
+
+import com.skohscripts.kairos.ui.day.EditField
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+/** Étapes de l'accompagnement de la première tâche (docs/spec/premiere-tache.md). */
+class FirstTaskCoachTest {
+    private val steps = FirstTaskCoach.STEPS
+
+    @Test
+    fun everyFieldOfTheSheetHasExactlyOneStep() {
+        val covered = steps.flatMap { it.fields }
+        assertEquals(EditField.entries.toSet(), covered.toSet())
+        assertEquals(covered.size, covered.toSet().size, "un champ expliqué à deux étapes")
+    }
+
+    @Test
+    fun theWalkStartsAtTheTitleAndEndsOnSaving() {
+        assertEquals(9, steps.size)
+        assertEquals(setOf(EditField.TITLE), steps.first().fields)
+        assertTrue(steps.last().save && steps.last().fields.isEmpty())
+        assertTrue(steps.dropLast(1).none { it.save })
+    }
+
+    @Test
+    fun theStepsOfTheAdvancedFieldsOpenTheAdvancedOptions() {
+        assertFalse(steps.first().opensAdvanced)
+        assertTrue(steps.first { EditField.PROJECT in it.fields }.opensAdvanced)
+        // Date d'échéance (visible) et programmée (avancée) partagent une étape : elle ouvre les options.
+        assertTrue(steps.first { EditField.DEADLINE in it.fields }.opensAdvanced)
+    }
+
+    @Test
+    fun everyStepHasItsOwnTexts() {
+        val all = steps + FirstTaskCoach.placement(true) + FirstTaskCoach.placement(false)
+        val distinct = all.distinctBy { it.title }
+        assertEquals(distinct.size, distinct.map { it.body }.toSet().size)
+        assertEquals(3, FirstTaskCoach.placement(true).size)
+        assertEquals(3, FirstTaskCoach.placement(false).size)
+        // Une tâche pas encore placée remplace la première étape, pas les autres.
+        assertEquals(FirstTaskCoach.placement(true).drop(1).map { it.title }, FirstTaskCoach.placement(false).drop(1).map { it.title })
+    }
+}

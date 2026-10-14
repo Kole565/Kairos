@@ -218,6 +218,15 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 - Une **visite guidée** pas à pas (six étapes), proposée au premier
   lancement et à revoir quand on veut ; une seconde visite présente l’espace
   Équipe quand il est activé.
+- **Première tâche guidée** : au premier lancement (ou depuis la vue Jour tant
+  que tu n’as aucune tâche à toi), Kairos te guide dans la vraie fiche d’une
+  tâche, champ par champ (titre, priorité, points de Fibonacci, estimation,
+  dates, type, options avancées), puis te montre où elle se place dans la
+  journée et te félicite une fois qu’elle est réellement créée. Rien n’est
+  écrit si tu renonces.
+- **Découvrir Kairos** : des chapitres sur chaque fonctionnalité (Réglages,
+  aide ou Accueil), à rouvrir quand tu veux, et une section **« Nouveau dans
+  cette version »** sur l’Accueil.
 
 ### Gestion d'équipe (facultative)
 

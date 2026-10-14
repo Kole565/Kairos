@@ -96,6 +96,11 @@ le travail en cours.
   prévisions ; **Les échanges** (onglet « Échanges » de l'écran Équipe).
 - Elle se relance à volonté : depuis l'aide, depuis l'Accueil, ou depuis le
   premier lancement. Rien n'est mémorisé : pas de « visite terminée ».
+- **3.4** (`visite-guidee.md`, `premiere-tache.md`) : les deux visites sont des **sélections du catalogue** de
+  fonctionnalités (`FeatureCatalog`, mêmes six étapes) ; l'Accueil gagne le bouton **« Découvrir Kairos »** (hub des
+  chapitres, aussi dans l'aide et les Réglages) et une section **« Nouveau dans la version X.Y.Z »** masquable pour la
+  session ; l'accueil du premier lancement gagne **« Créer ma première tâche »** (accompagnement dans la vraie fiche) ;
+  l'aide propose une entrée « Découvrir Kairos ». Le reste de cette spec est inchangé.
 
 #### Équipe : l'onglet « Échanges »
 

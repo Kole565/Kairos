@@ -206,6 +206,13 @@ order (critical path). Cycles are refused.
 - A step-by-step **guided tour** (six steps), offered on first launch and
   available any time; a second tour presents the Team space when it is
   enabled.
+- **Guided first task**: on first launch (or from the Day view while you have
+  no task of your own), Kairos walks you through the real task sheet, field by
+  field (title, priority, Fibonacci points, estimate, dates, type, advanced
+  options), then shows where your task lands in the day and congratulates you
+  once it is really created. Nothing is written if you give up.
+- **Discover Kairos**: chapters on every feature (Settings, help or Home),
+  reopened whenever you like, and a **“New in this version”** section on Home.
 
 ### Team management (optional)
 

@@ -25,6 +25,13 @@ import kotlin.time.Instant
  * Pur : dates relatives à [today], horodatages à [now], langue de l'interface.
  */
 object ExampleData {
+    /**
+     * Vrai pour une tâche posée par le jeu d'exemples, dans l'une ou l'autre langue : son titre porte le préfixe
+     * « [Exemple] » / « [Example] » (docs/spec/premiere-tache.md § Déclenchement). Sert à savoir si l'utilisateur a déjà
+     * créé une tâche à lui ; dérivé des données, rien n'est mémorisé.
+     */
+    fun isExample(task: Task): Boolean = task.title.startsWith(Texts.FR.prefix) || task.title.startsWith(Texts.EN.prefix)
+
     fun snapshot(today: LocalDate, now: Instant, language: String): KairosSnapshot {
         val t = if (UiLanguage.isFrench(language)) Texts.FR else Texts.EN
         val soon = today.plus(DatePeriod(days = 2))

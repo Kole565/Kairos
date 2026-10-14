@@ -200,7 +200,9 @@ class DayScreenUiTest {
     fun shortcutsFocusCaptureAndSearch() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Search / filter").fetchSemanticsNodes().isNotEmpty() }
+        // La liste est paresseuse : sur une base vide l'invitation « Première tâche » pousse la carte de recherche hors de l'écran.
+        waitUntil(timeoutMillis = 5_000) { onAllNodes(hasScrollToIndexAction()).fetchSemanticsNodes().isNotEmpty() }
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Search / filter"))
         onNodeWithTag("day-screen").assertIsFocused()
         onNodeWithTag("day-screen").performKeyInput { pressKey(Key.Slash) }
         // La recherche s'ouvre et prend le curseur (son texte d'exemple n'apparaît qu'avec le focus).

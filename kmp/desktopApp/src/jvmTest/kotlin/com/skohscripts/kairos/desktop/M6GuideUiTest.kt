@@ -163,6 +163,45 @@ class M6GuideUiTest {
         waitText("What is Kairos for?")
     }
 
+    // --- Découvrir Kairos (hub des chapitres, docs/spec/visite-guidee.md) ---------------------------------------------------
+
+    @Test
+    fun theDiscoverHubOpensAChapterFromTheHelpAndGoesToItsScreen() = runComposeUiTest {
+        val services = services(repository())
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        pressHelp()
+        onNodeWithText("Discover Kairos").performClick()
+        waitText("Create my first task")
+        // Sans espace Équipe : cinq chapitres, pas celui de l'équipe (six cartes).
+        waitText("First steps")
+        assertEquals(0, count("6 cards"))
+        onNodeWithText("Plan").performClick()
+        waitText("Step 1 of 3")
+        waitText("Priority, points and estimate")
+        repeat(2) { onNodeWithText("Next").performClick() }
+        waitText("Step 3 of 3")
+        // La dernière carte du chapitre (horaires par jour) ouvre les Réglages.
+        onNodeWithText("Show me the screen").performClick()
+        waitGone("Step 3 of 3")
+        waitText("Appearance")
+    }
+
+    @Test
+    fun theDiscoverHubIsInTheSettingsAndOnHomeAndOffersTheTeamChapterWhenTheTeamSpaceIsOn() = runComposeUiTest {
+        val (repo, _) = managerWithLea()
+        val services = services(repo)
+        setContent { KairosApp(Platform.DESKTOP) { services } }
+        waitText("What is Kairos for?")
+        onNodeWithText("Discover Kairos").performScrollTo().performClick()
+        waitText("6 cards")
+        onNodeWithText("Close").performClick()
+        waitGone("6 cards")
+        openSettings()
+        waitText("Appearance")
+        onNodeWithText("Discover Kairos").performScrollTo().performClick()
+        waitText("6 cards")
+    }
+
     // --- Visite guidée ------------------------------------------------------------------------------------------------
 
     @Test

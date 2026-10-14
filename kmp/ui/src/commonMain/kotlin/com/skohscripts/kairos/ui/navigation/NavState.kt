@@ -16,4 +16,7 @@ class NavState {
     var day by mutableStateOf<LocalDate?>(null)
     var week by mutableStateOf<LocalDate?>(null)
     var exchangesTab by mutableStateOf(false)
+
+    /** L'accompagnement de la première tâche est demandé (docs/spec/premiere-tache.md) : la vue Jour ouvre la fiche et l'acquitte. */
+    var firstTaskRequest by mutableStateOf(false)
 }

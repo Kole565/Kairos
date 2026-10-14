@@ -15,6 +15,13 @@ class ExampleDataTest {
     private val fr = ExampleData.snapshot(today, now, "fr")
 
     @Test
+    fun anExampleIsRecognisedInBothLanguagesAndAUserTaskIsNot() {
+        assertTrue(fr.tasks.all(ExampleData::isExample))
+        assertTrue(ExampleData.snapshot(today, now, "en").tasks.all(ExampleData::isExample))
+        assertTrue(fr.tasks.first().copy(title = "Relever le courrier").let { !ExampleData.isExample(it) })
+    }
+
+    @Test
     fun everyExampleIsTaggedAndPrefixed() {
         assertEquals(10, fr.tasks.size)
         assertTrue(fr.tasks.all { it.projectTag == "Exemple" && it.title.startsWith("[Exemple] ") })

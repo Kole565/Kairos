@@ -1,0 +1,201 @@
+package com.skohscripts.kairos.ui.guide
+
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.skohscripts.kairos.ui.generated.resources.Res
+import com.skohscripts.kairos.ui.generated.resources.card_dependencies_body
+import com.skohscripts.kairos.ui.generated.resources.card_dependencies_title
+import com.skohscripts.kairos.ui.generated.resources.card_discover_body
+import com.skohscripts.kairos.ui.generated.resources.card_discover_title
+import com.skohscripts.kairos.ui.generated.resources.card_first_task_body
+import com.skohscripts.kairos.ui.generated.resources.card_first_task_title
+import com.skohscripts.kairos.ui.generated.resources.card_hours_body
+import com.skohscripts.kairos.ui.generated.resources.card_hours_title
+import com.skohscripts.kairos.ui.generated.resources.card_learned_body
+import com.skohscripts.kairos.ui.generated.resources.card_learned_title
+import com.skohscripts.kairos.ui.generated.resources.card_points_body
+import com.skohscripts.kairos.ui.generated.resources.card_points_title
+import com.skohscripts.kairos.ui.generated.resources.card_recurrence_body
+import com.skohscripts.kairos.ui.generated.resources.card_recurrence_title
+import com.skohscripts.kairos.ui.generated.resources.card_score_body
+import com.skohscripts.kairos.ui.generated.resources.card_score_title
+import com.skohscripts.kairos.ui.generated.resources.card_settings_body
+import com.skohscripts.kairos.ui.generated.resources.card_settings_title
+import com.skohscripts.kairos.ui.generated.resources.card_slots_body
+import com.skohscripts.kairos.ui.generated.resources.card_slots_title
+import com.skohscripts.kairos.ui.generated.resources.card_subtasks_body
+import com.skohscripts.kairos.ui.generated.resources.card_subtasks_title
+import com.skohscripts.kairos.ui.generated.resources.card_week_body
+import com.skohscripts.kairos.ui.generated.resources.card_week_title
+import com.skohscripts.kairos.ui.generated.resources.chapter_first_steps
+import com.skohscripts.kairos.ui.generated.resources.chapter_follow
+import com.skohscripts.kairos.ui.generated.resources.chapter_organize
+import com.skohscripts.kairos.ui.generated.resources.chapter_plan
+import com.skohscripts.kairos.ui.generated.resources.chapter_settings
+import com.skohscripts.kairos.ui.generated.resources.chapter_team
+import com.skohscripts.kairos.ui.generated.resources.guide_team_assign_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_assign_title
+import com.skohscripts.kairos.ui.generated.resources.guide_team_backlog_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_backlog_title
+import com.skohscripts.kairos.ui.generated.resources.guide_team_board_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_board_title
+import com.skohscripts.kairos.ui.generated.resources.guide_team_exchanges_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_exchanges_title
+import com.skohscripts.kairos.ui.generated.resources.guide_team_forecast_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_forecast_title
+import com.skohscripts.kairos.ui.generated.resources.guide_team_members_body
+import com.skohscripts.kairos.ui.generated.resources.guide_team_members_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_capture_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_capture_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_data_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_data_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_do_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_do_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_qualify_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_qualify_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_stats_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_stats_title
+import com.skohscripts.kairos.ui.generated.resources.guide_you_time_body
+import com.skohscripts.kairos.ui.generated.resources.guide_you_time_title
+import com.skohscripts.kairos.ui.icons.KairosIcons
+import com.skohscripts.kairos.ui.navigation.Destination
+import com.skohscripts.kairos.ui.navigation.TeamDestination
+import org.jetbrains.compose.resources.StringResource
+
+/** Les chapitres du hub « Découvrir Kairos » (docs/spec/visite-guidee.md). [TEAM] n'est proposé que si l'espace Équipe est activé. */
+enum class GuideChapter(val title: StringResource, val icon: () -> ImageVector) {
+    FIRST_STEPS(Res.string.chapter_first_steps, { KairosIcons.PlayArrow }),
+    PLAN(Res.string.chapter_plan, { KairosIcons.Today }),
+    FOLLOW(Res.string.chapter_follow, { KairosIcons.Schedule }),
+    ORGANIZE(Res.string.chapter_organize, { KairosIcons.Layers }),
+    TEAM(Res.string.chapter_team, { KairosIcons.Groups }),
+    SETTINGS(Res.string.chapter_settings, { KairosIcons.Settings }),
+}
+
+/**
+ * Une fonctionnalité de Kairos décrite une seule fois (docs/spec/visite-guidee.md § Catalogue piloté par les données) : la
+ * visite, le hub « Découvrir Kairos » et la section « Nouveau dans cette version » de l'Accueil la lisent. [since] : version
+ * de livraison (`"3.4.0"`) ; [tour] : l'étape fait partie de la visite initiale de l'espace Perso.
+ */
+data class FeatureCard(
+    val id: String,
+    val chapter: GuideChapter,
+    val icon: () -> ImageVector,
+    val title: StringResource,
+    val body: StringResource,
+    val target: GuideTarget,
+    val since: String = "3.0.0",
+    val tour: Boolean = false,
+)
+
+/** Le catalogue, ses sélections et le lien avec le README. */
+object FeatureCatalog {
+    /**
+     * Toutes les cartes, **dans l'ordre de la visite** : la visite initiale de l'espace Perso en est la sélection [FeatureCard.tour],
+     * celle de l'espace Équipe le chapitre [GuideChapter.TEAM]. Les ids sont stables (ils relient la liste du README).
+     */
+    val cards: List<FeatureCard> = listOf(
+        // --- Premiers pas
+        FeatureCard("capture", GuideChapter.FIRST_STEPS, { KairosIcons.Notes }, Res.string.guide_you_capture_title, Res.string.guide_you_capture_body, GuideTarget.Personal(Destination.NOTES), tour = true),
+        FeatureCard("qualify", GuideChapter.FIRST_STEPS, { KairosIcons.Edit }, Res.string.guide_you_qualify_title, Res.string.guide_you_qualify_body, GuideTarget.Personal(Destination.DAY), tour = true),
+        FeatureCard("do", GuideChapter.FIRST_STEPS, { KairosIcons.Today }, Res.string.guide_you_do_title, Res.string.guide_you_do_body, GuideTarget.Personal(Destination.DAY), tour = true),
+        FeatureCard("discover", GuideChapter.FIRST_STEPS, { KairosIcons.Layers }, Res.string.card_discover_title, Res.string.card_discover_body, GuideTarget.Personal(Destination.HOME), since = "3.4.0"),
+        FeatureCard("first_task", GuideChapter.FIRST_STEPS, { KairosIcons.Add }, Res.string.card_first_task_title, Res.string.card_first_task_body, GuideTarget.FirstTask, since = "3.4.0"),
+        // --- Planifier
+        FeatureCard("points", GuideChapter.PLAN, { KairosIcons.Balance }, Res.string.card_points_title, Res.string.card_points_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("score", GuideChapter.PLAN, { KairosIcons.Star }, Res.string.card_score_title, Res.string.card_score_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("hours", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_hours_title, Res.string.card_hours_body, GuideTarget.Settings, since = "3.4.0"),
+        // --- Suivre
+        FeatureCard("time", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY), tour = true),
+        FeatureCard("learned", GuideChapter.FOLLOW, { KairosIcons.TrendingUp }, Res.string.card_learned_title, Res.string.card_learned_body, GuideTarget.Settings, since = "3.4.0"),
+        FeatureCard("week", GuideChapter.FOLLOW, { KairosIcons.DateRange }, Res.string.card_week_title, Res.string.card_week_body, GuideTarget.Personal(Destination.WEEK)),
+        FeatureCard("stats", GuideChapter.FOLLOW, { KairosIcons.BarChart }, Res.string.guide_you_stats_title, Res.string.guide_you_stats_body, GuideTarget.Personal(Destination.STATS), tour = true),
+        // --- Organiser
+        FeatureCard("subtasks", GuideChapter.ORGANIZE, { KairosIcons.Layers }, Res.string.card_subtasks_title, Res.string.card_subtasks_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("recurrence", GuideChapter.ORGANIZE, { KairosIcons.Repeat }, Res.string.card_recurrence_title, Res.string.card_recurrence_body, GuideTarget.Personal(Destination.DAY), since = "3.4.0"),
+        FeatureCard("dependencies", GuideChapter.ORGANIZE, { KairosIcons.Block }, Res.string.card_dependencies_title, Res.string.card_dependencies_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("slots", GuideChapter.ORGANIZE, { KairosIcons.PushPin }, Res.string.card_slots_title, Res.string.card_slots_body, GuideTarget.Personal(Destination.DAY)),
+        // --- Équipe
+        FeatureCard("team_members", GuideChapter.TEAM, { KairosIcons.Groups }, Res.string.guide_team_members_title, Res.string.guide_team_members_body, GuideTarget.Team(TeamDestination.MEMBERS)),
+        FeatureCard("team_backlog", GuideChapter.TEAM, { KairosIcons.Stacks }, Res.string.guide_team_backlog_title, Res.string.guide_team_backlog_body, GuideTarget.Team(TeamDestination.BACKLOG)),
+        FeatureCard("team_assign", GuideChapter.TEAM, { KairosIcons.PersonAdd }, Res.string.guide_team_assign_title, Res.string.guide_team_assign_body, GuideTarget.Team(TeamDestination.BACKLOG)),
+        FeatureCard("team_board", GuideChapter.TEAM, { KairosIcons.ViewKanban }, Res.string.guide_team_board_title, Res.string.guide_team_board_body, GuideTarget.Team(TeamDestination.BOARD)),
+        FeatureCard("team_forecast", GuideChapter.TEAM, { KairosIcons.Monitoring }, Res.string.guide_team_forecast_title, Res.string.guide_team_forecast_body, GuideTarget.Team(TeamDestination.FORECAST)),
+        FeatureCard("team_exchanges", GuideChapter.TEAM, { KairosIcons.SwapHoriz }, Res.string.guide_team_exchanges_title, Res.string.guide_team_exchanges_body, GuideTarget.Team(TeamDestination.MEMBERS, exchanges = true)),
+        // --- Réglages
+        FeatureCard("settings", GuideChapter.SETTINGS, { KairosIcons.Settings }, Res.string.card_settings_title, Res.string.card_settings_body, GuideTarget.Settings, since = "3.4.0"),
+        FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings, tour = true),
+    )
+
+    /** Les cartes d'un chapitre, dans l'ordre. */
+    fun chapter(chapter: GuideChapter): List<FeatureCard> = cards.filter { it.chapter == chapter }
+
+    /** Les chapitres proposés : celui de l'équipe seulement si l'espace Équipe est activé. */
+    fun chapters(teamEnabled: Boolean): List<GuideChapter> = GuideChapter.entries.filter { it != GuideChapter.TEAM || teamEnabled }
+
+    /**
+     * Les cartes que [version] ajoute : celles dont [FeatureCard.since] a les mêmes numéros majeur et mineur (une version corrective
+     * `3.4.1` ou une préversion `3.4.0-beta.2` garde la section de la `3.4.0`). Rien n'est mémorisé : la section dépend de la
+     * version de l'application, pas d'un « vu » (docs/spec/visite-guidee.md § Persistance).
+     */
+    fun newIn(version: String): List<FeatureCard> {
+        val minor = minorOf(version) ?: return emptyList()
+        return cards.filter { minorOf(it.since) == minor }
+    }
+
+    private fun minorOf(version: String): Pair<Int, Int>? {
+        val parts = version.substringBefore('-').split('.')
+        val major = parts.getOrNull(0)?.toIntOrNull() ?: return null
+        val minor = parts.getOrNull(1)?.toIntOrNull() ?: return null
+        return major to minor
+    }
+
+    /**
+     * Les fonctionnalités en gras de la section « Features » du `README.md` (anglais), chacune avec la carte qui la décrit : le test
+     * `FeatureCatalogTest.readmeFeaturesAreCovered` compare cette table au README. Ajouter une fonctionnalité au README oblige donc à la
+     * relier à une carte (la créer au besoin), dans le même changement.
+     */
+    val README_FEATURES: Map<String, String> = mapOf(
+        "One-line capture" to "capture",
+        "Full editing" to "qualify",
+        "Editable subtasks" to "subtasks",
+        "Keyboard shortcuts" to "capture",
+        "Subtasks" to "subtasks",
+        "Recurrence" to "recurrence",
+        "\"Snooze\"" to "recurrence",
+        "Blockers" to "dependencies",
+        "Score" to "score",
+        "Placement" to "score",
+        "Fibonacci points" to "points",
+        "Afternoon dip (14h55)" to "score",
+        "Hours by day of the week" to "hours",
+        "Learned durations" to "learned",
+        "Working days and holidays" to "hours",
+        "Busy slots" to "slots",
+        "Deep work" to "slots",
+        "Timeline" to "do",
+        "Timer per task" to "time",
+        "Three alerts" to "time",
+        "Day" to "do",
+        "Week" to "week",
+        "Statistics" to "stats",
+        "Web version" to "data",
+        "Settings" to "settings",
+        "Members" to "team_members",
+        "Tracking" to "team_board",
+        "Load" to "team_board",
+        "Forecasts" to "team_forecast",
+        "Your personal work counts" to "team_members",
+        "File exchanges" to "team_exchanges",
+        "Theme color" to "settings",
+        "Guided first task" to "first_task",
+        "Discover Kairos" to "discover",
+    )
+}
+
+/** Les deux visites de l'ancien accueil, devenues des **sélections** du catalogue (6 étapes chacune). */
+object GuideSteps {
+    fun of(kind: GuideKind): List<FeatureCard> = when (kind) {
+        GuideKind.PERSONAL -> FeatureCatalog.cards.filter { it.tour }
+        GuideKind.TEAM -> FeatureCatalog.chapter(GuideChapter.TEAM)
+    }
+}

@@ -92,6 +92,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Un jour personnalisé et un jour libre s'enregistrent d'un coup ; une fin avant le début est refusée sur son champ ; `schedule`
   reste nul tant qu'aucun jour n'est propre (`M5ScreensUiTest.aCustomDayAndADayOffAreSavedAsTheSchedule`,
   `anEndBeforeTheStartIsRefusedOnItsField`, `SettingsFormTest.theScheduleStaysNullUntilADayIsCustomised`).
+- La carte **« Découvrir Kairos »** (juste avant « À propos et guide ») ouvre le hub des chapitres (`visite-guidee.md`,
+  `M6GuideUiTest.theDiscoverHubIsInTheSettingsAndOnHome…`).
 - L'interrupteur « Apprendre les durées… » se coupe et s'enregistre sans toucher aux autres bornes
   (`LearnedDurationsUiTest.switchingTheFeatureOffHidesTheBadgeAndTheSettingIsSaved`).
 - Heure 25 refusée, début après la fin refusé, puis 8 h, base 2,5 et creux

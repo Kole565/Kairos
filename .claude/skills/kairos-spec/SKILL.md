@@ -84,7 +84,8 @@ Checklist avant de pousser :
 ## 4. README : seulement si c'est une feature
 
 - Fonctionnalité visible par l'utilisateur → `README.md` (EN) **et** `README.fr.md` (FR), en termes
-  d'usage.
+  d'usage, **et une carte du catalogue** (`kmp/ui/.../ui/guide/FeatureCatalog.kt` : carte, `README_FEATURES`, `since` =
+  version de livraison) : `FeatureCatalogTest.readmeFeaturesAreCovered` casse sinon (`docs/spec/visite-guidee.md`).
 - Correctif, refactor, décision technique → **pas** de README, seulement la
   spec.
 - Version publiée → notes Fastlane FR et EN

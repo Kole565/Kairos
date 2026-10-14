@@ -106,6 +106,8 @@ internal class RowContext(
     val clock: Clock = Clock.System,
     /** Réglages des durées apprises (seuil de fiabilité affiché par « Pourquoi à cette place ? »). */
     val learning: LearningSettings = LearningSettings(),
+    /** La tâche que l'accompagnement de la première tâche explique (docs/spec/premiere-tache.md) : sa ligne est cernée, jamais par la couleur seule (le panneau la nomme). */
+    val highlight: Long? = null,
 )
 
 /**
@@ -141,7 +143,11 @@ internal fun TaskRow(
         // Bloquée : fond de surface et contour, jamais d'opacité (décision tracée dans
         // docs/spec/vue-jour.md).
         color = if (blocked) scheme.surface else scheme.surfaceContainerLow,
-        border = if (blocked) BorderStroke(1.dp, scheme.outlineVariant) else null,
+        border = when {
+            ctx.highlight == task.id -> BorderStroke(2.dp, scheme.primary)
+            blocked -> BorderStroke(1.dp, scheme.outlineVariant)
+            else -> null
+        },
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth(),
     ) {
