@@ -92,6 +92,22 @@ class M5ScreensUiTest {
     }
 
     @Test
+    fun restoringTheDefaultsFillsTheFormAndStillNeedsASave() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        runBlocking { repository.updateSettings(repository.snapshot.value.settings.copy(workdayStartHour = 7)) }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
+        waitText("Working day")
+        onNodeWithText("Restore default settings").performScrollTo().performClick()
+        // Le formulaire montre la valeur par défaut, mais rien n'est enregistré avant « Save ».
+        onNode(hasSetTextAction() and hasText("9")).assertExists()
+        assertEquals(7, repository.snapshot.value.settings.workdayStartHour)
+        onNodeWithText("Save").performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.settings.workdayStartHour == 9 }
+    }
+
+    @Test
     fun anInvalidFieldBlocksSavingThenAValidFormIsSaved() = runComposeUiTest {
         val services = services()
         val repository = services.repository
@@ -111,7 +127,9 @@ class M5ScreensUiTest {
         waitText("The start of the day must be before its end.")
         assertEquals(9, repository.snapshot.value.settings.workdayStartHour)
 
-        // Valeurs valides, décimale à la virgule, interrupteur : tout est enregistré d'un coup.
+        // Valeurs valides, décimale à la virgule, interrupteur : tout est enregistré d'un coup. Le score et le creux sont
+        // dans le groupe « Avancé », replié : on l'ouvre.
+        onNodeWithText("Advanced: how tasks are ordered").performScrollTo().performClick()
         type("Start of day (hour, 0-23)", "8")
         type("Value base per priority", "2,5")
         onNodeWithText("Enable the afternoon dip").performScrollTo().performClick()

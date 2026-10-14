@@ -168,7 +168,7 @@
     <string name="duration_minutes">%1$d min</string>
     <string name="overload_banner">Already %1$d task(s) at the highest priority. The priority signal gets diluted: lower what can wait.</string>
     <string name="agenda_title">Today, in order</string>
-    <string name="agenda_hint">ordered by WSJF score: value ÷ effort</string>
+    <string name="agenda_hint">ordered by score: value ÷ effort</string>
     <string name="agenda_empty">No task to do is currently scheduled.</string>
     <string name="tag_pinned">pinned</string>
     <string name="tag_critical">critical path</string>
@@ -241,7 +241,7 @@
     <string name="subtask_restore">Undo the deletion</string>
     <string name="subtask_deleted_description">Deleted when you save: %1$s</string>
     <string name="field_blockers">Blocked by</string>
-    <string name="field_blockers_hint">While a checked blocker is still to do, this task is not ordered.</string>
+    <string name="field_blockers_hint">While a checked task is still to do, this task waits under “Blocked” and is not ordered.</string>
     <string name="field_blockers_cycle">%1$s (already waiting on this task)</string>
     <string name="field_blockers_none">no other task</string>
     <string name="field_day_invalid">Day expected between 1 and 31</string>
@@ -364,7 +364,7 @@
     <string name="inbox_help_priority">Priority: how important the task is. The deadline already counts on its own.</string>
     <string name="settings_intro">All of Kairos’ settings, saved on this device. An invalid field is flagged under it; nothing is saved while one remains.</string>
     <string name="settings_section_day">Working day</string>
-    <string name="settings_section_wsjf">Priority score (WSJF)</string>
+    <string name="settings_section_wsjf">Priority score</string>
     <string name="settings_section_wsjf_body">Score = value (priority + date urgency) ÷ effort (points).</string>
     <string name="settings_section_dip">Afternoon dip</string>
     <string name="settings_section_dip_body">During the dip, complex tasks give way to light ones. Urgency and deadlines always come first; the displayed score does not change.</string>
@@ -1158,4 +1158,12 @@
     <string name="task_moved">“%1$s” moved to %2$s.</string>
     <string name="action_revert">Undo</string>
     <string name="week_scheduled">Scheduled</string>
+    <string name="tag_blocks_one">Blocks “%1$s”</string>
+    <string name="tag_blocks_many">Blocks %1$d tasks</string>
+    <string name="blocked_feedback">“%1$s” now waits for “%2$s”: it is listed under Blocked until then.</string>
+    <string name="settings_advanced_title">Advanced: how tasks are ordered</string>
+    <string name="settings_advanced_body">Nothing to set to use Kairos; open it to fine-tune the score and the afternoon dip.</string>
+    <string name="settings_restore_title">Default settings</string>
+    <string name="settings_restore_body">Puts every setting back to its default value (the team space is not touched). Nothing is saved until you press Save.</string>
+    <string name="settings_restore_action">Restore default settings</string>
 </resources>

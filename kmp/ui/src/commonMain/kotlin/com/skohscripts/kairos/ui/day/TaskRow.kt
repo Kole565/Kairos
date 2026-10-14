@@ -50,6 +50,8 @@ import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.ui.generated.resources.action_move
+import com.skohscripts.kairos.ui.generated.resources.tag_blocks_many
+import com.skohscripts.kairos.ui.generated.resources.tag_blocks_one
 import com.skohscripts.kairos.ui.generated.resources.date_choose
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -269,6 +271,15 @@ private fun TaskTags(task: Task, ctx: RowContext) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp),
         )
+    }
+    // Cette tâche en bloque d'autres : on le voit sur le bloqueur (« bloque X »), pas seulement sur la tâche bloquée.
+    if (task.status == TaskStatus.TODO) {
+        ctx.view.blocking[task.id]?.takeIf { it.isNotEmpty() }?.let { titles ->
+            Badge(
+                if (titles.size == 1) stringResource(Res.string.tag_blocks_one, titles.single()) else stringResource(Res.string.tag_blocks_many, titles.size),
+                nowrap = true,
+            )
+        }
     }
     TimeSpent(task, ctx)
     if (task.status == TaskStatus.TODO) {

@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.performMouseInput
@@ -224,7 +226,11 @@ class DayScreenUiTest {
         assertEquals(a to b, dep.taskId to dep.blockerId)
         assertEquals("2026-09-29T14:30", repository.snapshot.value.tasks.single { it.id == a }.pinnedStart.toString())
         // Alpha, bloquée par Beta, passe dans « Bloquées ».
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Blocked (1)").fetchSemanticsNodes().isNotEmpty() }
+        // La liste est paresseuse : la ligne de Beta porte maintenant « Blocks “Alpha” » et la section est plus bas.
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Blocked (1)"))
+        onNodeWithText("Blocked (1)").assertExists()
+        // « Bloquées » s'est ouverte pour ce coup, avec la tâche bloquée, et la ligne de Beta dit ce qu'elle bloque.
+        onNodeWithText("Blocks “Alpha”").assertExists()
     }
 
     /** Horloge réglable et notifications système simulées (refusées : le bandeau et le titre prennent le relais). */

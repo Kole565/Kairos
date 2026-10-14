@@ -21,6 +21,17 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.Icon
+import com.skohscripts.kairos.ui.app.expandedState
+import com.skohscripts.kairos.ui.generated.resources.settings_advanced_body
+import com.skohscripts.kairos.ui.generated.resources.settings_advanced_title
+import com.skohscripts.kairos.ui.icons.KairosIcons
+import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
+import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Alignment
@@ -173,15 +184,17 @@ private val TEXTS: Map<String, FieldText> = mapOf(
 )
 
 /** Sections de l'écran, dans l'ordre de l'écran. */
-private class Section(val title: StringResource, val body: StringResource?, val keys: List<String>)
+private class Section(val title: StringResource, val body: StringResource?, val keys: List<String>, val advanced: Boolean = false)
 
 private val SECTIONS = listOf(
     Section(Res.string.settings_section_day, null, listOf("defaultTaskDurationMinutes", "meetingBufferMinutes", "workdayStartHour", "workdayEndHour")),
-    Section(Res.string.settings_section_wsjf, Res.string.settings_section_wsjf_body, listOf("priorityValueBase", "urgencyHorizonDays", "urgencyPeak", "defaultFibonacciPoints")),
+    // « Avancé : comment les tâches sont ordonnées » : replié, rien à régler pour s'en servir (docs/spec/planning-personnalise.md).
+    Section(Res.string.settings_section_wsjf, Res.string.settings_section_wsjf_body, listOf("priorityValueBase", "urgencyHorizonDays", "urgencyPeak", "defaultFibonacciPoints"), advanced = true),
     Section(
         Res.string.settings_section_dip,
         Res.string.settings_section_dip_body,
         listOf("cognitiveDipEnabled", "cognitiveDipStartHour", "cognitiveDipTroughHour", "cognitiveDipEndHour", "cognitiveDipPenalty"),
+        advanced = true,
     ),
     Section(Res.string.settings_section_guards, null, listOf("staleOverdueDays", "staleUntouchedDays", "priorityOverloadThreshold")),
     Section(Res.string.settings_section_types, null, listOf("taskTypes")),
@@ -242,11 +255,36 @@ internal fun SettingsCardHeader(title: String, body: String? = null) {
  */
 @Composable
 internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
-    SECTIONS.forEach { section ->
-        SettingsCard {
-            SettingsCardHeader(stringResource(section.title), section.body?.let { stringResource(it) })
-            section.keys.forEach { key -> SettingInput(key, values[key].orEmpty(), errors[key]) { onChange(key, it) } }
+    SECTIONS.filterNot { it.advanced }.forEach { section -> SectionCard(section, values, errors, onChange) }
+    AdvancedGroup(values, errors, onChange)
+}
+
+@Composable
+private fun SectionCard(section: Section, values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
+    SettingsCard {
+        SettingsCardHeader(stringResource(section.title), section.body?.let { stringResource(it) })
+        section.keys.forEach { key -> SettingInput(key, values[key].orEmpty(), errors[key]) { onChange(key, it) } }
+    }
+}
+
+/**
+ * « Avancé : comment les tâches sont ordonnées » : le score de priorité et le creux de l'après-midi, repliés. Ils
+ * s'ouvrent d'office quand un de leurs champs est en erreur (un enregistrement refusé ne doit pas cacher le champ fautif).
+ */
+@Composable
+private fun AdvancedGroup(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
+    val advanced = SECTIONS.filter { it.advanced }
+    var userOpen by rememberSaveable { mutableStateOf(false) }
+    val open = userOpen || advanced.any { section -> section.keys.any { it in errors } }
+    SettingsCard {
+        KairosTextButton(onClick = { userOpen = !open }, modifier = Modifier.fillMaxWidth().expandedState(open), contentPadding = KairosButtonIconPadding) {
+            Icon(if (open) KairosIcons.ExpandLess else KairosIcons.ExpandMore, contentDescription = null)
+            Column(Modifier.weight(1f).padding(start = 8.dp)) {
+                Text(stringResource(Res.string.settings_advanced_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
+                Text(stringResource(Res.string.settings_advanced_body), style = MaterialTheme.typography.bodySmall)
+            }
         }
+        if (open) advanced.forEach { section -> SectionCard(section, values, errors, onChange) }
     }
 }
 

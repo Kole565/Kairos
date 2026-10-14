@@ -43,7 +43,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import com.skohscripts.kairos.ui.app.LocalMessages
 import com.skohscripts.kairos.ui.app.LocalUndoMessages
+import com.skohscripts.kairos.ui.generated.resources.blocked_feedback
 import com.skohscripts.kairos.ui.generated.resources.action_revert
 import com.skohscripts.kairos.ui.generated.resources.task_moved
 import org.jetbrains.compose.resources.getString
@@ -73,6 +75,7 @@ import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TimeBlock
 import com.skohscripts.kairos.ui.LocalPlatform
 import com.skohscripts.kairos.ui.Platform
@@ -163,6 +166,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     val notifyState by services.notifier.state.collectAsState()
     val scope = rememberCoroutineScope()
     val undo = LocalUndoMessages.current
+    val showMessage = LocalMessages.current
     val language = uiLanguage()
     val showShortcuts = LocalPlatform.current != Platform.ANDROID
 
@@ -398,7 +402,21 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 titles = remember(snapshot.tasks) { snapshot.tasks.associate { it.id to it.title } },
                 estimates = estimates,
                 onDismiss = { editingId = null },
-                onSave = { edit -> scope.launch { repository.updateTask(id, edit) }; editingId = null },
+                onSave = { edit ->
+                    // Un blocage ajouté : « Bloquées » s'ouvre pour cette fois et un message dit où la tâche est allée.
+                    val before = view.blockersOf[id].orEmpty().toSet()
+                    val openIds = view.openTasks.mapTo(HashSet()) { it.id }
+                    val added = edit.blockerIds.filter { it !in before && it in openIds }
+                    scope.launch {
+                        repository.updateTask(id, edit)
+                        if (added.isNotEmpty() && task.status == TaskStatus.TODO) {
+                            val names = added.mapNotNull { blocker -> snapshot.tasks.firstOrNull { it.id == blocker }?.title }
+                            sectionOpen["blocked"] = true
+                            showMessage(getString(Res.string.blocked_feedback, task.title, names.joinToString(", ")))
+                        }
+                    }
+                    editingId = null
+                },
                 onDelete = { scope.launch { repository.deleteTask(id) }; editingId = null },
                 // Tâche d'équipe assignée à « moi » : « Assigné à » en lecture seule, le reste comme une tâche perso.
                 team = if (task.space == TaskSpace.TEAM) TeamTaskSheet(AssignContext.of(repository.snapshot.value, day), editable = false, today = day) else null,

@@ -37,6 +37,9 @@ import com.skohscripts.kairos.ui.generated.resources.settings_intro
 import com.skohscripts.kairos.ui.generated.resources.settings_not_saved
 import com.skohscripts.kairos.ui.generated.resources.settings_reset
 import com.skohscripts.kairos.ui.generated.resources.settings_saved
+import com.skohscripts.kairos.ui.generated.resources.settings_restore_action
+import com.skohscripts.kairos.ui.generated.resources.settings_restore_body
+import com.skohscripts.kairos.ui.generated.resources.settings_restore_title
 import com.skohscripts.kairos.ui.generated.resources.settings_unsaved
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -179,10 +182,7 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
                 Text(stringResource(Res.string.settings_intro), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth())
                 general?.let { Box(Modifier.fillMaxWidth().bringIntoViewRequester(reveal.requester(ErrorReveal.GENERAL))) { GeneralErrorBanner(it) } }
                 CompositionLocalProvider(LocalErrorReveal provides reveal) {
-                    SettingsFormCards(values, errors) { key, value ->
-                        values = values + (key to value)
-                        errors = errors - key
-                    }
+                    // Langue et apparence d'abord : ce qu'on cherche en premier, puis le reste du formulaire.
                     LanguageCard(values["language"].orEmpty()) {
                         values = values + ("language" to it)
                     }
@@ -190,10 +190,22 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
                         values = values + ("themeColor" to it)
                         errors = errors - "themeColor"
                     }
+                    SettingsFormCards(values, errors) { key, value ->
+                        values = values + (key to value)
+                        errors = errors - key
+                    }
                     TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services) { key, value ->
                         values = values + (key to value)
                         errors = errors - key
                     }
+                }
+                RestoreDefaultsCard {
+                    // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
+                    values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->
+                        if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
+                    }
+                    errors = emptyMap()
+                    general = null
                 }
                 services.updates?.let { updates ->
                     UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { values = values + ("updateCheckEnabled" to it) }
@@ -295,6 +307,18 @@ private fun SaveBar(dirty: Boolean, onReset: () -> Unit, onSave: () -> Unit) {
             }
             KairosButton(enabled = dirty, onClick = onSave) { Text(stringResource(Res.string.action_save)) }
         }
+    }
+}
+
+/**
+ * « Restaurer les valeurs par défaut » : remplit le formulaire des valeurs par défaut (hors espace Équipe), sans rien
+ * enregistrer : « Enregistrer » reste nécessaire, « Annuler les modifications » revient en arrière.
+ */
+@Composable
+private fun RestoreDefaultsCard(onRestore: () -> Unit) {
+    SettingsCard(spacing = KairosSpacing.m) {
+        SettingsCardHeader(stringResource(Res.string.settings_restore_title), stringResource(Res.string.settings_restore_body))
+        KairosOutlinedButton(onClick = onRestore) { Text(stringResource(Res.string.settings_restore_action)) }
     }
 }
 

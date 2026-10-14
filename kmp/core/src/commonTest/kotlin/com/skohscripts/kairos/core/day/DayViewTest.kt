@@ -36,6 +36,16 @@ class DayViewTest {
         DayView.build(snapshot, day, now, paris, filter)
 
     @Test
+    fun a_blocker_lists_the_tasks_it_blocks_while_it_is_open() {
+        val deps = listOf(TaskDependency(1, taskId = 2, blockerId = 1, createdAt = t0), TaskDependency(2, taskId = 3, blockerId = 1, createdAt = t0))
+        val open = build(KairosSnapshot(tasks = listOf(task(1), task(2), task(3)), dependencies = deps))
+        assertEquals(listOf("T2", "T3"), open.blocking[1L])
+        // Le bloqueur terminé ne bloque plus rien : plus de badge.
+        val done = build(KairosSnapshot(tasks = listOf(task(1, status = TaskStatus.DONE), task(2), task(3)), dependencies = deps))
+        assertEquals(null, done.blocking[1L])
+    }
+
+    @Test
     fun a_blocked_unqualified_task_is_listed_only_in_blocked() {
         // Bloquée et pas encore qualifiée : « Bloquées » seulement, jamais aussi dans « À traiter » (une tâche, une section).
         val tasks = listOf(task(1), task(2, p = null))

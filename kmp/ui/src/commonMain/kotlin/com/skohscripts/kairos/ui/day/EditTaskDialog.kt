@@ -171,7 +171,8 @@ internal fun EditTaskDialog(
     val originalSubtasks = remember(task.id) { subtasks }
     var subtaskDrafts by remember(task.id) { mutableStateOf(originalSubtasks.map { SubtaskDraft.of(it) }) }
     var blockers by remember { mutableStateOf(blockerIds) }
-    var advanced by remember { mutableStateOf(false) }
+    // Un bloqueur ou une date programmée existent déjà : ils sont dans les options avancées, qu'on ouvre d'emblée.
+    var advanced by remember { mutableStateOf(blockerIds.isNotEmpty() || task.scheduledDate != null) }
     var confirmDelete by remember { mutableStateOf(false) }
     // Tâche d'équipe (espace Équipe) : titulaire en cours d'édition, réponse « garder En cours ? », avancement, onglet.
     var assignee by remember { mutableStateOf(task.assigneeId) }
