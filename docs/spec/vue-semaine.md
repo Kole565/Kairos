@@ -37,7 +37,9 @@ un autre jour.
   (« Déjeuner (12h00-13h00) », occurrences des récurrents comprises), les
   tâches faites ce jour-là (barrées, coche verte), les tâches à faire dont
   l'**échéance** tombe ce jour-là (priorité d'abord, sans priorité en
-  dernier, avec la pastille de priorité et le projet), « — » si rien ; puis
+  dernier, avec la pastille de priorité et le projet), puis les tâches
+  **programmées pour** ce jour dont l'échéance n'est pas déjà ce jour-là, avec
+  la pastille « Programmée » (une tâche, une seule ligne par jour), « — » si rien ; puis
   « Voir le jour », qui ouvre la vue Jour de ce jour (`vue-jour.md` § Un
   autre jour).
 - Largeur bureau : sept colonnes égales, de même hauteur. Largeur étroite :
@@ -53,14 +55,15 @@ un autre jour.
 - Une tâche due jeudi apparaît dans la semaine ; « Voir le jour » du
   mercredi ouvre « Jour · mercredi 30 septembre 2026 » ; « Semaine
   suivante » passe au lundi 5 octobre (`M4ScreensUiTest`).
+- Une tâche **programmée pour** un jour de la semaine y apparaît une seule fois (jamais en double si son échéance est le même
+  jour ; aux deux jours si elle est programmée avant son échéance), avec la pastille « Programmée » ; une tâche faite ou
+  programmée une autre semaine n'y est pas (`WeekViewTest.scheduled_tasks_appear_on_their_day_once`).
 - Aucune carte ne déborde à 420 px (capture `desktop-week-narrow` de
   l'auto-test).
 
 ### Hors périmètre / différé
 
 - Glisser une tâche d'un jour à l'autre, vue mois.
-- Tâches programmées (`scheduledDate`) dans la grille : seule l'échéance
-  place une tâche dans un jour.
 
 ## 2. Solution technique
 
@@ -68,7 +71,7 @@ Depuis le jalon E1 de l'espace Équipe, l'écran de la vue Semaine lit `reposito
 
 - `WeekView.build(snapshot, unJour, maintenant, fuseau, filtre)` : lundi de
   la semaine (`TaskStats.monday`), `days` (`WeekDay` : `tasks` = à faire
-  filtrées dont `deadline` est ce jour, triées `(priorité absente,
+  filtrées dont `deadline` est ce jour ; `scheduled` = à faire filtrées dont `scheduledDate` est ce jour et `deadline` un autre (même tri, puis titre) ; `tasks` triées `(priorité absente,
   priorité)` ; `done` = faites filtrées dont la date **locale** de
   modification est ce jour, par titre ; `blocks` = ponctuels du jour et
   occurrences des récurrents (`Recurrence.expandRecurringBlocks` sur la

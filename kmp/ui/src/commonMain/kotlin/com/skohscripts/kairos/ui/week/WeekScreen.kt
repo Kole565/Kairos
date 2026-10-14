@@ -60,6 +60,7 @@ import com.skohscripts.kairos.ui.generated.resources.backlog_title
 import com.skohscripts.kairos.ui.generated.resources.week_block
 import com.skohscripts.kairos.ui.generated.resources.week_next
 import com.skohscripts.kairos.ui.generated.resources.week_nothing
+import com.skohscripts.kairos.ui.generated.resources.week_scheduled
 import com.skohscripts.kairos.ui.generated.resources.week_prev
 import com.skohscripts.kairos.ui.generated.resources.week_see_day
 import com.skohscripts.kairos.ui.generated.resources.week_spent
@@ -185,7 +186,7 @@ private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: 
             day.blocks.forEach { b ->
                 Badge(stringResource(Res.string.week_block, b.title, Dates.time(b.start, language), Dates.time(b.end, language)))
             }
-            if (day.tasks.isEmpty() && day.done.isEmpty()) {
+            if (day.tasks.isEmpty() && day.done.isEmpty() && day.scheduled.isEmpty()) {
                 Text(stringResource(Res.string.week_nothing), color = scheme.onSurfaceVariant)
             }
             day.done.forEach { t ->
@@ -201,6 +202,16 @@ private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: 
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        t.priority?.let { PriorityBadge(it) }
+                        if (t.projectTag.isNotEmpty()) Badge(t.projectTag)
+                    }
+                }
+            }
+            day.scheduled.forEach { t ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Badge(stringResource(Res.string.week_scheduled))
                         t.priority?.let { PriorityBadge(it) }
                         if (t.projectTag.isNotEmpty()) Badge(t.projectTag)
                     }

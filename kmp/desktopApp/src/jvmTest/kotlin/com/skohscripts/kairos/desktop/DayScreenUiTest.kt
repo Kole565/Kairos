@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.performMouseInput
@@ -136,6 +138,29 @@ class DayScreenUiTest {
     }
 
     @Test
+    fun moveSchedulesATaskOnAnotherDayAndCanBeUndone() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        runBlocking {
+            val id = repository.createTask("Call back")!!
+            repository.setPriority(id, 1)
+            repository.setPoints(id, 2)
+        }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithContentDescription("Move to another day…").fetchSemanticsNodes().isNotEmpty() }
+        onAllNodesWithContentDescription("Move to another day…")[0].performClick()
+        // Mardi 29 septembre : demain est le mercredi 30.
+        onNodeWithText("Tomorrow", substring = true).performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single().scheduledDate != null }
+        assertEquals("2026-09-30", repository.snapshot.value.tasks.single().scheduledDate.toString())
+        // Programmée plus tard : la tâche quitte « Aujourd'hui », l'échéance n'a pas bougé, et le message propose d'annuler.
+        assertEquals(null, repository.snapshot.value.tasks.single().deadline)
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Undo").fetchSemanticsNodes().isNotEmpty() }
+        onNodeWithText("Undo").performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.tasks.single().scheduledDate == null }
+    }
+
+    @Test
     fun blockCaptureAppearsInTheDayList() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
@@ -201,7 +226,11 @@ class DayScreenUiTest {
         assertEquals(a to b, dep.taskId to dep.blockerId)
         assertEquals("2026-09-29T14:30", repository.snapshot.value.tasks.single { it.id == a }.pinnedStart.toString())
         // Alpha, bloquée par Beta, passe dans « Bloquées ».
-        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Blocked (1)").fetchSemanticsNodes().isNotEmpty() }
+        // La liste est paresseuse : la ligne de Beta porte maintenant « Blocks “Alpha” » et la section est plus bas.
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Blocked (1)"))
+        onNodeWithText("Blocked (1)").assertExists()
+        // « Bloquées » s'est ouverte pour ce coup, avec la tâche bloquée, et la ligne de Beta dit ce qu'elle bloque.
+        onNodeWithText("Blocks “Alpha”").assertExists()
     }
 
     /** Horloge réglable et notifications système simulées (refusées : le bandeau et le titre prennent le relais). */

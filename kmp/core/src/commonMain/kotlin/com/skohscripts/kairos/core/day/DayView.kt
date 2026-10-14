@@ -86,6 +86,11 @@ data class DayView(
     val parentTitle: Map<Long, String>,
     /** Bloqueurs directs de chaque tâche (toutes arêtes), pour le dialogue d'édition. */
     val blockersOf: Map<Long, List<Long>>,
+    /**
+     * Pour chaque bloqueur encore à faire, les titres des tâches qu'il bloque (blocage direct, ces tâches étant à faire) :
+     * le badge « bloque … » de sa ligne (docs/spec/planning-personnalise.md § Lot A, 3).
+     */
+    val blocking: Map<Long, List<String>> = emptyMap(),
     val openTasks: List<Task>,
     val priorityOverloadCount: Int,
     val priorityOverloadThreshold: Int,
@@ -165,6 +170,9 @@ data class DayView(
                 parentTitle[id]?.let { "$it › $title" } ?: title
             }
             val reasons = Dependencies.openBlockers(edges, isTodo)
+            val blocking = reasons.filterKeys { it in directlyBlocked }.entries
+                .flatMap { (blockedId, blockers) -> blockers.map { it to breadcrumb(blockedId) } }
+                .groupBy({ it.first }, { it.second })
             val blocked = blockedIds.mapNotNull { id -> byId[id] }
                 .filter(filter::matches)
                 // Héritée : le motif est la mère qui attend (« en attente de : Mère »).
@@ -206,7 +214,9 @@ data class DayView(
             return DayView(
                 day = day,
                 schedule = schedule,
-                inbox = schedule.toProcess.filter(filter::matches),
+                // Une bloquée non qualifiée reste dans « Bloquées » seulement : une tâche ouverte, une seule section.
+                // Le moteur (figé par les fichiers d'or) la compte à traiter ; le filtre est ici, sur la vue.
+                inbox = schedule.toProcess.filter { it.id !in blockedIds && filter.matches(it) },
                 agenda = schedule.scheduled.filter { filter.matches(it.task) },
                 unscheduled = schedule.unscheduled.filter(filter::matches),
                 later = schedule.later.filter(filter::matches),
@@ -223,6 +233,7 @@ data class DayView(
                 raised = raised,
                 parentTitle = parentTitle,
                 blockersOf = directBlockers,
+                blocking = blocking,
                 openTasks = open.sortedBy { it.title },
                 priorityOverloadCount = Scheduling.countMaxPriority(open.filter { it.id !in blockedIds }),
                 priorityOverloadThreshold = settings.priorityOverloadThreshold,

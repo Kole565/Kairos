@@ -42,7 +42,7 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    (P0 Critique · P1 Important · P2 Utile ; 1 trivial … 21 énorme).
    Recliquer une valeur la retire. Vide : « Rien à traiter : tout est déjà
    clarifié » ; vidée par un filtre actif seulement : « Aucune tâche à
-   traiter ne correspond au filtre » (ne pas annoncer que tout est clarifié). Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
+   traiter ne correspond au filtre » (ne pas annoncer que tout est clarifié). Une tâche **bloquée** non qualifiée n'y figure pas : elle reste dans « Bloquées » (une tâche ouverte, une seule section). Sous l'en-tête, « Comment qualifier ? » (replié) : pourquoi
    qualifier, le sens des priorités (importance, le délai compte à part par
    l'échéance), puis le guide des points (voir **Guide des points**).
 4. **Maintenant** (seul bloc teinté) : « À faire maintenant : » la première
@@ -129,6 +129,26 @@ retoucher. Dialogue de
 créneau : mêmes champs que la capture de créneau, « Supprimer » qui dit
 « toutes ses occurrences » pour un récurrent.
 
+**Dates, déplacer, blocage** (3.4, issue #64, `planning-personnalise.md` lot A).
+Les champs date de la fiche (échéance, « Programmée pour ») et le jour d'un
+créneau ont un bouton « Choisir une date » (sélecteur Material 3) ; l'échéance et
+« Programmée pour » ont en plus les raccourcis « Aujourd'hui », « Demain », « Lundi
+prochain », « Dans une semaine » (omis quand c'est le lundi prochain) et « Effacer ».
+La saisie accepte `2026-09-30`, `2026-9-30`, `2026/9/30` et, en français, `30/09/2026`
+(jour, mois, année ; l'ordre mois/jour de l'anglais est refusé : ambigu). Les libellés
+n'affichent plus « (AAAA-MM-JJ) ». Les raccourcis partent du **vrai** aujourd'hui, pas du
+jour affiché. « Décaler » met l'échéance au jour ouvré suivant **et** programme la
+tâche personnelle pour ce jour : elle quitte « Aujourd'hui » jusque-là. « Déplacer… »
+(icône calendrier, `Déplacer vers un autre jour…`) ouvre un menu (« Demain », « Lundi
+prochain », « Dans une semaine », « Choisir une date… ») qui programme la tâche
+personnelle pour ce jour sans toucher à l'échéance ; un message « « X » déplacée au … »
+propose « Annuler » (la date d'avant revient). Une tâche d'équipe n'a pas « Déplacer… ».
+Quand une édition **ajoute** un bloqueur à une tâche à faire, la section « Bloquées »
+s'ouvre pour cette fois et un message dit « « X » attend « Y » ». La fiche ouvre d'emblée
+ses « Options avancées » si la tâche a un bloqueur ou une date programmée ; l'aide de
+« Bloquée par » dit que la tâche attend dans « Bloquées ». Sur la ligne du **bloqueur**
+(à faire), un badge « Bloque « X » » (ou « Bloque N tâches »).
+
 **Un autre jour** : « Voir le jour » d'une carte de la vue Semaine ouvre la
 vue Jour de ce jour-là, titrée « Jour · mercredi 30 septembre 2026 » : même
 écran, planning calculé depuis le début de la journée de travail (l'heure
@@ -156,6 +176,15 @@ Inactifs pendant une saisie et avec Ctrl, Cmd ou Alt.
 - Depuis la fiche de la mère, on renomme, coche et supprime ses sous-tâches
   existantes en un seul « Enregistrer » ; « Annuler » ne change rien ; une tâche
   sans sous-tâche n'a pas la section (`SubtaskEditUiTest`, `SubtaskEditTest`).
+- Une bloquée non qualifiée n'est que dans « Bloquées » (`DayViewTest.a_blocked_unqualified_task_is_listed_only_in_blocked`) ;
+  un bloqueur liste les tâches qu'il bloque tant qu'il est à faire
+  (`DayViewTest.a_blocker_lists_the_tasks_it_blocks_while_it_is_open`) ; la section « Bloquées » et le badge
+  « Bloque … » apparaissent après l'édition (`DayScreenUiTest.editDialogSetsBlockerAndFixedTime`).
+- « Décaler » programme la tâche personnelle à sa nouvelle échéance
+  (`KairosRepositoryTest.snoozeAlsoSchedulesAPersonalTaskOnItsNewDeadline`) ; « Déplacer… » programme sans toucher à
+  l'échéance et « Annuler » rend la date d'avant (`KairosRepositoryTest.scheduleMovesAPersonalTaskWithoutTouchingItsDeadline`,
+  `DayScreenUiTest.moveSchedulesATaskOnAnotherDayAndCanBeUndone`).
+- Saisie souple des dates et raccourcis (`DateInputTest`).
 - Depuis la vue Semaine, « Voir le jour » ouvre le mercredi, titré ; « Revenir
   à aujourd'hui » y ramène (`M4ScreensUiTest`).
 - Avec trois tâches terminées à 3 points et 45 min chacune, le guide dit
@@ -305,6 +334,16 @@ posée.
   date UTC de modification ferait tomber la veille une tâche faite à 0 h 30 à
   Paris.
 - **Pas de « Décaler » sur une tâche faite** (sans utilité dans « Fait »).
+- **« Décaler » programme la tâche** (décision du propriétaire, lot A ; écartés : ne changer que l'échéance, qui laissait la
+  tâche dans « Aujourd'hui », et fusionner avec « Déplacer… »). `KairosRepository.snooze` pose `scheduledDate` = la nouvelle
+  échéance pour une tâche **personnelle** seulement : `scheduledDate` n'est pas un champ d'équipe (la requalification d'une
+  tâche d'équipe reste celle de l'échéance).
+- **Le filtre « une tâche, une section » est dans `DayView`**, pas dans le moteur : `Scheduling.buildDaySchedule` garde sa
+  liste `toProcess` (figée par les fichiers d'or, qui y rangent aussi une bloquée non qualifiée) ; `DayView.inbox` en retire
+  les bloquées.
+- **Annuler passe par `LocalUndoMessages`** (snackbar avec action, fournie par `AppShell`) ; `LocalMessages` reste pour les
+  messages sans action.
+- **Saisie `JJ/MM/AAAA` seulement en français** : l'anglais M/J/AAAA serait ambigu (3/4) ; ISO partout.
 - **Score affiché « 16 », pas « 16.0 »** : même format que « Pourquoi à
   cette place ? » (le badge n'affiche pas l'arrondi brut).
 - **Sections repliables sans carte englobante** : dans une liste paresseuse,

@@ -96,7 +96,9 @@ also be edited, archived without follow-up, or deleted.
   ready for the next one.
 - **Full editing**: title, description, priority, points, deadline, scheduled
   date, project, estimated duration, type, recurrence, fixed time, link,
-  subtasks, blockers. A single "Save".
+  subtasks, blockers. A single "Save". Date fields come with a date picker,
+  quick choices (Today, Tomorrow, Next Monday, In a week) and loose typing
+  (`2026-9-30`, or `30/09/2026` in French).
 - **Editable subtasks**: a task's sheet lists its subtasks so you can rename,
   check or delete them, on top of adding new ones.
 - **Keyboard shortcuts** (desktop and web): `N` to capture, `/` to search.
@@ -104,7 +106,11 @@ also be edited, archived without follow-up, or deleted.
 - **Recurrence**: daily, weekdays, weekly, monthly (finishing an occurrence
   creates the next one), and "on day N of the month" (moved to the previous
   working day if it falls on a weekend or holiday).
-- **"Snooze"**: always lands on a working day.
+- **"Snooze"**: always lands on a working day, and the task leaves "Today"
+  until then. **"Move…"** schedules a task for another day (tomorrow, next
+  Monday, in a week, or any date) and offers to undo it.
+- **Blockers**: after blocking a task, Kairos says where it went ("Blocked"
+  opens); the blocking task shows a "Blocks …" badge.
 
 ### "To process"
 
@@ -163,8 +169,8 @@ order (critical path). Cycles are refused.
 - **Day**: "Up next", the ordered agenda, sections "To process", "Blocked",
   "Scheduled later", filters, backlog, timeline; "lingering for N d" badge and
   P0 overload banner. You can look at another day.
-- **Week**: seven days (deadlines, finished tasks, slots), the week's real
-  time by type.
+- **Week**: seven days (deadlines, scheduled tasks, finished tasks, slots), the
+  week's real time by type.
 - **Statistics**: weekly throughput, estimation calibration (median real time
   per level, bias), time by type, flow, completeness. The sample size is
   shown; a small sample is marked "not reliable".
@@ -250,13 +256,16 @@ order (critical path). Cycles are refused.
 ## Settings
 
 Every setting is explained under its field; a single "Save", and an invalid
-field says why.
+field says why. Language and appearance come first; the priority score and the
+afternoon dip sit under a collapsed "Advanced: how tasks are ordered" group,
+and "Restore default settings" refills the form with the defaults (the team
+space is untouched; nothing is saved until you press "Save").
 
 | Section | Settings | Default |
 |---|---|---|
 | Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
-| Priority score (WSJF) | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
-| Afternoon dip | On/off, start, trough, end, strength | on, 1 pm – 3 pm – 4 pm, 1 |
+| Priority score (WSJF), advanced | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
+| Afternoon dip, advanced | On/off, start, trough, end, strength | on, 1 pm – 3 pm – 4 pm, 1 |
 | Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
 | Task types | List of types | |
 | Statistics | Window of the indicators | 8 weeks |

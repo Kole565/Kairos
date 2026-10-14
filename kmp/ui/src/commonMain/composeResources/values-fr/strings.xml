@@ -93,8 +93,7 @@
     <string name="edit_title">Modifier la tâche</string>
     <string name="field_title">Titre</string>
     <string name="field_description">Description</string>
-    <string name="field_deadline">Échéance (AAAA-MM-JJ)</string>
-    <string name="field_deadline_invalid">Date attendue au format AAAA-MM-JJ</string>
+    <string name="field_deadline">Échéance</string>
     <string name="field_minutes">Durée estimée (minutes)</string>
     <string name="field_project">Projet</string>
     <string name="field_type">Type</string>
@@ -135,7 +134,7 @@
     <string name="capture_mode_block_short">Créneau</string>
     <string name="shortcut_hint">Raccourci clavier : %1$s</string>
     <string name="block_placeholder">ex. Réunion hebdo, Focus</string>
-    <string name="block_date">Jour (AAAA-MM-JJ)</string>
+    <string name="block_date">Jour</string>
     <string name="block_start">Début (HH:MM)</string>
     <string name="block_end">Fin (HH:MM)</string>
     <string name="block_deepwork">Bloc deep work</string>
@@ -170,7 +169,7 @@
     <string name="duration_minutes">%1$d min</string>
     <string name="overload_banner">Déjà %1$d tâche(s) à priorité maximale. Le signal de priorité se dilue : dépriorise ce qui peut attendre.</string>
     <string name="agenda_title">Aujourd’hui, dans l’ordre</string>
-    <string name="agenda_hint">ordre du score WSJF : valeur ÷ effort</string>
+    <string name="agenda_hint">ordre du score : valeur ÷ effort</string>
     <string name="agenda_empty">Aucune tâche à faire n’est actuellement planifiée.</string>
     <string name="tag_pinned">épinglée</string>
     <string name="tag_critical">chemin critique</string>
@@ -221,7 +220,7 @@
     <string name="why_note">Le plus haut score passe en premier. Une échéance proche fait monter le score ; une grosse tâche le divise.</string>
     <string name="timeline_title">Agenda</string>
     <string name="edit_advanced">Options avancées</string>
-    <string name="field_scheduled">Programmée pour (AAAA-MM-JJ)</string>
+    <string name="field_scheduled">Programmée pour</string>
     <string name="field_manual_time">Temps passé manuel (min)</string>
     <string name="field_recurrence">Récurrence</string>
     <string name="task_rec_none">aucune</string>
@@ -243,7 +242,7 @@
     <string name="subtask_restore">Annuler la suppression</string>
     <string name="subtask_deleted_description">Supprimée à l’enregistrement : %1$s</string>
     <string name="field_blockers">Bloquée par</string>
-    <string name="field_blockers_hint">Tant qu’un bloqueur coché est encore à faire, cette tâche ne rentre dans aucun tri.</string>
+    <string name="field_blockers_hint">Tant qu’une tâche cochée est à faire, celle-ci attend dans « Bloquées » et n’est pas ordonnée.</string>
     <string name="field_blockers_cycle">%1$s (attend déjà cette tâche)</string>
     <string name="field_blockers_none">aucune autre tâche</string>
     <string name="field_day_invalid">Jour attendu entre 1 et 31</string>
@@ -366,7 +365,7 @@
     <string name="inbox_help_priority">Priorité : l’importance de la tâche. Le délai compte déjà à part, par l’échéance.</string>
     <string name="settings_intro">Tous les réglages de Kairos, enregistrés sur cet appareil. Un champ invalide est signalé sous le champ ; rien n’est enregistré tant qu’il en reste un.</string>
     <string name="settings_section_day">Journée de travail</string>
-    <string name="settings_section_wsjf">Score de priorité (WSJF)</string>
+    <string name="settings_section_wsjf">Score de priorité</string>
     <string name="settings_section_wsjf_body">Score = valeur (priorité + urgence de la date) ÷ effort (points).</string>
     <string name="settings_section_dip">Creux de l’après-midi</string>
     <string name="settings_section_dip_body">Pendant le creux, les tâches complexes cèdent leur place aux tâches légères. L’urgence et les échéances priment toujours ; le score affiché ne change pas.</string>
@@ -1149,4 +1148,24 @@
     <string name="member_load_from_elsewhere">Dont %1$s de tâches perso et %2$s de récurrences.</string>
     <string name="forecast_scope_my_work">Mon travail (perso + équipe)</string>
     <string name="forecast_task_personal">%1$s · Perso</string>
+    <string name="date_today">Aujourd’hui</string>
+    <string name="date_tomorrow">Demain</string>
+    <string name="date_next_monday">Lundi prochain</string>
+    <string name="date_in_a_week">Dans une semaine</string>
+    <string name="date_clear">Effacer</string>
+    <string name="date_pick">Choisir une date</string>
+    <string name="field_date_invalid">Date illisible : essaie 30/09/2026 ou le sélecteur de date</string>
+    <string name="action_move">Déplacer vers un autre jour…</string>
+    <string name="date_choose">Choisir une date…</string>
+    <string name="task_moved">« %1$s » déplacée au %2$s.</string>
+    <string name="action_revert">Annuler</string>
+    <string name="week_scheduled">Programmée</string>
+    <string name="tag_blocks_one">Bloque « %1$s »</string>
+    <string name="tag_blocks_many">Bloque %1$d tâches</string>
+    <string name="blocked_feedback">« %1$s » attend « %2$s » : elle est dans « Bloquées » en attendant.</string>
+    <string name="settings_advanced_title">Avancé : comment les tâches sont ordonnées</string>
+    <string name="settings_advanced_body">Rien à régler pour utiliser Kairos ; ouvre cette section pour affiner le score et le creux de l’après-midi.</string>
+    <string name="settings_restore_title">Réglages par défaut</string>
+    <string name="settings_restore_body">Remet tous les réglages à leur valeur par défaut (l’espace Équipe n’est pas touché). Rien n’est enregistré tant que tu n’appuies pas sur « Enregistrer ».</string>
+    <string name="settings_restore_action">Restaurer les valeurs par défaut</string>
 </resources>

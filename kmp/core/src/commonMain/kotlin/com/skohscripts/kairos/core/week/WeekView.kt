@@ -16,14 +16,23 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
-/** Un jour de la grille semaine : échéances à faire, tâches faites ce jour-là, créneaux. */
-data class WeekDay(val date: LocalDate, val tasks: List<Task>, val done: List<Task>, val blocks: List<TimeBlock>)
+/**
+ * Un jour de la grille semaine : échéances à faire, tâches faites ce jour-là, créneaux, et les tâches **programmées pour**
+ * ce jour ([scheduled], dont l'échéance n'est pas déjà ce jour-là : une tâche, une seule ligne).
+ */
+data class WeekDay(
+    val date: LocalDate,
+    val tasks: List<Task>,
+    val done: List<Task>,
+    val blocks: List<TimeBlock>,
+    val scheduled: List<Task> = emptyList(),
+)
 
 /**
  * Vue Semaine (docs/spec/vue-semaine.md) :
  * sept jours du lundi au dimanche ; tâches à faire groupées par **échéance**
  * (priorité d'abord, sans priorité en dernier), tâches faites par jour de
- * complétion (titre), créneaux du jour (occurrences des récurrents comprises)
+ * complétion (titre), tâches programmées pour le jour, créneaux du jour (occurrences des récurrents comprises)
  * ; temps chronométré de la semaine, total et par type. Le filtre réduit les
  * listes, jamais la grille.
  */
@@ -49,6 +58,8 @@ data class WeekView(
                     tasks = open.filter { it.deadline == day }.sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 })),
                     done = done.filter { it.updatedAt.toLocalDateTime(timeZone).date == day }.sortedBy { it.title },
                     blocks = (oneOff + occurrences).filter { it.start.date == day }.sortedBy { it.start },
+                    scheduled = open.filter { it.scheduledDate == day && it.deadline != day }
+                        .sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 }, { it.title })),
                 )
             }
             val sessions = TimeTracking.sessionsInRange(snapshot.workSessions, monday, sunday, timeZone)

@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui.team.forecast
 
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
+import com.skohscripts.kairos.ui.day.DateChoice
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -15,15 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +43,6 @@ import com.skohscripts.kairos.core.team.forecast.ForecastScope
 import com.skohscripts.kairos.core.team.forecast.LateSet
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
-import com.skohscripts.kairos.ui.generated.resources.action_cancel
-import com.skohscripts.kairos.ui.generated.resources.action_ok
 import com.skohscripts.kairos.ui.generated.resources.forecast_bottleneck_empty
 import com.skohscripts.kairos.ui.generated.resources.forecast_bottleneck_hint
 import com.skohscripts.kairos.ui.generated.resources.forecast_bottleneck_share
@@ -103,8 +99,6 @@ import com.skohscripts.kairos.ui.stats.BarRow
 import com.skohscripts.kairos.ui.stats.BarTrack
 import com.skohscripts.kairos.ui.stats.Panel
 import com.skohscripts.kairos.ui.team.Flag
-import com.skohscripts.kairos.ui.team.toPickerDate
-import com.skohscripts.kairos.ui.team.toPickerMillis
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -292,24 +286,6 @@ internal fun FinishedByPanel(result: ForecastResult, language: String) {
         if (picking) {
             DateChoice(date, onPick = { chosen = it; picking = false }, onDismiss = { picking = false })
         }
-    }
-}
-
-/** Le sélecteur de date Material 3 (une date), en dialogue : « OK » / « Annuler ». */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-internal fun DateChoice(initial: LocalDate, onPick: (LocalDate) -> Unit, onDismiss: () -> Unit) {
-    val state = rememberDatePickerState(initialSelectedDateMillis = initial.toPickerMillis(), initialDisplayedMonthMillis = initial.toPickerMillis())
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            KairosTextButton(enabled = state.selectedDateMillis != null, onClick = { state.selectedDateMillis?.let { onPick(it.toPickerDate()) } }) {
-                Text(stringResource(Res.string.action_ok))
-            }
-        },
-        dismissButton = { KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) } },
-    ) {
-        DatePicker(state)
     }
 }
 

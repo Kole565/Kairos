@@ -5,12 +5,14 @@ variés) sans rien changer pour qui ne touche pas aux réglages. Fichiers
 couverts (à venir) : `kmp/core/.../model/Settings.kt` (`schedule`),
 `core/engine/Scheduling.kt` (fenêtres), nouveau `core/engine/Schedule.kt`,
 `core/day/DayView.kt`, `core/stats/` (meilleures heures), `core/settings/SettingsForm.kt`,
-`ui/day/EditTaskDialog.kt`, `ui/week/WeekScreen.kt`, `ui/settings/`. Tests :
+`ui/day/DateField.kt`, `ui/day/EditTaskDialog.kt`, `ui/week/WeekScreen.kt`, `ui/settings/`. Tests :
 `DifferentialTest`, `TeamIsolationTest`, tests nommés dans les critères._
 
-État : **issue #64**, **spécifiée le 2026-10-13, non implémentée**. Étude et
-conception seulement : aucun code n'a été écrit, aucune spec existante n'est
-modifiée (voir « Impacts sur les specs existantes »).
+État : **issue #64**. **Lot A (ergonomie et réglages) : implémenté en 3.4.0**,
+décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semaine.md`,
+`recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lots B (horaires par
+jour et par contexte) et C (meilleures heures) : spécifiés le 2026-10-13, non
+implémentés** (voir « Impacts sur les specs existantes »).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -42,9 +44,10 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
 2. **Déplacer** : une action de ligne « Déplacer… » (demain, lundi, dans une
    semaine, choisir une date) qui reporte la **date programmée** de la tâche
    (elle quitte « Aujourd'hui » jusqu'à ce jour), avec confirmation et
-   possibilité d'annuler. « Décaler » garde son sens (échéance au jour ouvré
-   suivant). La vue Semaine montre aussi les tâches « programmées pour » un
-   jour et ouvre leur fiche.
+   possibilité d'annuler. « Décaler » met l'échéance au jour ouvré suivant et
+   programme aussi la tâche pour ce jour. La vue Semaine montre aussi les tâches
+   « programmées pour » un jour (elle reste en lecture seule : « Voir le jour » y
+   mène ; écarté : ouvrir la fiche depuis la carte).
 3. **Blocage** : après avoir bloqué une tâche, un retour dit où elle est allée
    (« X attend Y », section « Bloquées » ouverte pour cette fois) ; l'aide de la
    fiche dit ce que fait un bloqueur ; les « Options avancées » de la fiche
@@ -61,8 +64,8 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
    « Aujourd'hui » (seule une date programmée future la masque) ; (b) une tâche
    bloquée non qualifiée serait listée à la fois dans « À traiter » et dans
    « Bloquées ». Un test qui échoue est écrit d'abord, puis la correction.
-   Pour (a), le propriétaire tranche : « Décaler » masque-t-il la tâche jusqu'à
-   la nouvelle échéance ?
+   **Constat** : les deux étaient avérés. (b) est corrigé dans `DayView`. Pour (a), le
+   propriétaire a tranché : « Décaler » masque la tâche jusqu'à la nouvelle échéance.
 
 **Lot B : horaires par jour et par contexte**
 
@@ -136,31 +139,19 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 (`solo-export-v1.json`). `ExportCodec.check` fait aller-retour les réglages via
 `SettingsForm` : le formulaire doit donc porter `schedule` sans le créer.
 
-### Lot A
+### Lot A (implémenté, détail dans les specs de domaine)
 
-- **Dates** : `DateChoice` (aujourd'hui dans `ui/team/forecast/ForecastPanels.kt`,
-  `DatePicker` M3 déjà utilisé par l'espace Équipe) est remonté dans `ui/day`
-  et partagé par `DateField` (`ui/day/EditTaskDialog.kt`), la fiche d'équipe et
-  le champ du créneau. `Dates.parseDate` accepte `AAAA-M-J` et, selon la langue,
-  `JJ/MM/AAAA`. Les raccourcis se calculent avec l'heure en paramètre (`core`
-  reste pur).
-- **Déplacer** : nouvelle action de `TaskRow` qui appelle le dépôt pour écrire
-  `scheduledDate` ; message et annulation via `LocalMessages`. « Décaler »
-  (`KairosRepository.snooze`) est inchangé. `WeekView` (`core/week`) ajoute les
-  tâches dont `scheduledDate` tombe dans la semaine ; la carte ouvre la fiche
-  (rouvre la mention « différé » de `vue-semaine.md`).
-- **Blocage** : après `setBlockers`, un message ; `DayScreen` ouvre « Bloquées »
-  pour ce coup ; `EditTaskDialog` ouvre « Options avancées » si
-  `blockerIds` ou `scheduledDate` existent ; `TaskRow` affiche un badge « bloque
-  X » calculé depuis le graphe de dépendances (`core/engine/Dependencies.kt`).
-- **Réglages** : `SettingsScreen` / `SettingsFormCards` regroupent les champs
-  avancés sous un groupe replié ; « Restaurer » remplit `SettingsForm` avec
-  `Settings()` privé de `team`. Les tests qui cliquent sur les libellés
-  (`SettingsLayoutUiTest`, `M5ScreensUiTest`, `ForecastUiTest`) sont mis à jour
-  avec les nouveaux textes.
-- **Bugs** : (a) le filtre « Aujourd'hui » de `DayView` ne masque que les
-  tâches à `scheduledDate` future ; (b) `toProcess` est calculé avant le filtre
-  des bloquées. Test d'abord, puis correction.
+- **Dates** : `ui/day/DateField.kt` (`DateField`, `DateChoice` remonté de l'espace Équipe, `dateShortcuts`) et
+  `Dates.parseDate(texte, french)` (`ui/day/Dates.kt`) ; partagés par la fiche (échéance, « Programmée pour ») et le jour d'un
+  créneau. Voir `vue-jour.md` § Dates, déplacer, blocage.
+- **Déplacer** : `KairosRepository.schedule`, bouton `MoveButton` de `TaskRow`, `LocalUndoMessages` pour « Annuler ».
+  « Décaler » (`KairosRepository.snooze`) programme aussi la tâche personnelle. `WeekView` expose `WeekDay.scheduled`. Voir
+  `vue-jour.md`, `vue-semaine.md`, `recurrence.md`.
+- **Blocage** : `DayView.blocking` (badge « Bloque … »), `DayScreen` (message, section ouverte), `EditTaskDialog` (options
+  avancées ouvertes d'emblée). Voir `vue-jour.md`.
+- **Réglages** : groupe « Avancé » (`SettingsFormCards`), `SettingsForm.restoreDefaults`, carte « Réglages par défaut ». Voir
+  `reglages.md`.
+- **Bugs** : (a) `KairosRepository.snooze` ; (b) `DayView.inbox` (le moteur garde son `toProcess`, figé par les fichiers d'or).
 
 ### Lot B
 
@@ -239,9 +230,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 
 ### Impacts sur les specs existantes (à reporter à l'implémentation)
 
-`ordonnancement.md` (fenêtres, filtre de contexte, boost), `vue-jour.md`
-(déplacer, blocage, bugs, frise), `vue-semaine.md` (tâches programmées),
-`reglages.md` (groupe avancé, restaurer, carte « Horaires »),
-`modele-donnees.md` (`Settings.schedule`), `statistiques.md` (carte meilleures
-heures), `equipe-charge.md` (capacité non modifiée, à dire), `i18n.md` (dates
-souples en français).
+Lots B et C seulement (le lot A est reporté) : `ordonnancement.md` (fenêtres,
+filtre de contexte, boost), `vue-jour.md` (frise et plages), `reglages.md` (carte
+« Horaires »), `modele-donnees.md` (`Settings.schedule`), `statistiques.md` (carte
+meilleures heures), `equipe-charge.md` (capacité non modifiée, à dire).

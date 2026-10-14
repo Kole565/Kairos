@@ -153,6 +153,14 @@ object SettingsForm {
     fun values(settings: Settings): Map<String, String> = FIELDS.associate { it.key to it.read(settings) }
 
     /**
+     * « Restaurer les valeurs par défaut » : le texte de chaque champ pour [Settings] par défaut, **sauf** les champs
+     * `team.*` de [values], jamais touchés (l'espace Équipe a ses propres données ; docs/spec/planning-personnalise.md,
+     * lot A). Ne valide ni n'écrit rien : l'utilisateur doit encore « Enregistrer ».
+     */
+    fun restoreDefaults(values: Map<String, String>): Map<String, String> =
+        values(Settings()).mapValues { (key, default) -> if (key.startsWith("team.")) values[key] ?: default else default }
+
+    /**
      * Valide [values] (clé → texte ; une clé absente garde la valeur de
      * [base]) et rend les réglages complets, ou les erreurs par champ, ou la
      * règle inter-champs violée.

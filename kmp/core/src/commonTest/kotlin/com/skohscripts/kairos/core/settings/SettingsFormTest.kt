@@ -21,6 +21,21 @@ class SettingsFormTest {
     }
 
     @Test
+    fun restoring_the_defaults_resets_every_field_but_the_team_ones() {
+        val edited = SettingsForm.values(base) + mapOf("workdayStartHour" to "6", "priorityValueBase" to "2,5", "taskTypes" to "Dev", "team.name" to "Les Zèbres", "team.wipLimit" to "7")
+        val restored = SettingsForm.restoreDefaults(edited)
+        assertEquals("6", edited["workdayStartHour"])
+        // Les champs hors équipe reviennent aux valeurs par défaut ; ceux de l'équipe ne bougent pas.
+        assertEquals(SettingsForm.values(base).filterKeys { !it.startsWith("team.") }, restored.filterKeys { !it.startsWith("team.") })
+        assertEquals("Les Zèbres", restored["team.name"])
+        assertEquals("7", restored["team.wipLimit"])
+        // Validé, le formulaire restauré donne les réglages par défaut (équipe saisie comprise), et rien n'est écrit ici.
+        val settings = SettingsForm.validate(restored, base).settings!!
+        assertEquals(base.workdayStartHour, settings.workdayStartHour)
+        assertEquals("Les Zèbres", settings.team?.name)
+    }
+
+    @Test
     fun values_are_parsed_and_decimals_accept_a_comma() {
         val s = validate(
             "workdayStartHour" to " 8 ", "priorityValueBase" to "2,5", "cognitiveDipEnabled" to "false",

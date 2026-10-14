@@ -23,7 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -46,6 +49,10 @@ import com.skohscripts.kairos.core.day.DayView
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.ui.generated.resources.action_move
+import com.skohscripts.kairos.ui.generated.resources.tag_blocks_many
+import com.skohscripts.kairos.ui.generated.resources.tag_blocks_one
+import com.skohscripts.kairos.ui.generated.resources.date_choose
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.action_done
@@ -73,6 +80,7 @@ import com.skohscripts.kairos.ui.generated.resources.team_mark_description
 import com.skohscripts.kairos.ui.chrono.rememberLiveMinutes
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.theme.LocalKairosExtraColors
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
@@ -85,6 +93,10 @@ internal class RowContext(
     val compact: Boolean,
     val onToggleDone: (Task) -> Unit,
     val onSnooze: (Task) -> Unit,
+    /** « Déplacer… » : programme la tâche personnelle pour ce jour (docs/spec/planning-personnalise.md § Lot A, 2). */
+    val onMove: (Task, LocalDate) -> Unit,
+    /** Le vrai jour d'aujourd'hui : base des choix de « Déplacer… ». */
+    val today: LocalDate,
     val onEdit: (Task) -> Unit,
     /** Démarre le chrono sur la tâche, ou l'arrête si c'est elle qui tourne. */
     val onToggleTimer: (Task) -> Unit = {},
@@ -187,9 +199,36 @@ private fun RowActions(task: Task, ctx: RowContext, editable: Boolean) {
             tint = if (running) MaterialTheme.colorScheme.primary else LocalContentColor.current,
         )
         KairosRowIconButton(KairosIcons.Redo, stringResource(Res.string.action_snooze), onClick = { ctx.onSnooze(task) })
+        // Une tâche d'équipe n'a pas de date programmée (docs/spec/planning-personnalise.md) : pas de « Déplacer… ».
+        if (task.space == TaskSpace.PERSONAL) MoveButton(task, ctx)
     }
     if (editable) {
         KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { ctx.onEdit(task) })
+    }
+}
+
+/**
+ * « Déplacer… » : un menu de dates (demain, lundi prochain, dans une semaine, ou « Choisir une date… » avec le sélecteur
+ * Material 3) ; choisir une date programme la tâche pour ce jour ([RowContext.onMove]).
+ */
+@Composable
+private fun MoveButton(task: Task, ctx: RowContext) {
+    var open by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
+    Box {
+        KairosRowIconButton(KairosIcons.DateRange, stringResource(Res.string.action_move), onClick = { open = true })
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            dateShortcuts(ctx.today).filter { it.first != DateShortcut.TODAY }.forEach { (shortcut, date) ->
+                DropdownMenuItem(
+                    text = { Text("${stringResource(shortcut.label)} · ${Dates.short(date, ctx.language)}") },
+                    onClick = { open = false; ctx.onMove(task, date) },
+                )
+            }
+            DropdownMenuItem(text = { Text(stringResource(Res.string.date_choose)) }, onClick = { open = false; picking = true })
+        }
+    }
+    if (picking) {
+        DateChoice(task.scheduledDate ?: ctx.today, onPick = { picking = false; ctx.onMove(task, it) }, onDismiss = { picking = false })
     }
 }
 
@@ -232,6 +271,15 @@ private fun TaskTags(task: Task, ctx: RowContext) {
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp),
         )
+    }
+    // Cette tâche en bloque d'autres : on le voit sur le bloqueur (« bloque X »), pas seulement sur la tâche bloquée.
+    if (task.status == TaskStatus.TODO) {
+        ctx.view.blocking[task.id]?.takeIf { it.isNotEmpty() }?.let { titles ->
+            Badge(
+                if (titles.size == 1) stringResource(Res.string.tag_blocks_one, titles.single()) else stringResource(Res.string.tag_blocks_many, titles.size),
+                nowrap = true,
+            )
+        }
     }
     TimeSpent(task, ctx)
     if (task.status == TaskStatus.TODO) {
