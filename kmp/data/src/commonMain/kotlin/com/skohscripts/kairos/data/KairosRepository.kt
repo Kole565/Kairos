@@ -216,13 +216,18 @@ class KairosRepository(
     /**
      * « Décaler » : l'échéance passe au jour ouvré qui
      * suit (elle-même si elle est à venir, sinon aujourd'hui) ; week-ends et
-     * jours fériés des réglages sautés.
+     * jours fériés des réglages sautés. Une tâche personnelle est aussi programmée pour ce jour : elle quitte
+     * « Aujourd'hui » jusqu'à la nouvelle échéance (décision du lot A, docs/spec/planning-personnalise.md ;
+     * une tâche d'équipe n'a que son échéance requalifiée, `scheduledDate` n'y est pas un champ d'équipe).
      */
     suspend fun snooze(taskId: Long) {
         val settings = state.value.settings
         val today = today()
         val holidays = Workdays.holidaysFor(today, settings.holidaysFr, settings.extraHolidays)
-        modify(taskId) { it.copy(deadline = Recurrence.nextSnoozeDate(it.deadline, today, holidays)) }
+        modify(taskId) {
+            val next = Recurrence.nextSnoozeDate(it.deadline, today, holidays)
+            it.copy(deadline = next, scheduledDate = if (it.space == TaskSpace.PERSONAL) next else it.scheduledDate)
+        }
     }
 
     /**

@@ -276,6 +276,18 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun snoozeAlsoSchedulesAPersonalTaskOnItsNewDeadline() = runTest {
+        // « Décaler » masque la tâche d'« Aujourd'hui » jusqu'à sa nouvelle échéance (docs/spec/planning-personnalise.md, lot A).
+        val repo = empty()
+        val id = repo.createTask("T")!!
+        repo.updateTask(id, edit(changes = arrayOf({ it.copy(deadline = LocalDate(2026, 10, 30)) }))) // vendredi
+        repo.snooze(id)
+        val task = repo.snapshot.value.tasks.single()
+        assertEquals(LocalDate(2026, 11, 2), task.deadline)
+        assertEquals(LocalDate(2026, 11, 2), task.scheduledDate)
+    }
+
+    @Test
     fun blockersAreATargetSetAndCyclesAreIgnored() = runTest {
         val repo = empty()
         val a = repo.createTask("A")!!

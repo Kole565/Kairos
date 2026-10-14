@@ -36,6 +36,16 @@ class DayViewTest {
         DayView.build(snapshot, day, now, paris, filter)
 
     @Test
+    fun a_blocked_unqualified_task_is_listed_only_in_blocked() {
+        // Bloquée et pas encore qualifiée : « Bloquées » seulement, jamais aussi dans « À traiter » (une tâche, une section).
+        val tasks = listOf(task(1), task(2, p = null))
+        val deps = listOf(TaskDependency(1, taskId = 2, blockerId = 1, createdAt = t0))
+        val view = build(KairosSnapshot(tasks = tasks, dependencies = deps))
+        assertEquals(listOf(2L), view.blocked.map { it.task.id })
+        assertEquals(emptyList(), view.inbox.map { it.id })
+    }
+
+    @Test
     fun each_open_task_lands_in_exactly_one_section() {
         val tasks = listOf(
             task(1, p = null), // à traiter

@@ -206,7 +206,9 @@ data class DayView(
             return DayView(
                 day = day,
                 schedule = schedule,
-                inbox = schedule.toProcess.filter(filter::matches),
+                // Une bloquée non qualifiée reste dans « Bloquées » seulement : une tâche ouverte, une seule section.
+                // Le moteur (figé par les fichiers d'or) la compte à traiter ; le filtre est ici, sur la vue.
+                inbox = schedule.toProcess.filter { it.id !in blockedIds && filter.matches(it) },
                 agenda = schedule.scheduled.filter { filter.matches(it.task) },
                 unscheduled = schedule.unscheduled.filter(filter::matches),
                 later = schedule.later.filter(filter::matches),
