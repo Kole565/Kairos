@@ -373,6 +373,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
             EditTaskDialog(
                 task = task,
                 day = day,
+                today = today,
                 taskTypes = snapshot.settings.taskTypeList,
                 candidates = view.openTasks,
                 blockerIds = view.blockersOf[id].orEmpty().toSet(),

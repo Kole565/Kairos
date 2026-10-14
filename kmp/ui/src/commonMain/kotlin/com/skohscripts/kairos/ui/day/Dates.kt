@@ -91,7 +91,25 @@ internal object Dates {
         return if (h in 0..23 && m in 0..59) LocalTime(h, m) else null
     }
 
-    fun parseDate(text: String): LocalDate? = text.trim().takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    /**
+     * Saisie souple d'une date : `2026-09-30` (ISO), `2026-9-30` ou `2026/9/30` (zéros facultatifs, `-`, `/` ou `.`)
+     * et, en [french], `30/09/2026` (jour, mois, année). L'ordre mois/jour de l'anglais n'est pas accepté : il serait
+     * ambigu avec le français (docs/spec/planning-personnalise.md § Lot A, 1). `null` si illisible ou impossible.
+     */
+    fun parseDate(text: String, french: Boolean = false): LocalDate? {
+        val t = text.trim()
+        if (t.isEmpty()) return null
+        runCatching { LocalDate.parse(t) }.getOrNull()?.let { return it }
+        val parts = t.split('-', '/', '.').map { it.trim() }
+        if (parts.size != 3 || parts.any { it.isEmpty() || !it.all(Char::isDigit) }) return null
+        val n = parts.map { it.toInt() }
+        val (year, month, day) = when {
+            parts[0].length == 4 -> Triple(n[0], n[1], n[2])
+            french && parts[2].length == 4 -> Triple(n[2], n[1], n[0])
+            else -> return null
+        }
+        return runCatching { LocalDate(year, month, day) }.getOrNull()
+    }
 
     /**
      * Une décimale au plus, sans « .0 » : « 16 », « 6.2 ». Une valeur positive qui

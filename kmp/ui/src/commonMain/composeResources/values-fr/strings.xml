@@ -93,8 +93,7 @@
     <string name="edit_title">Modifier la tâche</string>
     <string name="field_title">Titre</string>
     <string name="field_description">Description</string>
-    <string name="field_deadline">Échéance (AAAA-MM-JJ)</string>
-    <string name="field_deadline_invalid">Date attendue au format AAAA-MM-JJ</string>
+    <string name="field_deadline">Échéance</string>
     <string name="field_minutes">Durée estimée (minutes)</string>
     <string name="field_project">Projet</string>
     <string name="field_type">Type</string>
@@ -135,7 +134,7 @@
     <string name="capture_mode_block_short">Créneau</string>
     <string name="shortcut_hint">Raccourci clavier : %1$s</string>
     <string name="block_placeholder">ex. Réunion hebdo, Focus</string>
-    <string name="block_date">Jour (AAAA-MM-JJ)</string>
+    <string name="block_date">Jour</string>
     <string name="block_start">Début (HH:MM)</string>
     <string name="block_end">Fin (HH:MM)</string>
     <string name="block_deepwork">Bloc deep work</string>
@@ -221,7 +220,7 @@
     <string name="why_note">Le plus haut score passe en premier. Une échéance proche fait monter le score ; une grosse tâche le divise.</string>
     <string name="timeline_title">Agenda</string>
     <string name="edit_advanced">Options avancées</string>
-    <string name="field_scheduled">Programmée pour (AAAA-MM-JJ)</string>
+    <string name="field_scheduled">Programmée pour</string>
     <string name="field_manual_time">Temps passé manuel (min)</string>
     <string name="field_recurrence">Récurrence</string>
     <string name="task_rec_none">aucune</string>
@@ -1149,4 +1148,11 @@
     <string name="member_load_from_elsewhere">Dont %1$s de tâches perso et %2$s de récurrences.</string>
     <string name="forecast_scope_my_work">Mon travail (perso + équipe)</string>
     <string name="forecast_task_personal">%1$s · Perso</string>
+    <string name="date_today">Aujourd’hui</string>
+    <string name="date_tomorrow">Demain</string>
+    <string name="date_next_monday">Lundi prochain</string>
+    <string name="date_in_a_week">Dans une semaine</string>
+    <string name="date_clear">Effacer</string>
+    <string name="date_pick">Choisir une date</string>
+    <string name="field_date_invalid">Date illisible : essaie 30/09/2026 ou le sélecteur de date</string>
 </resources>

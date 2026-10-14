@@ -68,7 +68,6 @@ import com.skohscripts.kairos.ui.generated.resources.delete_confirm_body
 import com.skohscripts.kairos.ui.generated.resources.delete_confirm_title
 import com.skohscripts.kairos.ui.generated.resources.edit_title
 import com.skohscripts.kairos.ui.generated.resources.field_deadline
-import com.skohscripts.kairos.ui.generated.resources.field_deadline_invalid
 import com.skohscripts.kairos.ui.generated.resources.field_description
 import com.skohscripts.kairos.ui.generated.resources.field_minutes
 import com.skohscripts.kairos.ui.generated.resources.field_project
@@ -102,6 +101,7 @@ import com.skohscripts.kairos.ui.generated.resources.task_rec_weekdays
 import com.skohscripts.kairos.ui.generated.resources.task_rec_weekly
 import com.skohscripts.kairos.ui.generated.resources.time_invalid
 import com.skohscripts.kairos.ui.icons.KairosIcons
+import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -129,6 +129,8 @@ internal class ReceivedTaskSheet(val origin: TeamOrigin, val removed: Boolean, v
 internal fun EditTaskDialog(
     task: Task,
     day: LocalDate,
+    /** Le vrai jour d'aujourd'hui (raccourcis des champs date) ; `day` est le jour affiché, qui peut être un autre. */
+    today: LocalDate = day,
     taskTypes: List<String>,
     candidates: List<Task>,
     blockerIds: Set<Long>,
@@ -181,9 +183,10 @@ internal fun EditTaskDialog(
     var receivedProgress by remember { mutableStateOf((task.progressPercent ?: 0).toFloat()) }
     var counted by remember { mutableStateOf(countInTeam ?: true) }
 
-    val parsedDeadline = Dates.parseDate(deadline)
+    val french = UiLanguage.isFrench(uiLanguage())
+    val parsedDeadline = Dates.parseDate(deadline, french)
     val deadlineInvalid = deadline.isNotBlank() && parsedDeadline == null
-    val parsedScheduled = Dates.parseDate(scheduled)
+    val parsedScheduled = Dates.parseDate(scheduled, french)
     val scheduledInvalid = scheduled.isNotBlank() && parsedScheduled == null
     val parsedPin = Dates.parseTime(pin)
     val pinInvalid = pin.isNotBlank() && parsedPin == null
@@ -262,7 +265,7 @@ internal fun EditTaskDialog(
                             chosen?.let(estimates.minutesByPoints::get)?.let { minutes = it.toString() }
                         })
                         PointsGuide(estimates.references)
-                        DateField(deadline, { deadline = it }, Res.string.field_deadline, deadlineInvalid)
+                        DateField(deadline, { deadline = it }, Res.string.field_deadline, deadlineInvalid, today)
                         OutlinedTextField(
                             minutes,
                             { value -> minutes = value.filter(Char::isDigit).take(4) },
@@ -279,7 +282,7 @@ internal fun EditTaskDialog(
                             Text(stringResource(Res.string.edit_advanced), modifier = Modifier.padding(start = 4.dp))
                         }
                         if (advanced) {
-                            DateField(scheduled, { scheduled = it }, Res.string.field_scheduled, scheduledInvalid)
+                            DateField(scheduled, { scheduled = it }, Res.string.field_scheduled, scheduledInvalid, today)
                             OutlinedTextField(project, { project = it }, label = { Text(stringResource(Res.string.field_project)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
                             OutlinedTextField(
                                 manual,
@@ -293,7 +296,7 @@ internal fun EditTaskDialog(
                                 recurrence = it
                                 // « Le … du mois » : proposer le jour de l'échéance (sinon du jour affiché) plutôt qu'un champ vide en erreur.
                                 if (it == TaskRecurrence.MONTHLY_ON_DAY && dayOfMonth.isBlank()) {
-                                    dayOfMonth = ((Dates.parseDate(deadline) ?: day).day).toString()
+                                    dayOfMonth = ((Dates.parseDate(deadline, french) ?: day).day).toString()
                                 }
                             }
                             if (recurrence == TaskRecurrence.MONTHLY_ON_DAY) {
@@ -447,19 +450,6 @@ internal fun EditTaskDialog(
             dismissButton = { KairosTextButton(onClick = { confirmDelete = false }) { Text(stringResource(Res.string.action_cancel)) } },
         )
     }
-}
-
-@Composable
-private fun DateField(value: String, onChange: (String) -> Unit, label: StringResource, invalid: Boolean) {
-    OutlinedTextField(
-        value,
-        onChange,
-        label = { Text(stringResource(label)) },
-        isError = invalid,
-        supportingText = if (invalid) ({ Text(stringResource(Res.string.field_deadline_invalid)) }) else null,
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 private fun recurrenceLabel(r: TaskRecurrence): StringResource = when (r) {

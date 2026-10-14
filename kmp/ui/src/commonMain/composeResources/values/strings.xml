@@ -92,8 +92,7 @@
     <string name="edit_title">Edit task</string>
     <string name="field_title">Title</string>
     <string name="field_description">Description</string>
-    <string name="field_deadline">Deadline (YYYY-MM-DD)</string>
-    <string name="field_deadline_invalid">Expected a date as YYYY-MM-DD</string>
+    <string name="field_deadline">Deadline</string>
     <string name="field_minutes">Estimated duration (minutes)</string>
     <string name="field_project">Project</string>
     <string name="field_type">Type</string>
@@ -134,7 +133,7 @@
     <string name="capture_mode_block_short">Time slot</string>
     <string name="shortcut_hint">Keyboard shortcut: %1$s</string>
     <string name="block_placeholder">e.g. Weekly meeting, Focus</string>
-    <string name="block_date">Day (YYYY-MM-DD)</string>
+    <string name="block_date">Day</string>
     <string name="block_start">Start (HH:MM)</string>
     <string name="block_end">End (HH:MM)</string>
     <string name="block_deepwork">Deep work block</string>
@@ -220,7 +219,7 @@
     <string name="why_note">The highest score goes first. A close deadline raises the score; a big task divides it.</string>
     <string name="timeline_title">Schedule</string>
     <string name="edit_advanced">More options</string>
-    <string name="field_scheduled">Scheduled for (YYYY-MM-DD)</string>
+    <string name="field_scheduled">Scheduled for</string>
     <string name="field_manual_time">Time spent, entered by hand (min)</string>
     <string name="field_recurrence">Repeat</string>
     <string name="task_rec_none">none</string>
@@ -1147,4 +1146,11 @@
     <string name="member_load_from_elsewhere">Including %1$s of personal tasks and %2$s of recurrences.</string>
     <string name="forecast_scope_my_work">My work (personal + team)</string>
     <string name="forecast_task_personal">%1$s · Personal</string>
+    <string name="date_today">Today</string>
+    <string name="date_tomorrow">Tomorrow</string>
+    <string name="date_next_monday">Next Monday</string>
+    <string name="date_in_a_week">In a week</string>
+    <string name="date_clear">Clear</string>
+    <string name="date_pick">Pick a date</string>
+    <string name="field_date_invalid">Unreadable date: try 2026-09-30 or the date picker</string>
 </resources>
