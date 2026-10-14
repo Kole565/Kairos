@@ -25,7 +25,11 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 ### Comportement attendu (utilisateur)
 
-- Destination « Réglages », une carte par section, dans cet ordre :
+- Destination « Réglages », une carte par section, dans cet ordre (3.4, `planning-personnalise.md` lot A : **Langue** et
+  **Apparence** viennent **en premier**, puis les cartes ci-dessous ; **Score de priorité** et **Creux de l'après-midi** sont
+  regroupés dans un groupe replié « Avancé : comment les tâches sont ordonnées », ouvert d'office quand un de leurs champs est
+  en erreur ; une carte « Réglages par défaut » avec **« Restaurer les valeurs par défaut »** précède « Données »)
+  :
   **Journée de travail** (durée par défaut d'une tâche, marge après un
   créneau occupé, début et fin de journée), **Score de priorité (WSJF)**
   (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
@@ -68,6 +72,10 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Une décimale s'écrit avec une virgule ou un point ; en français, le
   formulaire l'affiche à la virgule (« 0,8 », comme son aide).
 - Les réglages valent aussitôt partout (planning, score, alertes, stats).
+- « Restaurer les valeurs par défaut » remplit le formulaire des valeurs par défaut (`SettingsForm.restoreDefaults`), **sauf** les
+  champs `team.*`, jamais touchés ; rien n'est écrit avant « Enregistrer » et « Annuler les modifications » revient en arrière.
+- « WSJF » n'est plus dans le titre de la section du score ni dans l'aide de l'agenda (jargon ; il reste expliqué dans « À propos
+  et guide »).
 
 ### Critères de succès
 
@@ -77,7 +85,10 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   champ, aucun enregistrement ; bornes propres de Kairos (figées par `SettingsFormTest`), borne basse exclue pour
   la base de valeur (`SettingsFormTest`).
 - Heure 25 refusée, début après la fin refusé, puis 8 h, base 2,5 et creux
-  désactivé enregistrés d'un coup (`M5ScreensUiTest`).
+  désactivé (dans le groupe « Avancé », ouvert à la main) enregistrés d'un coup (`M5ScreensUiTest`).
+- « Restaurer les valeurs par défaut » remplit le formulaire sans rien enregistrer ; « Enregistrer » les pose
+  (`M5ScreensUiTest.restoringTheDefaultsFillsTheFormAndStillNeedsASave`) ; les champs `team.*` ne bougent pas
+  (`SettingsFormTest.restoring_the_defaults_resets_every_field_but_the_team_ones`).
 
 ### Hors périmètre / différé
 

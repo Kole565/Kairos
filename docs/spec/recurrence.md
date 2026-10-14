@@ -51,7 +51,7 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   une période postérieure ou égale au mois courant couvre ce mois, `calendarOccurrences`)
   — sinon l'affichage suivant en créait une seconde de même titre, l'originale
   restant « sans créneau ».
-- « Décaler » envoie l'échéance au jour ouvré qui suit (un vendredi → le
+- « Décaler » (3.4) programme aussi la tâche **personnelle** pour ce jour (elle quitte « Aujourd'hui » jusque-là, `vue-jour.md` § Dates, déplacer, blocage). « Décaler » envoie l'échéance au jour ouvré qui suit (un vendredi → le
   lundi, ou le mardi si ce lundi est férié) ; une échéance passée repart
   d'aujourd'hui.
 - Un créneau récurrent (quotidien, jours ouvrés, hebdomadaire) réapparaît à

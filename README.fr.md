@@ -99,7 +99,9 @@ supprimée.
   reste prêt pour la suivante.
 - **Édition complète** : titre, description, priorité, points, échéance, date
   programmée, projet, durée estimée, type, récurrence, heure fixe, lien,
-  sous-tâches, bloqueurs. Un seul « Enregistrer ».
+  sous-tâches, bloqueurs. Un seul « Enregistrer ». Les champs date ont un
+  sélecteur de date, des raccourcis (aujourd’hui, demain, lundi prochain, dans
+  une semaine) et une saisie souple (`2026-9-30`, ou `30/09/2026`).
 - **Sous-tâches modifiables** : la fiche d’une tâche liste ses sous-tâches pour
   les renommer, les cocher ou les supprimer, en plus d’en ajouter.
 - **Raccourcis clavier** (bureau et web) : `N` pour capturer, `/` pour
@@ -109,7 +111,12 @@ supprimée.
 - **Récurrence** : quotidienne, jours ouvrés, hebdomadaire, mensuelle (terminer
   une occurrence crée la suivante), et « le N du mois » (décalée au jour ouvré
   précédent si week-end ou férié).
-- **« Décaler »** : atterrit toujours sur un jour ouvré.
+- **« Décaler »** : atterrit toujours sur un jour ouvré, et la tâche quitte
+  « Aujourd’hui » jusque-là. **« Déplacer… »** programme une tâche pour un
+  autre jour (demain, lundi prochain, dans une semaine, ou une date au choix)
+  et propose d’annuler.
+- **Bloqueurs** : après avoir bloqué une tâche, Kairos dit où elle est allée
+  (« Bloquées » s’ouvre) ; la tâche qui bloque porte un badge « Bloque … ».
 
 ### « À traiter »
 
@@ -170,7 +177,7 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   « Bloquées », « Programmées plus tard », filtres, backlog, frise ; badge
   « traîne depuis N j » et bandeau de surcharge de P0. On peut regarder un
   autre jour.
-- **Semaine** : sept jours (échéances, tâches faites, créneaux), temps réel de
+- **Semaine** : sept jours (échéances, tâches programmées, tâches faites, créneaux), temps réel de
   la semaine par type.
 - **Statistiques** : débit hebdomadaire, calibration des estimations (temps
   réel médian par palier, biais), temps par type, flux, complétude. L’effectif
@@ -263,13 +270,17 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 ## Réglages
 
 Chaque réglage est expliqué sous son champ ; un seul « Enregistrer », et un
-champ invalide dit pourquoi.
+champ invalide dit pourquoi. La langue et l’apparence viennent en premier ; le score de priorité et
+le creux de l’après-midi sont dans un groupe replié « Avancé : comment les
+tâches sont ordonnées », et « Restaurer les valeurs par défaut » remplit le
+formulaire des valeurs par défaut (l’espace Équipe n’est pas touché ; rien
+n’est enregistré avant « Enregistrer »).
 
 | Section | Réglages | Défaut |
 |---|---|---|
 | Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
-| Score de priorité (WSJF) | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
-| Creux de l’après-midi | Activé, début, creux, fin, force | activé, 13 h – 15 h – 16 h, 1 |
+| Score de priorité (WSJF), avancé | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
+| Creux de l’après-midi, avancé | Activé, début, creux, fin, force | activé, 13 h – 15 h – 16 h, 1 |
 | Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
 | Types de tâches | Liste des types | |
 | Statistiques | Fenêtre des indicateurs | 8 semaines |
