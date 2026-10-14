@@ -41,6 +41,11 @@ retiré (TimeTree, import GitLab, base pilotage, service systemd : plan § 2.2).
 | [`accessibilite.md`](accessibilite.md) | Lecteurs d'écran (boutons, états, titres), cibles de 48 dp, contrastes. | M5 |
 | [`publication.md`](publication.md) | Fiches Fastlane FR/EN et leurs captures, recette et vérification F-Droid (APK reproductible signé par nous), page de téléchargement GitHub Pages. | M6 |
 | [`export-import.md`](export-import.md) | Export et import JSON, sauvegardes, données de la version web (OPFS, fichier lié). | M1 |
+| [`planning-personnalise.md`](planning-personnalise.md) | **Spécifiée, non implémentée.** Ergonomie et réglages (dates, déplacer, blocage, valeurs par défaut), horaires par jour et par contexte, meilleures heures détectées automatiquement. | #64, 3.4-3.6 |
+| [`durees-apprises.md`](durees-apprises.md) | **Spécifiée, non implémentée.** Durées apprises des tâches récurrentes (port d'estimation, série stable, repli, provenance), future version majeure à modèle d'apprentissage. | #64, 3.4 |
+| [`visite-guidee.md`](visite-guidee.md) | **Spécifiée, non implémentée.** Catalogue de fonctionnalités, visite enrichie, hub « Découvrir Kairos », « Nouveau dans cette version ». | #64, 3.4 |
+| [`premiere-tache.md`](premiere-tache.md) | **Spécifiée, non implémentée.** Accompagnement de la création de la première tâche (champs, priorité, points, estimation, placement, félicitations). | #64, 3.4 |
+| [`retrait-kairos2.md`](retrait-kairos2.md) | **Spécifiée, non implémentée.** Retrait de Kairos 2 : import, écrans, textes, tests différentiels sur fichiers d'or. | #64, 3.4 |
 
 ## Chantier « Espace Équipe »
 
