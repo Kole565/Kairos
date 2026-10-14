@@ -269,8 +269,11 @@ object Scheduling {
         }
         val auto = schedulable.filter { it.id !in pinnedIds }.sortedWith(compareBy { key(it) })
 
-        val workdayStart = day.atTime(settings.workdayStartHour, 0)
-        val workdayEnd = day.atTime(settings.workdayEndHour, 0)
+        // Jour libre (docs/spec/planning-personnalise.md § Lot B1) : fenêtre vide, aucune tâche n'est placée (« Sans créneau » ;
+        // les épinglées gardent leur heure). Sans horaire propre : la fenêtre des réglages, comme avant.
+        val window = Schedule.windowFor(day, settings)
+        val workdayStart = window?.start ?: day.atTime(0, 0)
+        val workdayEnd = window?.end ?: day.atTime(0, 0)
         val effectiveStart = if (now != null && now.date == day && now > workdayStart) now else workdayStart
 
         val buffer = settings.meetingBufferMinutes
@@ -414,8 +417,9 @@ object Scheduling {
 
     /** Créneaux et tâches placées, bornés à la journée de travail ; les fonds d'abord à hauteur égale. */
     fun buildTimeline(schedule: ScheduledDay, busyBlocks: List<TimeBlock>, day: LocalDate, settings: Settings): List<TimelineEntry> {
-        val workdayStart = day.atTime(settings.workdayStartHour, 0)
-        val workdayEnd = day.atTime(settings.workdayEndHour, 0)
+        val window = Schedule.displayWindow(day, settings)
+        val workdayStart = window.start
+        val workdayEnd = window.end
         fun entry(kind: TimelineKind, title: String, start: LocalDateTime, end: LocalDateTime): TimelineEntry? {
             val s = maxOf(start, workdayStart)
             val e = minOf(end, workdayEnd)

@@ -161,6 +161,23 @@ class DayScreenUiTest {
     }
 
     @Test
+    fun aDayOffPlacesNothingAndSaysSo() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        runBlocking {
+            val id = repository.createTask("Call back")!!
+            repository.setPriority(id, 1)
+            repository.setPoints(id, 2)
+            // Le test tourne un mardi (29 septembre 2026) : le mardi est libre.
+            repository.updateSettings(repository.snapshot.value.settings.copy(schedule = com.skohscripts.kairos.core.model.ScheduleSettings(mapOf(1 to com.skohscripts.kairos.core.model.DaySchedule(free = true)))))
+        }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Day off:", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        // Rien n'est placé : la tâche attend sous « No slot today ».
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("No slot today", substring = true).fetchSemanticsNodes().isNotEmpty() }
+    }
+
+    @Test
     fun blockCaptureAppearsInTheDayList() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }

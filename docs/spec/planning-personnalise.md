@@ -10,9 +10,10 @@ couverts (à venir) : `kmp/core/.../model/Settings.kt` (`schedule`),
 
 État : **issue #64**. **Lot A (ergonomie et réglages) : implémenté en 3.4.0**,
 décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semaine.md`,
-`recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lots B (horaires par
-jour et par contexte) et C (meilleures heures) : spécifiés le 2026-10-13, non
-implémentés** (voir « Impacts sur les specs existantes »).
+`recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lot B1 (fenêtre par jour
+de la semaine) : implémenté en 3.4.0** (voir « Lot B1 (implémenté) »). **B2 (plusieurs plages et
+contextes) et lot C (meilleures heures) : spécifiés le 2026-10-13, non implémentés** (voir
+« Impacts sur les specs existantes »).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -153,31 +154,38 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   `reglages.md`.
 - **Bugs** : (a) `KairosRepository.snooze` ; (b) `DayView.inbox` (le moteur garde son `toProcess`, figé par les fichiers d'or).
 
-### Lot B
+### Lot B1 (implémenté en 3.4.0)
 
-- **Modèle** (`core/model`, pur) : `ScheduleSettings(weekdays:
-  Map<Weekday, DaySchedule>, contexts: List<Context>)` ; `DaySchedule` =
-  `DEFAULT` | `FREE` | liste de `WorkWindow(startMinute, endMinute, context?)` ;
-  `Context(name, types: Set<String>)`.
-- **Résolveur pur** `Schedule.windowsFor(day, settings): List<Window>` dans
-  `core/engine` ; sans `schedule`, renvoie `[workdayStartHour, workdayEndHour)`
-  pour les sept jours (les week-ends restent planifiés comme la semaine, ce
-  que figent les 480 scénarios).
-- **Moteur** : `buildDaySchedule` (`Scheduling.kt`, après la construction des
-  obstacles) boucle sur les plages dans l'ordre ; réunions, épinglées et deep
-  work restent des obstacles communs. Le **filtre de contexte s'applique
-  seulement au choix au créneau** (avant `minWith(selectionKey)`), jamais à
-  `sortKey` ni au score WSJF affiché. Chemin à une plage = code actuel.
-- **Frise et Jour** : `DayView` expose les plages ; la frise et le rail du
-  temps réel utilisent ces plages à la place de `topMinutes` et des
-  graduations fixes ; `available` = somme des plages.
-- **Gardés tels quels** : capacité d'équipe (`Capacity`, `todayFraction`,
-  `busyHours`, `defaultHoursPerDay`) lit toujours `workdayStartHour` et
-  `workdayEndHour` ; le creux de l'après-midi reste en heures absolues.
-- **Réglages** : nouvelle carte « Horaires » (par jour : comme d'habitude /
-  personnalisé / libre ; plages ; contextes et leurs types).
-- **Phases** : B1 = une plage par jour de semaine et jours libres ; B2 =
-  plages multiples et contextes.
+- **Modèle** (`core/model/ScheduleSettings.kt`) : `Settings.schedule: ScheduleSettings?` (nul par défaut, comme `team`) =
+  `weekdays: Map<Int, DaySchedule>` (0 lundi … 6 dimanche, `Workdays.weekday`) ; `DaySchedule(free, startHour, endHour)` : **heures
+  pleines**, comme les réglages de la journée (décision d'implémentation ; écartés : des minutes, la frise est graduée à l'heure).
+  Un jour absent est « comme d'habitude ». B2 ajoutera plusieurs plages et les contextes à ce même sous-objet.
+- **Résolveur pur** `Schedule.windowFor(jour, réglages): Window?` et `Schedule.displayWindow` (`core/engine/Schedule.kt`) : sans
+  `schedule`, la fenêtre des réglages pour les sept jours (week-ends compris, figés par les fichiers d'or) ; `null` pour un jour
+  libre ; un horaire incomplet ou incohérent retombe sur la journée des réglages. Détail : `ordonnancement.md`.
+- **Consommateurs** : `Scheduling.buildDaySchedule` (placement, charge disponible), `Scheduling.buildTimeline` et
+  `TimeTracking.sessionTimeline` (via `displayWindow`), `DayView.workStartHour`/`workEndHour`/`freeDay` pour la frise
+  (`TimelineCard`). **Gardés tels quels** : capacité d'équipe (`Capacity`, `TeamWork`, `MemberForm`) lit toujours
+  `workdayStartHour`/`workdayEndHour` ; le creux de l'après-midi reste en heures absolues.
+- **Réglages** : carte « Horaires par jour de la semaine » (`ScheduleCard`), champs `schedule.dN.mode|start|end` de
+  `SettingsForm` ; voir `reglages.md`.
+- **Jour libre** : rien n'est placé automatiquement (les tâches vont dans « Sans créneau aujourd'hui ») ; les tâches épinglées
+  gardent leur heure ; la frise montre la journée des réglages et une ligne qui le dit.
+- **Tests** : `ScheduleTest` (résolveur, placement, jour libre, `DayView`), `SettingsFormTest`, `M5ScreensUiTest`,
+  `DayScreenUiTest.aDayOffPlacesNothingAndSaysSo`, `KairosRepositoryTest.theScheduleSurvivesAnExportAndIsAbsentWhenNotCustomised` ;
+  `DifferentialTest` et `TeamIsolationTest.soloExportIsByteIdentical` inchangés.
+
+### Lot B2 (non implémenté)
+
+- **Modèle** : `DaySchedule` gagne une liste de plages `WorkWindow(startHour, endHour, context?)` ; `Context(name, types:
+  Set<String>)` dans `ScheduleSettings`.
+- **Résolveur** : `Schedule.windowsFor(jour, réglages): List<Window>` (généralise `windowFor`).
+- **Moteur** : `buildDaySchedule` boucle sur les plages dans l'ordre ; réunions, épinglées et deep work restent des obstacles
+  communs. Le **filtre de contexte s'applique seulement au choix au créneau** (avant `minWith(selectionKey)`), jamais à
+  `sortKey` ni au score affiché. Une tâche dont le contexte n'a aucune plage ce jour-là va dans « Sans créneau » avec sa
+  raison. Conservation « une seule liste » à tester.
+- **Frise** : plusieurs plages, trous grisés ; `available` = somme des plages.
+- **Réglages** : plages par jour, contextes et leurs types ; un type renommé ou supprimé est signalé « type inconnu ».
 
 ### Lot C
 
@@ -230,7 +238,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 
 ### Impacts sur les specs existantes (à reporter à l'implémentation)
 
-Lots B et C seulement (le lot A est reporté) : `ordonnancement.md` (fenêtres,
-filtre de contexte, boost), `vue-jour.md` (frise et plages), `reglages.md` (carte
-« Horaires »), `modele-donnees.md` (`Settings.schedule`), `statistiques.md` (carte
-meilleures heures), `equipe-charge.md` (capacité non modifiée, à dire).
+B2 et lot C seulement (les lots A et B1 sont reportés) : `ordonnancement.md` (plages
+multiples, filtre de contexte, boost), `vue-jour.md` (frise à plusieurs plages), `reglages.md`
+(plages et contextes), `modele-donnees.md` (contextes), `statistiques.md` (carte meilleures
+heures), `equipe-charge.md` (capacité non modifiée, à dire).

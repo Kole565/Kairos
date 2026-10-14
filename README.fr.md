@@ -143,6 +143,10 @@ posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
   par défaut), Kairos évite d’y placer les tâches complexes et y fait remonter
   les légères. Les échéances et le chemin critique priment toujours ; le score
   affiché ne change pas.
+- **Horaires par jour de la semaine** (Réglages) : chaque jour peut garder la
+  journée de travail habituelle, avoir ses propres heures, ou être un jour libre
+  où rien n’est planifié automatiquement (les tâches épinglées gardent leur
+  heure). Rien ne change tant que tu n’en règles pas un.
 - **Jours ouvrés et fériés** : calendrier français intégré, dates
   supplémentaires dans les Réglages.
 

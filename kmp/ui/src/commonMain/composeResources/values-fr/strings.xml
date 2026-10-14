@@ -1168,4 +1168,19 @@
     <string name="settings_restore_title">Réglages par défaut</string>
     <string name="settings_restore_body">Remet tous les réglages à leur valeur par défaut (l’espace Équipe n’est pas touché). Rien n’est enregistré tant que tu n’appuies pas sur « Enregistrer ».</string>
     <string name="settings_restore_action">Restaurer les valeurs par défaut</string>
+    <string name="schedule_title">Horaires par jour de la semaine</string>
+    <string name="settings_schedule_body">Par défaut, chaque jour suit la journée de travail ci-dessus. Donne à un jour ses propres heures, ou marque-le comme jour libre : rien n’y est alors planifié automatiquement (les tâches épinglées gardent leur heure).</string>
+    <string name="schedule_usual">Comme d’habitude</string>
+    <string name="schedule_custom">Personnalisé</string>
+    <string name="schedule_free">Jour libre</string>
+    <string name="schedule_start">De (heure, 0-23)</string>
+    <string name="schedule_end">À (heure, 0-23)</string>
+    <string name="schedule_day_0">Lundi</string>
+    <string name="schedule_day_1">Mardi</string>
+    <string name="schedule_day_2">Mercredi</string>
+    <string name="schedule_day_3">Jeudi</string>
+    <string name="schedule_day_4">Vendredi</string>
+    <string name="schedule_day_5">Samedi</string>
+    <string name="schedule_day_6">Dimanche</string>
+    <string name="timeline_free_day">Jour libre : rien n’est planifié automatiquement, les tâches restent dans « Sans créneau aujourd’hui ».</string>
 </resources>

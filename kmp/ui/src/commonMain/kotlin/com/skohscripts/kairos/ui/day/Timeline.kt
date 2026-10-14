@@ -22,10 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.engine.Scheduling.TimelineKind
-import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.day.DayView
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.timeline_rail_hint
+import com.skohscripts.kairos.ui.generated.resources.timeline_free_day
 import com.skohscripts.kairos.ui.generated.resources.timeline_title
 import org.jetbrains.compose.resources.stringResource
 
@@ -43,14 +43,23 @@ private const val LABEL_MINUTES = 16
  * conteneur d'erreur, deep work en tertiaire (hachures pour le bloc réservé).
  */
 @Composable
-internal fun TimelineCard(view: DayView, settings: Settings, language: String, modifier: Modifier = Modifier) {
-    val start = settings.workdayStartHour
-    val end = maxOf(settings.workdayEndHour, start)
+internal fun TimelineCard(view: DayView, language: String, modifier: Modifier = Modifier) {
+    // La plage du jour (docs/spec/planning-personnalise.md § Lot B1) : celle des réglages, ou l'horaire propre à ce jour de la semaine.
+    val start = view.workStartHour
+    val end = maxOf(view.workEndHour, start)
     val scheme = MaterialTheme.colorScheme
     val lineColor = scheme.outlineVariant
     OutlinedCard(modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
-            Text(stringResource(Res.string.timeline_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 12.dp))
+            Text(stringResource(Res.string.timeline_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = if (view.freeDay) 4.dp else 12.dp))
+            if (view.freeDay) {
+                Text(
+                    stringResource(Res.string.timeline_free_day),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+            }
             // 8 dp de marge en haut et en bas : les graduations extrêmes restent lisibles.
             Box(Modifier.fillMaxWidth().height(MINUTE * ((end - start) * 60) + 16.dp).padding(vertical = 8.dp)) {
                 for (h in start..end) {

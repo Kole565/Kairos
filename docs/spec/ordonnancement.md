@@ -35,6 +35,8 @@ traiter ».
 
 ### Comportement attendu (point de vue utilisateur)
 
+- (3.4, lot B1) Chaque jour de la semaine peut avoir sa journée de travail, ou être libre (`planning-personnalise.md`) : sans
+  horaire propre, rien ne change (les sept jours ont la journée des réglages, week-ends compris, ce que figent les fichiers d'or).
 - La liste du jour est triée par score, en retard d'abord, chacune avec une
   heure de début réaliste.
 - Une réunion de 13 h à 14 h repousse une tâche à 14 h 05 (marge de 5 min),
@@ -105,6 +107,13 @@ traiter ».
 
 ### Placement (`buildDaySchedule`)
 
+**Fenêtre du jour** (3.4, lot B1) : `Schedule.windowFor(jour, réglages)` (`core/engine/Schedule.kt`) donne la plage `[début, fin)` où
+placer, ou `null` pour un **jour libre**. Sans `Settings.schedule`, ou pour un jour sans horaire propre, c'est la journée des
+réglages. Un horaire incomplet ou incohérent (début ≥ fin) retombe sur la journée des réglages. `buildDaySchedule` y lit
+sa fenêtre ; un jour libre donne une fenêtre vide (aucune tâche automatique n'est placée : « Sans créneau » ; les épinglées
+gardent leur heure ; `disponible` = 0). `Schedule.displayWindow` (la plage, ou la journée des réglages un jour libre) sert à la
+frise (`buildTimeline`) et au rail du réel (`TimeTracking.sessionTimeline`). Le creux de l'après-midi reste en heures absolues ;
+la capacité d'équipe lit toujours `workdayStartHour` et `workdayEndHour`.
 Entrées : toutes les tâches, les créneaux du jour (ponctuels et occurrences
 des récurrents), le jour, l'heure courante (`null` = début de journée), les
 réglages, les tâches bloquées et les clés d'urgence effectives

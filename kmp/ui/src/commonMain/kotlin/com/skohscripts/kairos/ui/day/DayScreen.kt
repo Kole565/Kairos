@@ -369,7 +369,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 }
                 if (!twoColumns) {
                     block("running") { RunningCard(view, services.clock, onStop = { scope.launch { repository.stopTimer() } }) }
-                    block("timeline") { TimelineCard(view, snapshot.settings, language) }
+                    block("timeline") { TimelineCard(view, language) }
                 }
             }
             if (twoColumns) {
@@ -378,7 +378,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                     verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
                 ) {
                     RunningCard(view, services.clock, onStop = { scope.launch { repository.stopTimer() } })
-                    TimelineCard(view, snapshot.settings, language)
+                    TimelineCard(view, language)
                 }
             }
         }

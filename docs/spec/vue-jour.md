@@ -73,7 +73,9 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    échéance ni date programmée, non bloquées. Elles comblent quand même les
    trous de l'agenda selon leur score (`isEligibleToday`) ; la phrase de rôle
    le dit, et dit qu'aucun jour de la semaine ne les affiche.
-10. **En ce moment** (chrono en cours) puis **Agenda** (frise) : la journée
+10. **En ce moment** (chrono en cours) puis **Agenda** (frise ; 3.4 : de l'heure de début à l'heure de fin **du jour** quand il a un
+    horaire propre, `DayView.workStartHour`/`workEndHour` ; un **jour libre** garde la journée des réglages et une ligne « Jour libre :
+    rien n'est planifié automatiquement… », `DayView.freeDay`) : la journée
     de travail heure par heure, créneaux, tâches placées et rail du temps
     chronométré ; à droite de la liste en largeur bureau, en bas sinon.
 

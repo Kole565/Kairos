@@ -1166,4 +1166,19 @@
     <string name="settings_restore_title">Default settings</string>
     <string name="settings_restore_body">Puts every setting back to its default value (the team space is not touched). Nothing is saved until you press Save.</string>
     <string name="settings_restore_action">Restore default settings</string>
+    <string name="schedule_title">Hours by day of the week</string>
+    <string name="settings_schedule_body">By default every day uses the working day above. Give a day its own hours, or mark it as a day off: nothing is then scheduled automatically (pinned tasks keep their time).</string>
+    <string name="schedule_usual">As usual</string>
+    <string name="schedule_custom">Custom</string>
+    <string name="schedule_free">Day off</string>
+    <string name="schedule_start">From (hour, 0-23)</string>
+    <string name="schedule_end">To (hour, 0-23)</string>
+    <string name="schedule_day_0">Monday</string>
+    <string name="schedule_day_1">Tuesday</string>
+    <string name="schedule_day_2">Wednesday</string>
+    <string name="schedule_day_3">Thursday</string>
+    <string name="schedule_day_4">Friday</string>
+    <string name="schedule_day_5">Saturday</string>
+    <string name="schedule_day_6">Sunday</string>
+    <string name="timeline_free_day">Day off: nothing is scheduled automatically, tasks stay under “No slot today”.</string>
 </resources>

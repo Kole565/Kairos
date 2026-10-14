@@ -94,7 +94,9 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   (`apparence.md`), `language` (`system` par défaut, `fr` ou `en` ; `i18n.md`
   § Choix de la langue), `team` (`TeamSettings?`, nul tant que l'espace Équipe
   n'a jamais été activé, `equipe.md` § Modèle ; `teamModeEnabled` en est
-  la lecture).
+  la lecture), `schedule` (`ScheduleSettings?`, nul tant qu'aucun jour de la
+  semaine n'a d'horaire propre : `weekdays` = jours 0 (lundi) à 6 (dimanche) → `DaySchedule(free, startHour, endHour)` ;
+  `planning-personnalise.md` § Lot B1 ; non écrit dans l'export tant qu'il est nul).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,
   `availabilityPercent`, `hoursPerDay`, `isSelf`, `archived`, `createdAt`,
   `updatedAt` (`equipe.md`), `lastReportAt` (dernier rapport intégré, jalon
