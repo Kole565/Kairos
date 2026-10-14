@@ -5,16 +5,15 @@ validation par champ. Fichiers couverts :
 `kmp/core/src/commonMain/.../core/settings/SettingsForm.kt` (champs, bornes,
 validation, pur), `kmp/core/.../model/Settings.kt` (modèle, décrit par
 `modele-donnees.md`), `kmp/ui/.../settings/` (`SettingsScreen.kt`,
-`SettingsFormCards.kt`). La carte Données est décrite par `export-import.md`
-et `migration-2x.md`, la carte Mises à jour par `mises-a-jour.md`, la carte
+`SettingsFormCards.kt`). La carte Données est décrite par `export-import.md`,
+la carte Mises à jour par `mises-a-jour.md`, la carte
 Apparence par `apparence.md`, la carte Langue par `i18n.md`. Tests :
 `core/.../settings/SettingsFormTest.kt`,
 `M5ScreensUiTest.anInvalidFieldBlocksSavingThenAValidFormIsSaved`._
 
-État : **jalon M5**. Reprend le besoin de `docs/spec/reglages-secrets.md`
-(Kairos 2, tag `v2.6.0`), moins le périmètre retiré : chemin de la base, import GitLab,
-base pilotage, TimeTree, proxy, niveau de log, source et jeton des mises à
-jour. Kairos 3 n'a plus aucun secret à stocker (pas de trousseau).
+État : **jalon M5**. Kairos n'a aucun secret à stocker (pas de trousseau) ni
+de réglage de chemin de base, de proxy ou de niveau de log : tout ce qui se
+règle l'est depuis ce formulaire.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -26,7 +25,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 ### Comportement attendu (utilisateur)
 
-- Destination « Réglages », une carte par section, dans l'ordre de Kairos 2 :
+- Destination « Réglages », une carte par section, dans cet ordre :
   **Journée de travail** (durée par défaut d'une tâche, marge après un
   créneau occupé, début et fin de journée), **Score de priorité (WSJF)**
   (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
@@ -50,7 +49,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   (`raccourci-portable.md`), puis **Données** et
   « À propos et guide ».
 - Chaque champ a un libellé court et, dessous, une phrase qui dit à quoi il
-  sert (les descriptions de Kairos 2) ; un booléen est un interrupteur dont
+  sert ; un booléen est un interrupteur dont
   toute la ligne se touche.
 - Une barre fixée en bas porte « Enregistrer » (actif dès qu'une valeur
   change), « Annuler les modifications » et « Modifications non
@@ -75,7 +74,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Valeurs par défaut relues puis revalidées à l'identique ; un champ absent
   garde sa valeur (`SettingsFormTest`).
 - Hors bornes, vide, non entier, non nombre, date illisible : une erreur par
-  champ, aucun enregistrement ; bornes de Kairos 2, borne basse exclue pour
+  champ, aucun enregistrement ; bornes propres de Kairos (figées par `SettingsFormTest`), borne basse exclue pour
   la base de valeur (`SettingsFormTest`).
 - Heure 25 refusée, début après la fin refusé, puis 8 h, base 2,5 et creux
   désactivé enregistrés d'un coup (`M5ScreensUiTest`).
@@ -84,7 +83,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 - Choix de la langue (on suit le système, `i18n.md`), thème sombre
   (`navigation-theme.md`, `apparence.md`).
-- Réglages retirés avec leurs intégrations (voir l'en-tête).
+- Réglage du chemin de la base, d'un proxy ou du niveau de journalisation (voir
+  l'en-tête).
 
 ## 2. Solution technique
 
@@ -121,7 +121,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 ### Écran (`SettingsScreen`, `ui`)
 
 - État : textes du formulaire, erreurs et règle violée, réinitialisés quand
-  les réglages enregistrés changent (import, migration) ; `dirty` = textes ≠
+  les réglages enregistrés changent (import d'un export) ; `dirty` = textes ≠
   valeurs enregistrées.
 - `SettingsFormCards` : carte « filled » par section (`SettingsCard`, sans contour, `densite.md` ; titre marqué
   `heading`), `SettingInput` : `OutlinedTextField` (largeur bornée à 320 dp pour un nombre, pleine largeur pour un texte), clavier
@@ -136,13 +136,13 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 ### Décisions et pièges tracés
 
-- **Un seul formulaire, un seul « Enregistrer »** (comme Kairos 2) : la carte
+- **Un seul formulaire, un seul « Enregistrer »** : la carte
   du chrono du jalon M3, qui avait son propre bouton, y est fondue
   (`ChronoSettingsCard` retiré).
 - **Validation à l'enregistrement, pas à la frappe** : on ne crie pas
   « Obligatoire » pendant qu'on efface pour retaper.
-- **Dates supplémentaires validées** : Kairos 2 ignorait en silence une date
-  illisible ; Kairos 3 la signale (même format, rien d'autre ne change).
+- **Dates supplémentaires validées** : une date illisible est signalée
+  plutôt qu'ignorée en silence (même format, rien d'autre ne change).
 - **Virgule décimale acceptée** : « 2,5 » est la façon française de
   l'écrire.
 - **Plus de carte « En construction »** : toutes les parties des Réglages

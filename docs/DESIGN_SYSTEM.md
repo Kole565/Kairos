@@ -33,7 +33,7 @@ domaine.
 - **Rail de navigation** sur grand écran : décision « pas de barre latérale »
   explicitement rouverte et tranchée par l'utilisateur en faveur du rail MD3
   (§ Navigation).
-- **Kairos 3** (2026-10) : la charte, née en HTML/CSS pour Kairos 2, est
+- **Kairos 3** (2026-10) : la charte, née en HTML/CSS, est
   transposée telle quelle en Compose ; les rôles, formes et règles d'usage de
   la couleur ne changent pas, seuls les composants deviennent ceux de
   Material 3.
@@ -182,7 +182,7 @@ réseau. **Ajouter une icône dans le script, jamais à la main.** Variante plei
 - Liseré critique d'une ligne de tâche P0 : bord gauche rouge de 3 dp (`error`),
   jamais de remplissage.
 - **Tâche bloquée** : fond `surface` et contour, titre atténué par sa couleur —
-  **jamais d'opacité** (décision de Kairos 2, `docs/spec/vue-jour.md`).
+  **jamais d'opacité** (décision ancienne, `docs/spec/vue-jour.md`).
 - Dégradés : aucun, sauf les hachures des créneaux deep work réservés de la
   frise.
 

@@ -225,8 +225,8 @@ Tant que l'espace Équipe n'a **jamais été activé** :
   pixel, à l'exception de la seule carte « Équipe » des Réglages (fermée :
   un interrupteur et sa phrase) ;
 - ordonnancement, vue Jour, vue Semaine, statistiques, chrono, notes,
-  récurrence : mêmes entrées, mêmes sorties (les tests différentiels contre
-  Kairos 2 passent sans changement) ;
+  récurrence : mêmes entrées, mêmes sorties (les tests sur fichiers d'or figés
+  passent sans changement) ;
 - un **export** est octet pour octet celui qu'aurait produit la version
   d'avant, à `appVersion` et `exportedAt` près (même `formatVersion`,
   mêmes champs, réglages compris, § Export) ;
@@ -273,7 +273,7 @@ d'équipe, sans changer d'espace (`equipe-moi.md`).
 - **Plusieurs équipes** dans une base, sous-équipes, organigramme.
 - Droits et rôles d'accès (il n'y a qu'un utilisateur).
 - Notifications aux membres, messagerie, commentaires en fil.
-- Intégrations (Jira, GitLab, calendriers) : retirées de Kairos 3.
+- Intégrations (Jira, GitLab, calendriers) : hors périmètre.
 - Gestion RH (validation des congés, compteurs), budget, coûts, feuilles de
   temps officielles.
 - Compétences des membres (matrice de compétences) : non demandées ;
@@ -365,8 +365,6 @@ d'équipe, sans changer d'espace (`equipe-moi.md`).
   - **`6.sqm`** (`user_version` 6 → 7) : `task.team_excluded`
     (`equipe-moi.md`).
   Références sans `FOREIGN KEY` (parti pris existant).
-- Une base 2.x importée (`migration-2x.md`) n'a aucune tâche d'équipe :
-  `Kairos2Import` n'écrit pas les nouvelles colonnes (défauts SQL).
 - `verifyMigrations` couvre la migration ; test d'ouverture d'une base
   version 1 réelle (fixture) : aucune ligne perdue, toutes les tâches
   `PERSONAL`.
@@ -467,8 +465,8 @@ aussi son événement de journal dans la même transaction,
 - Lecteurs : `DayScreen`, `WeekScreen`, `NotesScreen`, `StatsScreen`,
   `ChronoWatcher` et `ChronoSync` (Android) lisent `personalSnapshot` ;
   restent sur `snapshot` le thème (`KairosApp`), `Replace.kt`,
-  `SettingsScreen`, `Updates.kt` (réglages seuls), `WebServices.kt`,
-  `AndroidServices.kt` (bilan de migration) et la coquille.
+  `SettingsScreen`, `Updates.kt` (réglages seuls), `WebServices.kt`
+  et la coquille.
 - Icônes ajoutées au jalon E1 (`tools/make_icons.py`, `KairosIcons.kt`
   regénéré) : `Groups`, `GroupsFilled`, `Person`, `ViewKanban`,
   `ViewKanbanFilled`, `Stacks`, `StacksFilled`, `Monitoring`,

@@ -15,8 +15,7 @@ import kotlinx.datetime.plus
 import kotlin.time.Instant
 
 /**
- * Récurrence des tâches et des créneaux (docs/spec/recurrence.md) : portage
- * de `app/tasks_recurrence.py` (Kairos 2). Pur : les occurrences à créer sont
+ * Récurrence des tâches et des créneaux (docs/spec/recurrence.md). Pur : les occurrences à créer sont
  * rendues, le dépôt les enregistre.
  */
 object Recurrence {
@@ -25,8 +24,8 @@ object Recurrence {
 
     /**
      * Prochaine échéance après [base] ; [dayOfWeek] (0 = lundi) ancre `weekly`. [holidays] : `weekdays` (jours ouvrés)
-     * saute aussi les fériés, jamais une échéance un jour férié (écart volontaire avec Kairos 2, docs/spec/recurrence.md) ;
-     * vide par défaut : les tests différentiels de Kairos 2 n'en ont pas.
+     * saute aussi les fériés, jamais une échéance un jour férié (docs/spec/recurrence.md) ;
+     * vide par défaut : les tests différentiels n'en ont pas.
      */
     fun nextDeadline(rule: TaskRecurrence, base: LocalDate, dayOfWeek: Int? = null, holidays: Set<LocalDate> = emptySet()): LocalDate = when (rule) {
         TaskRecurrence.DAILY -> base.plus(DatePeriod(days = 1))

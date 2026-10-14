@@ -18,7 +18,7 @@ object TeamStates {
     /**
      * État de [task] : Faite si `status = done` ; sinon, à faire : Backlog sans
      * assigné, En cours si `startedOn` est posé, À faire sinon. Une tâche
-     * archivée (import de Kairos 2) n'a aucun état (`null`).
+     * archivée n'a aucun état (`null`).
      */
     fun of(task: Task): TeamState? = when {
         task.status == TaskStatus.ARCHIVED -> null

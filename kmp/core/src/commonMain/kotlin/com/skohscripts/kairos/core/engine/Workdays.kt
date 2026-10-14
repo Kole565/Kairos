@@ -7,11 +7,10 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 
 /**
- * Jours ouvrés et jours fériés (docs/spec/ordonnancement.md § Jours ouvrés) :
- * portage de `app/workdays.py` (Kairos 2). Pur.
+ * Jours ouvrés et jours fériés (docs/spec/ordonnancement.md § Jours ouvrés). Pur.
  */
 object Workdays {
-    /** Lundi = 0 … dimanche = 6 (convention `date.weekday()` de Kairos 2). */
+    /** Lundi = 0 … dimanche = 6 (convention du projet). */
     fun weekday(day: LocalDate): Int = day.dayOfWeek.isoDayNumber - 1
 
     /** Ouvré : du lundi au vendredi, et pas dans [holidays]. */
@@ -100,7 +99,7 @@ object Workdays {
     fun endOfWeek(day: LocalDate): LocalDate = day.plus(DatePeriod(days = 6 - weekday(day)))
 
     /**
-     * Jours fériés des réglages (`Settings.holiday_set` de Kairos 2) : calendrier
+     * Jours fériés des réglages : calendrier
      * français si [france], plus [extra], de l'année de [today] − 1 à + 2 ; vide
      * si rien n'est demandé.
      */

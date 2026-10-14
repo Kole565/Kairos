@@ -3,7 +3,7 @@ package com.skohscripts.kairos.core.notes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/** Règle de conversion d'une note en tâche (issue #32 de Kairos 2). */
+/** Règle de conversion d'une note en tâche (issue #32). */
 class NoteConversionTest {
     @Test
     fun first_non_blank_line_is_the_title_rest_is_the_description() {

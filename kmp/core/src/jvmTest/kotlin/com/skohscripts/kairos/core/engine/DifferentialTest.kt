@@ -27,9 +27,10 @@ import kotlin.test.assertEquals
 import kotlin.time.Instant
 
 /**
- * Tests différentiels (docs/plan-v3-kotlin.md § 7) : rejoue les scénarios produits
- * par le moteur Python de Kairos 2 (`kmp/tools/gen_fixtures.py`) et exige les mêmes
- * sorties, à la minute et au bit près pour les scores.
+ * Tests différentiels (docs/plan-v3-kotlin.md § 7) : rejoue les scénarios des fichiers
+ * d'or figés (dossier `fixtures/`, produits à l'origine par le moteur Python de la version précédente, aujourd'hui
+ * source de vérité : docs/spec/retrait-kairos2.md) et exige les mêmes sorties, à la minute et au bit près pour
+ * les scores.
  */
 class DifferentialTest {
     private val json = Json { ignoreUnknownKeys = true }
@@ -70,7 +71,7 @@ class DifferentialTest {
     }
 
     @Test
-    fun scheduling_matches_kairos2() {
+    fun scheduling_matches_golden() {
         val cases = fixture("scheduling.json").jsonArray
         check(cases.size >= 400)
         for (element in cases) {
@@ -104,7 +105,7 @@ class DifferentialTest {
             val scheduled = schedule.scheduled.map {
                 mapOf(
                     "id" to it.task.id, "start" to it.start.toString(), "duration" to it.durationMinutes,
-                    "pinned" to it.pinned, "pushedAfter" to it.pushedAfter, "pushedAfterKind" to it.pushedAfterKind?.let { k -> if (k == Scheduling.ObstacleKind.DEEPWORK) "PINNED" else k.name }, // Kairos 2 : deep work = épinglée
+                    "pinned" to it.pinned, "pushedAfter" to it.pushedAfter, "pushedAfterKind" to it.pushedAfterKind?.let { k -> if (k == Scheduling.ObstacleKind.DEEPWORK) "PINNED" else k.name }, // Fichiers d'or : deep work = épinglée
                     "conflictWith" to it.conflictWith, "deepwork" to it.deepwork, "dip" to it.dipApplied,
                 )
             }
@@ -155,7 +156,7 @@ class DifferentialTest {
     }
 
     @Test
-    fun dependencies_match_kairos2() {
+    fun dependencies_match_golden() {
         for ((index, element) in fixture("dependencies.json").jsonArray.withIndex()) {
             val case = element.jsonObject
             val edges = edges(case.getValue("edges"))
@@ -177,7 +178,7 @@ class DifferentialTest {
     }
 
     @Test
-    fun calendar_matches_kairos2() {
+    fun calendar_matches_golden() {
         val cal = fixture("calendar.json").jsonObject
         val holidays = Workdays.buildHolidays(2025..2028, france = true, extra = "2026-08-14")
         assertEquals(cal.getValue("holidays").jsonArray.map { LocalDate.parse(it.str!!) }, holidays.sorted())

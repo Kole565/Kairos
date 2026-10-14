@@ -348,7 +348,7 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 
 - **États dérivés** de `status`, `assigneeId`, `startedOn` plutôt qu'une
   colonne d'état : pas de combinaison incohérente possible (« En cours »
-  sans assigné), et `status` garde ses trois codes de Kairos 2.
+  sans assigné), et `status` garde ses trois codes historiques (`todo`, `done`, `archived`).
 - **Avancement par pas de 10 %** : une précision plus fine est illusoire
   pour un avancement déclaratif, et le curseur discret se manie au doigt.
 - **Réaffecter remet à « À faire » (sur confirmation)** : le temps passé

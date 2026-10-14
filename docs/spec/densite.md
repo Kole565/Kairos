@@ -222,8 +222,8 @@ champs à contour).
   composant n'est contorsionné pour 320 dp. Le titre de la barre passe en corps
   `titleMedium` quand le sélecteur d'espace la partage (`navigation-theme.md`).
 - **Types de tâche par défaut sans espace après la virgule** (« Développement,
-  Revue de code,Réunion,… ») : conservés tels quels. C'est le format de Kairos 2
-  (parité des exports et des bases migrées) ; l'affichage en pastilles coupe sur
+  Revue de code,Réunion,… ») : conservés tels quels. C'est le format propre de Kairos,
+  déjà présent dans les exports et les bases existantes (`Settings.kt`) ; l'affichage en pastilles coupe sur
   les virgules, jamais sur le texte saisi.
 - **Badges d'une ligne de tâche** : en `FlowRow` (score, priorité, points
   passent à la ligne) et « N pts » en une seule ligne (`Badge(nowrap = true)`).

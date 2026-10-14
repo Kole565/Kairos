@@ -8,9 +8,8 @@ usage dans `core/day/DayView.kt` et `data/KairosRepository.kt`
 (`setBlockers`, `deleteTask`). Le stockage (`TaskDependency`) est dans
 `modele-donnees.md`, l'affichage dans `vue-jour.md`._
 
-État : **jalon M2**, portage de `app/tasks_dependencies.py` (spec Kairos 2
-`docs/spec/dependances.md`), prouvé par tests différentiels
-(`ordonnancement.md` § Tests différentiels).
+État : **jalon M2**, prouvé par un test sur fichiers d'or figés
+(`DifferentialTest.dependencies_match_golden`, `ordonnancement.md`).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -56,13 +55,13 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
   détecté avant écriture.
 - L'urgence héritée est recalculée à chaque affichage et ne modifie aucune
   donnée.
-- Sorties identiques à Kairos 2 sur 300 graphes aléatoires (cycles,
-  bloquées, urgence dérivée, cycle potentiel).
+- Sorties identiques aux fichiers d'or (`dependencies.json`) sur 300 graphes
+  aléatoires (cycles, bloquées, urgence dérivée, cycle potentiel).
 
 ### Hors périmètre / différé
 
 - Graphe dessiné, dépendances « au moins N sur M », notification de
-  déblocage (comme Kairos 2).
+  déblocage.
 
 ## 2. Solution technique
 
@@ -91,16 +90,13 @@ urgente : il doit en hériter l'urgence pour passer plus tôt.
 
 ### Décisions et pièges tracés
 
-- **Une tâche archivée ne bloque pas** (écart volontaire avec le code de
-  Kairos 2, conforme à sa spec) : Kairos 2 construisait la table des statuts
-  sans les archivées, qui passaient donc pour « à faire » et bloquaient
-  encore. Kairos 3 donne le statut réel ; le générateur de fixtures fait de
-  même pour que les tests différentiels portent sur le comportement voulu.
+- **Une tâche archivée ne bloque pas** : `DayView.build` donne le statut réel
+  de chaque tâche, archivées comprises ; une archivée n'est donc jamais « à
+  faire » et ne bloque pas. Comportement figé par les fichiers d'or.
 - **Les bloqueurs proposés sont les tâches à faire** : un bloqueur déjà fait
   n'a pas de case, donc disparaît au prochain enregistrement du dialogue
-  (comme Kairos 2 ; il ne bloquait déjà plus).
-- **Cases à cocher, pas de liste à sélection multiple** (décision de Kairos 2
-  reprise) ; le libellé de chaque case est cliquable (`LabeledCheckbox`).
+  (il ne bloquait déjà plus).
+- **Cases à cocher, pas de liste à sélection multiple** ; le libellé de chaque case est cliquable (`LabeledCheckbox`).
 - **Boucle annoncée avant l'enregistrement** (2026-10-10, test exploratoire) :
   la case était proposée puis silencieusement oubliée, sans retour.
   `BlockerChoices.of(tâche, candidats, dépendances, titres, langue)` (`ui/day`)

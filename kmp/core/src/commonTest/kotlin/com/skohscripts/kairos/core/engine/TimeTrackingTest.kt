@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
-/** Portage de tests/test_tasks_time.py et des tests du rail « réel » (Kairos 2). */
+/** Temps passé, temps du jour et rail « réel ». */
 class TimeTrackingTest {
     private val now = Instant.parse("2026-07-02T12:00:00Z")
     private var nextId = 1L

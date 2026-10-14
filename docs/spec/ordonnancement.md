@@ -3,16 +3,14 @@
 _Rôle : transformer les tâches à faire et les créneaux du jour en un plan
 horaire : dans quel ordre, et à quelle heure. Fichiers couverts :
 `kmp/core/src/commonMain/.../core/engine/` (`Scheduling.kt`, `Workdays.kt`,
-`Staleness.kt`, `DateTimes.kt`), les tests différentiels
-(`kmp/core/src/jvmTest/.../engine/DifferentialTest.kt`, fixtures
-`kmp/core/src/jvmTest/resources/fixtures/`) et leur générateur
-(`kmp/tools/gen_fixtures.py`). Les dépendances ont leur spec
+`Staleness.kt`, `DateTimes.kt`), les tests contre fichiers d'or figés
+(`kmp/core/src/jvmTest/.../engine/DifferentialTest.kt`, fichiers d'or
+`kmp/core/src/jvmTest/resources/fixtures/`). Les dépendances ont leur spec
 (`dependances.md`), la récurrence aussi (`recurrence.md`) ; l'affichage est
 dans `vue-jour.md`._
 
-État : **jalon M2**. Portage **à l'identique** du moteur de Kairos 2
-(`app/tasks_scheduling.py`, `app/workdays.py`, `app/tasks_staleness.py`,
-spec `docs/spec/ordonnancement.md`), prouvé par tests différentiels.
+État : **jalon M2**, implémenté. Le comportement du moteur est figé par des
+fichiers d'or (voir « Tests contre fichiers d'or »).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -66,7 +64,7 @@ traiter ».
 
 ### Critères de succès
 
-- Les sorties du moteur Kotlin sont **identiques** à celles de Kairos 2 sur
+- Les sorties du moteur Kotlin sont **identiques** aux fichiers d'or sur
   480 scénarios tirés au hasard (ordre, heures, listes, notes, frise, charge,
   scores au bit près, paliers, ancienneté), dont 80 qui exercent le creux ;
   et sur 300 graphes de dépendances et un jeu calendaire (fériés, Pâques de
@@ -82,7 +80,7 @@ traiter ».
 
 - Calibration des poids sur l'historique réel (jalon M4 et au-delà) ; les
   poids restent des réglages.
-- Événements de calendrier externes (TimeTree) : retirés de Kairos 3.
+- Événements de calendrier externes : hors périmètre de Kairos.
 - Glisser-déposer dans la frise.
 
 ## 2. Solution technique
@@ -158,37 +156,41 @@ n'est demandé.
 des deux dates), ou, sans aucune date, `updatedAt` plus vieux que
 `staleUntouchedDays` ; sinon `null`.
 
-### Tests différentiels
+### Tests contre fichiers d'or
 
-`kmp/tools/gen_fixtures.py` fait tourner le moteur Python sur des scénarios
-tirés au hasard avec graine fixe (réglages, tâches, créneaux, arêtes,
-heure) et écrit entrées et sorties en JSON ; `DifferentialTest` rejoue et
-exige l'égalité exacte (scores comparés en `Double` relus depuis le `repr`
-Python). Les fixtures sont commitées : le générateur ne se relance que s'il
-change lui-même, sur un checkout du tag `v2.6.0` de Kairos 2
-(`KAIROS2_SRC`, `architecture.md` § Outils). Le même générateur écrit `stats.json` (jalon M4, rejoué par
-`StatsDifferentialTest`, voir `statistiques.md`).
+Les fichiers d'or `core/src/jvmTest/resources/fixtures/*.json`
+(`scheduling.json`, `dependencies.json`, `calendar.json`, `stats.json`)
+contiennent des scénarios tirés au hasard avec graine fixe (réglages, tâches,
+créneaux, arêtes, heure) et les sorties attendues. Ils sont la **source de
+vérité** du comportement. `DifferentialTest` les rejoue et exige l'égalité
+exacte (scores comparés en `Double` relus depuis leur forme texte) :
+`scheduling_matches_golden`, `dependencies_match_golden`,
+`calendar_matches_golden`. `StatsDifferentialTest.dashboard_matches_golden`
+rejoue `stats.json` (jalon M4, voir `statistiques.md`).
+
+Les 480 scénarios restent l'invariant « rien ne change sans réglage » : tout
+chantier qui touche le moteur doit les garder verts. Leur script de
+génération a été retiré (son historique reste dans git, au tag `v3.3.0`) :
+les fichiers ne se régénèrent plus, et un changement voulu du comportement
+s'écrit en éditant les fichiers d'or, avec sa justification en spec.
 
 ### Décisions et pièges tracés
 
 - **Notes rendues en données** (`pushedAfter`, `pushedAfterKind`,
   `conflictWith`, `dipApplied`), jamais en phrases : l'interface les
-  formule dans sa langue. Le générateur retrouve ces données en analysant
-  les phrases de Kairos 2.
+  formule dans sa langue.
 - **`floorMod` / `floorDiv` de Java absents du code commun** : `.mod()` et
   `.floorDiv()` de Kotlin (même sémantique pour les négatifs).
 - **Minutes entre deux heures locales calculées en UTC** (`DateTimes.kt`) :
-  pas de fuseau, donc pas de changement d'heure, comme les `datetime` naïfs
-  de Kairos 2.
-- **Ancienneté datée en UTC** (`updatedAt` à la date UTC) : parité exacte
-  avec Kairos 2, qui prend la date d'un horodatage UTC naïf.
+  pas de fuseau, donc pas de changement d'heure.
+- **Ancienneté datée en UTC** (`updatedAt` à la date UTC) : comportement
+  propre de Kairos, figé par les fichiers d'or.
 - **Une tâche archivée ne bloque pas** : le moteur reçoit le statut réel de
   chaque tâche (voir `dependances.md`).
-- **Deep work rogné à maintenant** (2026-10-11, écart volontaire avec
-  Kairos 2, demandé après le test exploratoire) : Kairos 2 remplissait la
-  fenêtre entière, passé compris ; à 16 h 42, « À faire maintenant » montrait
-  une tâche posée à 10 h et une tâche P0 partait « sans créneau » pendant
-  qu'une fenêtre passée restait « remplie ». Le générateur de fixtures passe
-  au moteur de Kairos 2 des fenêtres déjà rognées, si bien que les tests
-  différentiels portent sur le comportement voulu (31 scénarios sur 480
-  changent, tous avec une heure courante).
+- **Deep work rogné à maintenant** (2026-10-11, demandé après le test
+  exploratoire) : remplir la fenêtre entière, passé compris, était faux ;
+  à 16 h 42, « À faire maintenant » montrait une tâche posée à 10 h et une
+  tâche P0 partait « sans créneau » pendant qu'une fenêtre passée restait
+  « remplie ». Les fichiers d'or portent des
+  fenêtres déjà rognées : ils décrivent le comportement voulu (31 scénarios
+  sur 480 ont changé, tous avec une heure courante).

@@ -8,7 +8,7 @@ plugins {
 val kairosVersionName = providers.gradleProperty("kairos.versionName").get()
 val kairosVersionCode = providers.gradleProperty("kairos.versionCode").get().toInt()
 // Préversion (X.Y.Z-alpha.N / -beta.N) : application distincte « Kairos Preview »,
-// installable à côté de Kairos 2 (plan § 9). `-Pkairos.preview=false` force
+// installable à côté de la version stable. `-Pkairos.preview=false` force
 // l'identifiant définitif : la vérification F-Droid d'une bêta construit
 // com.skohscripts.kairos, comme le fera la recette (docs/spec/publication.md).
 val isPreview = providers.gradleProperty("kairos.preview").orNull?.toBooleanStrict() ?: kairosVersionName.contains('-')
@@ -27,8 +27,8 @@ android {
         resValue("string", "app_name", if (isPreview) "Kairos Preview" else "Kairos")
     }
 
-    // Keystore de release fourni par la CI (mêmes secrets que Kairos 2 : même
-    // clé, pour que la 3.0.0 s'installe par-dessus l'APK 2.x). Sans keystore,
+    // Keystore de release fourni par la CI (toujours la même
+    // clé, pour que chaque version s'installe par-dessus la précédente). Sans keystore,
     // assembleRelease produit un APK non signé (build local, F-Droid).
     signingConfigs {
         create("release") {

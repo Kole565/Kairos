@@ -9,7 +9,6 @@ fonctionnalités), visite guidée, aide de l'écran courant. Fichiers couverts :
 appel dans `navigation/AppShell.kt` et `KairosApp.kt`, `AppServices.firstLaunch`
 et sa valeur sur chaque plateforme (`DesktopServices.kt`, `AndroidServices.kt`,
 `WebServices.kt`). Tests : `M5ScreensUiTest.theWelcomeShowsOnceOnFirstLaunch`,
-`aKairos2DatabaseFoundAtFirstLaunchIsImportedAfterABackup`,
 `M6GuideUiTest`, `GuideStepsTest`._
 
 État : accueil du premier lancement **jalon M5** ; page Accueil, visite
@@ -23,13 +22,12 @@ la barre du haut (`navigation-theme.md`).
 ### Objectif / problème
 
 Une base neuve contient des exemples (`modele-donnees.md`) ; sans un mot,
-on ne sait pas que ce sont des exemples, ni ce que fait Kairos. Et un
-utilisateur de Kairos 2 doit retrouver ses données tout de suite.
+on ne sait pas que ce sont des exemples, ni ce que fait Kairos.
 
 Ensuite, Kairos a grandi (notes, semaine, statistiques, espace Équipe,
 échanges par fichier) : un dialogue vu une seule fois ne suffit plus. Il
 faut pouvoir **retrouver à tout moment** la raison d'être de l'outil et ses
-fonctionnalités (la page d'accueil de Kairos 2 le faisait), être **guidé**
+fonctionnalités, être **guidé**
 pas à pas, et obtenir **de l'aide sur l'écran où l'on se trouve**, sans quitter
 le travail en cours.
 
@@ -37,20 +35,15 @@ le travail en cours.
 
 - Au tout premier lancement, un dialogue « Bienvenue dans Kairos » (logo) :
   ce que fait Kairos en une phrase (l'ordre, la valeur divisée par l'effort,
-  capturer / qualifier / faire), puis, selon le cas :
-  - Android, base Kairos 2 migrée : le bilan (`migration-2x.md`),
-    « Commencer » ;
-  - bureau, base Kairos 2 trouvée : la proposition de l'importer (chemin),
-    « Importer la base Kairos 2 » (confirmation avec les comptes) ou
-    « Garder les exemples » ;
-  - sinon : les exemples (« [Exemple] », projet « Exemple », à terminer ou
-    supprimer), « Commencer » ou « À propos et guide ».
+  capturer / qualifier / faire), puis les exemples (« [Exemple] », projet
+  « Exemple », à terminer ou supprimer), avec « Commencer » ou « Visite
+  guidée ».
 - Il ne revient jamais : ni aux lancements suivants, ni quand la fenêtre
   change de taille.
 - Il attend la fin de la page de démarrage (`demarrage.md`) : jamais
   par-dessus le cadran animé.
-- Dans le cas des exemples, le second bouton est **« Visite guidée »** (et non
-  plus « À propos et guide ») : il ferme l'accueil et lance la visite.
+- Le second bouton est **« Visite guidée »** : il ferme l'accueil et lance la
+  visite.
 
 #### Le bouton « ? » (aide)
 
@@ -114,8 +107,6 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
 
 - Base neuve : l'accueil parle des exemples et se ferme d'un clic
   (`M5ScreensUiTest`).
-- Base Kairos 2 trouvée : importée depuis l'accueil après confirmation et
-  sauvegarde (`M5ScreensUiTest`).
 - L'application s'ouvre sur l'Accueil, première destination des deux
   espaces ; les Réglages s'ouvrent par la roue crantée et se referment avec
   leur flèche, comme « À propos » ouvert depuis eux
@@ -160,8 +151,7 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
   `KairosLogo`), état `rememberSaveable` initialisé à `firstLaunch` ; appelé
   une fois dans `AppShell`, **hors** des branches de mise en page (rail,
   barre du haut, barre basse), pour qu'un redimensionnement ne recrée pas
-  son état. Il héberge son propre `LegacyImportFlow` et
-  `LegacyImportDialog`.
+  son état.
 
 ### Aide, Accueil et visite (jalon « ne pas se perdre », 2026-10-01)
 
@@ -240,10 +230,9 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
   changer d'espace réinitialise la destination. « Voir l’écran » ferme la
   visite avant d'ouvrir (`guide = null`).
 - **Premier lancement** : `WelcomeDialog(services, onStartGuide)` ; le bouton
-  secondaire du cas « exemples » est `welcome_tour` (« Visite guidée »), qui
-  ferme le dialogue puis met `guide = PERSONAL`. `welcome_about` disparaît (plus
-  utilisé) ; « À propos et guide » reste atteignable depuis l'Accueil et les
-  Réglages.
+  secondaire est `welcome_tour` (« Visite guidée »), qui
+  ferme le dialogue puis met `guide = PERSONAL`. « À propos et guide » reste
+  atteignable depuis l'Accueil et les Réglages.
 - **Textes** : préfixes `help_`, `home_`, `guide_`, `hub_`, `team_tab_` ;
   français (tutoiement Perso et Accueil, vouvoiement Équipe) et anglais,
   `StringsParityTest`.
@@ -285,7 +274,7 @@ au lieu d'être réparti entre la fiche du membre et les Réglages.
 - **Un dialogue, pas un écran** : les exemples sont visibles derrière, ce
   sont eux qui montrent l'application.
 - **Premier lancement = base créée** : aucun indicateur à stocker ; une base
-  importée ou migrée n'est pas « neuve » au lancement suivant.
+  existante n'est pas « neuve » au lancement suivant.
 - **La carte « Pourquoi « Kairos » ? » de « À propos » reste** (formule du score,
   origine du nom) : l'Accueil est le point d'entrée, « À propos et guide » la
   référence.

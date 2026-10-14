@@ -22,8 +22,7 @@ enum class NavigationLayout {
 
         /**
          * Jamais de barre basse hors d'Android : un navigateur ou une fenêtre de
-         * bureau simplement rétrécie garde sa navigation en haut (règle reprise
-         * de Kairos 2, docs/spec/accueil-navigation.md au tag v2.6.0).
+         * bureau simplement rétrécie garde sa navigation en haut (docs/spec/navigation-theme.md).
          */
         fun choose(platform: Platform, windowWidth: Dp): NavigationLayout = when {
             windowWidth >= COMPACT_WIDTH_LIMIT -> RAIL

@@ -29,7 +29,7 @@ import com.skohscripts.kairos.ui.generated.resources.timeline_rail_hint
 import com.skohscripts.kairos.ui.generated.resources.timeline_title
 import org.jetbrains.compose.resources.stringResource
 
-/** Hauteur d'une minute sur la frise (1 min = 1 dp, comme 1 min = 1 px en Kairos 2). */
+/** Hauteur d'une minute sur la frise (1 min = 1 dp). */
 private val MINUTE = 1.dp
 private val GUTTER = 44.dp
 

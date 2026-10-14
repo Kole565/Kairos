@@ -19,7 +19,7 @@ object UpdateCheck {
     /** Dernière version **publiée** (GitHub exclut préversions et brouillons de `/latest`). */
     const val LATEST_URL = "https://api.github.com/repos/SKOHscripts/Kairos/releases/latest"
 
-    /** Au plus une vérification automatique toutes les 6 heures (comme Kairos 2). */
+    /** Au plus une vérification automatique toutes les 6 heures. */
     val INTERVAL = 6.hours
 
     data class Release(val version: AppVersion, val url: String)

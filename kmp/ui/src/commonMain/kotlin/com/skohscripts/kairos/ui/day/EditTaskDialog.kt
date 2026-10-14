@@ -255,7 +255,7 @@ internal fun EditTaskDialog(
                             )
                         }
                         PriorityPills(priority, { priority = it }, showMeaning = true)
-                        // Durée suggérée (Kairos 2, issue #15.6) : choisir un palier calibré
+                        // Durée suggérée (issue #15.6) : choisir un palier calibré
                         // REMPLACE la durée, même déjà saisie ; on reste libre de la retoucher.
                         PointsPills(points, { chosen ->
                             points = chosen
@@ -310,7 +310,7 @@ internal fun EditTaskDialog(
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                             }
-                            // Suggestion par type (Kairos 2, issue #7) : seulement si la durée est
+                            // Suggestion par type (issue #7) : seulement si la durée est
                             // encore vide, pour ne jamais écraser une estimation saisie à la main.
                             TypeField(type, taskTypes, label = if (teamEditing) Res.string.field_category else Res.string.field_type) { chosen ->
                                 type = chosen

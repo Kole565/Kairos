@@ -90,12 +90,8 @@ import com.skohscripts.kairos.data.ExportCodec
 import com.skohscripts.kairos.data.ImportException
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.LocalMessages
-import com.skohscripts.kairos.ui.app.LegacyImportDialog
 import com.skohscripts.kairos.ui.app.fileStamp
-import com.skohscripts.kairos.ui.app.rememberLegacyImport
 import com.skohscripts.kairos.ui.app.replaceWithBackup
-import com.skohscripts.kairos.ui.generated.resources.legacy_import_action
-import com.skohscripts.kairos.ui.generated.resources.legacy_import_hint
 import com.skohscripts.kairos.ui.app.StorageBanner
 import com.skohscripts.kairos.ui.app.importErrorMessage
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -315,7 +311,6 @@ private fun DataCard(services: AppServices) {
     var pending by remember { mutableStateOf<KairosSnapshot?>(null) }
     // Paquet ou rapport d'équipe reconnu par « Importer » : aperçu avant toute écriture (docs/spec/equipe-echanges.md).
     var exchange by remember { mutableStateOf<ExchangePreview?>(null) }
-    val legacy = rememberLegacyImport(services)
     // Origines des tâches reçues : « Renvoyer l'avancement… » n'apparaît qu'avec elles (sinon rien ne change en mode solo).
     val stored by services.repository.snapshot.collectAsState()
     val origins = remember(stored) { ReceivedTasks.origins(stored) }
@@ -376,13 +371,6 @@ private fun DataCard(services: AppServices) {
                 }
             }
         }
-        if (services.legacy != null) {
-            Text(stringResource(Res.string.legacy_import_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            KairosOutlinedButton(onClick = legacy::pick, contentPadding = KairosButtonIconPadding) {
-                Icon(KairosIcons.Upload, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text(stringResource(Res.string.legacy_import_action), modifier = Modifier.padding(start = 6.dp))
-            }
-        }
     }
 
     pending?.let { snapshot ->
@@ -413,5 +401,4 @@ private fun DataCard(services: AppServices) {
             onDismiss = { exchange = null },
         )
     }
-    LegacyImportDialog(legacy)
 }

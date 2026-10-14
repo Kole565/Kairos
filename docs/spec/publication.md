@@ -19,9 +19,9 @@ request fdroiddata) est faite par le propriétaire du dépôt après la release
 
 ### Objectif / problème
 
-Kairos 2 n'était installable que depuis les releases GitHub : il fallait
-connaître le dépôt, choisir le bon fichier, et revenir vérifier les nouvelles
-versions. Kairos 3 doit se trouver et se mettre à jour là où les utilisateurs
+Une application installable seulement depuis les releases GitHub oblige à
+connaître le dépôt, à choisir le bon fichier, et à revenir vérifier les nouvelles
+versions. Kairos doit se trouver et se mettre à jour là où les utilisateurs
 d'Android libre cherchent leurs applications (**F-Droid**), et
 disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 
@@ -34,12 +34,12 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   notes de version. La description présente aussi la gestion d'équipe,
   facultative, échanges par fichier compris.
 - L'APK distribué par F-Droid est **le même** que celui des releases GitHub
-  (même signature) : on passe de l'un à l'autre, ou on migre depuis Kairos 2,
-  sans désinstaller ni perdre ses données.
+  (même signature) : on passe de l'un à l'autre sans désinstaller ni perdre
+  ses données.
 - Une page web (`https://skohscripts.github.io/Kairos/`, et `/en/`) présente
   Kairos en trois points, propose le bon fichier par système (celui du
   visiteur mis en avant), montre les captures, et explique la première
-  installation (Gatekeeper, SmartScreen, Android, reprise de Kairos 2).
+  installation (Gatekeeper, SmartScreen, Android).
 - Le dépôt GitHub se présente en **anglais** (`README.md`, affiché par défaut) et en
   français (`README.fr.md`), avec un lien de langue en tête de chacun : un
   visiteur venu de F-Droid ou de l'étranger arrive sur de l'anglais.
@@ -58,7 +58,7 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   distribue signé par nous).
 - La page s'affiche sans débordement sur un téléphone (390 px), n'appelle
   aucun service tiers (polices servies par la page), et ses liens de
-  téléchargement ne sont jamais cassés par la release d'une 2.x.
+  téléchargement visent toujours un tag nommé, jamais « latest ».
 - Les captures ne dépendent ni du jour ni de la machine qui les produit.
 
 ### Hors périmètre
@@ -81,8 +81,7 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   `full_description.txt` (≤ 4000, HTML simple `<b>`, `<ul>`, `<li>`),
   `changelogs/<versionCode>.txt` (≤ 500), `images/icon.png` (512 px,
   `make_app_icons.py`), `images/phoneScreenshots/1.png` à `8.png`.
-- La description ne cite aucune fonctionnalité retirée (TimeTree, GitLab…) et
-  présente la formule du score, le placement dans la journée, le chrono et
+- La description présente la formule du score, le placement dans la journée, le chrono et
   ses alertes, les statistiques, et l'absence de compte et de réseau.
 - **Une note de version par versionCode publié** (`29501` pour
   `3.0.0-beta.1`, `30000` pour `3.0.0`) : à chaque changement de version, en ajouter une dans les
@@ -147,7 +146,7 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   retire lui-même les `gradle-wrapper.jar`, et le dépôt ne contient aucun
   binaire à exclure ; une entrée inutile y est une erreur.
 - **APK signé par nous** : `Binaries` (asset `Kairos-android.apk` de la release
-  `v%v`) et `AllowedAPKSigningKeys` (SHA-256 du certificat de Kairos 2 et 3,
+  `v%v`) et `AllowedAPKSigningKeys` (SHA-256 du certificat de signature, inchangé,
   `3885399c…2111`). F-Droid reconstruit l'APK, le compare à celui de GitHub
   signature ôtée, et publie le nôtre s'ils sont identiques.
 - Mises à jour : `UpdateCheckMode: Tags ^v[0-9]+\.[0-9]+\.[0-9]+$` (tags finals
@@ -222,7 +221,7 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   - une release stable `v3.*` existe : `releases/download/<son tag>`, pas de
     bandeau, « Utiliser Kairos en ligne » vers `app/` ;
   - sinon, la dernière préversion `v3.*` : `releases/download/<son tag>`,
-    bandeau « Préversion X » (installée à côté de Kairos 2 sous le nom
+    bandeau « Préversion X » (installée à côté de la version stable sous le nom
     « Kairos Preview »), lien web vers `preview/`.
 - Déclenchement : push sur `main` touchant `kmp/**`, `site/**`, `fastlane/**`
   ou `pages.yml` ; release publiée à la main ; **fin du workflow « Kairos 3
@@ -250,13 +249,13 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   fin de ligne) ; la vérification continue le contrôle depuis.
 - **F-Droid distribue notre APK** (`Binaries` + `AllowedAPKSigningKeys`)
   plutôt que de signer avec sa propre clé : avec la clé F-Droid, un
-  utilisateur de Kairos 2 (APK GitHub) ou des releases GitHub ne pourrait pas
-  passer à la version F-Droid sans désinstaller, donc sans perdre ses données.
+  utilisateur des releases GitHub ne pourrait pas passer à la version F-Droid
+  sans désinstaller, donc sans perdre ses données.
   Contrepartie : la construction doit être reproductible, ce que la CI vérifie
   à chaque release finale.
 - **Jamais `releases/latest/download`** : « latest » désigne la dernière
-  release stable du dépôt, une 2.x tant que la 3.0.0 n'est pas sortie (autres
-  noms de fichiers). La page vise un tag v3 nommé.
+  release stable du dépôt, qui n'existe pas tant qu'aucune version stable n'est
+  sortie (préversions seules). La page vise un tag v3 nommé.
 - **`workflow_run` plutôt que `release`** : une release créée par un workflow
   avec le jeton par défaut ne déclenche aucun autre workflow. Pages et la
   comparaison F-Droid suivent donc la fin de « Kairos 3 release ».
@@ -269,8 +268,8 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 - **Catégories de fdroiddata** : `fdroid lint` ne connaît sans elles que
   d'anciennes catégories ; la vérification clone donc `config/` de fdroiddata
   (clone partiel, le dépôt entier pèse plusieurs gigaoctets).
-- **Environnement de développement** : Maven Central y répond 429 et le
-  Python de l'image F-Droid y refuse le certificat du proxy ; la
+- **Environnement de développement** : Maven Central y répond 429 et l'outillage
+  de l'image F-Droid y refuse le certificat du proxy ; la
   vérification locale y a tourné avec la distribution Gradle et le cache de
   dépendances de l'hôte montés dans le conteneur (`CACHEDIR`,
   `GRADLE_RO_DEP_CACHE`). Rien de cela n'est nécessaire sur GitHub.

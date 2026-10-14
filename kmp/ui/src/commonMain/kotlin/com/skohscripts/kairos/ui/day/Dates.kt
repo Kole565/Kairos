@@ -43,7 +43,7 @@ internal object Dates {
     private val FR_DAYS = listOf("lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche")
     private val EN_DAYS = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
-    /** « mardi 30 septembre 2026 », « 1er » le premier du mois (`date_longue` de Kairos 2) ; « Tuesday, September 30, 2026 ». */
+    /** « mardi 30 septembre 2026 », « 1er » le premier du mois ; « Tuesday, September 30, 2026 ». */
     fun long(date: LocalDate, language: String): String {
         val dow = date.dayOfWeek.ordinal
         val month = date.month.ordinal
@@ -52,7 +52,7 @@ internal object Dates {
         return "${FR_DAYS[dow]} $day ${FR_LONG[month]} ${date.year}"
     }
 
-    /** « mar. 30/09 » (`jour_court` de Kairos 2) ; « Tue 9/30 ». */
+    /** « mar. 30/09 » ; « Tue 9/30 ». */
     fun dayShort(date: LocalDate, language: String): String {
         val dow = date.dayOfWeek.ordinal
         return if (english(language)) {
@@ -67,7 +67,7 @@ internal object Dates {
         if (english(language)) "${date.month.ordinal + 1}/${date.day}"
         else "${date.day.toString().padStart(2, '0')}/${(date.month.ordinal + 1).toString().padStart(2, '0')}"
 
-    /** « 09h15 » (Kairos 2) en français, « 09:15 » en anglais. */
+    /** « 09h15 » en français, « 09:15 » en anglais. */
     fun time(t: LocalTime, language: String): String {
         val h = t.hour.toString().padStart(2, '0')
         val m = t.minute.toString().padStart(2, '0')
@@ -94,7 +94,7 @@ internal object Dates {
     fun parseDate(text: String): LocalDate? = text.trim().takeIf { it.isNotEmpty() }?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
 
     /**
-     * Une décimale au plus, sans « .0 » (filtre `nombre` de Kairos 2) : « 16 », « 6.2 ». Une valeur positive qui
+     * Une décimale au plus, sans « .0 » : « 16 », « 6.2 ». Une valeur positive qui
      * s'arrondirait à 0 garde deux décimales (« 0.05 » : un score de 1 / 21 n'est pas nul).
      */
     fun number(value: Double, language: String): String =
@@ -108,7 +108,7 @@ internal object Dates {
     }
 }
 
-/** Durée lisible (`_fmt_minutes` de Kairos 2) : « 1 h 30 », « 2 h », « 45 min ». */
+/** Durée lisible : « 1 h 30 », « 2 h », « 45 min ». */
 @Composable
 internal fun duration(minutes: Int): String {
     val m = maxOf(0, minutes)

@@ -133,7 +133,7 @@ class KairosRepository(
         modify(taskId, source) { it.copy(taskType = taskType.trim()) }
 
     /**
-     * Fait ↔ à faire (Kairos 2 `toggle_task_done`). Terminer ferme le chrono
+     * Fait ↔ à faire. Terminer ferme le chrono
      * éventuellement ouvert sur la tâche et, pour une récurrente, crée
      * l'occurrence suivante (`Recurrence.nextOccurrence`, garde anti-doublon
      * comprise). Une tâche archivée n'est pas touchée.
@@ -214,7 +214,7 @@ class KairosRepository(
     }
 
     /**
-     * « Décaler » (Kairos 2 `snooze_task`) : l'échéance passe au jour ouvré qui
+     * « Décaler » : l'échéance passe au jour ouvré qui
      * suit (elle-même si elle est à venir, sinon aujourd'hui) ; week-ends et
      * jours fériés des réglages sautés.
      */
@@ -241,7 +241,7 @@ class KairosRepository(
     }
 
     /**
-     * Édition complète (Kairos 2 `edit_task`), un seul enregistrement : champs,
+     * Édition complète, un seul enregistrement : champs,
      * récurrence, heure fixe, sous-tâches en lot, bloqueurs. Un titre vide
      * garde l'ancien ; une valeur hors échelle est vidée.
      *
@@ -371,7 +371,7 @@ class KairosRepository(
     suspend fun deleteBlock(blockId: Long) = write { queries.deleteTimeBlock(blockId) }
 
     /**
-     * Suppression définitive (Kairos 2 `delete_task`) : les dépendances où la
+     * Suppression définitive : les dépendances où la
      * tâche figure sont supprimées avec elle ; ses sous-tâches et sessions
      * restent (références « molles »).
      */
@@ -1345,7 +1345,7 @@ class KairosRepository(
         ): KairosRepository {
             val repository = KairosRepository(opened.database, clock, timeZone, onChanged)
             if (opened.created) {
-                // Une erreur de pose des exemples ne doit jamais empêcher le démarrage (Kairos 2).
+                // Une erreur de pose des exemples ne doit jamais empêcher le démarrage.
                 runCatching { repository.replaceAll(examples()) }
             }
             repository.load()

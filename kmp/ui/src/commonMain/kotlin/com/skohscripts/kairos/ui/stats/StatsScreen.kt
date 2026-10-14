@@ -118,7 +118,7 @@ fun StatsScreen(services: AppServices) {
                 val tile = Modifier.weight(1f).widthIn(min = 150.dp).fillMaxRowHeight()
                 StatTile(stats.completedInWindow.toString(), stringResource(Res.string.stats_kpi_done, stats.windowWeeks), tile)
                 StatTile(duration(stats.trackedMinutesWindow), stringResource(Res.string.stats_kpi_tracked), tile)
-                // Seuils de Kairos 2 : délai médian de plus de 7 j, moins de 70 % d'échéances tenues.
+                // Seuils : délai médian de plus de 7 j, moins de 70 % d'échéances tenues.
                 StatTile(stats.flow.completionDelayDays?.toString() ?: "—", stringResource(Res.string.stats_kpi_delay), tile, warn = (stats.flow.completionDelayDays ?: 0) > 7)
                 StatTile(stats.flow.deadlineHitPct?.let { stringResource(Res.string.stats_percent, it) } ?: "—", stringResource(Res.string.stats_kpi_deadlines), tile, warn = (stats.flow.deadlineHitPct ?: 100) < 70)
             }
@@ -147,7 +147,7 @@ fun StatsScreen(services: AppServices) {
                         else -> Res.string.stats_bias_fair
                     }
                     val sample = stringResource(if (b.reliable) Res.string.stats_sample else Res.string.stats_unreliable, b.count)
-                    // Biais important (hors ×0,8–×1,25) : icône d'alerte, comme le badge « à surveiller » de Kairos 2.
+                    // Biais important (hors ×0,8–×1,25) : icône d'alerte, comme le badge « à surveiller ».
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                         if (b.ratio > 1.25 || b.ratio < 0.8) {
                             Icon(KairosIcons.Warning, contentDescription = null, modifier = Modifier.size(18.dp).padding(end = 4.dp))

@@ -18,7 +18,7 @@ import kotlin.time.Instant
 
 /**
  * Données d'exemple posées sur une base **neuve** (docs/spec/modele-donnees.md
- * § Exemples) : le même jeu que Kairos 2 (`app/tasks_seed.py`), traduit. De
+ * § Exemples) : un jeu d'exemples, traduit. De
  * simples objets ordinaires (tag de projet « Exemple », titre préfixé
  * « [Exemple] ») que l'utilisateur supprime ou termine comme les siens.
  *

@@ -1,8 +1,8 @@
--- Schéma de Kairos 3 (docs/spec/modele-donnees.md). Tables et colonnes de
--- Kairos 2 (app/tasks_models.py), moins les intégrations retirées.
+-- Schéma de Kairos 3 (docs/spec/modele-donnees.md). Tables et colonnes :
+-- voir ce fichier et ses migrations.
 -- Dates : TEXT ISO 8601 (« 2026-09-28 »), heures locales naïves : TEXT
 -- (« 2026-09-28T09:30 »), instants : TEXT ISO UTC (« 2026-09-28T07:00:00Z »).
--- Références entre tables « molles » (sans FOREIGN KEY), comme en Kairos 2.
+-- Références entre tables « molles » (sans FOREIGN KEY).
 
 CREATE TABLE task (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

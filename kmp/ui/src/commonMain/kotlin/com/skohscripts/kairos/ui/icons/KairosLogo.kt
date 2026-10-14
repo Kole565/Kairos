@@ -7,8 +7,7 @@ import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.unit.dp
 
 /**
- * Logo Kairos (cadran solaire : cadran, anneau, secteur, axe), dessin identique
- * au logo de Kairos 2, couleurs tirées de la graine (docs/DESIGN_SYSTEM.md
+ * Logo Kairos (cadran solaire : cadran, anneau, secteur, axe), couleurs tirées de la graine (docs/DESIGN_SYSTEM.md
  * § Logo). Couleurs fixes : le logo n'est jamais teinté (`Image`, pas `Icon`).
  */
 /** Couleurs fixes du logo, partagées avec la page de démarrage (docs/spec/demarrage.md). */

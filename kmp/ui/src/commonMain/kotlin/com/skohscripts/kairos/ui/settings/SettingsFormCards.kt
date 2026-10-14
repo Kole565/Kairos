@@ -172,7 +172,7 @@ private val TEXTS: Map<String, FieldText> = mapOf(
     "team.deadlineRiskPercent" to FieldText(Res.string.setting_team_risk, Res.string.setting_team_risk_help),
 )
 
-/** Sections de l'écran, dans l'ordre de Kairos 2 (moins les intégrations retirées). */
+/** Sections de l'écran, dans l'ordre de l'écran. */
 private class Section(val title: StringResource, val body: StringResource?, val keys: List<String>)
 
 private val SECTIONS = listOf(

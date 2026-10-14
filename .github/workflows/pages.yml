@@ -6,8 +6,7 @@
 #                release), absente tant qu'aucune 3.x finale n'est publiée.
 #
 # Les liens de téléchargement visent une release v3 nommée par son tag, jamais
-# releases/latest : « latest » désigne la dernière release stable du dépôt, qui
-# reste une 2.x tant que la 3.0.0 n'est pas sortie (autres noms de fichiers).
+# releases/latest : une release est toujours désignée par son tag.
 #
 # Prérequis, une fois : Settings → Pages → Source : « GitHub Actions ».
 name: Pages
@@ -77,8 +76,8 @@ jobs:
           elif [ -n "$pre" ]; then
             dl="$base/download/$pre"
             v=${pre#v}
-            notice_fr="<p class=\"notice\"><strong>Préversion $v.</strong> Kairos 3 n’est pas encore sorti : les liens ci-dessous mènent à sa dernière préversion. Sur Android, elle s’installe à côté de Kairos 2, sous le nom « Kairos Preview ».</p>"
-            notice_en="<p class=\"notice\"><strong>Preview $v.</strong> Kairos 3 is not out yet: the links below lead to its latest preview. On Android it installs next to Kairos 2, as “Kairos Preview”.</p>"
+            notice_fr="<p class=\"notice\"><strong>Préversion $v.</strong> Aucune version stable n’est encore publiée : les liens ci-dessous mènent à la dernière préversion. Sur Android, elle s’installe à côté de la version stable, sous le nom « Kairos Preview ».</p>"
+            notice_en="<p class=\"notice\"><strong>Preview $v.</strong> No stable release is published yet: the links below lead to the latest preview. On Android it installs next to the stable version, as “Kairos Preview”.</p>"
           else
             dl="$base"
           fi

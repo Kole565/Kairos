@@ -11,8 +11,7 @@ décrit par `modele-donnees.md`, l'entrée de navigation par
 `KairosRepositoryTest.notesAreCapturedEditedConvertedArchivedAndDeleted`,
 `M4ScreensUiTest.noteIsCapturedThenTurnedIntoATask`._
 
-État : **jalon M4**. Reprend le besoin de `docs/spec/notes-capture.md`
-(Kairos 2).
+État : **jalon M4**, implémenté.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -57,7 +56,7 @@ capture.
 - Une note d'une ligne donne une description vide ; les lignes blanches de
   bord sont retirées, le reste est gardé tel quel ; un titre de plus de 200
   caractères est tronqué et la ligne entière reprise en tête de la
-  description (`NoteConversionTest`, mêmes cas que Kairos 2).
+  description (`NoteConversionTest`).
 - Une note archivée quitte la liste active ; une note supprimée ne
   réapparaît nulle part.
 
@@ -66,7 +65,7 @@ capture.
 - Priorité, points, échéance ou projet sur une note : posés après
   conversion, sur la tâche.
 - Recherche, filtres, autre tri que « plus récente d'abord », rappel d'une
-  note non traitée (comme Kairos 2).
+  note non traitée.
 
 ## 2. Solution technique
 
@@ -94,10 +93,9 @@ Depuis le jalon E1 de l'espace Équipe, l'écran Notes lit `repository.personalS
 
 ### Décisions et pièges tracés
 
-- **« Modifier » branché** : Kairos 2 avait la route d'édition sans bouton
-  (« prête à être branchée ») ; Kairos 3 la branche.
-- **Un corps vide à l'édition garde l'ancien** : Kairos 2 enregistrait un
-  corps vide (note blanche, inconvertible). Écart volontaire ; le dialogue
-  désactive de toute façon « Enregistrer ».
+- **« Modifier » branché** : chaque note a un bouton d'édition.
+- **Un corps vide à l'édition garde l'ancien** : enregistrer un corps vide
+  donnerait une note blanche, inconvertible. Le dialogue désactive de toute
+  façon « Enregistrer ».
 - **Lien vers la tâche = vue Jour**, pas la tâche elle-même : elle est dans
-  « À traiter », en tête de l'écran (comme Kairos 2, lien vers `/kairos`).
+  « À traiter », en tête de l'écran.

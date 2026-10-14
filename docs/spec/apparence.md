@@ -80,8 +80,8 @@ rôles et règles d'usage de la couleur restent ceux de Material Design 3.
   portage Kotlin multiplateforme de material-color-utilities de Google, sans
   dépendance Compose) ; `SchemeTonalSpot(Hct.fromInt(argb), isDark = false,
   contrastLevel = 0.0, SpecVersion.SPEC_2021)`, dont les 36 rôles remplissent
-  un `lightColorScheme`. C'est le calcul que `make_theme.py` fait en Python
-  (`materialyoucolor`) pour produire `KairosColors.kt`.
+  un `lightColorScheme`. C'est le calcul que le script `make_theme.py`
+  (bibliothèque `materialyoucolor`) fait pour produire `KairosColors.kt`.
 - `ThemeColors` : les graines proposées (`PRESETS`, nom localisé + couleur) :
   Miel `#C28417`, Océan `#2F6FED`, Sarcelle `#1B8A8A`, Indigo `#5B5FC7`,
   Lavande `#8A5CC2`, Framboise `#B83E7A`, Ardoise `#56687A`, Terre

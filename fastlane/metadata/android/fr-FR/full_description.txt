@@ -30,7 +30,6 @@ Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le
 <ul>
 <li>Aucun compte, aucune publicité, aucun traceur, aucune permission réseau.</li>
 <li>Export et import dans un fichier JSON, pour sauvegarder ou changer d’appareil.</li>
-<li>Reprise des données de Kairos 2.</li>
 </ul>
 
 Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais (au choix dans les réglages ; l’anglais par défaut si votre système n’est pas en français).

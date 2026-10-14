@@ -14,7 +14,7 @@ enum class ChronoAlertKind { OVER, IDLE, POMODORO }
 data class ChronoAlert(val kind: ChronoAlertKind, val at: Instant, val minutes: Int)
 
 /**
- * Quand notifier (pur). Kairos 2 vérifiait les seuils chaque seconde dans la
+ * Quand notifier (pur). Les seuils sont vérifiés chaque seconde dans la
  * page ; ici, les instants de franchissement se calculent d'avance, ce qui
  * sert aussi aux alarmes Android, programmées même application fermée.
  */
@@ -42,7 +42,7 @@ object ChronoAlerts {
     /**
      * Seuils franchis dans `]since, now]` : seuls ceux qui passent **pendant**
      * qu'on observe notifient ; un seuil déjà dépassé quand l'observation
-     * commence ne notifie jamais (anti-répétition de Kairos 2).
+     * commence ne notifie jamais (anti-répétition).
      */
     fun crossed(alerts: List<ChronoAlert>, since: Instant, now: Instant): List<ChronoAlert> =
         alerts.filter { it.at > since && it.at <= now }
