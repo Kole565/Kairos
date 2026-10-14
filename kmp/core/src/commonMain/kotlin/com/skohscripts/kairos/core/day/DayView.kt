@@ -2,6 +2,7 @@ package com.skohscripts.kairos.core.day
 
 import com.skohscripts.kairos.core.engine.Dependencies
 import com.skohscripts.kairos.core.engine.Recurrence
+import com.skohscripts.kairos.core.engine.Schedule
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.engine.Staleness
 import com.skohscripts.kairos.core.engine.TimeTracking
@@ -112,6 +113,11 @@ data class DayView(
     val spentByTypeToday: Map<String, Int> = emptyMap(),
     /** Rail « réel » de la frise. */
     val sessionTimeline: List<Scheduling.TimelineEntry> = emptyList(),
+    /** Heures de début et de fin de la plage affichée par la frise ce jour-là (horaire du jour ou journée des réglages). */
+    val workStartHour: Int = 9,
+    val workEndHour: Int = 18,
+    /** Jour libre (docs/spec/planning-personnalise.md § Lot B1) : rien n'est planifié automatiquement. */
+    val freeDay: Boolean = false,
 ) {
     /** Bandeau de surcharge : plus de P0 non bloquées que le seuil des réglages. */
     val priorityOverload: Boolean get() = priorityOverloadCount > priorityOverloadThreshold
@@ -211,6 +217,7 @@ data class DayView(
             val today = TimeTracking.sessionsOnDay(sessions, day, timeZone)
             val typeById = all.associate { it.id to it.taskType }
 
+            val shown = Schedule.displayWindow(day, settings)
             return DayView(
                 day = day,
                 schedule = schedule,
@@ -249,6 +256,9 @@ data class DayView(
                 spentToday = TimeTracking.totalMinutes(today, instant),
                 spentByTypeToday = TimeTracking.spentMinutesByType(today, typeById, instant).filter { (k, v) -> k.isNotEmpty() && v > 0 },
                 sessionTimeline = TimeTracking.sessionTimeline(today, day, all.associate { it.id to it.title }, settings, instant, timeZone),
+                workStartHour = shown.startHour,
+                workEndHour = shown.endHour,
+                freeDay = Schedule.windowFor(day, settings) == null,
             )
         }
     }

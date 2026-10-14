@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.core.settings
 
+import com.skohscripts.kairos.core.model.DaySchedule
+import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.TeamSettings
 import kotlinx.datetime.LocalDate
@@ -96,6 +98,60 @@ object SettingsForm {
     ) =
         team(key, FieldKind.DECIMAL, min, max, exclusive, get = { formatDecimal(get(it)) }) { t, v -> change(t, parseDecimal(v)!!) }
 
+    /**
+     * Horaire du jour [day] (0 = lundi) : lu sur [Settings.schedule], écrit par [change] (`null` = « comme d'habitude »).
+     * Même règle d'isolation que [team] : sans horaire propre, [Settings.schedule] **reste nul** (sauver le formulaire sans y
+     * toucher n'en crée jamais, donc rien n'entre dans l'export). Les trois champs d'un jour s'écrivent dans l'ordre
+     * `mode`, `start`, `end` (ordre de [FIELDS]) : les heures ne comptent que pour un jour « custom ».
+     */
+    private fun withDay(settings: Settings, day: Int, change: (DaySchedule?) -> DaySchedule?): Settings {
+        val current = settings.schedule?.weekdays.orEmpty()
+        val updated = change(current[day])
+        val weekdays = if (updated == null) current - day else current + (day to updated)
+        return settings.copy(schedule = if (weekdays.isEmpty()) null else ScheduleSettings(weekdays))
+    }
+
+    private fun custom(settings: Settings, day: Int): DaySchedule? = settings.schedule?.weekdays?.get(day)?.takeIf { !it.free }
+
+    /** Les trois champs d'un jour de la semaine : `schedule.dN.mode` (`default`, `custom`, `free`), `.start` et `.end` (heures). */
+    private fun scheduleFields(day: Int): List<SettingField> = listOf(
+        SettingField(
+            "schedule.d$day.mode", FieldKind.TEXT,
+            read = { s ->
+                val own = s.schedule?.weekdays?.get(day)
+                when {
+                    own == null -> SCHEDULE_DEFAULT
+                    own.free -> SCHEDULE_FREE
+                    else -> SCHEDULE_CUSTOM
+                }
+            },
+            write = { s, v ->
+                when (v.trim()) {
+                    SCHEDULE_FREE -> withDay(s, day) { DaySchedule(free = true) }
+                    SCHEDULE_CUSTOM -> withDay(s, day) { own ->
+                        if (own != null && !own.free && own.startHour != null && own.endHour != null) own
+                        else DaySchedule(startHour = s.workdayStartHour, endHour = s.workdayEndHour)
+                    }
+                    else -> withDay(s, day) { null }
+                }
+            },
+        ),
+        SettingField(
+            "schedule.d$day.start", FieldKind.INT, 0.0, 23.0,
+            read = { s -> (custom(s, day)?.startHour ?: s.workdayStartHour).toString() },
+            write = { s, v -> if (custom(s, day) != null) withDay(s, day) { it?.copy(startHour = v.trim().toInt()) } else s },
+        ),
+        SettingField(
+            "schedule.d$day.end", FieldKind.INT, 0.0, 23.0,
+            read = { s -> (custom(s, day)?.endHour ?: s.workdayEndHour).toString() },
+            write = { s, v -> if (custom(s, day) != null) withDay(s, day) { it?.copy(endHour = v.trim().toInt()) } else s },
+        ),
+    )
+
+    const val SCHEDULE_DEFAULT = "default"
+    const val SCHEDULE_CUSTOM = "custom"
+    const val SCHEDULE_FREE = "free"
+
     val FIELDS: List<SettingField> = listOf(
         int("defaultTaskDurationMinutes", 1, get = { it.defaultTaskDurationMinutes }) { s, v -> s.copy(defaultTaskDurationMinutes = v) },
         int("meetingBufferMinutes", 0, get = { it.meetingBufferMinutes }) { s, v -> s.copy(meetingBufferMinutes = v) },
@@ -143,7 +199,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    )
+    ) + (0..6).flatMap(::scheduleFields)
 
     private val byKey = FIELDS.associateBy { it.key }
 
@@ -172,6 +228,14 @@ object SettingsForm {
             val raw = values[f.key] ?: continue
             val error = check(f, raw)
             if (error != null) errors[f.key] = error else result = f.write(result, raw)
+        }
+        if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
+        // Un jour « personnalisé » doit finir après avoir commencé : l'erreur est sur son champ « fin » (« Au moins … »).
+        for (day in 0..6) {
+            val own = custom(result, day) ?: continue
+            val start = own.startHour ?: continue
+            val end = own.endHour ?: continue
+            if (end <= start) errors["schedule.d$day.end"] = FieldError(FieldErrorKind.TOO_SMALL, (start + 1).toString())
         }
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
         val general = when {

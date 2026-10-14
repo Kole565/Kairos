@@ -136,6 +136,9 @@ qualify?" recalls the rule.
   default), Kairos avoids placing complex tasks there and pulls light ones up.
   Deadlines and the critical path always come first; the displayed score does
   not change.
+- **Hours by day of the week** (Settings): each day can keep the usual working
+  day, have its own hours, or be a day off where nothing is scheduled
+  automatically (pinned tasks keep their time). Nothing changes until you set one.
 - **Working days and holidays**: built-in French calendar, with extra dates
   in Settings.
 

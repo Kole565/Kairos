@@ -36,6 +36,44 @@ class SettingsFormTest {
     }
 
     @Test
+    fun theScheduleStaysNullUntilADayIsCustomised() {
+        // Défauts relus puis revalidés : aucun objet `schedule` n'apparaît (rien dans l'export d'une installation qui n'y touche pas).
+        assertNull(SettingsForm.validate(SettingsForm.values(base), base).settings!!.schedule)
+        val custom = validate("schedule.d5.mode" to "custom", "schedule.d5.start" to "10", "schedule.d5.end" to "14", "schedule.d6.mode" to "free").settings!!
+        assertEquals(10, custom.schedule!!.weekdays.getValue(5).startHour)
+        assertEquals(14, custom.schedule!!.weekdays.getValue(5).endHour)
+        assertTrue(custom.schedule!!.weekdays.getValue(6).free)
+        assertEquals(setOf(5, 6), custom.schedule!!.weekdays.keys)
+        // Le formulaire relit ce qui est enregistré, et le revalider ne change rien.
+        val values = SettingsForm.values(custom)
+        assertEquals("custom", values["schedule.d5.mode"])
+        assertEquals("free", values["schedule.d6.mode"])
+        assertEquals("default", values["schedule.d0.mode"])
+        assertEquals(custom, SettingsForm.validate(values, custom).settings)
+        // Repasser tous les jours à « comme d'habitude » ramène `schedule` à nul.
+        val back = SettingsForm.validate(values + ("schedule.d5.mode" to "default") + ("schedule.d6.mode" to "default"), custom).settings!!
+        assertNull(back.schedule)
+    }
+
+    @Test
+    fun aCustomDayMustEndAfterItStarts() {
+        val result = validate("schedule.d2.mode" to "custom", "schedule.d2.start" to "15", "schedule.d2.end" to "15")
+        assertNull(result.settings)
+        assertEquals(FieldError(FieldErrorKind.TOO_SMALL, "16"), result.fieldErrors["schedule.d2.end"])
+        // Un jour « comme d'habitude » ou libre n'est pas concerné par ses heures.
+        assertTrue(validate("schedule.d2.mode" to "free", "schedule.d2.start" to "15", "schedule.d2.end" to "15").settings != null)
+        assertEquals(FieldErrorKind.TOO_LARGE, validate("schedule.d0.mode" to "custom", "schedule.d0.end" to "24").fieldErrors["schedule.d0.end"]!!.kind)
+    }
+
+    @Test
+    fun restoringTheDefaultsAlsoClearsTheSchedule() {
+        val custom = validate("schedule.d5.mode" to "free").settings!!
+        val restored = SettingsForm.restoreDefaults(SettingsForm.values(custom))
+        assertEquals("default", restored["schedule.d5.mode"])
+        assertNull(SettingsForm.validate(restored, custom).settings!!.schedule)
+    }
+
+    @Test
     fun values_are_parsed_and_decimals_accept_a_comma() {
         val s = validate(
             "workdayStartHour" to " 8 ", "priorityValueBase" to "2,5", "cognitiveDipEnabled" to "false",

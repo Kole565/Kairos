@@ -255,7 +255,11 @@ internal fun SettingsCardHeader(title: String, body: String? = null) {
  */
 @Composable
 internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
-    SECTIONS.filterNot { it.advanced }.forEach { section -> SectionCard(section, values, errors, onChange) }
+    SECTIONS.filterNot { it.advanced }.forEachIndexed { index, section ->
+        SectionCard(section, values, errors, onChange)
+        // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
+        if (index == 0) ScheduleCard(values, errors, onChange)
+    }
     AdvancedGroup(values, errors, onChange)
 }
 
@@ -364,7 +368,7 @@ internal fun SwitchRow(checked: Boolean, label: String, onChange: (Boolean) -> U
 }
 
 @Composable
-private fun errorMessage(error: FieldError, minExclusive: Boolean): String = when (error.kind) {
+internal fun errorMessage(error: FieldError, minExclusive: Boolean): String = when (error.kind) {
     FieldErrorKind.REQUIRED -> stringResource(Res.string.settings_error_required)
     FieldErrorKind.NOT_INTEGER -> stringResource(Res.string.settings_error_integer)
     FieldErrorKind.NOT_NUMBER -> stringResource(Res.string.settings_error_number)

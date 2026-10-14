@@ -46,6 +46,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -89,6 +90,40 @@ class M5ScreensUiTest {
         val field = onNode(hasSetTextAction() and hasText(label)).performScrollTo()
         field.performTextClearance()
         field.performTextInput(text)
+    }
+
+    @Test
+    fun aCustomDayAndADayOffAreSavedAsTheSchedule() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
+        waitText("Hours by day of the week")
+        // Mardi (le 2e jour) : horaire propre ; dimanche (le 7e) : jour libre.
+        onAllNodesWithText("Custom")[1].performScrollTo().performClick()
+        type("From (hour, 0-23)", "10")
+        type("To (hour, 0-23)", "12")
+        onAllNodesWithText("Day off")[6].performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.settings.schedule != null }
+        val days = repository.snapshot.value.settings.schedule!!.weekdays
+        assertEquals(setOf(1, 6), days.keys)
+        assertEquals(10 to 12, days.getValue(1).startHour to days.getValue(1).endHour)
+        assertTrue(days.getValue(6).free)
+    }
+
+    @Test
+    fun anEndBeforeTheStartIsRefusedOnItsField() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
+        waitText("Hours by day of the week")
+        onAllNodesWithText("Custom")[0].performScrollTo().performClick()
+        type("From (hour, 0-23)", "15")
+        type("To (hour, 0-23)", "15")
+        onNodeWithText("Save").performClick()
+        waitText("At least 16.")
+        assertEquals(null, services.repository.snapshot.value.settings.schedule)
     }
 
     @Test

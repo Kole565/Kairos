@@ -31,7 +31,9 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   en erreur ; une carte « Réglages par défaut » avec **« Restaurer les valeurs par défaut »** précède « Données »)
   :
   **Journée de travail** (durée par défaut d'une tâche, marge après un
-  créneau occupé, début et fin de journée), **Score de priorité (WSJF)**
+  créneau occupé, début et fin de journée), puis **Horaires par jour de la semaine**
+  (3.4, lot B1 : pour chaque jour, « Comme d'habitude », « Personnalisé » avec « De » et « À » en heures, ou « Jour libre » ;
+  champs `schedule.dN.mode`, `.start`, `.end`, N = 0 lundi … 6 dimanche ; `ScheduleCard`), **Score de priorité (WSJF)**
   (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
   défaut), **Creux de l'après-midi** (activé, début, creux le plus profond,
   fin, force de la pénalité), **Garde-fous** (seuils « traîne » en retard et
@@ -71,6 +73,9 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   `LocalErrorReveal`).
 - Une décimale s'écrit avec une virgule ou un point ; en français, le
   formulaire l'affiche à la virgule (« 0,8 », comme son aide).
+- Un jour « Personnalisé » doit finir après avoir commencé : sinon l'erreur « Au moins H+1. » est sur son champ « À »
+  (`SettingsForm.validate`). Repasser tous les jours à « Comme d'habitude » ramène `Settings.schedule` à nul : sauver le
+  formulaire sans y toucher n'en crée jamais (export inchangé). « Restaurer les valeurs par défaut » remet aussi les jours.
 - Les réglages valent aussitôt partout (planning, score, alertes, stats).
 - « Restaurer les valeurs par défaut » remplit le formulaire des valeurs par défaut (`SettingsForm.restoreDefaults`), **sauf** les
   champs `team.*`, jamais touchés ; rien n'est écrit avant « Enregistrer » et « Annuler les modifications » revient en arrière.
@@ -84,6 +89,9 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Hors bornes, vide, non entier, non nombre, date illisible : une erreur par
   champ, aucun enregistrement ; bornes propres de Kairos (figées par `SettingsFormTest`), borne basse exclue pour
   la base de valeur (`SettingsFormTest`).
+- Un jour personnalisé et un jour libre s'enregistrent d'un coup ; une fin avant le début est refusée sur son champ ; `schedule`
+  reste nul tant qu'aucun jour n'est propre (`M5ScreensUiTest.aCustomDayAndADayOffAreSavedAsTheSchedule`,
+  `anEndBeforeTheStartIsRefusedOnItsField`, `SettingsFormTest.theScheduleStaysNullUntilADayIsCustomised`).
 - Heure 25 refusée, début après la fin refusé, puis 8 h, base 2,5 et creux
   désactivé (dans le groupe « Avancé », ouvert à la main) enregistrés d'un coup (`M5ScreensUiTest`).
 - « Restaurer les valeurs par défaut » remplit le formulaire sans rien enregistrer ; « Enregistrer » les pose

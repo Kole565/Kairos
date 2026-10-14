@@ -78,8 +78,9 @@ object TimeTracking {
         now: Instant,
         timeZone: TimeZone,
     ): List<Scheduling.TimelineEntry> {
-        val workdayStart = day.atTime(settings.workdayStartHour, 0)
-        val workdayEnd = day.atTime(settings.workdayEndHour, 0)
+        val window = Schedule.displayWindow(day, settings)
+        val workdayStart = window.start
+        val workdayEnd = window.end
         return sessions.mapNotNull { s ->
             val start = s.startedAt.toLocalDateTime(timeZone)
             val end = (s.endedAt ?: now).toLocalDateTime(timeZone)

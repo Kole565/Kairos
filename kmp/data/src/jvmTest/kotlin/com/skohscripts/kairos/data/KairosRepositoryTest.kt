@@ -149,6 +149,16 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun theScheduleSurvivesAnExportAndIsAbsentWhenNotCustomised() {
+        val now = Instant.parse("2026-09-29T07:00:00Z")
+        val plain = ExportCodec.encode(KairosSnapshot(settings = Settings()), "3.4.0", now)
+        assertTrue("schedule" !in plain, "sans horaire propre, l'export ne porte aucun objet schedule")
+        val custom = Settings(schedule = com.skohscripts.kairos.core.model.ScheduleSettings(mapOf(5 to com.skohscripts.kairos.core.model.DaySchedule(startHour = 10, endHour = 14), 6 to com.skohscripts.kairos.core.model.DaySchedule(free = true))))
+        val back = ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = custom), "3.4.0", now)).settings
+        assertEquals(custom, back)
+    }
+
+    @Test
     fun importRejectsWhatIsNotAKairosExport() {
         assertEquals(ImportException.Reason.NOT_AN_EXPORT, assertFailsWith<ImportException> { ExportCodec.decode("pas du json") }.reason)
         assertEquals(ImportException.Reason.NOT_AN_EXPORT, assertFailsWith<ImportException> { ExportCodec.decode("""{"format":"autre","formatVersion":1}""") }.reason)

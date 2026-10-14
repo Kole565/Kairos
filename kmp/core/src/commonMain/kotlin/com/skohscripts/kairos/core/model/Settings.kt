@@ -50,6 +50,11 @@ data class Settings(
      * réglage d'équipe en dehors de [TeamSettings].
      */
     val team: TeamSettings? = null,
+    /**
+     * Horaires par jour de la semaine (docs/spec/planning-personnalise.md § Lot B1). `null` tant que rien n'est
+     * personnalisé : même règle que [team], pour que l'export et la base d'une installation qui n'y touche pas ne changent pas.
+     */
+    val schedule: ScheduleSettings? = null,
 ) {
     /** L'espace Équipe est activé (valeur enregistrée). */
     val teamModeEnabled: Boolean get() = team?.enabled == true
