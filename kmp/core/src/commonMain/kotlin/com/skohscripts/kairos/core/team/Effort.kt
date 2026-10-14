@@ -16,6 +16,13 @@ enum class EffortSource {
     /** La durée estimée de la tâche. */
     ESTIMATE,
 
+    /**
+     * La durée **apprise** des occurrences passées de la tâche, en l'absence d'estimation (docs/spec/durees-apprises.md). Les calculs
+     * d'équipe la lisent comme une estimation ([com.skohscripts.kairos.core.engine.DurationEstimator.withLearnedEstimates]) ; la
+     * source n'est distinguée qu'à l'affichage de la fiche.
+     */
+    LEARNED,
+
     /** La médiane réelle (fiable, n ≥ 3) des tâches d'équipe faites au même palier de points. */
     CALIBRATED,
 

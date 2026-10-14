@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -101,7 +102,10 @@ import com.skohscripts.kairos.ui.generated.resources.task_rec_weekdays
 import com.skohscripts.kairos.ui.generated.resources.task_rec_weekly
 import com.skohscripts.kairos.ui.generated.resources.time_invalid
 import com.skohscripts.kairos.ui.icons.KairosIcons
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.settings.UiLanguage
+import com.skohscripts.kairos.ui.generated.resources.learned_use
+import com.skohscripts.kairos.ui.generated.resources.learned_weak
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -152,6 +156,8 @@ internal fun EditTaskDialog(
      * compter (gestion d'équipe activée, « moi » existe) ; `null` le masque.
      */
     countInTeam: Boolean? = null,
+    /** Durée apprise de la tâche (docs/spec/durees-apprises.md) : proposée dans le champ des minutes quand il est vide. */
+    learned: DurationEstimator.Estimate? = null,
 ) {
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
@@ -275,6 +281,18 @@ internal fun EditTaskDialog(
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                         )
+                        // Durée apprise : une puce qui ne remplit le champ que sur action (on ne remplit que ce qui est vide) ; peu
+                        // fiable, elle est dite mais pas proposée.
+                        if (learned != null && minutes.isBlank()) {
+                            if (learned.reliable) {
+                                KairosTextButton(onClick = { minutes = learned.minutes.toString() }, contentPadding = KairosButtonIconPadding) {
+                                    Icon(KairosIcons.Schedule, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Text(stringResource(Res.string.learned_use, duration(learned.minutes), learned.samples), modifier = Modifier.padding(start = 6.dp))
+                                }
+                            } else {
+                                Text(stringResource(Res.string.learned_weak, learned.samples), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                         if (subtaskDrafts.isNotEmpty()) {
                             SubtaskEditor(subtaskDrafts) { changed -> subtaskDrafts = subtaskDrafts.map { if (it.id == changed.id) changed else it } }
                         }

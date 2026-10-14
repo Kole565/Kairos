@@ -1,0 +1,5 @@
+-- Schéma 7 -> 8 (durées apprises des tâches récurrentes, docs/spec/durees-apprises.md) : additive.
+-- Identifiant de série : celui de la première tâche d'une série récurrente, hérité par chaque occurrence engendrée. NULL pour
+-- toute tâche existante (pas de rétro-remplissage : une base migrée se comporte comme avant, ses tâches se rattachent par leur
+-- titre). Colonne ajoutée en fin de table, dans l'ordre de Kairos.sq (insertTaskWithId est positionnel).
+ALTER TABLE task ADD COLUMN series_id INTEGER;

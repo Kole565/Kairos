@@ -147,6 +147,12 @@ posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
   journée de travail habituelle, avoir ses propres heures, ou être un jour libre
   où rien n’est planifié automatiquement (les tâches épinglées gardent leur
   heure). Rien ne change tant que tu n’en règles pas un.
+- **Durées apprises** : une tâche sans estimation reprend la médiane du temps
+  réellement passé sur ses dernières occurrences chronométrées (une tâche
+  récurrente, ou des tâches de même titre) dès qu’il y en a assez. Elle
+  s’affiche `~45 min` avec sa source dans « Pourquoi à cette place ? », et une
+  estimation saisie l’emporte toujours. On peut la couper ou la régler dans les
+  Réglages.
 - **Jours ouvrés et fériés** : calendrier français intégré, dates
   supplémentaires dans les Réglages.
 

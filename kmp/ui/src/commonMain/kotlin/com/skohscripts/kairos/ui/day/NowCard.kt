@@ -99,7 +99,8 @@ internal fun RunningCard(view: DayView, clock: Clock, onStop: () -> Unit, modifi
             Text(task.title, style = MaterialTheme.typography.titleMedium)
             val minutes by rememberLiveMinutes(running.startedAt, view.runningBaseMinutes, clock)
             Text(duration(minutes), style = MaterialTheme.typography.displaySmall)
-            task.estimatedMinutes?.takeIf { it > 0 }?.let {
+            // L'estimation attendue : explicite, sinon la durée apprise fiable (docs/spec/durees-apprises.md).
+            (task.estimatedMinutes?.takeIf { it > 0 } ?: view.learned[task.id]?.takeIf { it.reliable }?.minutes)?.let {
                 Text(stringResource(Res.string.now_running_estimate, duration(it)), style = MaterialTheme.typography.bodySmall)
             }
             KairosButton(

@@ -114,6 +114,11 @@ sa fenêtre ; un jour libre donne une fenêtre vide (aucune tâche automatique n
 gardent leur heure ; `disponible` = 0). `Schedule.displayWindow` (la plage, ou la journée des réglages un jour libre) sert à la
 frise (`buildTimeline`) et au rail du réel (`TimeTracking.sessionTimeline`). Le creux de l'après-midi reste en heures absolues ;
 la capacité d'équipe lit toujours `workdayStartHour` et `workdayEndHour`.
+
+**Durée de placement** (3.4, `durees-apprises.md`) : `durationMinutes(tâche, réglages, learned)` = les minutes de la tâche (≠ 0), sinon
+`learned[id]` (la durée apprise **fiable** que `DayView` calcule par `DurationEstimator`), sinon `defaultTaskDurationMinutes`.
+`buildDaySchedule` reçoit `learned` (vide par défaut : comportement d'avant, octet pour octet) et le passe à chaque calcul de
+durée (placement, capacité requise, repli d'une épinglée).
 Entrées : toutes les tâches, les créneaux du jour (ponctuels et occurrences
 des récurrents), le jour, l'heure courante (`null` = début de journée), les
 réglages, les tâches bloquées et les clés d'urgence effectives

@@ -27,7 +27,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.engine.Scheduling
+import com.skohscripts.kairos.core.model.LearningSettings
+import com.skohscripts.kairos.ui.generated.resources.why_learned
+import com.skohscripts.kairos.ui.generated.resources.why_learned_weak
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -60,7 +64,7 @@ import org.jetbrains.compose.resources.stringResource
  * (`wsjf_breakdown`), en menu MD3 flottant.
  */
 @Composable
-internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: String) {
+internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: String, learned: DurationEstimator.Estimate? = null, learning: LearningSettings = LearningSettings()) {
     var open by remember { mutableStateOf(false) }
     val score = Dates.number(why.score, language)
     val title = stringResource(Res.string.why_title)
@@ -106,6 +110,15 @@ internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: Str
                 Term(effort, "÷ ${Dates.number(why.effort, uiLanguage())}")
                 HorizontalDivider()
                 Term(stringResource(Res.string.why_score), "= $score", bold = true)
+                // Durée apprise (docs/spec/durees-apprises.md) : d'où vient la durée de placement d'une tâche sans estimation.
+                learned?.let {
+                    val text = if (it.reliable) {
+                        stringResource(Res.string.why_learned, duration(it.minutes), it.samples)
+                    } else {
+                        stringResource(Res.string.why_learned_weak, it.samples, learning.minSamples)
+                    }
+                    Text(text, style = MaterialTheme.typography.bodySmall)
+                }
                 Text(stringResource(Res.string.why_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

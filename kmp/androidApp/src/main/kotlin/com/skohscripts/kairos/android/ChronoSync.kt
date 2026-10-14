@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import com.skohscripts.kairos.core.alerts.ChronoAlertKind
 import com.skohscripts.kairos.core.alerts.ChronoAlerts
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.data.KairosRepository
@@ -50,7 +51,8 @@ object ChronoSync {
         val running = TimeTracking.runningSession(snapshot.workSessions)
         val task = running?.let { r -> snapshot.tasks.firstOrNull { it.id == r.taskId } }
         return Key(
-            running?.id, running?.startedAt, task?.title, running?.let { baseMinutes(snapshot, it) } ?: 0, task?.estimatedMinutes,
+            running?.id, running?.startedAt, task?.title, running?.let { baseMinutes(snapshot, it) } ?: 0,
+            task?.let { DurationEstimator.effectiveMinutes(it, snapshot, Clock.System.now()) },
             snapshot.settings.timerIdleAlertMinutes, snapshot.settings.pomodoroFocusMinutes,
         )
     }

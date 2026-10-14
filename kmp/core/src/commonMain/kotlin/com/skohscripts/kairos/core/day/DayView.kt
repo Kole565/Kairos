@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.core.day
 
 import com.skohscripts.kairos.core.engine.Dependencies
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.engine.Recurrence
 import com.skohscripts.kairos.core.engine.Schedule
 import com.skohscripts.kairos.core.engine.Scheduling
@@ -118,6 +119,8 @@ data class DayView(
     val workEndHour: Int = 18,
     /** Jour libre (docs/spec/planning-personnalise.md § Lot B1) : rien n'est planifié automatiquement. */
     val freeDay: Boolean = false,
+    /** Durées apprises (fiables ou non) des tâches à faire sans estimation explicite : badge, « Pourquoi à cette place ? », puce de la fiche. */
+    val learned: Map<Long, DurationEstimator.Estimate> = emptyMap(),
 ) {
     /** Bandeau de surcharge : plus de P0 non bloquées que le seuil des réglages. */
     val priorityOverload: Boolean get() = priorityOverloadCount > priorityOverloadThreshold
@@ -166,7 +169,9 @@ data class DayView(
                 else Recurrence.expandRecurringBlocks(listOf(it), day, day).isNotEmpty()
             }.sortedBy { it.start.time }
 
-            val schedule = Scheduling.buildDaySchedule(all, dayBlocks, day, now, settings, blockedIds, effective)
+            // Durées apprises des tâches sans estimation explicite (docs/spec/durees-apprises.md) : les fiables servent au placement.
+            val learned = DurationEstimator.estimates(snapshot, instant)
+            val schedule = Scheduling.buildDaySchedule(all, dayBlocks, day, now, settings, blockedIds, effective, DurationEstimator.appliedMinutes(learned))
             val timeline = Scheduling.buildTimeline(schedule, dayBlocks, day, settings)
 
             val parentTitle = all.filter { it.parentId != null && it.parentId in byId }
@@ -259,6 +264,7 @@ data class DayView(
                 workStartHour = shown.startHour,
                 workEndHour = shown.endHour,
                 freeDay = Schedule.windowFor(day, settings) == null,
+                learned = learned,
             )
         }
     }

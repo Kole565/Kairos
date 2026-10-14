@@ -58,6 +58,8 @@ import com.skohscripts.kairos.ui.icons.KairosIcons
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
+import com.skohscripts.kairos.core.engine.DurationEstimator
+import com.skohscripts.kairos.ui.generated.resources.effort_learned
 import kotlin.time.Instant
 
 /**
@@ -78,12 +80,16 @@ internal class EffortInfo(
         /** Lit l'effort de [task] dans [snapshot] : calibration de l'équipe, réglages. Léger : une seule passe sur les tâches faites. */
         fun of(task: Task, snapshot: KairosSnapshot, now: Instant): EffortInfo {
             val calibration = Effort.teamCalibration(snapshot, now)
-            val (hours, source) = Effort.base(task, calibration, snapshot.settings)
+            // Sans estimation, la durée apprise des occurrences passées vaut estimation (docs/spec/durees-apprises.md) ; la fiche dit d'où elle vient.
+            val learned = if (task.estimatedMinutes?.takeIf { it > 0 } == null) DurationEstimator.effectiveMinutes(task, snapshot, now) else null
+            val read = if (learned != null) task.copy(estimatedMinutes = learned) else task
+            val (hours, computed) = Effort.base(read, calibration, snapshot.settings)
+            val source = if (learned != null) EffortSource.LEARNED else computed
             val points = task.fibonacciPoints
             return EffortInfo(
                 hours = hours,
                 // Comme le plan : sans avancement déclaré, le temps passé est déduit (docs/spec/equipe-moi.md).
-                remainingHours = Effort.remaining(task, calibration, snapshot.settings, TeamWork.spentMinutes(snapshot, now)[task.id] ?: 0).first,
+                remainingHours = Effort.remaining(read, calibration, snapshot.settings, TeamWork.spentMinutes(snapshot, now)[task.id] ?: 0).first,
                 source = source,
                 points = points,
                 calibratedCount = if (source == EffortSource.CALIBRATED) calibration.firstOrNull { it.key == points.toString() }?.count else null,
@@ -234,6 +240,7 @@ private fun EffortLine(effort: EffortInfo) {
         val base = hoursText(hours)
         val text = when (effort.source) {
             EffortSource.ESTIMATE -> stringResource(Res.string.effort_estimate, base)
+            EffortSource.LEARNED -> stringResource(Res.string.effort_learned, base)
             EffortSource.CALIBRATED -> stringResource(Res.string.effort_calibrated, base, effort.points ?: 0, effort.calibratedCount ?: 0)
             EffortSource.POINTS_RATE -> stringResource(Res.string.effort_points, base, effort.points ?: 0, decimalText(effort.hoursPerPoint, uiLanguage()))
             EffortSource.NONE -> stringResource(Res.string.effort_none)

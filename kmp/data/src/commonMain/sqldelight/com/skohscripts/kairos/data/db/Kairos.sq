@@ -44,7 +44,10 @@ CREATE TABLE task (
     reported_minutes INTEGER,
     -- Tâche perso exclue de l'espace Équipe (docs/spec/equipe-moi.md) : 0 = compte dans la charge et les prévisions
     -- de « moi ». Même ordre que 6.sqm.
-    team_excluded INTEGER NOT NULL DEFAULT 0
+    team_excluded INTEGER NOT NULL DEFAULT 0,
+    -- Série d'une tâche récurrente (docs/spec/durees-apprises.md) : identifiant de la première tâche de la série, NULL pour une
+    -- tâche d'avant la 3.4 ou sans occurrence suivante. Même ordre que 7.sqm.
+    series_id INTEGER
 );
 CREATE INDEX task_status ON task(status);
 CREATE INDEX task_parent ON task(parent_id);
@@ -164,11 +167,11 @@ INSERT INTO task (title, description, priority, deadline, project_tag, status, e
     pinned_start, parent_id, recurrence, scheduled_date, recurrence_day_of_month,
     recurrence_day_of_week, recurrence_period, task_type, fibonacci_points,
     manual_time_spent_minutes, created_at, updated_at, space, assignee_id, progress_percent, started_on, team_uid,
-    origin, origin_removed, reported_minutes, team_excluded)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    origin, origin_removed, reported_minutes, team_excluded, series_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTaskWithId:
-INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertedId:
 SELECT last_insert_rowid();
@@ -179,7 +182,7 @@ UPDATE task SET title = ?, description = ?, priority = ?, deadline = ?, project_
     recurrence_day_of_month = ?, recurrence_day_of_week = ?, recurrence_period = ?, task_type = ?,
     fibonacci_points = ?, manual_time_spent_minutes = ?, updated_at = ?, space = ?, assignee_id = ?,
     progress_percent = ?, started_on = ?, team_uid = ?, origin = ?, origin_removed = ?, reported_minutes = ?,
-    team_excluded = ?
+    team_excluded = ?, series_id = ?
 WHERE id = ?;
 
 deleteTask:

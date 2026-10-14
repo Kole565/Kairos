@@ -97,6 +97,9 @@ object Recurrence {
             // d'équipe récurrente ferait naître une tâche Perso (docs/spec/equipe.md).
             space = task.space,
             assigneeId = task.assigneeId,
+            // La série garde l'identifiant de sa première tâche (docs/spec/durees-apprises.md) ; une tâche reçue d'un manager
+            // n'ouvre jamais de série personnelle (isolation d'espace).
+            seriesId = if (task.origin == null) task.seriesId ?: task.id else null,
             createdAt = now,
             updatedAt = now,
         )
@@ -166,6 +169,7 @@ object Recurrence {
                 recurrencePeriod = currentPeriod,
                 space = rep.space,
                 assigneeId = rep.assigneeId,
+                seriesId = if (rep.origin == null) rep.seriesId ?: rep.id else null,
                 createdAt = now,
                 updatedAt = now,
             )

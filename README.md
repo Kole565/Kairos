@@ -139,6 +139,11 @@ qualify?" recalls the rule.
 - **Hours by day of the week** (Settings): each day can keep the usual working
   day, have its own hours, or be a day off where nothing is scheduled
   automatically (pinned tasks keep their time). Nothing changes until you set one.
+- **Learned durations**: a task without an estimate takes the median real time
+  of its last timed occurrences (a recurring task, or tasks with the same
+  title) once there are enough of them. It shows as `~45 min` with its source
+  in “Why this position?”, and an estimate you type always wins. It can be
+  switched off, or tuned, in Settings.
 - **Working days and holidays**: built-in French calendar, with extra dates
   in Settings.
 

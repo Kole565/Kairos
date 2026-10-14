@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.core.settings
 
 import com.skohscripts.kairos.core.model.DaySchedule
+import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.TeamSettings
@@ -148,6 +149,27 @@ object SettingsForm {
         ),
     )
 
+    /**
+     * Réglage des durées apprises : lu sur [LearningSettings] (défauts si `learning` est nul), écrit par [change]. Même règle
+     * d'isolation que [team] : tant que la valeur écrite est celle par défaut, `learning` **reste nul** (ou y revient).
+     */
+    private fun learning(key: String, kind: FieldKind, min: Double? = null, get: (LearningSettings) -> String, change: (LearningSettings, String) -> LearningSettings) =
+        SettingField(
+            key, kind, min,
+            read = { get(it.learning ?: LearningSettings()) },
+            write = { s, v ->
+                val current = s.learning ?: LearningSettings()
+                val next = change(current, v.trim())
+                s.copy(learning = next.takeIf { it != LearningSettings() })
+            },
+        )
+
+    private val LEARNING_FIELDS: List<SettingField> = listOf(
+        learning("learning.enabled", FieldKind.BOOL, get = { it.enabled.toString() }) { l, v -> l.copy(enabled = v == "true") },
+        learning("learning.history", FieldKind.INT, 3.0, get = { it.history.toString() }) { l, v -> l.copy(history = v.toInt()) },
+        learning("learning.minSamples", FieldKind.INT, 2.0, get = { it.minSamples.toString() }) { l, v -> l.copy(minSamples = v.toInt()) },
+    )
+
     const val SCHEDULE_DEFAULT = "default"
     const val SCHEDULE_CUSTOM = "custom"
     const val SCHEDULE_FREE = "free"
@@ -199,7 +221,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    ) + (0..6).flatMap(::scheduleFields)
+    ) + (0..6).flatMap(::scheduleFields) + LEARNING_FIELDS
 
     private val byKey = FIELDS.associateBy { it.key }
 
@@ -237,6 +259,8 @@ object SettingsForm {
             val end = own.endHour ?: continue
             if (end <= start) errors["schedule.d$day.end"] = FieldError(FieldErrorKind.TOO_SMALL, (start + 1).toString())
         }
+        // On ne peut pas exiger plus d'occurrences que l'historique n'en retient : l'erreur est sur « minimum d'occurrences ».
+        result.learning?.let { if (it.minSamples > it.history) errors["learning.minSamples"] = FieldError(FieldErrorKind.TOO_LARGE, it.history.toString()) }
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
         val general = when {
             result.workdayStartHour >= result.workdayEndHour -> GeneralError.WORKDAY_ORDER

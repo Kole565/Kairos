@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.core.team.forecast
 
 import com.skohscripts.kairos.core.engine.Workdays
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -143,7 +144,8 @@ class MonteCarlo private constructor(
          * le périmètre), temps passé déduit, créneaux occupés de « moi » retirés de sa capacité.
          */
         fun prepare(request: ForecastRequest): MonteCarlo {
-            val snapshot = TeamWork.view(request.snapshot)
+            // Durées apprises : estimation des tâches qui n'en ont pas (docs/spec/durees-apprises.md).
+            val snapshot = TeamWork.view(DurationEstimator.withLearnedEstimates(request.snapshot, request.now))
             val settings = snapshot.settings
             val team = settings.team ?: TeamSettings()
             val local = request.now.toLocalDateTime(request.timeZone)

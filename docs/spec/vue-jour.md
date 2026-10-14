@@ -127,7 +127,11 @@ avancées). **Durée
 suggérée** : choisir un palier de points dont le temps réel médian est
 fiable (3 tâches au moins) **remplace** la durée par cette médiane ; choisir
 un type fiable ne la remplit que si elle est vide. On reste libre de la
-retoucher. Dialogue de
+retoucher. **Durée apprise** (3.4, `durees-apprises.md`) : sans estimation, une tâche à faire dont les occurrences passées chronométrées
+sont assez nombreuses affiche un badge `~45 min` (icône et description d'accessibilité, à la place du badge d'estimation), la
+carte « Maintenant » la même durée, « Pourquoi à cette place ? » la provenance ; peu fiable, elle est dite sans être appliquée. La
+fiche propose une puce « Utiliser 45 min (tes 5 dernières) » sous le champ des minutes quand il est vide : elle le remplit sur
+action seulement. Dialogue de
 créneau : mêmes champs que la capture de créneau, « Supprimer » qui dit
 « toutes ses occurrences » pour un récurrent.
 

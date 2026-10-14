@@ -105,6 +105,9 @@ JSON UTF-8 indenté :
 
 - Champs des tâches : ceux du modèle (`modele-donnees.md`), en camelCase ;
   valeurs `null` omises ; codes de statut et de récurrence de la base.
+- **Série d'une tâche récurrente** (3.4, `durees-apprises.md`) : `seriesId` n'est écrit que s'il est non nul, **sans changer la
+  version du format** (un champ de plus que les anciens lecteurs ignorent) ; une tâche sans série s'exporte comme avant
+  (`LearnedDurationsRepositoryTest.theSeriesSurvivesAnExportAndIsAbsentWhenThereIsNone`). Même règle pour `settings.learning`.
 - **Version 2** (espace Équipe, `equipe.md` § Export) : `members` (membres
   d'équipe), `absences` (ajouté au jalon E2), `teamEvents` (journal, jalon
   E3), `teamScenarios` (jalon E5) — un lecteur 2 plus ancien ignore les champs qu'il ne connaît pas —

@@ -27,6 +27,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.Icon
 import com.skohscripts.kairos.ui.app.expandedState
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_enabled
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_enabled_help
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_history
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_history_help
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_min
+import com.skohscripts.kairos.ui.generated.resources.setting_learning_min_help
+import com.skohscripts.kairos.ui.generated.resources.settings_section_learning
+import com.skohscripts.kairos.ui.generated.resources.settings_section_learning_body
 import com.skohscripts.kairos.ui.generated.resources.settings_advanced_body
 import com.skohscripts.kairos.ui.generated.resources.settings_advanced_title
 import com.skohscripts.kairos.ui.icons.KairosIcons
@@ -160,6 +168,9 @@ private val TEXTS: Map<String, FieldText> = mapOf(
     "priorityOverloadThreshold" to FieldText(Res.string.setting_overload, Res.string.setting_overload_help),
     "taskTypes" to FieldText(Res.string.setting_task_types, Res.string.setting_task_types_help),
     "statsWindowWeeks" to FieldText(Res.string.setting_stats_window, Res.string.setting_stats_window_help),
+    "learning.enabled" to FieldText(Res.string.setting_learning_enabled, Res.string.setting_learning_enabled_help),
+    "learning.history" to FieldText(Res.string.setting_learning_history, Res.string.setting_learning_history_help),
+    "learning.minSamples" to FieldText(Res.string.setting_learning_min, Res.string.setting_learning_min_help),
     "timerIdleAlertMinutes" to FieldText(Res.string.settings_idle),
     "pomodoroFocusMinutes" to FieldText(Res.string.settings_pomodoro),
     "timerAlertSound" to FieldText(Res.string.settings_sound),
@@ -199,6 +210,7 @@ private val SECTIONS = listOf(
     Section(Res.string.settings_section_guards, null, listOf("staleOverdueDays", "staleUntouchedDays", "priorityOverloadThreshold")),
     Section(Res.string.settings_section_types, null, listOf("taskTypes")),
     Section(Res.string.settings_section_stats, null, listOf("statsWindowWeeks")),
+    Section(Res.string.settings_section_learning, Res.string.settings_section_learning_body, listOf("learning.enabled", "learning.history", "learning.minSamples")),
     Section(Res.string.settings_chrono_title, Res.string.settings_chrono_body, listOf("timerIdleAlertMinutes", "pomodoroFocusMinutes", "timerAlertSound")),
     Section(Res.string.settings_section_holidays, Res.string.settings_section_holidays_body, listOf("holidaysFr", "extraHolidays")),
 )

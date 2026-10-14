@@ -65,6 +65,13 @@ data class Task(
      * charge et les prévisions de « moi » ; vrai la retire de ces calculs. Sans effet sans gestion d'équipe ni « moi ».
      */
     val teamExcluded: Boolean = false,
+    /**
+     * Série d'une tâche récurrente (docs/spec/durees-apprises.md) : l'identifiant de la **première** tâche de la série, hérité
+     * par chaque occurrence engendrée ([com.skohscripts.kairos.core.engine.Recurrence.nextOccurrence]). `null` pour une tâche qui
+     * n'a pas (encore) d'occurrence suivante, et pour toute tâche d'avant la 3.4 (pas de rétro-remplissage : elles se rattachent
+     * par leur titre). Sert à retrouver le temps passé sur les occurrences passées.
+     */
+    val seriesId: Long? = null,
 ) {
     /**
      * Pas encore clarifiée (GTD) : il manque la priorité **ou** les points. Elle

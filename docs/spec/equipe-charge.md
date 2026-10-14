@@ -177,7 +177,10 @@ backlog.
 ### Effort (`core/team/Effort.kt`, pur)
 
 - `EffortSource` (paquet `team`) : `ESTIMATE`, `CALIBRATED`, `POINTS_RATE`,
-  `NONE`.
+  `LEARNED` (3.4 : durée apprise des occurrences passées, `durees-apprises.md`, posée par `TeamTaskSheet`), `NONE`.
+  `TeamLoad.build`, `AssignmentSuggestion.suggest` et `MonteCarlo.prepare` lisent d'abord
+  `DurationEstimator.withLearnedEstimates` : une tâche **à faire** sans estimation y porte sa durée apprise fiable comme
+  estimation, sans autre changement de calcul ; les tâches faites ne sont jamais touchées.
 - `Effort.base(tâche, calibration, réglages): Pair<Double?, EffortSource>`
   en heures ; `Effort.remaining` applique `progressPercent` ;
   `Effort.planned` rend `Planned(heures, source, unestimated)`, avec la

@@ -1183,4 +1183,18 @@
     <string name="schedule_day_5">Samedi</string>
     <string name="schedule_day_6">Dimanche</string>
     <string name="timeline_free_day">Jour libre : rien n’est planifié automatiquement, les tâches restent dans « Sans créneau aujourd’hui ».</string>
+    <string name="learned_badge_description">Estimée d’après tes %1$d dernières occurrences chronométrées (médiane)</string>
+    <string name="learned_use">Utiliser %1$s (tes %2$d dernières)</string>
+    <string name="learned_weak">Pas encore fiable : seulement %1$d occurrence(s) chronométrée(s) de cette tâche.</string>
+    <string name="why_learned">Durée : %1$s, apprise de tes %2$d dernières occurrences chronométrées (médiane).</string>
+    <string name="why_learned_weak">Durée : pas encore apprise (%1$d occurrence(s) chronométrée(s), %2$d nécessaires).</string>
+    <string name="settings_section_learning">Durées apprises</string>
+    <string name="settings_section_learning_body">Une tâche sans estimation prend la médiane du temps réel de ses dernières occurrences chronométrées (tâches récurrentes ou de même titre) quand elles sont assez nombreuses. Une estimation que tu saisis l’emporte toujours.</string>
+    <string name="setting_learning_enabled">Apprendre les durées des occurrences passées</string>
+    <string name="setting_learning_enabled_help">Désactivé : une tâche sans estimation prend la durée par défaut, comme avant.</string>
+    <string name="setting_learning_history">Occurrences prises en compte</string>
+    <string name="setting_learning_history_help">Les occurrences chronométrées les plus récentes gardées pour la médiane (3 ou plus).</string>
+    <string name="setting_learning_min">Occurrences nécessaires</string>
+    <string name="setting_learning_min_help">Occurrences chronométrées requises avant d’utiliser une durée apprise (2 ou plus, au plus le nombre pris en compte).</string>
+    <string name="effort_learned">%1$s, apprise des occurrences passées</string>
 </resources>

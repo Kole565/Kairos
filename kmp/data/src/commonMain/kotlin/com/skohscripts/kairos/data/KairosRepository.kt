@@ -1162,6 +1162,7 @@ class KairosRepository(
                 t.createdAt.store(), t.updatedAt.store(), t.space.code.toLong(), t.assigneeId,
                 t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
                 t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
+                t.seriesId,
             )
         }
         for (m in snapshot.members) {
@@ -1221,6 +1222,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             now(), now(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
             t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
+            t.seriesId,
         )
         val id = queries.lastInsertedId().awaitAsOneOrNull()
         if (t.space == TaskSpace.TEAM && id != null) {
@@ -1249,7 +1251,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             if (touch) now() else t.updatedAt.store(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(),
             t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
-            if (t.teamExcluded) 1L else 0L, t.id,
+            if (t.teamExcluded) 1L else 0L, t.seriesId, t.id,
         )
     }
 

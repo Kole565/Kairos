@@ -96,6 +96,9 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   **espace**) — une série Perso et une série d'équipe de même titre sont
   distinctes ; l'assigné n'y entre pas, pour qu'une occurrence réaffectée
   reste dans sa série (`equipe.md` § Questions ouvertes).
+- **Série stable** (3.4, `durees-apprises.md`) : `nextOccurrence` et `calendarOccurrences` posent sur la copie
+  `seriesId = seriesId de la mère, sinon son id` (une tâche reçue d'un manager, `origin != null`, n'ouvre jamais de série). Les
+  occurrences d'une même série partagent ainsi un identifiant qui survit aux renommages ; il alimente la durée apprise.
 - `nextSnoozeDate(échéance, aujourd'hui, fériés)` : jour ouvré suivant
   l'échéance si elle est à venir, sinon aujourd'hui.
 - `expandRecurringBlocks(modèles, début, fin)` : pour chaque jour de

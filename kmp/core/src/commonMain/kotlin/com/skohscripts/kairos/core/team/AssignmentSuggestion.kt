@@ -3,6 +3,7 @@ package com.skohscripts.kairos.core.team
 import com.skohscripts.kairos.core.engine.Dependencies
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.engine.Workdays
+import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -104,13 +105,15 @@ object AssignmentSuggestion {
      * est ensuite ajoutée au plan courant : la suivante voit la charge.
      */
     fun suggest(
-        snapshot: KairosSnapshot,
+        stored: KairosSnapshot,
         now: Instant,
         timeZone: TimeZone,
         taskIds: Set<Long>? = null,
         horizonWeeks: Int? = null,
         calibration: List<Calibration>? = null,
     ): Result {
+        // Durées apprises : estimation des tâches qui n'en ont pas (docs/spec/durees-apprises.md).
+        val snapshot = DurationEstimator.withLearnedEstimates(stored, now)
         val settings = snapshot.settings
         val team = settings.team ?: TeamSettings()
         val local = now.toLocalDateTime(timeZone)
