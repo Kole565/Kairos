@@ -121,6 +121,10 @@ data class DayView(
     val freeDay: Boolean = false,
     /** Durées apprises (fiables ou non) des tâches à faire sans estimation explicite : badge, « Pourquoi à cette place ? », puce de la fiche. */
     val learned: Map<Long, DurationEstimator.Estimate> = emptyMap(),
+    /** Les plages de travail du jour, dans l'ordre (docs/spec/planning-personnalise.md § Lot B2) ; vide un jour libre. La frise grise les trous entre elles. */
+    val windows: List<Schedule.Window> = emptyList(),
+    /** Tâches « Sans créneau » dont le contexte n'a aucune plage ce jour-là : identifiant → nom du contexte ([Scheduling.ScheduledDay.noWindow]). */
+    val noWindow: Map<Long, String> = emptyMap(),
 ) {
     /** Bandeau de surcharge : plus de P0 non bloquées que le seuil des réglages. */
     val priorityOverload: Boolean get() = priorityOverloadCount > priorityOverloadThreshold
@@ -265,6 +269,8 @@ data class DayView(
                 workEndHour = shown.endHour,
                 freeDay = Schedule.windowFor(day, settings) == null,
                 learned = learned,
+                windows = Schedule.windowsFor(day, settings),
+                noWindow = schedule.noWindow,
             )
         }
     }

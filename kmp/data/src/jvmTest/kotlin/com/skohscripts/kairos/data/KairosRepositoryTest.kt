@@ -3,6 +3,10 @@ package com.skohscripts.kairos.data
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.core.model.KairosSnapshot
+import com.skohscripts.kairos.core.model.DaySchedule
+import com.skohscripts.kairos.core.model.ScheduleSettings
+import com.skohscripts.kairos.core.model.WorkContext
+import com.skohscripts.kairos.core.model.WorkWindow
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.WorkSession
@@ -153,9 +157,25 @@ class KairosRepositoryTest {
         val now = Instant.parse("2026-09-29T07:00:00Z")
         val plain = ExportCodec.encode(KairosSnapshot(settings = Settings()), "3.4.0", now)
         assertTrue("schedule" !in plain, "sans horaire propre, l'export ne porte aucun objet schedule")
-        val custom = Settings(schedule = com.skohscripts.kairos.core.model.ScheduleSettings(mapOf(5 to com.skohscripts.kairos.core.model.DaySchedule(startHour = 10, endHour = 14), 6 to com.skohscripts.kairos.core.model.DaySchedule(free = true))))
+        val custom = Settings(schedule = ScheduleSettings(mapOf(5 to DaySchedule(startHour = 10, endHour = 14), 6 to DaySchedule(free = true))))
         val back = ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = custom), "3.4.0", now)).settings
         assertEquals(custom, back)
+    }
+
+    @Test
+    fun severalWindowsAndContextsSurviveAnExportAndTheFormerShapeGainsNoNewKey() {
+        val now = Instant.parse("2026-09-29T07:00:00Z")
+        // La plage unique de la 3.4 s'exporte comme avant : ni `windows` ni `contexts`.
+        val legacy = Settings(schedule = ScheduleSettings(mapOf(5 to DaySchedule(startHour = 10, endHour = 14))))
+        val legacyText = ExportCodec.encode(KairosSnapshot(settings = legacy), "3.5.0", now)
+        assertTrue("windows" !in legacyText && "contexts" !in legacyText)
+        val rich = Settings(
+            schedule = ScheduleSettings(
+                mapOf(5 to DaySchedule(windows = listOf(WorkWindow(9, 12, "Work"), WorkWindow(14, 17)))),
+                listOf(WorkContext("Work", listOf("dev", "Réunion"))),
+            ),
+        )
+        assertEquals(rich, ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = rich), "3.5.0", now)).settings)
     }
 
     @Test

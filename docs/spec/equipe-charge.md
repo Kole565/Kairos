@@ -174,6 +174,9 @@ backlog.
   heures × quotité × focus), `horizonEnd(aujourd'hui, semaines)` (dimanche
   de la dernière semaine).
 
+**Horaires par jour, plages et contextes** (3.4-3.5, `planning-personnalise.md`) : la capacité d'un membre ne les suit **pas** ; elle lit toujours
+`workdayStartHour` et `workdayEndHour` (décision tracée, à reconsidérer si les horaires par jour deviennent courants chez les managers).
+
 ### Effort (`core/team/Effort.kt`, pur)
 
 - `EffortSource` (paquet `team`) : `ESTIMATE`, `CALIBRATED`, `POINTS_RATE`,

@@ -33,7 +33,10 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   **Journée de travail** (durée par défaut d'une tâche, marge après un
   créneau occupé, début et fin de journée), puis **Horaires par jour de la semaine**
   (3.4, lot B1 : pour chaque jour, « Comme d'habitude », « Personnalisé » avec « De » et « À » en heures, ou « Jour libre » ;
-  champs `schedule.dN.mode`, `.start`, `.end`, N = 0 lundi … 6 dimanche ; `ScheduleCard`), **Score de priorité (WSJF)**
+  champs `schedule.dN.mode`, `.start`, `.end`, N = 0 lundi … 6 dimanche ; `ScheduleCard` ; 3.5, lot B2 : un jour personnalisé a une à quatre **plages**
+  (`schedule.dN.count`, `.ctx`, `schedule.dN.wK.start|end|ctx`), chacune réservable à un contexte, « Ajouter une plage » ; une plage commence après la fin de la précédente
+  (« Au moins … » sur son début)), puis la carte **Contextes** (`ContextsCard` : jusqu'à quatre, nom unique et types de tâche en pastilles, un type n'est que dans un contexte ; un type
+  sorti de « Types de tâche » reste, signalé « type inconnu »), **Score de priorité (WSJF)**
   (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
   défaut), **Creux de l'après-midi** (activé, début, creux le plus profond,
   fin, force de la pénalité), **Garde-fous** (seuils « traîne » en retard et

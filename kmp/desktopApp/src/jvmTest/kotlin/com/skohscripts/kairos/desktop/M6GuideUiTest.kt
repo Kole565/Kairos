@@ -177,13 +177,13 @@ class M6GuideUiTest {
         waitText("First steps")
         assertEquals(0, count("6 cards"))
         onNodeWithText("Plan").performClick()
-        waitText("Step 1 of 3")
+        waitText("Step 1 of 4")
         waitText("Priority, points and estimate")
-        repeat(2) { onNodeWithText("Next").performClick() }
-        waitText("Step 3 of 3")
+        repeat(3) { onNodeWithText("Next").performClick() }
+        waitText("Step 4 of 4")
         // La dernière carte du chapitre (horaires par jour) ouvre les Réglages.
         onNodeWithText("Show me the screen").performClick()
-        waitGone("Step 3 of 3")
+        waitGone("Step 4 of 4")
         waitText("Appearance")
     }
 

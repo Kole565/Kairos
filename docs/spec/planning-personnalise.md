@@ -12,8 +12,8 @@ couverts (à venir) : `kmp/core/.../model/Settings.kt` (`schedule`),
 décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semaine.md`,
 `recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lot B1 (fenêtre par jour
 de la semaine) : implémenté en 3.4.0** (voir « Lot B1 (implémenté) »). **B2 (plusieurs plages et
-contextes) et lot C (meilleures heures) : spécifiés le 2026-10-13, non implémentés** (voir
-« Impacts sur les specs existantes »).
+contextes) : implémenté en 3.5.0** (voir « Lot B2 (implémenté) »). **Lot C (meilleures heures) : spécifié le
+2026-10-13, non implémenté** (voir « Impacts sur les specs existantes »).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -175,17 +175,45 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   `DayScreenUiTest.aDayOffPlacesNothingAndSaysSo`, `KairosRepositoryTest.theScheduleSurvivesAnExportAndIsAbsentWhenNotCustomised` ;
   `DifferentialTest` et `TeamIsolationTest.soloExportIsByteIdentical` inchangés.
 
-### Lot B2 (non implémenté)
+### Lot B2 (implémenté en 3.5.0)
 
-- **Modèle** : `DaySchedule` gagne une liste de plages `WorkWindow(startHour, endHour, context?)` ; `Context(name, types:
-  Set<String>)` dans `ScheduleSettings`.
-- **Résolveur** : `Schedule.windowsFor(jour, réglages): List<Window>` (généralise `windowFor`).
-- **Moteur** : `buildDaySchedule` boucle sur les plages dans l'ordre ; réunions, épinglées et deep work restent des obstacles
-  communs. Le **filtre de contexte s'applique seulement au choix au créneau** (avant `minWith(selectionKey)`), jamais à
-  `sortKey` ni au score affiché. Une tâche dont le contexte n'a aucune plage ce jour-là va dans « Sans créneau » avec sa
-  raison. Conservation « une seule liste » à tester.
-- **Frise** : plusieurs plages, trous grisés ; `available` = somme des plages.
-- **Réglages** : plages par jour, contextes et leurs types ; un type renommé ou supprimé est signalé « type inconnu ».
+- **Modèle** (`core/model/ScheduleSettings.kt`) : `DaySchedule` gagne `windows: List<WorkWindow(startHour, endHour, context?)>` (heures
+  pleines) qui, quand elle n'est pas vide, **remplace** `startHour`/`endHour` ; ceux-ci restent la forme d'une plage unique sans
+  contexte (celle de la 3.4, donc l'export d'un horaire de la 3.4 est identique). `ScheduleSettings` gagne
+  `contexts: List<WorkContext(name, types)>`. Les deux listes ne sont **jamais écrites quand elles sont vides**
+  (`@EncodeDefault(NEVER)`, l'export porte `encodeDefaults = true`). Une plage relie son contexte **par son nom**.
+- **Résolveur** (`core/engine/Schedule.kt`) : `Schedule.windowsFor(jour, réglages): List<Window>` (généralise `windowFor`) : vide pour un jour
+  libre ; la journée des réglages sans horaire propre ou si rien de valable ne reste ; plusieurs plages : triées, celles qui sont
+  incohérentes ou qui chevauchent la précédente sont ignorées. `windowFor` rend l'**étendue** (début de la première, fin de la dernière)
+  et `displayWindow` celle d'affichage. `Schedule.contextOf(type, réglages)` : le premier contexte qui liste le type (sans casse,
+  espaces retirés) ; `null` pour un type vide ou dans aucun contexte. `Schedule.accepts(plage, contexteDeLaTâche)` : vrai si la tâche est
+  sans contexte, si la plage est **ouverte** (sans contexte) ou si les contextes sont égaux.
+- **Moteur** (`Scheduling.buildDaySchedule`) : la boucle de placement parcourt les plages dans l'ordre ; réunions, épinglées et deep work
+  restent des obstacles communs et le curseur passe d'une plage à la suivante. Le filtre de contexte ne joue que sur **le choix au créneau**
+  (jamais `sortKey` ni le score affiché ; le test `theContextFilterNeverChangesTheOrderOrTheScore` le fige). Une tâche qui ne tient pas dans une
+  plage (son début dépasserait la fin) passe à la suivante qui l'accueille, sinon « Sans créneau » comme avant (même ordre de la liste). Une tâche
+  dont le contexte n'a aucune plage ce jour-là va dans « Sans créneau » et `ScheduledDay.noWindow` (id → nom du contexte) dit pourquoi ;
+  `DayStats.availableMinutes` est la somme des plages (de maintenant à leur fin), moins l'occupé. Un jour libre garde la plage vide de la 3.4.
+  Une seule plage sans contexte : octet pour octet le placement de la 3.4 (`DifferentialTest` inchangé ; `aSingleWindowListIsTheSameDayAsTheOldRange`).
+- **Frise** : `DayView.windows` (les plages du jour) et `DayView.noWindow` ; `TimelineCard` grise les trous entre plages et nomme le contexte de chaque
+  plage réservée, en pastille.
+- **Réglages** : champs `schedule.dN.count` (1 à 4), `schedule.dN.start|end|ctx` (première plage, clés de la 3.4) et `schedule.dN.wK.start|end|ctx`
+  (K = 2 à 4) ; contextes `schedule.cK.name` et `schedule.cK.types` (K = 1 à 4). Cartes « Horaires par jour de la semaine » (`ScheduleCard` :
+  « Ajouter une plage », pastilles « Réservée à ») et « Contextes » (`ContextsCard` : nom, pastilles des types). Voir `reglages.md`.
+- **Tests** : `ScheduleWindowsTest`, `SettingsFormTest` (plages, contextes, nul par défaut), `KairosRepositoryTest`, `SchedulePlanningUiTest`.
+
+### Décisions du lot B2
+
+- **Une plage sans contexte est ouverte à toute tâche** (précision de la spec initiale, qui disait « une tâche d'un contexte n'est placée que dans
+  une plage de ce contexte ») : sinon définir un contexte priverait de ses tâches tout jour « Comme d'habitude » (« tout doit fonctionner comme avant »).
+  Seules les plages **réservées** restreignent.
+- **Au plus 4 plages par jour et 4 contextes** : les champs du formulaire sont en nombre fixe (`SettingsForm.MAX_WINDOWS`, `MAX_CONTEXTS`) ; un nombre
+  libre demanderait un formulaire à champs dynamiques. Assez pour « matin, midi, soir » et trois contextes.
+- **Plage reliée à son contexte par le nom** : renommer le contexte laisse la plage citer un nom inconnu, refusé à l'enregistrement
+  (`FieldErrorKind.UNKNOWN_CONTEXT`, « Aucun contexte nommé … ») plutôt que perdu ; un type sorti de « Types de tâche » reste dans son contexte et s'affiche
+  « type inconnu » (jamais perdu en silence). Un type n'est que dans un contexte, un nom de contexte est unique (`DUPLICATE`).
+- **Contextes vides gardés pendant l'écriture des champs** : le formulaire est positionnel ; `SettingsForm.validate` retire les emplacements vides à la fin,
+  de sorte qu'aucun objet `schedule` n'apparaît tant que rien n'est rempli.
 
 ### Lot C
 
@@ -217,7 +245,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 
 - **3.4.0** : lot A + B1 (avec les chantiers `retrait-kairos2.md`,
   `durees-apprises.md`, `visite-guidee.md` et `premiere-tache.md`).
-- **3.5.0** : B2 + C1.
+- **3.5.0** : B2 (livré) + C1.
 - **3.6.0** : C2. Échelles libres réévaluées après retours.
 
 ### Décisions et pièges tracés
@@ -238,7 +266,4 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 
 ### Impacts sur les specs existantes (à reporter à l'implémentation)
 
-B2 et lot C seulement (les lots A et B1 sont reportés) : `ordonnancement.md` (plages
-multiples, filtre de contexte, boost), `vue-jour.md` (frise à plusieurs plages), `reglages.md`
-(plages et contextes), `modele-donnees.md` (contextes), `statistiques.md` (carte meilleures
-heures), `equipe-charge.md` (capacité non modifiée, à dire).
+Lot C seulement (les lots A, B1 et B2 sont reportés) : `ordonnancement.md` (boost), `statistiques.md` (carte meilleures heures).

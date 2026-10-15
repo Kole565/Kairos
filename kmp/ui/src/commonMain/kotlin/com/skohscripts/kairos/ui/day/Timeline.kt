@@ -15,10 +15,12 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.engine.Scheduling.TimelineKind
@@ -70,6 +72,19 @@ internal fun TimelineCard(view: DayView, language: String, modifier: Modifier = 
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant,
                         modifier = Modifier.offset(y = top - 7.dp),
+                    )
+                }
+                // Plusieurs plages (docs/spec/planning-personnalise.md § Lot B2) : les trous entre elles sont grisés (fond neutre, jamais
+                // d'opacité), et chaque plage réservée à un contexte porte son nom.
+                view.windows.zipWithNext().forEach { (before, after) ->
+                    val top = MINUTE * ((before.endHour - start) * 60)
+                    Box(
+                        Modifier
+                            .padding(start = GUTTER + 4.dp, end = 2.dp)
+                            .offset(y = top)
+                            .fillMaxWidth()
+                            .height(MINUTE * ((after.startHour - before.endHour) * 60))
+                            .background(scheme.surfaceContainerHigh, MaterialTheme.shapes.small),
                     )
                 }
                 // Rail « réel » : le temps chronométré, dans la gouttière gauche, à côté du planifié.
@@ -139,6 +154,18 @@ internal fun TimelineCard(view: DayView, language: String, modifier: Modifier = 
                                 )
                             }
                         }
+                    }
+                }
+                // Le nom du contexte de chaque plage réservée, en pastille à droite du haut de la plage (dessinée par-dessus les tâches).
+                view.windows.filter { it.context != null }.forEach { w ->
+                    Surface(
+                        color = scheme.surface,
+                        contentColor = scheme.primary,
+                        border = BorderStroke(1.dp, scheme.outlineVariant),
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.align(Alignment.TopEnd).padding(end = 6.dp).offset(y = MINUTE * ((w.startHour - start) * 60) + 2.dp),
+                    ) {
+                        Text(w.context.orEmpty(), style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
                     }
                 }
             }

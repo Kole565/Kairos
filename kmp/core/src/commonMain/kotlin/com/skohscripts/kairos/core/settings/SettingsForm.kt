@@ -4,6 +4,8 @@ import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
+import com.skohscripts.kairos.core.model.WorkContext
+import com.skohscripts.kairos.core.model.WorkWindow
 import com.skohscripts.kairos.core.model.TeamSettings
 import kotlinx.datetime.LocalDate
 
@@ -26,7 +28,7 @@ class SettingField internal constructor(
     internal val write: (Settings, String) -> Settings,
 )
 
-enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LARGE, INVALID_DATE, INVALID_COLOR, DUPLICATE }
+enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LARGE, INVALID_DATE, INVALID_COLOR, DUPLICATE, UNKNOWN_CONTEXT }
 
 /** Erreur d'un champ ; [bound] est la borne franchie (« 0 », « 23 ») ou la date illisible. */
 data class FieldError(val kind: FieldErrorKind, val bound: String? = null)
@@ -101,20 +103,63 @@ object SettingsForm {
 
     /**
      * Horaire du jour [day] (0 = lundi) : lu sur [Settings.schedule], écrit par [change] (`null` = « comme d'habitude »).
-     * Même règle d'isolation que [team] : sans horaire propre, [Settings.schedule] **reste nul** (sauver le formulaire sans y
-     * toucher n'en crée jamais, donc rien n'entre dans l'export). Les trois champs d'un jour s'écrivent dans l'ordre
-     * `mode`, `start`, `end` (ordre de [FIELDS]) : les heures ne comptent que pour un jour « custom ».
+     * Même règle d'isolation que [team] : sans horaire propre ni contexte, [Settings.schedule] **reste nul** (sauver le
+     * formulaire sans y toucher n'en crée jamais, donc rien n'entre dans l'export). Les champs d'un jour s'écrivent dans
+     * l'ordre de [FIELDS] : `mode`, `count`, puis pour chaque plage `start`, `end`, `ctx` ; les heures ne comptent que pour
+     * un jour « custom ».
      */
-    private fun withDay(settings: Settings, day: Int, change: (DaySchedule?) -> DaySchedule?): Settings {
-        val current = settings.schedule?.weekdays.orEmpty()
-        val updated = change(current[day])
-        val weekdays = if (updated == null) current - day else current + (day to updated)
-        return settings.copy(schedule = if (weekdays.isEmpty()) null else ScheduleSettings(weekdays))
+    private fun withDay(settings: Settings, day: Int, change: (DaySchedule?) -> DaySchedule?): Settings = withSchedule(settings) { schedule ->
+        val updated = change(schedule.weekdays[day])
+        schedule.copy(weekdays = if (updated == null) schedule.weekdays - day else schedule.weekdays + (day to updated))
+    }
+
+    /** Écrit [change] sur [Settings.schedule] ; le sous-objet redevient nul quand il ne porte plus rien. */
+    private fun withSchedule(settings: Settings, change: (ScheduleSettings) -> ScheduleSettings): Settings {
+        val next = change(settings.schedule ?: ScheduleSettings())
+        return settings.copy(schedule = next.takeIf { it.weekdays.isNotEmpty() || it.contexts.isNotEmpty() })
     }
 
     private fun custom(settings: Settings, day: Int): DaySchedule? = settings.schedule?.weekdays?.get(day)?.takeIf { !it.free }
 
-    /** Les trois champs d'un jour de la semaine : `schedule.dN.mode` (`default`, `custom`, `free`), `.start` et `.end` (heures). */
+    /** Les plages d'un jour « personnalisé » : la liste du lot B2, ou la plage unique de la 3.4 ; vide pour un autre jour. */
+    private fun windowsOf(settings: Settings, day: Int): List<WorkWindow> {
+        val own = custom(settings, day) ?: return emptyList()
+        if (own.windows.isNotEmpty()) return own.windows
+        val start = own.startHour
+        val end = own.endHour
+        return if (start != null && end != null) listOf(WorkWindow(start, end)) else emptyList()
+    }
+
+    /** Range les plages : une seule plage sans contexte garde la forme de la 3.4 (`startHour`, `endHour`), sinon la liste. */
+    private fun storeWindows(settings: Settings, day: Int, windows: List<WorkWindow>): Settings = withDay(settings, day) {
+        val single = windows.singleOrNull()?.takeIf { it.context == null }
+        if (single != null) DaySchedule(startHour = single.startHour, endHour = single.endHour) else DaySchedule(windows = windows)
+    }
+
+    /** La plage suivante proposée quand on en ajoute une : après la dernière, une heure, sans dépasser 23 h. */
+    private fun nextWindow(last: WorkWindow?, settings: Settings): WorkWindow {
+        val start = (last?.endHour ?: settings.workdayEndHour).coerceAtMost(22)
+        return WorkWindow(start, start + 1)
+    }
+
+    /** Préfixe des clés de la plage [index] (0-based) du jour [day] : la première garde les clés de la 3.4. */
+    private fun windowKey(day: Int, index: Int) = if (index == 0) "schedule.d$day." else "schedule.d$day.w${index + 1}."
+
+    private fun windowField(day: Int, index: Int, name: String, kind: FieldKind, min: Double?, max: Double?, read: (WorkWindow?, Settings) -> String, write: (WorkWindow, String) -> WorkWindow): SettingField =
+        SettingField(
+            windowKey(day, index) + name, kind, min, max,
+            read = { s -> read(windowsOf(s, day).getOrNull(index), s) },
+            write = { s, v ->
+                val windows = windowsOf(s, day)
+                if (index < windows.size) storeWindows(s, day, windows.mapIndexed { i, w -> if (i == index) write(w, v.trim()) else w }) else s
+            },
+        )
+
+    /**
+     * Les champs d'un jour de la semaine : `schedule.dN.mode` (`default`, `custom`, `free`), `.count` (nombre de plages, 1 à
+     * [MAX_WINDOWS]), puis pour chaque plage `.start` et `.end` (heures) et `.ctx` (nom du contexte, vide : ouverte à toute tâche) ;
+     * la première plage garde les clés `schedule.dN.start|end|ctx`, les suivantes `schedule.dN.wK.start|end|ctx`.
+     */
     private fun scheduleFields(day: Int): List<SettingField> = listOf(
         SettingField(
             "schedule.d$day.mode", FieldKind.TEXT,
@@ -130,7 +175,7 @@ object SettingsForm {
                 when (v.trim()) {
                     SCHEDULE_FREE -> withDay(s, day) { DaySchedule(free = true) }
                     SCHEDULE_CUSTOM -> withDay(s, day) { own ->
-                        if (own != null && !own.free && own.startHour != null && own.endHour != null) own
+                        if (own != null && !own.free && (own.windows.isNotEmpty() || (own.startHour != null && own.endHour != null))) own
                         else DaySchedule(startHour = s.workdayStartHour, endHour = s.workdayEndHour)
                     }
                     else -> withDay(s, day) { null }
@@ -138,16 +183,53 @@ object SettingsForm {
             },
         ),
         SettingField(
-            "schedule.d$day.start", FieldKind.INT, 0.0, 23.0,
-            read = { s -> (custom(s, day)?.startHour ?: s.workdayStartHour).toString() },
-            write = { s, v -> if (custom(s, day) != null) withDay(s, day) { it?.copy(startHour = v.trim().toInt()) } else s },
+            "schedule.d$day.count", FieldKind.INT, 1.0, MAX_WINDOWS.toDouble(),
+            read = { s -> maxOf(1, windowsOf(s, day).size).toString() },
+            write = { s, v ->
+                val windows = windowsOf(s, day)
+                val count = v.trim().toInt()
+                if (windows.isEmpty() || count == windows.size) s
+                else storeWindows(s, day, if (count < windows.size) windows.take(count) else (windows.size until count).fold(windows) { list, _ -> list + nextWindow(list.lastOrNull(), s) })
+            },
         ),
-        SettingField(
-            "schedule.d$day.end", FieldKind.INT, 0.0, 23.0,
-            read = { s -> (custom(s, day)?.endHour ?: s.workdayEndHour).toString() },
-            write = { s, v -> if (custom(s, day) != null) withDay(s, day) { it?.copy(endHour = v.trim().toInt()) } else s },
-        ),
-    )
+    ) + (0 until MAX_WINDOWS).flatMap { index ->
+        listOf(
+            windowField(day, index, "start", FieldKind.INT, 0.0, 23.0, { w, s -> (w?.startHour ?: if (index == 0) s.workdayStartHour else nextWindow(windowsOf(s, day).lastOrNull(), s).startHour).toString() }) { w, v -> w.copy(startHour = v.toInt()) },
+            windowField(day, index, "end", FieldKind.INT, 0.0, 23.0, { w, s -> (w?.endHour ?: if (index == 0) s.workdayEndHour else nextWindow(windowsOf(s, day).lastOrNull(), s).endHour).toString() }) { w, v -> w.copy(endHour = v.toInt()) },
+            windowField(day, index, "ctx", FieldKind.TEXT, null, null, { w, _ -> w?.context.orEmpty() }) { w, v -> w.copy(context = v.ifEmpty { null }) },
+        )
+    }
+
+    /** Les contextes de [settings], complétés de contextes vides jusqu'à [count] : les emplacements du formulaire sont positionnels. */
+    private fun paddedContexts(settings: Settings, count: Int): List<WorkContext> {
+        val list = settings.schedule?.contexts.orEmpty()
+        return list + List(maxOf(0, count - list.size)) { WorkContext("") }
+    }
+
+    /**
+     * Un contexte du formulaire (emplacement [slot], de 1 à [MAX_CONTEXTS]) : `schedule.cK.name` et `schedule.cK.types` (types de
+     * tâche séparés par des virgules). Pendant l'écriture des champs les emplacements vides sont gardés (le formulaire est
+     * positionnel) ; [validate] les retire à la fin, et rien n'est écrit tant qu'aucun contexte n'est rempli.
+     */
+    private fun contextFields(slot: Int): List<SettingField> {
+        fun field(name: String, read: (WorkContext?) -> String, change: (WorkContext, String) -> WorkContext) = SettingField(
+            "schedule.c$slot.$name", FieldKind.TEXT,
+            read = { s -> read(s.schedule?.contexts?.getOrNull(slot - 1)) },
+            write = { s, v ->
+                val value = v.trim()
+                if (s.schedule == null && value.isEmpty()) s
+                else withSchedule(s) { sch ->
+                    val list = paddedContexts(s, slot).toMutableList()
+                    list[slot - 1] = change(list[slot - 1], value)
+                    sch.copy(contexts = list)
+                }
+            },
+        )
+        return listOf(
+            field("name", { it?.name.orEmpty() }) { c, v -> c.copy(name = v) },
+            field("types", { it?.types.orEmpty().joinToString(",") }) { c, v -> c.copy(types = normalizeList(v).split(',').filter { it.isNotEmpty() }) },
+        )
+    }
 
     /**
      * Réglage des durées apprises : lu sur [LearningSettings] (défauts si `learning` est nul), écrit par [change]. Même règle
@@ -173,6 +255,10 @@ object SettingsForm {
     const val SCHEDULE_DEFAULT = "default"
     const val SCHEDULE_CUSTOM = "custom"
     const val SCHEDULE_FREE = "free"
+
+    /** Plages au plus par jour, et contextes au plus (docs/spec/planning-personnalise.md § Lot B2) : les champs du formulaire sont en nombre fixe. */
+    const val MAX_WINDOWS = 4
+    const val MAX_CONTEXTS = 4
 
     val FIELDS: List<SettingField> = listOf(
         int("defaultTaskDurationMinutes", 1, get = { it.defaultTaskDurationMinutes }) { s, v -> s.copy(defaultTaskDurationMinutes = v) },
@@ -221,7 +307,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    ) + (0..6).flatMap(::scheduleFields) + LEARNING_FIELDS
+    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + LEARNING_FIELDS
 
     private val byKey = FIELDS.associateBy { it.key }
 
@@ -252,16 +338,11 @@ object SettingsForm {
             if (error != null) errors[f.key] = error else result = f.write(result, raw)
         }
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
-        // Un jour « personnalisé » doit finir après avoir commencé : l'erreur est sur son champ « fin » (« Au moins … »).
-        for (day in 0..6) {
-            val own = custom(result, day) ?: continue
-            val start = own.startHour ?: continue
-            val end = own.endHour ?: continue
-            if (end <= start) errors["schedule.d$day.end"] = FieldError(FieldErrorKind.TOO_SMALL, (start + 1).toString())
-        }
+        errors += scheduleErrors(result)
         // On ne peut pas exiger plus d'occurrences que l'historique n'en retient : l'erreur est sur « minimum d'occurrences ».
         result.learning?.let { if (it.minSamples > it.history) errors["learning.minSamples"] = FieldError(FieldErrorKind.TOO_LARGE, it.history.toString()) }
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
+        result = dropEmptyContexts(result)
         val general = when {
             result.workdayStartHour >= result.workdayEndHour -> GeneralError.WORKDAY_ORDER
             // Creux désactivé : ses heures ne servent à rien, leur ordre ne bloque pas l'enregistrement.
@@ -270,6 +351,54 @@ object SettingsForm {
             else -> null
         }
         return SettingsValidation(if (general == null) result else null, emptyMap(), general)
+    }
+
+    /**
+     * Règles du planning (docs/spec/planning-personnalise.md § Lots B1 et B2), vérifiées une fois les champs lus : chaque plage
+     * d'un jour « personnalisé » finit après avoir commencé (« Au moins … » sur sa fin) et commence après la fin de la précédente
+     * (« Au moins … » sur son début) ; une plage ne cite qu'un contexte qui existe ; un contexte a un nom, unique, et un type
+     * n'est que dans un contexte (`DUPLICATE`, sur le champ du second).
+     */
+    private fun scheduleErrors(result: Settings): Map<String, FieldError> {
+        val errors = LinkedHashMap<String, FieldError>()
+        val contexts = result.schedule?.contexts.orEmpty()
+        val names = mutableSetOf<String>()
+        val typeOwner = mutableMapOf<String, Int>()
+        contexts.forEachIndexed { index, c ->
+            val slot = index + 1
+            if (c.name.isBlank()) {
+                if (c.types.isNotEmpty()) errors["schedule.c$slot.name"] = FieldError(FieldErrorKind.REQUIRED)
+                return@forEachIndexed
+            }
+            if (!names.add(c.name.lowercase())) errors["schedule.c$slot.name"] = FieldError(FieldErrorKind.DUPLICATE, c.name)
+            c.types.firstOrNull { t ->
+                val owner = typeOwner[t.lowercase()]
+                if (owner == null) typeOwner[t.lowercase()] = slot
+                owner != null && owner != slot
+            }
+                ?.let { errors["schedule.c$slot.types"] = FieldError(FieldErrorKind.DUPLICATE, it) }
+        }
+        for (day in 0..6) {
+            val windows = windowsOf(result, day)
+            windows.forEachIndexed { index, w ->
+                val prefix = windowKey(day, index)
+                if (w.endHour <= w.startHour) {
+                    errors[prefix + "end"] = FieldError(FieldErrorKind.TOO_SMALL, (w.startHour + 1).toString())
+                } else if (index > 0 && w.startHour < windows[index - 1].endHour) {
+                    errors[prefix + "start"] = FieldError(FieldErrorKind.TOO_SMALL, windows[index - 1].endHour.toString())
+                }
+                val context = w.context
+                if (context != null && names.none { it == context.lowercase() }) errors[prefix + "ctx"] = FieldError(FieldErrorKind.UNKNOWN_CONTEXT, context)
+            }
+        }
+        return errors
+    }
+
+    /** Retire les emplacements de contexte laissés vides ; le sous-objet redevient nul s'il ne porte plus rien. */
+    private fun dropEmptyContexts(settings: Settings): Settings {
+        val schedule = settings.schedule ?: return settings
+        val kept = schedule.contexts.filter { it.name.isNotBlank() }
+        return settings.copy(schedule = schedule.copy(contexts = kept).takeIf { it.weekdays.isNotEmpty() || it.contexts.isNotEmpty() })
     }
 
     private fun check(f: SettingField, raw: String): FieldError? {

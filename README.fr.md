@@ -147,6 +147,12 @@ posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
   journée de travail habituelle, avoir ses propres heures, ou être un jour libre
   où rien n’est planifié automatiquement (les tâches épinglées gardent leur
   heure). Rien ne change tant que tu n’en règles pas un.
+- **Plusieurs plages et contextes** (Réglages) : un jour peut avoir plusieurs
+  plages de travail (matin, soir…), et une plage peut être réservée à un
+  contexte (« Travail », « Maison ») qui regroupe des types de tâche. Une tâche
+  ne va que dans une plage de son contexte ; une tâche sans contexte va
+  partout, et un contexte sans plage ce jour-là le dit sur ses tâches. Rien ne
+  change tant que tu n’en règles pas.
 - **Durées apprises** : une tâche sans estimation reprend la médiane du temps
   réellement passé sur ses dernières occurrences chronométrées (une tâche
   récurrente, ou des tâches de même titre) dès qu’il y en a assez. Elle
