@@ -1,7 +1,10 @@
 package com.skohscripts.kairos.core.settings
 
+import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.TeamSettings
+import com.skohscripts.kairos.core.model.WorkContext
+import com.skohscripts.kairos.core.model.WorkWindow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -310,5 +313,92 @@ class SettingsFormTest {
         assertEquals(s, SettingsForm.validate(SettingsForm.values(s), s).settings)
         assertEquals("10000", SettingsForm.values(s)["team.simulationRuns"])
         assertEquals("80", SettingsForm.values(s)["team.deadlineRiskPercent"])
+    }
+
+    // --- Plages multiples et contextes (docs/spec/planning-personnalise.md § Lot B2) ---------------------------------------
+
+    private val twoWindows = arrayOf(
+        "schedule.d5.mode" to "custom", "schedule.d5.count" to "2",
+        "schedule.d5.start" to "9", "schedule.d5.end" to "12",
+        "schedule.d5.w2.start" to "14", "schedule.d5.w2.end" to "17",
+    )
+
+    @Test
+    fun severalWindowsAreWrittenAsAListAndASingleOneKeepsTheOldShape() {
+        val two = validate(*twoWindows).settings!!.schedule!!.weekdays.getValue(5)
+        assertEquals(listOf(WorkWindow(9, 12), WorkWindow(14, 17)), two.windows)
+        assertNull(two.startHour)
+        // Une seule plage sans contexte garde la forme de la 3.4 : l'export d'une installation qui n'y touche pas est identique.
+        val one = validate("schedule.d5.mode" to "custom", "schedule.d5.start" to "10", "schedule.d5.end" to "14").settings!!.schedule!!.weekdays.getValue(5)
+        assertEquals(DaySchedule(startHour = 10, endHour = 14), one)
+    }
+
+    @Test
+    fun theValuesOfAMultiWindowDayAreReadBackAndASavedFormRoundTrips() {
+        val saved = validate(*twoWindows, "schedule.d5.ctx" to "").settings!!
+        val values = SettingsForm.values(saved)
+        assertEquals("2", values["schedule.d5.count"])
+        assertEquals("14", values["schedule.d5.w2.start"])
+        assertEquals("17", values["schedule.d5.w2.end"])
+        assertEquals(saved, SettingsForm.validate(values, saved).settings)
+    }
+
+    @Test
+    fun addingAWindowProposesTheNextHourAndRemovingKeepsTheFirstOnes() {
+        val one = validate("schedule.d5.mode" to "custom", "schedule.d5.start" to "9", "schedule.d5.end" to "12").settings!!
+        val grown = SettingsForm.validate(SettingsForm.values(one) + ("schedule.d5.count" to "2"), one).settings!!
+        assertEquals(listOf(WorkWindow(9, 12), WorkWindow(12, 13)), grown.schedule!!.weekdays.getValue(5).windows)
+        val shrunk = SettingsForm.validate(SettingsForm.values(grown) + ("schedule.d5.count" to "1"), grown).settings!!
+        assertEquals(DaySchedule(startHour = 9, endHour = 12), shrunk.schedule!!.weekdays.getValue(5))
+    }
+
+    @Test
+    fun aWindowThatStartsBeforeThePreviousEndsIsRefusedOnItsStart() {
+        val result = validate(*twoWindows, "schedule.d5.w2.start" to "11")
+        assertNull(result.settings)
+        assertEquals(FieldError(FieldErrorKind.TOO_SMALL, "12"), result.fieldErrors["schedule.d5.w2.start"])
+        val reversed = validate(*twoWindows, "schedule.d5.w2.end" to "14")
+        assertEquals(FieldError(FieldErrorKind.TOO_SMALL, "15"), reversed.fieldErrors["schedule.d5.w2.end"])
+    }
+
+    @Test
+    fun contextsAreCompactedAndTheirNamesAndTypesAreChecked() {
+        val ok = validate("schedule.c1.name" to "Work", "schedule.c1.types" to "dev, Réunion,dev", "schedule.c3.name" to "Home", "schedule.c3.types" to "maison").settings!!
+        // Les emplacements vides disparaissent, les types sont nettoyés (espaces, doublons).
+        assertEquals(listOf(WorkContext("Work", listOf("dev", "Réunion")), WorkContext("Home", listOf("maison"))), ok.schedule!!.contexts)
+        assertEquals("Home", SettingsForm.values(ok)["schedule.c2.name"])
+        assertEquals("", SettingsForm.values(ok)["schedule.c3.name"])
+        // Un nom manquant, un nom en double, un type dans deux contextes.
+        assertEquals(FieldErrorKind.REQUIRED, validate("schedule.c1.types" to "dev").fieldErrors["schedule.c1.name"]!!.kind)
+        assertEquals(FieldErrorKind.DUPLICATE, validate("schedule.c1.name" to "Work", "schedule.c2.name" to "work").fieldErrors["schedule.c2.name"]!!.kind)
+        val twice = validate("schedule.c1.name" to "A", "schedule.c1.types" to "dev", "schedule.c2.name" to "B", "schedule.c2.types" to "Dev,x")
+        assertEquals(FieldError(FieldErrorKind.DUPLICATE, "Dev"), twice.fieldErrors["schedule.c2.types"])
+    }
+
+    @Test
+    fun aWindowCanOnlyNameAContextThatExists() {
+        val unknown = validate("schedule.d5.mode" to "custom", "schedule.d5.ctx" to "Home")
+        assertEquals(FieldError(FieldErrorKind.UNKNOWN_CONTEXT, "Home"), unknown.fieldErrors["schedule.d5.ctx"])
+        val ok = validate("schedule.c1.name" to "Home", "schedule.d5.mode" to "custom", "schedule.d5.ctx" to "Home").settings!!
+        assertEquals(listOf(WorkWindow(9, 18, "Home")), ok.schedule!!.weekdays.getValue(5).windows)
+        // Renommer le contexte sans toucher la plage la rend inconnue : jamais perdue en silence.
+        val renamed = SettingsForm.validate(SettingsForm.values(ok) + ("schedule.c1.name" to "Maison"), ok)
+        assertEquals(FieldErrorKind.UNKNOWN_CONTEXT, renamed.fieldErrors["schedule.d5.ctx"]!!.kind)
+    }
+
+    @Test
+    fun blankContextSlotsNeverCreateTheScheduleObject() {
+        val result = validate("schedule.c1.name" to "", "schedule.c1.types" to "", "schedule.c2.name" to "  ")
+        assertNull(result.settings!!.schedule)
+        // Un horaire qui existe déjà ne garde pas d'emplacement vide.
+        val withDay = validate("schedule.d5.mode" to "free", "schedule.c2.name" to "").settings!!
+        assertEquals(emptyList(), withDay.schedule!!.contexts)
+    }
+
+    @Test
+    fun restoringTheDefaultsClearsTheWindowsAndTheContexts() {
+        val custom = validate(*twoWindows, "schedule.c1.name" to "Work").settings!!
+        val restored = SettingsForm.restoreDefaults(SettingsForm.values(custom))
+        assertNull(SettingsForm.validate(restored, custom).settings!!.schedule)
     }
 }

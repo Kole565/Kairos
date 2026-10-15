@@ -115,6 +115,12 @@ gardent leur heure ; `disponible` = 0). `Schedule.displayWindow` (la plage, ou l
 frise (`buildTimeline`) et au rail du réel (`TimeTracking.sessionTimeline`). Le creux de l'après-midi reste en heures absolues ;
 la capacité d'équipe lit toujours `workdayStartHour` et `workdayEndHour`.
 
+**Plusieurs plages et contextes** (3.5, lot B2) : `Schedule.windowsFor` donne les plages du jour, dans l'ordre ; `buildDaySchedule` les parcourt avec un curseur commun
+(réunions, épinglées et deep work restent des obstacles communs). Le contexte d'une tâche (`Schedule.contextOf`, d'après son type) ne filtre que le **choix au
+créneau** : une plage réservée à un contexte n'accueille que ses tâches et celles sans contexte, une plage sans contexte accueille tout. Une tâche qui ne tient
+dans aucune plage qui l'accueille est « Sans créneau » ; si son contexte n'a aucune plage ce jour-là, `ScheduledDay.noWindow` le dit. Jamais `sortKey` ni le
+score affiché. Détail : `planning-personnalise.md` § Lot B2.
+
 **Durée de placement** (3.4, `durees-apprises.md`) : `durationMinutes(tâche, réglages, learned)` = les minutes de la tâche (≠ 0), sinon
 `learned[id]` (la durée apprise **fiable** que `DayView` calcule par `DurationEstimator`), sinon `defaultTaskDurationMinutes`.
 `buildDaySchedule` reçoit `learned` (vide par défaut : comportement d'avant, octet pour octet) et le passe à chaque calcul de

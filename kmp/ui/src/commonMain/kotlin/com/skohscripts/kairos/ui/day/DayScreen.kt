@@ -98,6 +98,7 @@ import com.skohscripts.kairos.ui.generated.resources.blocked_title
 import com.skohscripts.kairos.ui.generated.resources.blocker_team
 import com.skohscripts.kairos.ui.generated.resources.blocker_unassigned
 import com.skohscripts.kairos.ui.generated.resources.day_back_today
+import com.skohscripts.kairos.ui.generated.resources.day_no_window
 import com.skohscripts.kairos.ui.generated.resources.done_hint
 import com.skohscripts.kairos.ui.generated.resources.done_title
 import com.skohscripts.kairos.ui.generated.resources.inbox_empty
@@ -390,7 +391,11 @@ fun DayScreen(
 
                 // --- Sections secondaires : repliées, sauf « Sans créneau » (des tâches du jour).
                 section("unscheduled", Res.string.unscheduled_title, Res.string.unscheduled_hint, view.unscheduled.size) {
-                    rows("unscheduled", view.unscheduled) { TaskRow(it, ctx) }
+                    rows("unscheduled", view.unscheduled) { task ->
+                        // Son contexte n'a aucune plage ce jour-là (docs/spec/planning-personnalise.md § Lot B2) : la raison, en étiquette.
+                        val noWindow = view.noWindow[task.id]
+                        TaskRow(task, ctx, before = { if (noWindow != null) WarnBadge(stringResource(Res.string.day_no_window, noWindow), KairosIcons.Schedule) })
+                    }
                 }
                 section("blocked", Res.string.blocked_title, Res.string.blocked_hint, view.blocked.size) {
                     rows("blocked", view.blocked.map { it.task }) { task ->

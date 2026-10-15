@@ -62,6 +62,8 @@ import com.skohscripts.kairos.ui.generated.resources.settings_error_max
 import com.skohscripts.kairos.ui.generated.resources.settings_error_min
 import com.skohscripts.kairos.ui.generated.resources.settings_error_min_exclusive
 import com.skohscripts.kairos.ui.generated.resources.settings_error_number
+import com.skohscripts.kairos.ui.generated.resources.settings_error_context
+import com.skohscripts.kairos.ui.generated.resources.settings_error_duplicate
 import com.skohscripts.kairos.ui.generated.resources.settings_error_required
 import com.skohscripts.kairos.ui.generated.resources.settings_idle
 import com.skohscripts.kairos.ui.generated.resources.settings_pomodoro
@@ -270,7 +272,10 @@ internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, 
     SECTIONS.filterNot { it.advanced }.forEachIndexed { index, section ->
         SectionCard(section, values, errors, onChange)
         // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
-        if (index == 0) ScheduleCard(values, errors, onChange)
+        if (index == 0) {
+            ScheduleCard(values, errors, onChange)
+            ContextsCard(values, errors, onChange)
+        }
     }
     AdvancedGroup(values, errors, onChange)
 }
@@ -389,6 +394,6 @@ internal fun errorMessage(error: FieldError, minExclusive: Boolean): String = wh
     FieldErrorKind.TOO_LARGE -> stringResource(Res.string.settings_error_max, error.bound.orEmpty())
     FieldErrorKind.INVALID_DATE -> stringResource(Res.string.settings_error_date, error.bound.orEmpty())
     FieldErrorKind.INVALID_COLOR -> stringResource(Res.string.settings_error_color, error.bound.orEmpty())
-    // Sans objet pour les Réglages (noms de membres).
-    FieldErrorKind.DUPLICATE -> stringResource(Res.string.settings_error_required)
+    FieldErrorKind.DUPLICATE -> stringResource(Res.string.settings_error_duplicate, error.bound.orEmpty())
+    FieldErrorKind.UNKNOWN_CONTEXT -> stringResource(Res.string.settings_error_context, error.bound.orEmpty())
 }

@@ -1279,4 +1279,20 @@
     <string name="card_discover_title">Découvrir Kairos</string>
     <string name="card_discover_body">Des chapitres sur chaque fonctionnalité, rouverts quand tu veux depuis les Réglages, l’aide ou l’Accueil, et une section « Nouveau dans cette version ».</string>
     <string name="edit_title_first">Première tâche</string>
+    <string name="schedule_window">Plage %1$d</string>
+    <string name="schedule_add_window">Ajouter une plage</string>
+    <string name="schedule_remove_window">Retirer la plage %1$d</string>
+    <string name="schedule_context_label">Réservée à</string>
+    <string name="schedule_context_any">Toute tâche</string>
+    <string name="contexts_title">Contextes</string>
+    <string name="contexts_body">Un contexte regroupe des types de tâche (Travail, Maison…). Une plage réservée à un contexte n’accueille que ses tâches ; une tâche sans contexte va dans n’importe quelle plage. Les jours « Comme d’habitude » restent ouverts à tout.</string>
+    <string name="contexts_name">Nom du contexte</string>
+    <string name="contexts_types">Types de tâche</string>
+    <string name="contexts_unknown_type">%1$s (type inconnu)</string>
+    <string name="contexts_no_types">Ajoute des types dans « Types de tâche » pour les mettre dans un contexte.</string>
+    <string name="settings_error_duplicate">Déjà utilisé : %1$s.</string>
+    <string name="settings_error_context">Aucun contexte nommé « %1$s ».</string>
+    <string name="day_no_window">Pas de plage %1$s aujourd’hui</string>
+    <string name="card_contexts_title">Plusieurs plages et contextes</string>
+    <string name="card_contexts_body">Dans les Réglages, donne plusieurs plages de travail à un jour (matin, soir…) et réserve une plage à un contexte comme Travail ou Maison, qui regroupe des types de tâche. Une tâche ne va que dans une plage de son contexte.</string>
 </resources>

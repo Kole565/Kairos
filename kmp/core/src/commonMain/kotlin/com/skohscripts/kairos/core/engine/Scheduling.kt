@@ -228,6 +228,11 @@ object Scheduling {
         val later: List<Task> = emptyList(),
         val toProcess: List<Task> = emptyList(),
         val stats: DayStats = DayStats(),
+        /**
+         * Tâches « Sans créneau » dont le **contexte** n'a aucune plage ce jour-là (docs/spec/planning-personnalise.md § Lot B2) :
+         * identifiant → nom du contexte, pour dire pourquoi (« pas de plage Maison aujourd'hui »). Vide sans contexte.
+         */
+        val noWindow: Map<Long, String> = emptyMap(),
     )
 
     private class Obstacle(
@@ -274,12 +279,15 @@ object Scheduling {
         }
         val auto = schedulable.filter { it.id !in pinnedIds }.sortedWith(compareBy { key(it) })
 
-        // Jour libre (docs/spec/planning-personnalise.md § Lot B1) : fenêtre vide, aucune tâche n'est placée (« Sans créneau » ;
-        // les épinglées gardent leur heure). Sans horaire propre : la fenêtre des réglages, comme avant.
-        val window = Schedule.windowFor(day, settings)
-        val workdayStart = window?.start ?: day.atTime(0, 0)
-        val workdayEnd = window?.end ?: day.atTime(0, 0)
+        // Plages du jour (docs/spec/planning-personnalise.md § Lots B1 et B2). Jour libre : une plage vide, aucune tâche n'est
+        // placée (« Sans créneau » ; les épinglées gardent leur heure). Sans horaire propre : la fenêtre des réglages, comme avant.
+        val resolved = Schedule.windowsFor(day, settings)
+        val windows = resolved.ifEmpty { listOf(Schedule.Window(day.atTime(0, 0), day.atTime(0, 0))) }
+        val workdayStart = windows.first().start
+        val workdayEnd = windows.last().end
         val effectiveStart = if (now != null && now.date == day && now > workdayStart) now else workdayStart
+        // Le contexte d'une tâche (son type) ne sert qu'à choisir la plage : jamais au tri ni au score affiché.
+        val contextOf = auto.associate { it.id to Schedule.contextOf(it.taskType, settings) }
 
         val buffer = settings.meetingBufferMinutes
         val inWindow = busyBlocks.filter { it.start < workdayEnd && it.end > workdayStart }
@@ -322,53 +330,77 @@ object Scheduling {
             obstacles += Obstacle(block.start, block.end, block.title, 0, ObstacleKind.DEEPWORK)
         }
 
-        // 2. Placement au curseur, la meilleure tâche pour chaque créneau.
+        // 2. Placement au curseur, la meilleure tâche pour chaque créneau, plage après plage. Le filtre de contexte ne joue que
+        // sur le choix : une tâche dont le contexte n'a pas cette plage attend la suivante.
         val remaining = auto.filter { it.id !in assigned }.toMutableList()
         obstacles.sortBy { it.start }
         var cursor = effectiveStart
-        while (remaining.isNotEmpty()) {
-            val slotStart = advancePastObstacles(cursor, obstacles)
-            val chosenIndex = remaining.indices.minWith(compareBy { selectionKey(remaining[it], day, slotStart, settings, urgencyKeys) })
-            val task = remaining[chosenIndex]
-            val dipActive = dipIntensity(slotStart.time, settings) > 0
-            val urgencyPick = if (dipActive) remaining.minWith(compareBy { urgencyKeys[it.id] ?: sortKey(it, day, settings) }) else task
-            remaining.removeAt(chosenIndex)
-
-            val duration = durationMinutes(task, settings, learned)
-            var start = cursor
-            var pushedAfter: Obstacle? = null
+        for ((index, window) in windows.withIndex()) {
+            cursor = maxOf(cursor, window.start)
+            val nextWindows = windows.drop(index + 1)
+            val skipped = mutableSetOf<Long>()
             while (true) {
-                val end = start.plusMinutes(duration)
-                val blocking = obstacles.firstOrNull { it.start < end && it.end > start } ?: break
-                pushedAfter = blocking
-                start = blocking.end.plusMinutes(blocking.bufferMinutes)
+                val candidates = remaining.filter { it.id !in skipped && Schedule.accepts(window, contextOf[it.id]) }
+                if (candidates.isEmpty()) break
+                val slotStart = advancePastObstacles(cursor, obstacles)
+                val task = candidates.minWith(compareBy { selectionKey(it, day, slotStart, settings, urgencyKeys) })
+                val dipActive = dipIntensity(slotStart.time, settings) > 0
+                val urgencyPick = if (dipActive) candidates.minWith(compareBy { urgencyKeys[it.id] ?: sortKey(it, day, settings) }) else task
+
+                val duration = durationMinutes(task, settings, learned)
+                var start = cursor
+                var pushedAfter: Obstacle? = null
+                while (true) {
+                    val end = start.plusMinutes(duration)
+                    val blocking = obstacles.firstOrNull { it.start < end && it.end > start } ?: break
+                    pushedAfter = blocking
+                    start = blocking.end.plusMinutes(blocking.bufferMinutes)
+                }
+                if (start >= window.end) {
+                    // Pas de place dans cette plage : une plage suivante qui l'accueille la prend ; sinon « Sans créneau ».
+                    if (nextWindows.any { Schedule.accepts(it, contextOf[task.id]) }) {
+                        skipped += task.id
+                    } else {
+                        remaining.remove(task)
+                        unscheduled += task
+                    }
+                    continue // une tâche plus courte peut encore tenir
+                }
+                remaining.remove(task)
+                scheduled += ScheduledTask(
+                    task = task,
+                    start = start,
+                    durationMinutes = duration,
+                    pushedAfter = pushedAfter?.title,
+                    pushedAfterKind = pushedAfter?.kind,
+                    dipApplied = dipActive && task.id != urgencyPick.id,
+                )
+                cursor = start.plusMinutes(duration)
             }
-            if (start >= workdayEnd) {
-                unscheduled += task
-                continue // une tâche plus courte peut encore tenir
-            }
-            scheduled += ScheduledTask(
-                task = task,
-                start = start,
-                durationMinutes = duration,
-                pushedAfter = pushedAfter?.title,
-                pushedAfterKind = pushedAfter?.kind,
-                dipApplied = dipActive && task.id != urgencyPick.id,
-            )
-            cursor = start.plusMinutes(duration)
         }
+        // Aucune plage du jour n'accueille le contexte de ces tâches : « Sans créneau », avec la raison.
+        val noWindow = mutableMapOf<Long, String>()
+        if (resolved.isNotEmpty()) {
+            for (task in remaining) contextOf[task.id]?.let { noWindow[task.id] = it }
+        }
+        unscheduled += remaining
         scheduled.sortBy { it.start }
 
         // 3. Charge : requis (unités de travail du jour) vs disponible (fenêtre restante − occupé).
         val required = schedulable.sumOf { durationMinutes(it, settings, learned) }
-        val windowMinutes = maxOf(0L, minutesBetween(effectiveStart, workdayEnd)).toInt()
-        val busyMinutes = busyMinutesInWindow(dayBlocks, effectiveStart, workdayEnd)
+        // Disponible : la somme des plages (de maintenant à leur fin aujourd'hui), moins l'occupé qu'elles contiennent.
+        val available = windows.sumOf { w ->
+            val from = maxOf(effectiveStart, w.start)
+            val windowMinutes = maxOf(0L, minutesBetween(from, w.end)).toInt()
+            maxOf(0, windowMinutes - busyMinutesInWindow(dayBlocks, from, w.end))
+        }
         return ScheduledDay(
             scheduled = scheduled,
             unscheduled = unscheduled,
             later = later,
             toProcess = toProcess,
-            stats = DayStats(required, maxOf(0, windowMinutes - busyMinutes)),
+            stats = DayStats(required, available),
+            noWindow = noWindow,
         )
     }
 

@@ -462,6 +462,6 @@ private fun memberErrorMessage(key: String, error: FieldError): String = when {
         FieldErrorKind.TOO_SMALL -> stringResource(Res.string.settings_error_min, error.bound.orEmpty())
         FieldErrorKind.TOO_LARGE -> stringResource(Res.string.settings_error_max, error.bound.orEmpty())
         // Sans objet pour ce formulaire (dates, couleurs des Réglages).
-        FieldErrorKind.INVALID_DATE, FieldErrorKind.INVALID_COLOR, FieldErrorKind.DUPLICATE -> stringResource(Res.string.settings_error_required)
+        FieldErrorKind.INVALID_DATE, FieldErrorKind.INVALID_COLOR, FieldErrorKind.DUPLICATE, FieldErrorKind.UNKNOWN_CONTEXT -> stringResource(Res.string.settings_error_required)
     }
 }

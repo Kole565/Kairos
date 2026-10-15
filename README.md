@@ -139,6 +139,11 @@ qualify?" recalls the rule.
 - **Hours by day of the week** (Settings): each day can keep the usual working
   day, have its own hours, or be a day off where nothing is scheduled
   automatically (pinned tasks keep their time). Nothing changes until you set one.
+- **Several windows and contexts** (Settings): a day can have several working
+  windows (morning, evening…), and a window can be reserved for a context
+  (“Work”, “Home”) that groups task types. A task only goes in a window of its
+  context; a task with no context goes anywhere, and a context with no window
+  that day says so on its tasks. Nothing changes until you set one.
 - **Learned durations**: a task without an estimate takes the median real time
   of its last timed occurrences (a recurring task, or tasks with the same
   title) once there are enough of them. It shows as `~45 min` with its source

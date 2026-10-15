@@ -1277,4 +1277,20 @@
     <string name="card_discover_title">Discover Kairos</string>
     <string name="card_discover_body">Chapters on every feature, reopened whenever you like from Settings, from help or from the home page, and a “New in this version” section.</string>
     <string name="edit_title_first">First task</string>
+    <string name="schedule_window">Window %1$d</string>
+    <string name="schedule_add_window">Add a window</string>
+    <string name="schedule_remove_window">Remove window %1$d</string>
+    <string name="schedule_context_label">Reserved for</string>
+    <string name="schedule_context_any">Any task</string>
+    <string name="contexts_title">Contexts</string>
+    <string name="contexts_body">A context groups task types (Work, Home…). A window reserved for a context only takes its tasks; a task with no context goes in any window. Days left “As usual” stay open to everything.</string>
+    <string name="contexts_name">Context name</string>
+    <string name="contexts_types">Task types</string>
+    <string name="contexts_unknown_type">%1$s (unknown type)</string>
+    <string name="contexts_no_types">Add task types in “Task types” to put them in a context.</string>
+    <string name="settings_error_duplicate">Already used: %1$s.</string>
+    <string name="settings_error_context">No context named “%1$s”.</string>
+    <string name="day_no_window">No %1$s window today</string>
+    <string name="card_contexts_title">Several windows and contexts</string>
+    <string name="card_contexts_body">In Settings, give a day several working windows (morning, evening…) and reserve a window for a context such as Work or Home, which groups task types. A task only goes in a window of its context.</string>
 </resources>

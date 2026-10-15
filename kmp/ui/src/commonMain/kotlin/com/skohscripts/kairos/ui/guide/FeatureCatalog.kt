@@ -2,6 +2,8 @@ package com.skohscripts.kairos.ui.guide
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.skohscripts.kairos.ui.generated.resources.Res
+import com.skohscripts.kairos.ui.generated.resources.card_contexts_body
+import com.skohscripts.kairos.ui.generated.resources.card_contexts_title
 import com.skohscripts.kairos.ui.generated.resources.card_dependencies_body
 import com.skohscripts.kairos.ui.generated.resources.card_dependencies_title
 import com.skohscripts.kairos.ui.generated.resources.card_discover_body
@@ -103,6 +105,7 @@ object FeatureCatalog {
         // --- Planifier
         FeatureCard("points", GuideChapter.PLAN, { KairosIcons.Balance }, Res.string.card_points_title, Res.string.card_points_body, GuideTarget.Personal(Destination.DAY)),
         FeatureCard("score", GuideChapter.PLAN, { KairosIcons.Star }, Res.string.card_score_title, Res.string.card_score_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("contexts", GuideChapter.PLAN, { KairosIcons.Layers }, Res.string.card_contexts_title, Res.string.card_contexts_body, GuideTarget.Settings, since = "3.5.0"),
         FeatureCard("hours", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_hours_title, Res.string.card_hours_body, GuideTarget.Settings, since = "3.4.0"),
         // --- Suivre
         FeatureCard("time", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY), tour = true),
@@ -168,6 +171,7 @@ object FeatureCatalog {
         "Fibonacci points" to "points",
         "Afternoon dip (14h55)" to "score",
         "Hours by day of the week" to "hours",
+        "Several windows and contexts" to "contexts",
         "Learned durations" to "learned",
         "Working days and holidays" to "hours",
         "Busy slots" to "slots",

@@ -75,7 +75,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    le dit, et dit qu'aucun jour de la semaine ne les affiche.
 10. **En ce moment** (chrono en cours) puis **Agenda** (frise ; 3.4 : de l'heure de début à l'heure de fin **du jour** quand il a un
     horaire propre, `DayView.workStartHour`/`workEndHour` ; un **jour libre** garde la journée des réglages et une ligne « Jour libre :
-    rien n'est planifié automatiquement… », `DayView.freeDay`) : la journée
+    rien n'est planifié automatiquement… », `DayView.freeDay` ; 3.5, plusieurs plages : `DayView.windows`, les trous entre plages grisés et le nom du contexte de chaque plage
+    réservée en pastille ; une tâche « Sans créneau » dont le contexte n'a aucune plage ce jour-là porte l'étiquette « Pas de plage Maison aujourd'hui », `DayView.noWindow`) : la journée
     de travail heure par heure, créneaux, tâches placées et rail du temps
     chronométré ; à droite de la liste en largeur bureau, en bas sinon.
 

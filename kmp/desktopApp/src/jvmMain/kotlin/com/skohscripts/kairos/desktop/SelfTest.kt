@@ -94,6 +94,24 @@ object SelfTest {
             }
         }
         val chrono: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { timed } }
+        // Quatrième base : plages multiples et contextes (docs/spec/planning-personnalise.md § Lot B2), toute la semaine en plages de matin et d'après-midi.
+        val planned = runBlocking {
+            DesktopServices.open(dataDir, inMemory = true).also { s ->
+                val base = s.repository.snapshot.value.settings
+                val days = (0..4).associateWith { com.skohscripts.kairos.core.model.DaySchedule(windows = listOf(com.skohscripts.kairos.core.model.WorkWindow(9, 12, "Travail"), com.skohscripts.kairos.core.model.WorkWindow(14, 18, "Travail"))) } +
+                    (5 to com.skohscripts.kairos.core.model.DaySchedule(windows = listOf(com.skohscripts.kairos.core.model.WorkWindow(10, 12), com.skohscripts.kairos.core.model.WorkWindow(18, 20, "Maison"))))
+                s.repository.updateSettings(
+                    base.copy(
+                        schedule = com.skohscripts.kairos.core.model.ScheduleSettings(
+                            days,
+                            listOf(com.skohscripts.kairos.core.model.WorkContext("Travail", listOf("Development", "Meeting")), com.skohscripts.kairos.core.model.WorkContext("Maison", listOf("Learning"))),
+                        ),
+                    ),
+                )
+            }
+        }
+        val plannedSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(planned) {} } } }
+        val plannedDay: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { planned } }
         // Troisième base : gestion d'équipe activée, ouverte dans l'espace Équipe (docs/spec/equipe.md).
         val team = runBlocking {
             DesktopServices.open(dataDir, inMemory = true).also { s ->
@@ -235,6 +253,9 @@ object SelfTest {
             Shot("launch-narrow", 360, 800, launch),
             Shot("settings", 900, 1000, settings),
             Shot("settings-full", 900, 4800, settings),
+            Shot("settings-planning", 900, 6200, plannedSettings),
+            Shot("settings-planning-narrow", 360, 9000, plannedSettings),
+            Shot("day-windows", 1200, 1400, plannedDay),
             Shot("about", 900, 1000, about),
             // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).
             Shot("startup-splash", 900, 700) { KairosTheme { SplashFrame(progress = 0.5f) } },
