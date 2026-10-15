@@ -75,6 +75,9 @@ remplacer ; une version stable s'installe par-dessus la précédente.
   (`29005`) ; jalon M5 : `3.0.0-alpha.6` (`29006`) ; jalon M6 (fonctions
   complètes, publication prête) : `3.0.0-beta.1` (`29501`) ; jalon M7
   (bascule) : `3.0.0` (`30000`).
+  Versions suivantes : `3.1.0` (`30100`), `3.2.0` (`30200`), `3.3.0` (`30300`), puis `3.4.0` (`30400`, issue #64 :
+  horaires par jour de la semaine, durées apprises, catalogue de fonctionnalités et première tâche guidée, ergonomie et
+  réglages, retrait de l'import de l'ancienne version ; notes `30400.txt` en français et en anglais).
 - Formats acceptés (`AppVersion.parse`) : `X.Y.Z`, `X.Y.Z-alpha.N`,
   `X.Y.Z-beta.N` (préfixe `v` toléré ; `Y`, `Z` ≤ 99 ; `N` de 1 à 499).
 - `versionCode` (`AppVersion.versionCode`) : `X*10000 + Y*100 + Z` ; alpha :

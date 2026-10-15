@@ -5,6 +5,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -192,7 +193,8 @@ class M6GuideUiTest {
         val services = services(repo)
         setContent { KairosApp(Platform.DESKTOP) { services } }
         waitText("What is Kairos for?")
-        onNodeWithText("Discover Kairos").performScrollTo().performClick()
+        // Depuis la 3.4 l'Accueil montre aussi la carte « Découvrir Kairos » dans « Nouveau dans cette version » : le bouton est le dernier.
+        onAllNodesWithText("Discover Kairos").onLast().performScrollTo().performClick()
         waitText("6 cards")
         onNodeWithText("Close").performClick()
         waitGone("6 cards")
