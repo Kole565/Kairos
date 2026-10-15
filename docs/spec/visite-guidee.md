@@ -1,16 +1,18 @@
 # Visite guidée enrichie et catalogue des fonctionnalités
 
 _Rôle : faire connaître à l'utilisateur toutes les fonctionnalités de Kairos,
-au bon moment, depuis une source unique. Fichiers couverts (à venir) :
-`kmp/ui/.../ui/guide/GuideContent.kt`, `GuideDialog.kt`, `HelpDialog.kt`,
-`ui/screens/HomeScreen.kt`, `ui/app/Welcome.kt`, ressources `values/` et
-`values-fr/`. Tests : `GuideStepsTest`, `M6GuideUiTest`, `StringsParityTest`,
-tests nommés dans les critères._
+au bon moment, depuis une source unique. Fichiers couverts :
+`kmp/ui/.../ui/guide/FeatureCatalog.kt`, `GuideContent.kt`, `GuideDialog.kt`,
+`DiscoverDialog.kt`, `HelpDialog.kt`, `ui/screens/HomeScreen.kt`,
+`ui/settings/SettingsScreen.kt`, `ui/navigation/AppShell.kt`, ressources `values/`
+et `values-fr/`. Tests : `FeatureCatalogTest`, `GuideStepsTest`, `M6GuideUiTest`,
+`StringsParityTest`._
 
-État : **issue #64 (retour du propriétaire)**, **spécifiée le 2026-10-13, non
-implémentée**. Livraison visée : 3.4.0. **Rouvre explicitement** les décisions
-de `accueil.md` § La visite guidée (deux listes de 6 étapes écrites en dur,
-aucune persistance) ; le reste de `accueil.md` est inchangé.
+État : **issue #64 (retour du propriétaire)**, spécifiée le 2026-10-13,
+**implémentée en 3.4.0** (voir « Écarts avec la spécification initiale »).
+**Rouvre explicitement** les décisions de `accueil.md` § La visite guidée (deux
+listes de 6 étapes écrites en dur, aucune persistance) ; le reste de `accueil.md`
+est inchangé.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -67,14 +69,32 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 
 ### Catalogue piloté par les données
 
-`FeatureCard(id, chapter, title, body, target, since)` : un seul catalogue dans
-`ui/guide`, avec `since` = version de livraison (`"3.4.0"`). `GuideKind` actuel
-(visite initiale / équipe) devient une **sélection** du catalogue
-(`GuideSteps.of(kind)`), plus une liste écrite en dur. `GuideTarget` gagne une
-clé de section (par exemple `Day.Blocked`) pour atterrir au bon endroit.
-`HelpDialog` lit les cartes du chapitre de l'écran courant ;
-`HomeScreen` affiche les cartes dont `since` égale la version de
-`kairos.versionName`.
+`FeatureCatalog.cards` (`ui/guide/FeatureCatalog.kt`) : une liste de `FeatureCard(id, chapter, icon, title, body, target,
+since, tour)`, **dans l'ordre de la visite**.
+
+- **Chapitres** (`GuideChapter`) : `FIRST_STEPS` (capture, qualification, « faire dans l'ordre », « Découvrir Kairos »,
+  première tâche), `PLAN` (priorité, points et estimation ; score et placement ; horaires par jour), `FOLLOW` (chrono ;
+  durées apprises ; semaine ; statistiques), `ORGANIZE` (sous-tâches ; récurrence et déplacer ; bloqueurs ; créneaux et
+  deep work), `TEAM` (les six cartes d'équipe), `SETTINGS` (réglages clairs ; données). `FeatureCatalog.chapters(teamEnabled)`
+  n'offre `TEAM` que si l'espace Équipe est activé.
+- **Visites** : `GuideSteps.of(GuideKind.PERSONAL)` = les cartes `tour = true` (six, comme avant) ;
+  `GuideSteps.of(GuideKind.TEAM)` = le chapitre `TEAM` (six). Les textes des douze cartes d'avant gardent leurs
+  chaînes `guide_you_*` et `guide_team_*` ; les autres sont `card_<id>_title` / `card_<id>_body`.
+- **Cibles** (`GuideTarget`) : `Personal(destination)`, `Team(destination, exchanges)`, `Settings` et `FirstTask`
+  (lance l'accompagnement de `premiere-tache.md`, sans changer d'écran ; le bouton devient « Créer ma première tâche »).
+- **`since`** : version de livraison ; `FeatureCatalog.newIn(version)` rend les cartes de **mêmes numéros majeur et mineur**
+  (`3.4.1` ou `3.4.0-beta.2` gardent la section de la `3.4.0` ; une version illisible ou sans carte rend une liste vide).
+- **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section
+  « Features » de `README.md` à une carte ; `FeatureCatalogTest.readmeFeaturesAreCovered` lit le README et compare.
+- **`GuideDialog`** accepte n'importe quelle sélection (`GuideDialog(steps, key, …)`, `GuideDialog(kind, …)` en est la
+  forme courte) et garde la mesure du plus long titre et du plus long texte.
+- **Hub « Découvrir Kairos »** (`DiscoverDialog`) : « Créer ma première tâche » puis un chapitre par ligne avec son nombre
+  de cartes ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
+  l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos ») ; états `discover` et `chapter` de
+  `AppShell` (`rememberSaveable`, rien n'est mémorisé au-delà).
+- **« Nouveau dans cette version »** : `HomeScreen(version = KairosBuild.VERSION_NAME)` affiche, sous le bloc teinté, les
+  cartes de `newIn(version)` (toute la carte ouvre sa cible) avec un bouton « Masquer » valable pour la session
+  (`rememberSaveable`).
 
 ### Persistance
 
@@ -85,8 +105,7 @@ reste de la 3.4 (`planning-personnalise.md`).
 ### Règle de livraison
 
 Toute fonctionnalité visible par l'utilisateur (donc dans le README) ajoute ou
-met à jour une carte dans le même changement ; `FeatureCatalogTest` casse sinon.
-À ajouter à la skill `kairos-spec` (§ 4) à l'implémentation.
+met à jour une carte dans le même changement ; `FeatureCatalogTest` casse sinon (règle consignée dans la skill `kairos-spec`, § 4).
 
 ### Décisions et pièges tracés
 
@@ -100,9 +119,11 @@ met à jour une carte dans le même changement ; `FeatureCatalogTest` casse sino
   long texte pour que les boutons ne sautent pas ; le catalogue conserve ce
   comportement (`GuideDialog`).
 
-### Impacts sur les specs existantes (à reporter à l'implémentation)
+### Écarts avec la spécification initiale (décidés à l'implémentation)
 
-`accueil.md` (visite et aide lisent le catalogue, section « Nouveau »),
-`navigation-theme.md` (« À propos et guide »), `reglages.md` (entrée « Découvrir
-Kairos »), `accessibilite.md`, `i18n.md`, `.claude/skills/kairos-spec/SKILL.md`
-(règle de livraison).
+- **Pas de clé de section dans `GuideTarget`** (ex. `Day.Blocked`) : une carte ouvre l'écran, pas un endroit précis de
+  l'écran. Différé : il demande un défilement ciblé dans chaque écran, sans équivalent aujourd'hui.
+- **L'aide d'un écran garde ses textes `help_*`** (mode d'emploi de l'écran) ; elle renvoie au hub par une entrée. Le catalogue
+  décrit les fonctionnalités, pas le mode d'emploi de chaque écran : les deux ne se recouvrent pas, donc rien n'est écrit
+  deux fois.
+- **Chapitres de six cartes ou moins** : « Premiers pas » en compte cinq (dont « Découvrir Kairos » et la première tâche).

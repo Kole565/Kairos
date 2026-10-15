@@ -12,6 +12,8 @@ import com.skohscripts.kairos.ui.theme.ThemeColors
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.Role
@@ -290,6 +292,9 @@ class M5ScreensUiTest {
     fun disclosuresAreSpokenAsButtonsWithTheirState() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        // Liste paresseuse : sur une base vide l'invitation « Première tâche » pousse la carte de recherche hors de l'écran.
+        waitUntil(timeoutMillis = 15_000) { onAllNodes(hasScrollToIndexAction()).fetchSemanticsNodes().isNotEmpty() }
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Search / filter"))
         waitText("Search / filter")
         val header = hasText("Search / filter") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button)
         onNode(header and SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "collapsed")).assertExists().performClick()

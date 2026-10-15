@@ -38,8 +38,8 @@ dans `docs/spec-v3/`, est le seul.
 | [`export-import.md`](export-import.md) | Export et import JSON, sauvegardes, données de la version web (OPFS, fichier lié). | M1 |
 | [`planning-personnalise.md`](planning-personnalise.md) | Lots A et B1 **implémentés en 3.4.0** (dates, déplacer, blocage, réglages clairs, valeurs par défaut ; horaires par jour de la semaine ; détail dans `vue-jour`, `vue-semaine`, `recurrence`, `reglages`, `ordonnancement`) ; B2 (plages multiples et contextes) et lot C (meilleures heures détectées) **spécifiés, non implémentés**. | #64, 3.4-3.6 |
 | [`durees-apprises.md`](durees-apprises.md) | **Implémentée en 3.4.0** (durée apprise par série puis par titre, `seriesId` stable, provenance, réglage ; port d'estimation prêt pour un futur modèle d'apprentissage). | #64, 3.4 |
-| [`visite-guidee.md`](visite-guidee.md) | **Spécifiée, non implémentée.** Catalogue de fonctionnalités, visite enrichie, hub « Découvrir Kairos », « Nouveau dans cette version ». | #64, 3.4 |
-| [`premiere-tache.md`](premiere-tache.md) | **Spécifiée, non implémentée.** Accompagnement de la création de la première tâche (champs, priorité, points, estimation, placement, félicitations). | #64, 3.4 |
+| [`visite-guidee.md`](visite-guidee.md) | **Implémentée en 3.4.0.** Catalogue de fonctionnalités, visites en sélections, hub « Découvrir Kairos », « Nouveau dans cette version ». | #64, 3.4 |
+| [`premiere-tache.md`](premiere-tache.md) | **Implémentée en 3.4.0.** Accompagnement de la création de la première tâche (champs, priorité, points, estimation, placement, félicitations). | #64, 3.4 |
 | [`retrait-kairos2.md`](retrait-kairos2.md) | Retrait de l'ancienne version (Python) : import, écrans, textes, tests différentiels devenus tests sur fichiers d'or figés, test de garde. | #64, 3.4 |
 
 ## Chantier « Espace Équipe »

@@ -77,6 +77,9 @@ import com.skohscripts.kairos.ui.generated.resources.title_about
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.icons.KairosLogo
 import com.skohscripts.kairos.ui.guide.GuideDialog
+import com.skohscripts.kairos.ui.guide.DiscoverDialog
+import com.skohscripts.kairos.ui.guide.FeatureCatalog
+import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideKind
 import com.skohscripts.kairos.ui.guide.GuideTarget
 import com.skohscripts.kairos.ui.guide.HelpDialog
@@ -134,6 +137,9 @@ fun AppShell(
     var helpOpen by rememberSaveable { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
     var guide by rememberSaveable { mutableStateOf<GuideKind?>(null) }
+    // Hub « Découvrir Kairos » et chapitre en cours de lecture (docs/spec/visite-guidee.md) : états de la coquille, rien n'est mémorisé.
+    var discover by rememberSaveable { mutableStateOf(false) }
+    var chapter by rememberSaveable { mutableStateOf<GuideChapter?>(null) }
 
     val snackbar = remember { SnackbarHostState() }
     // Veille du chrono pour toute l'application : les alertes jouent quel que soit l'écran.
@@ -148,7 +154,15 @@ fun AppShell(
     }
     val linkFailure = stringResource(Res.string.link_unavailable)
     // Hors des branches de mise en page : un redimensionnement ne rouvre pas l'accueil.
-    CompositionLocalProvider(LocalMessages provides showMessage) { WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }) }
+    // L'accompagnement de la première tâche (docs/spec/premiere-tache.md) se passe sur la vue Jour de l'espace Perso : on y va, puis on le demande.
+    val startFirstTask: () -> Unit = {
+        if (space == Space.TEAM) onSpaceChange(Space.PERSONAL)
+        onNavigate(Destination.DAY)
+        nav.firstTaskRequest = true
+    }
+    CompositionLocalProvider(LocalMessages provides showMessage) {
+        WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }, onFirstTask = startFirstTask)
+    }
 
     val language = uiLanguage()
     val today = services.clock.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -178,6 +192,7 @@ fun AppShell(
                 onNavigateTeam(target.destination)
             }
             GuideTarget.Settings -> onOpenSettings()
+            GuideTarget.FirstTask -> startFirstTask()
         }
     }
     // L'Accueil de l'espace courant (destination de tête, la même page dans les deux espaces).
@@ -258,12 +273,12 @@ fun AppShell(
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo) {
-                    val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout) }
+                    val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout, onDiscover = { discover = true }) }
                     when {
-                        secondary == Secondary.SETTINGS -> SettingsScreen(services, onOpenAbout)
+                        secondary == Secondary.SETTINGS -> SettingsScreen(services, onDiscover = { discover = true }, onOpenAbout = onOpenAbout)
                         secondary == Secondary.ABOUT -> AboutScreen()
                         team -> TeamDestinationScreen(teamDestination, services, nav, onTour = { guide = GuideKind.TEAM }, home = home)
-                        else -> DestinationScreen(destination, services, nav, onOpenDay, onNavigate, home)
+                        else -> DestinationScreen(destination, services, nav, onOpenDay, onNavigate, home, onDiscover = { discover = true })
                     }
                 }
                 AlertBanners(alerts, Modifier.align(Alignment.BottomCenter))
@@ -278,7 +293,19 @@ fun AppShell(
             onOpenHome = { helpOpen = false; openHome() },
             onStartTour = { helpOpen = false; guide = if (team) GuideKind.TEAM else GuideKind.PERSONAL },
             onDismiss = { helpOpen = false },
+            onDiscover = { helpOpen = false; discover = true },
         )
+    }
+    if (discover) {
+        DiscoverDialog(
+            teamEnabled = teamModeEnabled,
+            onFirstTask = { discover = false; startFirstTask() },
+            onChapter = { discover = false; chapter = it },
+            onDismiss = { discover = false },
+        )
+    }
+    chapter?.let { picked ->
+        GuideDialog(FeatureCatalog.chapter(picked), "chapter-${picked.name}", onOpen = { target -> chapter = null; openTarget(target) }, onDismiss = { chapter = null })
     }
     guide?.let { kind ->
         GuideDialog(kind, onOpen = { target -> guide = null; openTarget(target) }, onDismiss = { guide = null })

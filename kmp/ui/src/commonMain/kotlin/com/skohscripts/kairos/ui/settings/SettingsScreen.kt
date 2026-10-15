@@ -111,6 +111,8 @@ import com.skohscripts.kairos.ui.generated.resources.import_confirm_body
 import com.skohscripts.kairos.ui.generated.resources.import_confirm_title
 import com.skohscripts.kairos.ui.generated.resources.import_done
 import com.skohscripts.kairos.ui.generated.resources.settings_about_entry
+import com.skohscripts.kairos.ui.generated.resources.settings_discover_entry
+import com.skohscripts.kairos.ui.generated.resources.settings_discover_entry_hint
 import com.skohscripts.kairos.ui.generated.resources.settings_about_entry_hint
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import kotlinx.coroutines.launch
@@ -124,7 +126,7 @@ import org.jetbrains.compose.resources.stringResource
  * Rien n'est enregistré tant qu'un champ est invalide.
  */
 @Composable
-fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
+fun SettingsScreen(services: AppServices, onDiscover: () -> Unit = {}, onOpenAbout: () -> Unit) {
     val snapshot by services.repository.snapshot.collectAsState()
     val current = snapshot.settings
     val language = uiLanguage()
@@ -212,6 +214,16 @@ fun SettingsScreen(services: AppServices, onOpenAbout: () -> Unit) {
                 }
                 services.shortcuts?.let { ShortcutCard(it) }
                 DataCard(services)
+                // « Découvrir Kairos » (docs/spec/visite-guidee.md) : le hub des chapitres, rouvert à tout moment.
+                SettingsClickableCard(onClick = onDiscover) {
+                    ListItem(
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        leadingContent = { Icon(KairosIcons.PlayArrow, contentDescription = null) },
+                        headlineContent = { Text(stringResource(Res.string.settings_discover_entry)) },
+                        supportingContent = { Text(stringResource(Res.string.settings_discover_entry_hint)) },
+                        trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
+                    )
+                }
                 SettingsClickableCard(onClick = onOpenAbout) {
                     ListItem(
                         // Le fond de la ligne est celui de la carte « filled », pas la surface par défaut du ListItem.

@@ -53,6 +53,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
+import com.skohscripts.kairos.core.ExampleData
+import com.skohscripts.kairos.ui.guide.CoachPanel
+import com.skohscripts.kairos.ui.guide.CoachSession
+import com.skohscripts.kairos.ui.guide.FirstTaskCoach
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -145,7 +149,16 @@ private val COMPACT_ROWS = 600.dp
  * changement de la base, de filtre, et chaque minute.
  */
 @Composable
-fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToToday: () -> Unit = {}) {
+fun DayScreen(
+    services: AppServices,
+    selectedDay: LocalDate? = null,
+    onBackToToday: () -> Unit = {},
+    /** L'accompagnement de la première tâche est demandé (accueil, hub « Découvrir Kairos ») ; [onFirstTaskHandled] l'acquitte. */
+    firstTaskRequest: Boolean = false,
+    onFirstTaskHandled: () -> Unit = {},
+    /** « Découvrir Kairos » depuis les félicitations : le hub appartient à la coquille. */
+    onDiscover: () -> Unit = {},
+) {
     val repository = services.repository
     val snapshot by repository.personalSnapshot.collectAsState()
     val timeZone = remember { TimeZone.currentSystemDefault() }
@@ -177,6 +190,23 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
     var editingId by rememberSaveable { mutableStateOf<Long?>(null) }
     var editingBlock by remember { mutableStateOf<TimeBlock?>(null) }
     var filterOpen by rememberSaveable { mutableStateOf(false) }
+    // Accompagnement de la première tâche (docs/spec/premiere-tache.md) : la fiche de création (l'étape du coach, -1 une fois
+    // le coach passé), puis la tâche réellement créée, ses félicitations et l'explication de sa place (-1 : aucune).
+    var creating by rememberSaveable { mutableStateOf(false) }
+    var coachStep by rememberSaveable { mutableIntStateOf(-1) }
+    var placedId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var congrats by rememberSaveable { mutableStateOf(false) }
+    var placedStep by rememberSaveable { mutableIntStateOf(-1) }
+    var inviteDismissed by rememberSaveable { mutableStateOf(false) }
+    val draft = remember { Task(id = 0, title = "", createdAt = now, updatedAt = now) }
+    LaunchedEffect(firstTaskRequest) {
+        if (firstTaskRequest) {
+            creating = true
+            coachStep = 0
+            onFirstTaskHandled()
+        }
+    }
+    val rowPositions = remember { mutableMapOf<Long, Int>() }
     val capture = remember { CaptureState() }
     val searchFocus = remember { FocusRequester() }
     val rootFocus = remember { FocusRequester() }
@@ -209,10 +239,17 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
         runCatching { searchFocus.requestFocus() }
     }
     // Les raccourcis écoutent l'écran : il reprend le focus à l'ouverture et à la fermeture d'un dialogue.
-    LaunchedEffect(editingId == null && editingBlock == null) {
+    LaunchedEffect(editingId == null && editingBlock == null && !creating) {
         // Après la première image : avant, l'écran n'est pas encore attaché et la demande se perd.
         withFrameNanos { }
-        if (editingId == null && editingBlock == null) runCatching { rootFocus.requestFocus() }
+        if (editingId == null && editingBlock == null && !creating) runCatching { rootFocus.requestFocus() }
+    }
+    // La tâche qu'on vient de créer : la liste défile jusqu'à sa ligne, mise en évidence pendant l'explication de sa place.
+    LaunchedEffect(placedId, placedStep) {
+        val id = placedId ?: return@LaunchedEffect
+        if (placedStep < 0) return@LaunchedEffect
+        awaitComposed()
+        rowPositions[id]?.let { listState.scrollToItem(it) }
     }
 
     BoxWithConstraints(
@@ -255,6 +292,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
             onToggleTimer = toggleTimer,
             clock = services.clock,
             learning = snapshot.settings.learning ?: LearningSettings(),
+            highlight = placedId?.takeIf { placedStep >= 0 },
         )
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxHeight()) {
             LazyColumn(
@@ -264,7 +302,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 contentPadding = PaddingValues(KairosSpacing.l),
                 modifier = Modifier.width(mainWidth).fillMaxHeight(),
             ) {
-                val list = ListBuilder(this, positions)
+                val list = ListBuilder(this, positions, rowPositions)
                 fun one(key: String, content: @Composable () -> Unit) = list.one(key, content)
                 fun block(key: String, content: @Composable () -> Unit) = list.one(key) { Box(Modifier.padding(top = KairosListBlockExtra)) { content() } }
                 fun rows(key: String, tasks: List<Task>, row: @Composable (Task) -> Unit) = list.rows(key, tasks, row)
@@ -278,6 +316,16 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                             Icon(KairosIcons.Today, contentDescription = null, modifier = Modifier.size(18.dp))
                             Text(stringResource(Res.string.day_back_today), modifier = Modifier.padding(start = 6.dp))
                         }
+                    }
+                }
+                // Aucune tâche à soi (les exemples ne comptent pas) : l'invitation à l'accompagnement, qui disparaît d'elle-même
+                // dès la première tâche (état dérivé des données, rien n'est mémorisé).
+                if (!inviteDismissed && snapshot.tasks.none { !ExampleData.isExample(it) }) {
+                    block("first-task") {
+                        FirstTaskInvite(
+                            onStart = { creating = true; coachStep = 0 },
+                            onDismiss = { inviteDismissed = true },
+                        )
                     }
                 }
                 block("capture") {
@@ -337,7 +385,7 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                         Hint(stringResource(if (view.agenda.isEmpty()) Res.string.agenda_empty else Res.string.agenda_hint))
                     }
                 }
-                list.count(view.agenda.size)
+                list.count(view.agenda.map { it.task.id })
                 items(view.agenda, key = { "agenda-${it.task.id}" }) { item -> AgendaRow(item, ctx, snapshot.settings.cognitiveDipTroughHour) }
 
                 // --- Sections secondaires : repliées, sauf « Sans créneau » (des tâches du jour).
@@ -384,8 +432,67 @@ fun DayScreen(services: AppServices, selectedDay: LocalDate? = null, onBackToTod
                 }
             }
         }
+        // Explication de la place de la tâche créée : trois étapes, non bloquantes, en bas de l'écran.
+        if (placedId != null && placedStep >= 0) {
+            val steps = FirstTaskCoach.placement(placed = view.agenda.any { it.task.id == placedId })
+            val index = placedStep.coerceIn(0, steps.lastIndex)
+            CoachPanel(
+                step = steps[index],
+                index = index,
+                total = steps.size,
+                onPrevious = if (index > 0) ({ placedStep = index - 1 }) else null,
+                onNext = { placedStep = index + 1 },
+                onSkip = { placedStep = -1; placedId = null },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(KairosSpacing.l).widthIn(max = 560.dp),
+            )
+        }
     }
 
+    if (creating) {
+        EditTaskDialog(
+            task = draft,
+            day = day,
+            today = today,
+            taskTypes = snapshot.settings.taskTypeList,
+            candidates = view.openTasks,
+            blockerIds = emptySet(),
+            dependencies = snapshot.dependencies,
+            titles = remember(snapshot.tasks) { snapshot.tasks.associate { it.id to it.title } },
+            estimates = estimates,
+            // Fermer la fiche n'écrit rien ; rouvrir recommence au titre.
+            onDismiss = { creating = false; coachStep = -1 },
+            onSave = { edit ->
+                creating = false
+                coachStep = -1
+                scope.launch {
+                    // La création réelle (et non le dernier clic du coach) déclenche les félicitations.
+                    val id = repository.createTask(edit.title) ?: return@launch
+                    repository.updateTask(id, edit)
+                    placedId = id
+                    congrats = true
+                }
+            },
+            onDelete = {},
+            coach = if (coachStep >= 0) {
+                CoachSession(
+                    step = coachStep,
+                    onStep = { coachStep = it.coerceIn(0, FirstTaskCoach.STEPS.lastIndex) },
+                    onSkip = { coachStep = -1 },
+                )
+            } else {
+                null
+            },
+        )
+    }
+    val created = placedId?.let { id -> snapshot.tasks.firstOrNull { it.id == id } }
+    if (congrats && created != null) {
+        FirstTaskCongratsDialog(
+            onTimer = { congrats = false; placedId = null; scope.launch { repository.startTimer(created.id) } },
+            onWhere = { congrats = false; placedStep = 0 },
+            onDiscover = { congrats = false; placedId = null; onDiscover() },
+            onClose = { congrats = false; placedId = null },
+        )
+    }
     editingId?.let { id ->
         val task = snapshot.tasks.firstOrNull { it.id == id }
         if (task == null) {
@@ -479,11 +586,18 @@ private suspend fun awaitComposed() {
  * Construit la liste en retenant la position de chaque entrée nommée (les
  * raccourcis y font défiler la liste avant d'y mettre le curseur).
  */
-private class ListBuilder(private val scope: LazyListScope, private val positions: MutableMap<String, Int>) {
+private class ListBuilder(private val scope: LazyListScope, private val positions: MutableMap<String, Int>, private val rowPositions: MutableMap<Long, Int>) {
     private var index = 0
 
-    fun count(n: Int) {
-        index += n
+    init {
+        // Reconstruit à chaque composition de la liste : une tâche partie d'une section n'y laisse pas sa place.
+        rowPositions.clear()
+    }
+
+    /** Des éléments posés à part (l'agenda) : on retient la place de chaque tâche, pour y défiler. */
+    fun count(taskIds: List<Long>) {
+        taskIds.forEachIndexed { i, id -> if (id !in rowPositions) rowPositions[id] = index + i }
+        index += taskIds.size
     }
 
     fun one(key: String, content: @Composable () -> Unit) {
@@ -492,6 +606,7 @@ private class ListBuilder(private val scope: LazyListScope, private val position
     }
 
     fun rows(key: String, tasks: List<Task>, row: @Composable (Task) -> Unit) {
+        tasks.forEachIndexed { i, t -> if (t.id !in rowPositions) rowPositions[t.id] = index + i }
         index += tasks.size
         scope.items(tasks, key = { "$key-${it.id}" }) { row(it) }
     }

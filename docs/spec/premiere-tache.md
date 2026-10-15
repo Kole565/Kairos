@@ -2,14 +2,16 @@
 
 _Rôle : guider pas à pas la création d'une vraie première tâche, en expliquant
 chaque champ, la priorité, les points (Fibonacci), l'estimation et le placement,
-puis féliciter. Fichiers couverts (à venir) : `kmp/ui/.../ui/day/EditTaskDialog.kt`,
-`ui/day/PointsGuide.kt`, `ui/day/Why.kt`, `ui/day/TaskRow.kt`, nouveau
-`ui/guide/FirstTaskCoach.kt`, `ui/app/Welcome.kt`, `ui/screens/HomeScreen.kt`.
-Tests : `FirstTaskCoachUiTest`, `M6GuideUiTest`, `M5ScreensUiTest`._
+puis féliciter. Fichiers couverts : `kmp/ui/.../ui/guide/FirstTaskCoach.kt`,
+`ui/day/EditField.kt`, `ui/day/EditTaskDialog.kt`, `ui/day/DayScreen.kt`,
+`ui/day/FirstTaskCards.kt`, `ui/day/TaskRow.kt`, `ui/app/Welcome.kt`,
+`ui/navigation/AppShell.kt`, `ui/navigation/NavState.kt`, `core/ExampleData.kt`
+(`isExample`). Tests : `FirstTaskCoachUiTest`, `FirstTaskCoachTest`,
+`ExampleDataTest`, `M6GuideUiTest`, `M5ScreensUiTest`._
 
-État : **issue #64 (retour du propriétaire)**, **spécifiée le 2026-10-13, non
-implémentée**. Livraison visée : 3.4.0. Complète `accueil.md` (accueil du premier
-lancement) et s'appuie sur le catalogue de `visite-guidee.md`.
+État : **issue #64 (retour du propriétaire)**, spécifiée le 2026-10-13,
+**implémentée en 3.4.0**. Complète `accueil.md` (accueil du premier lancement) et
+s'appuie sur le catalogue de `visite-guidee.md`.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -56,9 +58,10 @@ déroutant sans explication.
 
 - Parcours complet : la tâche existe avec les valeurs saisies, les félicitations
   n'apparaissent qu'après création, rien n'est écrit si l'on abandonne
-  (`FirstTaskCoachUiTest`).
-- **Couverture** : chaque champ de la fiche a une étape (la liste de champs du
-  coach est comparée à celle de la fiche : `FirstTaskCoachUiTest.everyFieldHasAStep`).
+  (`FirstTaskCoachUiTest`, `givingUpWritesNothing…`).
+- **Couverture** : chaque champ de la fiche a une étape (`FirstTaskCoachTest.everyFieldOfTheSheetHasExactlyOneStep` compare la liste du coach à `EditField`, et
+  `FirstTaskCoachUiTest.theWholeWalkCreatesTheTaskThenCongratulatesAndExplainsItsPlace` vérifie, étape par étape, que
+  la vraie fiche porte la balise de chaque champ expliqué).
 - Le nouveau bouton de l'accueil ne casse pas l'accueil existant
   (`M5ScreensUiTest`, `M6GuideUiTest`).
 - Accessibilité : cibles ≥ 48 dp, 360 dp sans débordement, clavier ouvert sans
@@ -76,31 +79,49 @@ déroutant sans explication.
 
 ### Un coach par-dessus la vraie fiche
 
-`FirstTaskCoach` n'est pas un formulaire : il enveloppe `EditTaskDialog` en mode
-création. L'état du coach (étape courante) est `rememberSaveable`. Chaque étape
-est une `FeatureCard` du catalogue (`visite-guidee.md`), liée à une **clé de
-champ** de la fiche ; la fiche expose une liste ordonnée `EditField` pour que le
-test de couverture compare les deux. Le coach fait défiler la fiche jusqu'au
-champ et le met en évidence par un contour primaire (jamais la couleur seule).
-Le panneau est une carte MD3 sans ombre, non bloquante : le focus et le clavier
-restent sur la fiche.
+`EditTaskDialog` sert aussi à la création : une tâche brouillon d'identifiant 0 (`creating`), sans « Supprimer », dont
+« Enregistrer » exige un titre non vide (titre de la fiche « Première tâche »). Le paramètre optionnel
+`coach: CoachSession?` ajoute le panneau d'explication en bas de la fiche ; sans coach, la fiche est inchangée.
 
-### Placement et félicitations
+- `EditField` (`ui/day/EditField.kt`) : les quatorze champs de la fiche, dont `advanced` pour ceux des options avancées ;
+  chacun porte la balise de test `edit-field-<NOM>` (`Modifier.coachField`).
+- `FirstTaskCoach.STEPS` (`ui/guide/FirstTaskCoach.kt`) : neuf `CoachStep`, chacune avec les champs qu'elle explique :
+  titre ; description ; priorité ; points ; minutes ; échéance et programmée ; type ; options avancées (projet, temps
+  manuel, récurrence, heure fixe, sous-tâches, bloqueurs) ; enregistrer (met « Enregistrer » en évidence).
+  Une étape qui explique un champ avancé ouvre les options avancées.
+- Mise en évidence : contour primaire de 2 dp et défilement jusqu'au champ (`BringIntoViewRequester`) ; une marge constante
+  est posée dès qu'un coach est là pour que la fiche ne saute pas d'étape en étape ; jamais la couleur seule : le panneau
+  nomme l'étape.
+- Panneau (`CoachPanel`) : `OutlinedCard` sans ombre, non bloquant (le focus et le clavier restent sur la fiche), région
+  vivante polie (TalkBack annonce l'étape), « Étape n sur N », « Passer le guide » (la fiche reste utilisable, « Terminer »
+  à la dernière étape), « Précédent » dès la deuxième, « Suivant ».
+- État : `DayScreen` garde en `rememberSaveable` `creating`, `coachStep` (-1 : coach passé), `placedId`, `congrats`,
+  `placedStep` ; l'étape survit donc à une rotation. Fermer la fiche n'écrit rien ; rouvrir recommence au titre, fiche vide.
 
-L'enregistrement passe par `KairosRepository.createTask`, qui retourne l'`id` ;
-c'est **cet événement réel** qui déclenche l'étape « placement » (défilement et
-mise en évidence de la ligne dans `DayScreen`, texte tiré de `Why.kt`) puis le
-dialogue de félicitations. Le dialogue ne dépend pas du dernier clic du coach.
+### Création, placement et félicitations
+
+« Enregistrer » appelle `KairosRepository.createTask(titre)` puis `updateTask(id, édition)` : c'est la création **réelle**
+(l'`id` rendu) qui pose `placedId` et affiche `FirstTaskCongratsDialog`, jamais le dernier clic du coach (« Passer le
+guide » puis enregistrer félicite aussi). Le dialogue propose « Lancer le chrono » (`startTimer` sur la tâche), « Me montrer
+où elle est placée » et « Découvrir Kairos » (hub), ou « Fermer ».
+
+« Me montrer où elle est placée » lance trois étapes sur la vue Jour (`FirstTaskCoach.placement(placed)`), dans un panneau
+en bas d'écran : son rang (le score, « Pourquoi à cette place ? ») ; son créneau (la frise) ; la ligne (coche, chrono,
+« Décaler », crayon, badges). Une tâche absente de l'agenda du jour (« À traiter » faute de priorité ou de points, ou « Plus
+tard ») remplace la première étape par « Pas encore placée » qui dit pourquoi. Pendant ces étapes, `RowContext.highlight`
+cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`ListBuilder` retient la place de chaque ligne,
+`rowPositions`).
 
 ### Déclenchement
 
-- Bouton dans `WelcomeDialog` (à côté de `welcome_tour`).
-- Carte d'invitation dans `DayScreen` / `HomeScreen` tant qu'aucune tâche n'est
-  hors exemples. L'état est **dérivé des données**, sans persistance ;
-  l'identification des exemples passe par `ExampleData` (à vérifier à
-  l'implémentation : marqueur « [Exemple] » traduit ou projet « Exemple »).
-- Entrée du hub pour rejouer : même fiche, l'enregistrement reste un geste
-  volontaire.
+- `WelcomeDialog(onFirstTask)` : bouton « Créer ma première tâche » sous le texte des exemples (visite guidée et
+  « Commencer » inchangés) ; il ferme l'accueil et lance l'accompagnement.
+- `AppShell.startFirstTask` : revient à l'espace Perso, ouvre la vue Jour et pose `NavState.firstTaskRequest` ; `DayScreen`
+  l'acquitte (`onFirstTaskHandled`) et ouvre la fiche. Mêmes chemins : `GuideTarget.FirstTask` (cartes du catalogue, hub
+  « Découvrir Kairos » : on rejoue l'accompagnement ; l'enregistrement reste un geste volontaire).
+- Carte d'invitation `FirstTaskInvite` en tête de la vue Jour tant que `snapshot.tasks.none { !ExampleData.isExample(it) }`
+  (état **dérivé des données**, sans persistance), masquable pour la session (« Pas maintenant »). `ExampleData.isExample`
+  reconnaît le préfixe de titre « [Exemple] » / « [Example] » dans les deux langues.
 
 ### Décisions et pièges tracés
 
@@ -108,14 +129,14 @@ dialogue de félicitations. Le dialogue ne dépend pas du dernier clic du coach.
   ne crée rien et diverge de la vraie) : l'utilisateur ressort avec une tâche à lui.
 - **Félicitations sur la création réelle** (écarté : au dernier pas du coach) :
   on ne félicite pas d'une tâche qui n'existe pas.
+- **Ordre : félicitations d'abord, puis la place** (choix à l'implémentation) : le dialogue vient dès la création et propose
+  d'expliquer la place ; il ne dépend d'aucune étape du coach.
 - **Pas de persistance** : l'invitation disparaît d'elle-même dès la première
   tâche ; pas de réglage de plus.
-- **Textes partagés** avec le catalogue (une seule source, voir
-  `visite-guidee.md`).
+- **Textes partagés** avec le catalogue : la carte « Créer ta première tâche » du chapitre « Premiers pas » lance ce même
+  accompagnement.
 - **Aucune animation décorative** : sobriété du design system.
-
-### Impacts sur les specs existantes (à reporter à l'implémentation)
-
-`accueil.md` (bouton « Créer ma première tâche », carte d'invitation),
-`vue-jour.md` (mise en évidence d'une ligne, `EditField`), `accessibilite.md`
-(annonce d'étape), `i18n.md`, `visite-guidee.md` (chapitre « Premiers pas »).
+- **Titres des étapes distincts des libellés de la fiche** (« Enregistrer la tâche », « Pour aller plus loin ») : un titre
+  de panneau identique à un libellé de la fiche rendrait les tests et les lecteurs d'écran ambigus.
+- **Empreinte sur les bases vides** : l'invitation s'affiche aussi sur une base sans aucune tâche ; les tests de la vue Jour
+  qui y cherchent la carte « Recherche » défilent jusqu'à elle (liste paresseuse).

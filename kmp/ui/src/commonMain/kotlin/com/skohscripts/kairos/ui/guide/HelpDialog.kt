@@ -27,6 +27,8 @@ import com.skohscripts.kairos.ui.generated.resources.help_open_team_tour
 import com.skohscripts.kairos.ui.generated.resources.help_open_team_tour_hint
 import com.skohscripts.kairos.ui.generated.resources.help_open_tour
 import com.skohscripts.kairos.ui.generated.resources.help_open_tour_hint
+import com.skohscripts.kairos.ui.generated.resources.help_open_discover
+import com.skohscripts.kairos.ui.generated.resources.help_open_discover_hint
 import com.skohscripts.kairos.ui.generated.resources.help_title
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import org.jetbrains.compose.resources.StringResource
@@ -44,6 +46,8 @@ fun HelpDialog(
     onOpenHome: () -> Unit,
     onStartTour: () -> Unit,
     onDismiss: () -> Unit,
+    /** Ouvre le hub « Découvrir Kairos » (docs/spec/visite-guidee.md). */
+    onDiscover: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -59,6 +63,7 @@ fun HelpDialog(
                 } else {
                     HelpEntry(KairosIcons.PlayArrow, Res.string.help_open_tour, Res.string.help_open_tour_hint, onStartTour)
                 }
+                HelpEntry(KairosIcons.Layers, Res.string.help_open_discover, Res.string.help_open_discover_hint, onDiscover)
             }
         },
         confirmButton = { KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.help_close)) } },

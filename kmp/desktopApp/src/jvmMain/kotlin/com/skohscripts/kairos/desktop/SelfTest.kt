@@ -14,6 +14,8 @@ import com.skohscripts.kairos.ui.app.SplashFrame
 import com.skohscripts.kairos.ui.guide.GuideDialog
 import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.day.DayScreen
+import com.skohscripts.kairos.ui.guide.DiscoverDialog
 import com.skohscripts.kairos.ui.guide.GuideKind
 import com.skohscripts.kairos.ui.guide.HelpDialog
 import com.skohscripts.kairos.ui.guide.HelpTopic
@@ -262,6 +264,12 @@ object SelfTest {
             Shot("home", 900, 1500, atWidth(900.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}) }),
             Shot("home-narrow", 360, 2300, atWidth(360.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}) }),
             Shot("home-team", 900, 1500, atWidth(900.dp) { HomeScreen(teamEnabled = true, onOpen = {}, onTour = {}, onAbout = {}) }),
+            Shot("home-new", 900, 1900, atWidth(900.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}, version = "3.4.0") }),
+            Shot("home-new-narrow", 360, 2900, atWidth(360.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}, version = "3.4.0") }),
+            Shot("discover", 900, 800, overScrim { DiscoverDialog(teamEnabled = true, onFirstTask = {}, onChapter = {}, onDismiss = {}) }),
+            Shot("discover-narrow", 360, 800, overScrim { DiscoverDialog(teamEnabled = false, onFirstTask = {}, onChapter = {}, onDismiss = {}) }),
+            Shot("first-task-coach", 900, 1000, atWidth(900.dp) { DayScreen(services, firstTaskRequest = true) }),
+            Shot("first-task-coach-narrow", 360, 900, atWidth(360.dp) { DayScreen(services, firstTaskRequest = true) }),
             Shot("guide-step", 900, 700, overScrim { GuideDialog(GuideKind.PERSONAL, onOpen = {}, onDismiss = {}) }),
             Shot("guide-step-narrow", 360, 800, overScrim { GuideDialog(GuideKind.TEAM, onOpen = {}, onDismiss = {}) }),
             Shot("help", 900, 700, overScrim { HelpDialog(HelpTopic.DAY, team = false, onOpenHome = {}, onStartTour = {}, onDismiss = {}) }),

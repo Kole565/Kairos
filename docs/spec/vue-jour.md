@@ -135,6 +135,10 @@ action seulement. Dialogue de
 créneau : mêmes champs que la capture de créneau, « Supprimer » qui dit
 « toutes ses occurrences » pour un récurrent.
 
+**Première tâche** (3.4, `premiere-tache.md`) : tant que l'utilisateur n'a aucune tâche à lui (les exemples ne comptent pas), une carte
+d'invitation ouvre la fiche en **création** (identifiant 0, sans « Supprimer », titre requis) accompagnée d'un panneau qui explique
+chaque champ (`EditField`) ; la création réelle déclenche les félicitations et l'explication de la place de la tâche (ligne cernée).
+
 **Dates, déplacer, blocage** (3.4, issue #64, `planning-personnalise.md` lot A).
 Les champs date de la fiche (échéance, « Programmée pour ») et le jour d'un
 créneau ont un bouton « Choisir une date » (sélecteur Material 3) ; l'échéance et

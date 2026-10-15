@@ -49,7 +49,7 @@ pouvoir le toucher sans viser.
   tabulation.
 - Le bouton « ? » de la barre du haut est nommé « Aide » ; les cartes de
   l'Accueil sont des cartes entières cliquables lues avec leur titre et leur
-  phrase ; la visite guidée annonce « Étape n sur N » ; l'onglet « Échanges » est un
+  phrase ; la visite guidée annonce « Étape n sur N » ; l'accompagnement de la première tâche (`premiere-tache.md`) annonce chaque étape par une région vivante polie, cerne le champ expliqué sans se limiter à la couleur et laisse le focus dans la fiche ; l'onglet « Échanges » est un
   onglet MD3 (`SecondaryTabRow`), et son signal « En attente de son rapport »
   est un texte avec icône (`accueil.md`, `equipe-echanges.md`).
 

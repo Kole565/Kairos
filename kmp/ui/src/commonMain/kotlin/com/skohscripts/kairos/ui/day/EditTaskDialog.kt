@@ -68,6 +68,7 @@ import com.skohscripts.kairos.ui.generated.resources.action_save
 import com.skohscripts.kairos.ui.generated.resources.delete_confirm_body
 import com.skohscripts.kairos.ui.generated.resources.delete_confirm_title
 import com.skohscripts.kairos.ui.generated.resources.edit_title
+import com.skohscripts.kairos.ui.generated.resources.edit_title_first
 import com.skohscripts.kairos.ui.generated.resources.field_deadline
 import com.skohscripts.kairos.ui.generated.resources.field_description
 import com.skohscripts.kairos.ui.generated.resources.field_minutes
@@ -103,6 +104,11 @@ import com.skohscripts.kairos.ui.generated.resources.task_rec_weekly
 import com.skohscripts.kairos.ui.generated.resources.time_invalid
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.core.engine.DurationEstimator
+import com.skohscripts.kairos.ui.guide.CoachPanel
+import com.skohscripts.kairos.ui.guide.CoachSession
+import com.skohscripts.kairos.ui.guide.coachField
+import com.skohscripts.kairos.ui.guide.coachHighlight
+import androidx.compose.runtime.LaunchedEffect
 import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.ui.generated.resources.learned_use
 import com.skohscripts.kairos.ui.generated.resources.learned_weak
@@ -158,6 +164,11 @@ internal fun EditTaskDialog(
     countInTeam: Boolean? = null,
     /** Durée apprise de la tâche (docs/spec/durees-apprises.md) : proposée dans le champ des minutes quand il est vide. */
     learned: DurationEstimator.Estimate? = null,
+    /**
+     * Accompagnement de la première tâche (docs/spec/premiere-tache.md) : le panneau d'explication en bas de la fiche, le champ expliqué
+     * mis en évidence ; `null` : la fiche habituelle, qui n'est alors pas modifiée.
+     */
+    coach: CoachSession? = null,
 ) {
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
@@ -189,6 +200,10 @@ internal fun EditTaskDialog(
     val teamEditing = team?.editable == true
     var receivedProgress by remember { mutableStateOf((task.progressPercent ?: 0).toFloat()) }
     var counted by remember { mutableStateOf(countInTeam ?: true) }
+    // Création (identifiant 0, docs/spec/premiere-tache.md) : rien n'existe encore, donc pas de « Supprimer » ; le titre est requis.
+    val creating = task.id == 0L
+    // Le coach ouvre les options avancées quand il en explique un champ.
+    LaunchedEffect(coach?.step) { if (coach?.current?.opensAdvanced == true) advanced = true }
 
     val french = UiLanguage.isFrench(uiLanguage())
     val parsedDeadline = Dates.parseDate(deadline, french)
@@ -224,19 +239,19 @@ internal fun EditTaskDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp),
                 ) {
-                    Text(stringResource(Res.string.edit_title), style = MaterialTheme.typography.headlineSmall)
+                    Text(stringResource(if (creating) Res.string.edit_title_first else Res.string.edit_title), style = MaterialTheme.typography.headlineSmall)
                     if (team != null && teamEditing) TeamTaskTabs(tab, team.history.size) { tab = it }
                     if (team != null && teamEditing && tab == 1) {
                         TaskHistory(team.history, team.assign, team.today)
                     }
                     if (tab == 0) {
-                        OutlinedTextField(title, { title = it }, label = { Text(stringResource(Res.string.field_title)) }, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(title, { title = it }, label = { Text(stringResource(Res.string.field_title)) }, modifier = Modifier.fillMaxWidth().coachField(EditField.TITLE, coach))
                         OutlinedTextField(
                             description,
                             { description = it },
                             label = { Text(stringResource(Res.string.field_description)) },
                             minLines = 3,
-                            modifier = Modifier.fillMaxWidth().tabLeavesField(),
+                            modifier = Modifier.fillMaxWidth().tabLeavesField().coachField(EditField.DESCRIPTION, coach),
                         )
                         if (received != null) {
                             ReceivedMark(received.origin, received.removed)
@@ -264,22 +279,24 @@ internal fun EditTaskDialog(
                                 onProgress = { progress = it },
                             )
                         }
-                        PriorityPills(priority, { priority = it }, showMeaning = true)
+                        Column(Modifier.coachField(EditField.PRIORITY, coach)) { PriorityPills(priority, { priority = it }, showMeaning = true) }
                         // Durée suggérée (issue #15.6) : choisir un palier calibré
                         // REMPLACE la durée, même déjà saisie ; on reste libre de la retoucher.
-                        PointsPills(points, { chosen ->
-                            points = chosen
-                            chosen?.let(estimates.minutesByPoints::get)?.let { minutes = it.toString() }
-                        })
-                        PointsGuide(estimates.references)
-                        DateField(deadline, { deadline = it }, Res.string.field_deadline, deadlineInvalid, today)
+                        Column(Modifier.coachField(EditField.POINTS, coach), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            PointsPills(points, { chosen ->
+                                points = chosen
+                                chosen?.let(estimates.minutesByPoints::get)?.let { minutes = it.toString() }
+                            })
+                            PointsGuide(estimates.references)
+                        }
+                        Column(Modifier.coachField(EditField.DEADLINE, coach)) { DateField(deadline, { deadline = it }, Res.string.field_deadline, deadlineInvalid, today) }
                         OutlinedTextField(
                             minutes,
                             { value -> minutes = value.filter(Char::isDigit).take(4) },
                             label = { Text(stringResource(Res.string.field_minutes)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().coachField(EditField.MINUTES, coach),
                         )
                         // Durée apprise : une puce qui ne remplit le champ que sur action (on ne remplit que ce qui est vide) ; peu
                         // fiable, elle est dite mais pas proposée.
@@ -301,17 +318,23 @@ internal fun EditTaskDialog(
                             Text(stringResource(Res.string.edit_advanced), modifier = Modifier.padding(start = 4.dp))
                         }
                         if (advanced) {
-                            DateField(scheduled, { scheduled = it }, Res.string.field_scheduled, scheduledInvalid, today)
-                            OutlinedTextField(project, { project = it }, label = { Text(stringResource(Res.string.field_project)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            Column(Modifier.coachField(EditField.SCHEDULED, coach)) { DateField(scheduled, { scheduled = it }, Res.string.field_scheduled, scheduledInvalid, today) }
+                            OutlinedTextField(
+                                project,
+                                { project = it },
+                                label = { Text(stringResource(Res.string.field_project)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth().coachField(EditField.PROJECT, coach),
+                            )
                             OutlinedTextField(
                                 manual,
                                 { value -> manual = value.filter(Char::isDigit).take(5) },
                                 label = { Text(stringResource(Res.string.field_manual_time)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().coachField(EditField.MANUAL_TIME, coach),
                             )
-                            RecurrenceField(recurrence) {
+                            RecurrenceField(recurrence, Modifier.coachField(EditField.RECURRENCE, coach)) {
                                 recurrence = it
                                 // « Le … du mois » : proposer le jour de l'échéance (sinon du jour affiché) plutôt qu'un champ vide en erreur.
                                 if (it == TaskRecurrence.MONTHLY_ON_DAY && dayOfMonth.isBlank()) {
@@ -334,7 +357,7 @@ internal fun EditTaskDialog(
                             }
                             // Suggestion par type (issue #7) : seulement si la durée est
                             // encore vide, pour ne jamais écraser une estimation saisie à la main.
-                            TypeField(type, taskTypes, label = if (teamEditing) Res.string.field_category else Res.string.field_type) { chosen ->
+                            TypeField(type, taskTypes, label = if (teamEditing) Res.string.field_category else Res.string.field_type, modifier = Modifier.coachField(EditField.TYPE, coach)) { chosen ->
                                 type = chosen
                                 if (minutes.isBlank()) estimates.minutesByType[chosen]?.let { minutes = it.toString() }
                             }
@@ -345,14 +368,14 @@ internal fun EditTaskDialog(
                                 isError = pinInvalid,
                                 supportingText = { Text(stringResource(if (pinInvalid) Res.string.time_invalid else Res.string.field_pin_hint)) },
                                 singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().coachField(EditField.PIN, coach),
                             )
                             OutlinedTextField(
                                 newSubtasks,
                                 { newSubtasks = it },
                                 label = { Text(stringResource(Res.string.field_subtasks)) },
                                 minLines = 2,
-                                modifier = Modifier.fillMaxWidth().tabLeavesField(),
+                                modifier = Modifier.fillMaxWidth().tabLeavesField().coachField(EditField.SUBTASKS, coach),
                             )
                             if (countInTeam != null) {
                                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -364,7 +387,7 @@ internal fun EditTaskDialog(
                                     )
                                 }
                             }
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Column(Modifier.coachField(EditField.BLOCKERS, coach), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(stringResource(Res.string.field_blockers), style = MaterialTheme.typography.labelLarge)
                                 Text(stringResource(Res.string.field_blockers_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 val language = uiLanguage()
@@ -396,17 +419,32 @@ internal fun EditTaskDialog(
                         KairosOutlinedButton(onClick = received.onKeep) { Text(stringResource(Res.string.received_keep)) }
                     }
                 }
+                // Panneau du coach, en bas de la fiche : il ne prend pas le focus, la saisie continue dans la fiche.
+                coach?.let { c ->
+                    CoachPanel(
+                        step = c.current,
+                        index = c.step,
+                        total = c.steps.size,
+                        onPrevious = if (c.step > 0) ({ c.onStep(c.step - 1) }) else null,
+                        onNext = { c.onStep(c.step + 1) },
+                        onSkip = c.onSkip,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 16.dp),
                 ) {
-                    KairosTextButton(onClick = { confirmDelete = true }) {
-                        Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
+                    if (!creating) {
+                        KairosTextButton(onClick = { confirmDelete = true }) {
+                            Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
+                        }
                     }
                     Spacer(Modifier.weight(1f))
                     KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
                     KairosButton(
-                        enabled = !invalid,
+                        enabled = !invalid && (!creating || title.isNotBlank()),
+                        modifier = Modifier.coachHighlight(coach?.current?.save == true, coach != null),
                         onClick = {
                             val edit =
                                 TaskEdit(
@@ -482,9 +520,9 @@ private fun recurrenceLabel(r: TaskRecurrence): StringResource = when (r) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RecurrenceField(value: TaskRecurrence, onChange: (TaskRecurrence) -> Unit) {
+private fun RecurrenceField(value: TaskRecurrence, modifier: Modifier = Modifier, onChange: (TaskRecurrence) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
             value = stringResource(recurrenceLabel(value)),
             onValueChange = {},
@@ -504,11 +542,11 @@ private fun RecurrenceField(value: TaskRecurrence, onChange: (TaskRecurrence) ->
 /** Type de tâche : liste des Réglages ; une valeur retirée de la liste reste affichée (jamais perdue). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TypeField(value: String, types: List<String>, label: StringResource, onChange: (String) -> Unit) {
+private fun TypeField(value: String, types: List<String>, label: StringResource, modifier: Modifier = Modifier, onChange: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val none = stringResource(Res.string.field_type_none)
     val options = (listOf("") + types + listOfNotNull(value.takeIf { it.isNotEmpty() && it !in types })).distinct()
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
             value = value.ifEmpty { none },
             onValueChange = {},

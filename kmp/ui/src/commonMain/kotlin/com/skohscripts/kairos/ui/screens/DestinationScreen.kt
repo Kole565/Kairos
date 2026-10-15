@@ -27,11 +27,15 @@ fun DestinationScreen(
     onOpenDay: (LocalDate?) -> Unit,
     onNavigate: (Destination) -> Unit,
     home: @Composable () -> Unit,
+    onDiscover: () -> Unit = {},
 ) {
     when (destination) {
         Destination.HOME -> home()
         Destination.NOTES -> NotesScreen(services, onOpenTasks = { onNavigate(Destination.DAY) })
-        Destination.DAY -> DayScreen(services, nav.day, onBackToToday = { onOpenDay(null) })
+        Destination.DAY -> DayScreen(
+            services, nav.day, onBackToToday = { onOpenDay(null) },
+            firstTaskRequest = nav.firstTaskRequest, onFirstTaskHandled = { nav.firstTaskRequest = false }, onDiscover = onDiscover,
+        )
         Destination.WEEK -> WeekScreen(services, nav, onOpenDay)
         Destination.STATS -> StatsScreen(services)
     }
