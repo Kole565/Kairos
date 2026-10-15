@@ -1,0 +1,1 @@
+Kairos 3.4.0: hours by day of the week (own hours or a day off); learned durations for tasks without an estimate; a guided first task, “Discover Kairos” chapters and a “New in this version” section on Home; date picker and shortcuts, “Move…” a task, a message when you block a task, plainer settings with “Restore default settings”; the old-version import is removed; many fixes.
