@@ -1306,7 +1306,7 @@
     <string name="card_besthours_title">Quand tu travailles chaque type</string>
     <string name="card_besthours_body">Les Statistiques montrent maintenant, pour chaque type de tâche, les tranches de 2 h où tu travailles vraiment, comparées à ton rythme habituel. Observation seulement : rien ne change dans ton planning.</string>
     <string name="besthours_settings_title">Meilleures heures</string>
-    <string name="besthours_settings_body">Kairos peut préférer, entre des tâches de score voisin, les heures où tu travailles d’habitude chaque type de tâche (mesurées avec le chrono, voir Statistiques). Désactivé par défaut ; les tâches en retard et l’urgence passent toujours avant.</string>
+    <string name="besthours_settings_body">Kairos peut préférer, entre des tâches de score voisin, les heures où tu travailles d’habitude chaque type de tâche (mesurées avec le chrono, voir Statistiques). Désactivé par défaut ; les tâches en retard et l’urgence passent toujours avant.</string>
     <string name="besthours_enable">Préférer mes heures habituelles</string>
     <string name="besthours_strength">Force</string>
     <string name="besthours_strength_0">Faible</string>
