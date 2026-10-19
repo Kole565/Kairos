@@ -1,0 +1,1 @@
+Kairos 3.6.0 : nouveau réglage « Meilleures heures » (désactivé par défaut) : entre des tâches de score voisin, le planning préfère les heures où tu travailles d’habitude chaque type de tâche, ou l’heure que tu choisis pour un type. Les tâches en retard et l’urgence passent toujours avant.

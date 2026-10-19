@@ -1,0 +1,1 @@
+Kairos 3.6.0: new “Best hours” setting (off by default): between tasks of similar score, the plan prefers the hours when you usually work each task type, or the hour you choose for a type. Overdue tasks and urgency still come first.
