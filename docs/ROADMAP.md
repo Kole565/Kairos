@@ -1,0 +1,103 @@
+# Feuille de route et GitHub Project
+
+_Rôle : planifier les prochaines versions de Kairos avec les issues, les milestones
+et un GitHub Project, et faire entrer les retours des utilisateurs dans ce circuit.
+Ce document décrit le circuit ; les décisions de conception restent dans
+`docs/spec/` (voir `CLAUDE.md`)._
+
+Les issues, les milestones et les labels sont en **anglais** (comme les issues des
+utilisateurs) ; ce document est en français comme le reste de `docs/`.
+
+## Ce qui est en place dans le dépôt
+
+### Milestones
+
+| Milestone | Sens |
+|---|---|
+| `3.7.0` | Prochaine version : suites du guide, de la vue Semaine, des créneaux récurrents et des statistiques, petites et bien cadrées. |
+| `3.8.0` | Version suivante : vue Mois, créneaux mensuels, occurrence unique, graphiques de statistiques, correction des estimations, accompagnement de la fiche Équipe. |
+| `Backlog` | Non planifié : décision ou spec à écrire d'abord, dépendance externe (signature, synchronisation) ou attente de retours. |
+
+Le contenu de `3.7.0` et `3.8.0` est un **brouillon de planification** (issues #93 à
+#121 réparties le 2026-10-19) : un milestone se déplace librement, rien n'est promis.
+Une version n'est plus « brouillon » quand ses issues ont une spec à jour dans
+`docs/spec/` (étape 1 du workflow de `CLAUDE.md`).
+
+### Labels
+
+| Famille | Labels |
+|---|---|
+| Type | `enhancement`, `bug`, `documentation`, `feedback` (retour utilisateur à trier) |
+| Domaine | `planning`, `guide`, `statistics`, `recurrence`, `week-view`, `team`, `settings`, `distribution`, `interface`, `accessibility`, `sync`, `android` |
+| État | `deferred` (écarté pour l'instant par une spec, reprenable), `needs-decision` (choix produit ou conception à trancher avant de coder), `needs-spec` (spec à écrire avant de coder) |
+
+### Modèle d'issue
+
+Les issues de suivi suivent le gabarit **Context / Need / Expected outcome** : le
+contexte (ce qui existe, la décision déjà consignée), le besoin (ce que vit
+l'utilisateur) et la cible attendue (critères vérifiables : tests, export inchangé,
+FR/EN, spec à mettre à jour).
+
+## Mise en place du GitHub Project (à faire dans l'interface)
+
+Un GitHub Project (v2) appartient au compte et se crée dans l'interface web : les
+sessions de développement n'y ont pas accès (API utilisateur et GraphQL fermées). Ce
+qui suit se fait en cinq minutes.
+
+1. **Créer le Project** : profil `SKOHscripts` → *Projects* → *New project* →
+   modèle *Table* → nom `Kairos roadmap`. Le lier au dépôt (*Settings → Manage access*
+   du Project, puis l'onglet *Projects* du dépôt).
+2. **Champs** (en plus des champs intégrés *Title*, *Assignees*, *Labels*,
+   *Milestone*, *Repository*, *Linked pull requests*) :
+   - `Status` (champ intégré, à rééditer) : `Inbox`, `Needs decision`, `Ready`,
+     `In progress`, `In review`, `Done`.
+   - `Source` (choix unique) : `Owner`, `User feedback`, `Spec follow-up`.
+   - `Effort` (choix unique) : `S` (< 1 jour), `M` (quelques jours), `L` (plusieurs
+     jalons : spec, code, UI, version).
+   Le milestone (champ intégré) porte la version visée ; le domaine se lit sur les
+   labels : pas de champ en double.
+3. **Ajouter les issues** : onglet *Workflows* → *Auto-add to project* avec le filtre
+   `repo:SKOHscripts/Kairos is:issue,pr label:enhancement,bug,feedback` ; ajouter à la
+   main les issues déjà ouvertes (#72, #75, #88 et #93 à #121 : *Add item* → coller le
+   filtre `is:issue is:open`).
+4. **Vues** (bouton `+` à côté des onglets) :
+   | Vue | Type | Réglage |
+   |---|---|---|
+   | `Roadmap` | Board | Colonnes = `Milestone` ; filtre `-status:Done` |
+   | `Board` | Board | Colonnes = `Status` ; filtre `milestone:3.7.0,3.8.0` |
+   | `Feedback` | Table | Filtre `label:feedback status:Inbox` ; tri par date de création |
+   | `Decisions` | Table | Filtre `label:needs-decision,needs-spec` ; groupé par `Milestone` |
+   | `By area` | Table | Groupé par `Labels` ; filtre `-status:Done` |
+5. **Automatisations** (*Workflows*, intégrées) :
+   - *Item added to project* → `Status = Inbox`.
+   - *Item closed* et *Pull request merged* → `Status = Done`.
+   - *Auto-archive items* : issues closes depuis plus de 14 jours.
+
+## Circuit d'un retour utilisateur
+
+1. Une issue arrive (ou je la crée à partir d'un message) : label `feedback`, `Status =
+   Inbox`, `Source = User feedback`.
+2. **Qualification** (vue `Feedback`) : ajouter les labels de domaine ; dire en une
+   phrase si c'est un bug (`bug`, à corriger à part, hors milestone), une demande
+   (`enhancement`) ou une question.
+3. **Décision** :
+   - déjà couvert par une issue → fermer en doublon avec renvoi ;
+   - contredit une décision de `docs/spec/` → `needs-decision`, citer la spec et la
+     décision ; on ne re-tranche jamais sans la rouvrir (règle de `CLAUDE.md`) ;
+   - demande claire → `needs-spec` si une spec manque, sinon milestone + `Status = Ready` ;
+   - hors périmètre → fermer en *not planned* avec la raison.
+4. **Réalisation** : une PR par lot, spec d'abord, titre et description en anglais
+   (`CLAUDE.md`) ; la PR cite l'issue (`Closes #N`) ; l'issue passe en `In review` à l'ouverture de la PR (à la main, ou par une automatisation du Project si elle existe) et en `Done` au merge.
+5. **Version** : quand toutes les issues du milestone sont `Done`, PR de version
+   (`kmp/gradle.properties`, notes Fastlane FR/EN, `docs/spec/distribution.md`), tag
+   `vX.Y.Z` posé par le propriétaire, milestone fermé. Un retour qui change la portée
+   d'une version déplace l'issue d'un milestone à l'autre, sans casser la spec.
+
+## Règles
+
+- **Une issue = un besoin vérifiable** ; une issue trop grosse se découpe, une issue de
+  décision se termine par une note dans la spec, pas par du code.
+- **Pas de date promise** : un milestone n'a pas d'échéance tant que sa spec n'est pas
+  à jour.
+- Ce document est la seule description du circuit : toute évolution des labels, des
+  milestones ou des vues s'y reporte.
