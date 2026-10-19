@@ -5,6 +5,7 @@ import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.ScheduleSettings
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.WorkContext
 import com.skohscripts.kairos.core.model.WorkWindow
 import com.skohscripts.kairos.core.model.Settings
@@ -176,6 +177,17 @@ class KairosRepositoryTest {
             ),
         )
         assertEquals(rich, ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = rich), "3.5.0", now)).settings)
+    }
+
+    @Test
+    fun theBestHoursSurviveAnExportAreAbsentByDefaultAndAreCheckedOnImport() {
+        val now = Instant.parse("2026-10-19T07:00:00Z")
+        val plain = ExportCodec.encode(KairosSnapshot(settings = Settings(schedule = ScheduleSettings(mapOf(5 to DaySchedule(free = true))))), "3.6.0", now)
+        assertTrue("bestHours" !in plain, "sans meilleures heures, l'export n'a pas la clé")
+        val on = Settings(schedule = ScheduleSettings(bestHours = BestHoursSettings(true, 2, mapOf("dev" to 9))))
+        assertEquals(on, ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = on), "3.6.0", now)).settings)
+        val bad = ExportCodec.encode(KairosSnapshot(settings = Settings(schedule = ScheduleSettings(bestHours = BestHoursSettings(true, 1, mapOf("dev" to 99))))), "3.6.0", now)
+        assertEquals(ImportException.Reason.CORRUPTED, assertFailsWith<ImportException> { ExportCodec.decode(bad) }.reason)
     }
 
     @Test

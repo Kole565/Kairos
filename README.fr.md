@@ -200,8 +200,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   est affiché ; un petit échantillon est marqué « peu fiable ».
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
-  chrono), comparées à ton rythme habituel. Observation seulement : rien ne
-  change dans ton planning.
+  chrono), comparées à ton rythme habituel. Cette carte observe seulement.
+- **Meilleures heures** (Réglages, désactivé par défaut) : le planning préfère,
+  entre des tâches de score voisin, les heures où tu travailles d’habitude chaque
+  type (détectées avec le chrono, force Faible / Moyenne / Forte) ou l’heure
+  préférée que tu donnes à un type. Les tâches en retard et l’urgence passent
+  toujours avant ; la vue Jour dit quand cela a joué.
 
 ### Données
 

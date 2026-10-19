@@ -157,17 +157,33 @@ object Scheduling {
         return effort * (1.0 + settings.cognitiveDipPenalty * intensity * norm)
     }
 
-    private fun placementScore(task: Task, day: LocalDate, time: LocalTime, settings: Settings): Double {
+    /**
+     * Score au créneau : coût du retard ÷ effort, l'effort étant majoré par le creux puis **minoré** par l'affinité du type pour
+     * l'heure (`÷ (1 + force × gain)`, étape C2). Sans [affinity] : le code d'avant.
+     */
+    private fun placementScore(task: Task, day: LocalDate, time: LocalTime, settings: Settings, affinity: Affinity?): Double {
         val costOfDelay = priorityValue(task.priority, settings) + timeCriticality(task, day, settings)
-        return costOfDelay / dipAdjustedEffort(task, time, settings)
+        val effort = dipAdjustedEffort(task, time, settings)
+        return costOfDelay / (if (affinity == null) effort else effort / affinity.factor(task.taskType, time))
     }
 
-    /** Clé de choix POUR le créneau : clé d'urgence, sauf pendant le creux pour une tâche non remontée. */
-    private fun selectionKey(task: Task, day: LocalDate, cursor: LocalDateTime, settings: Settings, urgencyKeys: Map<Long, SortKey>): SortKey {
+    /**
+     * Clé de choix POUR le créneau : clé d'urgence, sauf pendant le creux ou quand le type a de l'affinité pour l'heure, pour une
+     * tâche non remontée. Une tâche en retard (palier 0) ne bouge jamais : l'affinité ne réordonne que les autres.
+     */
+    private fun selectionKey(
+        task: Task,
+        day: LocalDate,
+        cursor: LocalDateTime,
+        settings: Settings,
+        urgencyKeys: Map<Long, SortKey>,
+        affinity: Affinity? = null,
+    ): SortKey {
         val own = sortKey(task, day, settings)
         val effective = urgencyKeys[task.id] ?: own
-        if (effective != own || dipIntensity(cursor.time, settings) <= 0) return effective
-        return own.copy(negScore = -placementScore(task, day, cursor.time, settings))
+        val liked = affinity != null && own.tier != 0 && affinity.boost(task.taskType, cursor.time) > 0
+        if (effective != own || (dipIntensity(cursor.time, settings) <= 0 && !liked)) return effective
+        return own.copy(negScore = -placementScore(task, day, cursor.time, settings, if (liked) affinity else null))
     }
 
     // --- Éligibilité ---------------------------------------------------------------
@@ -207,7 +223,10 @@ object Scheduling {
         val deepwork: Boolean = false,
         /** Le creux de l'après-midi a fait préférer cette tâche légère sur ce créneau. */
         val dipApplied: Boolean = false,
+        /** L'heure habituelle ou préférée du type de la tâche l'a fait préférer sur ce créneau (étape C2) ; `null` : sans effet. */
+        val affinity: AffinitySource? = null,
     ) {
+        val affinityApplied: Boolean get() = affinity != null
         val end: LocalDateTime get() = start.plusMinutes(durationMinutes)
         val pushed: Boolean get() = pushedAfter != null
         val conflict: Boolean get() = conflictWith != null
@@ -260,6 +279,8 @@ object Scheduling {
         urgencyKeys: Map<Long, SortKey> = emptyMap(),
         /** Durées apprises à appliquer (minutes par tâche, [DurationEstimator.appliedMinutes]) ; vide : comme avant. */
         learned: Map<Long, Int> = emptyMap(),
+        /** Affinité des types pour les heures (étape C2, [Affinity]) ; `null` : comme avant. */
+        affinity: Affinity? = null,
     ): ScheduledDay {
         fun key(task: Task) = urgencyKeys[task.id] ?: sortKey(task, day, settings)
 
@@ -343,7 +364,11 @@ object Scheduling {
                 val candidates = remaining.filter { it.id !in skipped && Schedule.accepts(window, contextOf[it.id]) }
                 if (candidates.isEmpty()) break
                 val slotStart = advancePastObstacles(cursor, obstacles)
-                val task = candidates.minWith(compareBy { selectionKey(it, day, slotStart, settings, urgencyKeys) })
+                val liking = affinity?.takeUnless { it.isEmpty }
+                val task = candidates.minWith(compareBy { selectionKey(it, day, slotStart, settings, urgencyKeys, liking) })
+                // Sans l'affinité : le choix que le creux seul aurait fait (pour savoir lequel des deux a joué).
+                val withoutAffinity = if (liking == null) task else candidates.minWith(compareBy { selectionKey(it, day, slotStart, settings, urgencyKeys) })
+                val affinityChanged = task.id != withoutAffinity.id
                 val dipActive = dipIntensity(slotStart.time, settings) > 0
                 val urgencyPick = if (dipActive) candidates.minWith(compareBy { urgencyKeys[it.id] ?: sortKey(it, day, settings) }) else task
 
@@ -373,7 +398,8 @@ object Scheduling {
                     durationMinutes = duration,
                     pushedAfter = pushedAfter?.title,
                     pushedAfterKind = pushedAfter?.kind,
-                    dipApplied = dipActive && task.id != urgencyPick.id,
+                    dipApplied = dipActive && !affinityChanged && task.id != urgencyPick.id,
+                    affinity = if (affinityChanged) liking?.source(task.taskType) else null,
                 )
                 cursor = start.plusMinutes(duration)
             }

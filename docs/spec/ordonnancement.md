@@ -56,6 +56,11 @@ traiter ».
   la note « créneau creux (~15 h) : tâche légère privilégiée ». Le score
   affiché ne change pas. Une tâche en retard ou remontée par une dépendance
   n'est jamais déplacée par le creux.
+- **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md`, désactivées par défaut) : quand le réglage `schedule.bestHours` est actif, le
+  créneau préfère, entre des tâches proches, celle dont le type est habituellement travaillé à cette heure (détecté avec le chrono) ou dont
+  l'utilisateur a donné l'heure préférée. Même patron que le creux : l'effort est divisé par `1 + force × gain` au seul choix du créneau, le score
+  affiché ne change pas, une tâche en retard ou remontée par une dépendance n'est jamais déplacée, et la note « ton heure habituelle pour « Dev » » /
+  « heure préférée pour « Dev » » n'apparaît que si l'affinité a changé le choix. Détail ci-dessous (§ Meilleures heures au créneau).
 - La carte « Maintenant » affiche la charge : minutes requises contre
   minutes disponibles dans ce qui reste de la journée de travail, et le
   débordement.
@@ -151,7 +156,8 @@ réglages, les tâches bloquées et les clés d'urgence effectives
    tâche chevauche un obstacle, elle est repoussée après lui (+ marge) et
    note l'obstacle (`pushedAfter`, `BUSY`, `PINNED` ou `DEEPWORK`). Si elle commence
    après la fin de journée : « sans créneau », et l'on continue (une plus
-   courte peut encore tenir). `dipApplied` si le creux a changé le choix.
+   courte peut encore tenir). `dipApplied` si le creux a changé le choix ; `affinity` si l'affinité des meilleures heures l'a changé (voir § Meilleures
+   heures au créneau ; alors `dipApplied` reste faux).
 6. Charge : requis = durées des tâches à placer ; disponible = fenêtre
    restante moins l'union des créneaux occupés.
 7. Durée d'une tâche : estimée, sinon (absente ou 0) le réglage.
@@ -194,10 +200,27 @@ génération a été retiré (son historique reste dans git, au tag `v3.3.0`) :
 les fichiers ne se régénèrent plus, et un changement voulu du comportement
 s'écrit en éditant les fichiers d'or, avec sa justification en spec.
 
+### Meilleures heures au créneau (3.6, étape C2)
+
+`Scheduling.buildDaySchedule(…, affinity: Affinity? = null)`. `Affinity` (`core/engine/Affinity.kt`) est pur et **construit hors du moteur** (par `BestHours.affinity`,
+`core/stats`) pour que le moteur ne dépende pas des statistiques : `strength`, les gains détectés par type (12 tranches de 2 h) et les heures préférées par
+type, tous deux indexés par le nom du type en minuscules.
+
+- `placementScore = coût du retard ÷ (effort majoré par le creux ÷ affinité.factor(type, heure))`, `factor = 1 + force × gain` ≥ 1 ; l'heure est celle
+  du début du créneau, comme pour le creux.
+- `selectionKey` ne s'écarte de la clé d'urgence que si la tâche n'est pas remontée, **pas en retard** (palier 0 : l'affinité ne réordonne pas
+  les retards entre eux) et que le gain est > 0 ; sinon elle est inchangée (pas de calcul superflu, `affinity` nul ou vide = code d'avant).
+- `affinity` de `ScheduledTask` : on compare le choix avec affinité à celui sans (le creux seul) ; il n'est posé que s'ils diffèrent, et `dipApplied`
+  vaut alors faux. Le remplissage des fenêtres de deep work et le tri affiché (`sortKey`, score, rang) ignorent l'affinité.
+- Décision : **l'affinité est un ajustement doux**, borné à une division par 1,5 au plus : elle départage des tâches de score voisin mais ne fait
+  jamais passer une tâche d'une priorité plus faible devant une plus haute (rapport de valeurs de priorité 4 par défaut). Écarté : un classement
+  par heure (rigide, contraire au « score d'abord ») ; une mesure d'efficacité estimé ÷ réel par tranche (v2, voir l'anti-boucle de
+  `planning-personnalise.md`).
+
 ### Décisions et pièges tracés
 
 - **Notes rendues en données** (`pushedAfter`, `pushedAfterKind`,
-  `conflictWith`, `dipApplied`), jamais en phrases : l'interface les
+  `conflictWith`, `dipApplied`, `affinity`), jamais en phrases : l'interface les
   formule dans sa langue.
 - **`floorMod` / `floorDiv` de Java absents du code commun** : `.mod()` et
   `.floorDiv()` de Kotlin (même sémantique pour les négatifs).

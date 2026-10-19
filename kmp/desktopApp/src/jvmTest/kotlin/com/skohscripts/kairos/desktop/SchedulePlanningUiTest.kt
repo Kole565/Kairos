@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.ScheduleSettings
@@ -145,5 +146,60 @@ class SchedulePlanningUiTest {
         waitText("No Home window today", substring = true)
         // La frise (colonne de droite en largeur bureau) nomme le contexte de la plage.
         waitText("Work")
+    }
+
+    @Test
+    fun theBestHoursAreOffByDefaultAndSavedWithTheirLevelAndAPreferredHour() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
+        waitText("Best hours")
+        // Désactivé : ni la force ni les heures préférées ne sont proposées.
+        assertEquals(0, onAllNodesWithText("Preferred hour per type").fetchSemanticsNodes().size)
+        onNodeWithText("Prefer my usual hours").performScrollTo().performClick()
+        waitText("Preferred hour per type")
+        onNodeWithText("High").performScrollTo().performClick()
+        hours("Preferred hour for Développement (0–23)", 0, "10")
+        onNodeWithText("Save").performClick()
+        waitUntil(timeoutMillis = 15_000) { repository.snapshot.value.settings.schedule?.bestHours != null }
+        assertEquals(BestHoursSettings(true, 2, mapOf("Développement" to 10)), repository.snapshot.value.settings.schedule!!.bestHours)
+    }
+
+    @Test
+    fun anOutOfRangePreferredHourIsRefusedOnItsField() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openSettings()
+        waitText("Best hours")
+        onNodeWithText("Prefer my usual hours").performScrollTo().performClick()
+        waitText("Preferred hour per type")
+        hours("Preferred hour for Développement (0–23)", 0, "99")
+        onNodeWithText("Save").performClick()
+        waitText("At most 23.")
+        assertEquals(null, repository.snapshot.value.settings.schedule)
+    }
+
+    @Test
+    fun theDayViewSaysWhenThePreferredHourOfATypeMadeTheDifference() = runComposeUiTest {
+        val services = services()
+        val repository = services.repository
+        runBlocking {
+            val first = repository.createTask("Water the plants")!!
+            val second = repository.createTask("Write code")!!
+            listOf(first, second).forEach { repository.setPriority(it, 1); repository.setPoints(it, 2) }
+            repository.updateTask(first, com.skohscripts.kairos.data.TaskEdit(title = "Water the plants", priority = 1, points = 2, taskType = "maison", pinDay = kotlinx.datetime.LocalDate(2026, 9, 29)))
+            repository.updateTask(second, com.skohscripts.kairos.data.TaskEdit(title = "Write code", priority = 1, points = 2, taskType = "dev", pinDay = kotlinx.datetime.LocalDate(2026, 9, 29)))
+            repository.updateSettings(
+                repository.snapshot.value.settings.copy(
+                    schedule = ScheduleSettings(bestHours = BestHoursSettings(enabled = true, strength = 2, preferred = mapOf("dev" to 9))),
+                ),
+            )
+        }
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitUntil(timeoutMillis = 15_000) { onAllNodes(hasScrollToIndexAction()).fetchSemanticsNodes().isNotEmpty() }
+        onNode(hasScrollToIndexAction()).performScrollToNode(hasText("preferred hour for “dev”", substring = true))
+        waitText("preferred hour for “dev”", substring = true)
     }
 }

@@ -12,8 +12,8 @@ couverts (à venir) : `kmp/core/.../model/Settings.kt` (`schedule`),
 décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semaine.md`,
 `recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lot B1 (fenêtre par jour
 de la semaine) : implémenté en 3.4.0** (voir « Lot B1 (implémenté) »). **B2 (plusieurs plages et
-contextes) : implémenté en 3.5.0** (voir « Lot B2 (implémenté) »). **Lot C : étape C1 (observer) implémentée en 3.5.0** (voir « Lot C », ci-dessous), **étape C2 (appliquer) spécifiée le
-2026-10-13, non implémentée** (voir « Impacts sur les specs existantes »).
+contextes) : implémenté en 3.5.0** (voir « Lot B2 (implémenté) »). **Lot C : étape C1 (observer) implémentée en 3.5.0, étape C2 (appliquer) implémentée en 3.6.0** (voir « Lot C », ci-dessous). Tous
+les lots sont implémentés ; restent spécifiées, non implémentées, les échelles libres (Hors périmètre).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -93,7 +93,7 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
     (étape C1, aucun effet sur le planning) : carte Statistiques « Quand tu
     travailles chaque type », par tranche de 2 h, avec les effectifs et la
     mention « peu fiable » sous le seuil.
-12. Ensuite, et **seulement si l'utilisateur l'active** (étape C2, désactivé
+12. Ensuite, et **seulement si l'utilisateur l'active** (étape C2, implémentée en 3.6.0, désactivé
     par défaut), le planning préfère, à score égal, les créneaux où ce type est
     habituellement travaillé. Une **préférence manuelle** par type (« vers
     12 h ») prime sur la détection. « Pourquoi à cette place ? » le mentionne.
@@ -215,7 +215,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 - **Contextes vides gardés pendant l'écriture des champs** : le formulaire est positionnel ; `SettingsForm.validate` retire les emplacements vides à la fin,
   de sorte qu'aucun objet `schedule` n'apparaît tant que rien n'est rempli.
 
-### Lot C (C1 implémenté en 3.5.0, C2 non implémenté)
+### Lot C (C1 implémenté en 3.5.0, C2 implémenté en 3.6.0)
 
 - **Mesure** (fonction pure dans `core/stats`, fuseau en paramètre comme
   `DayView`) : par type et par tranche de 2 h, part du temps chronométré sur
@@ -230,14 +230,38 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   constantes dans `statistiques.md` § Meilleures heures) et `StatsScreen` (`HoursProfile`). Écarts avec la rédaction initiale : la fiabilité est un
   minimum de **5 sessions et 120 minutes** par type (constantes du code, non réglables) ; le « lift » désigne une **tranche de pointe** parmi celles qui
   portent au moins 20 % du temps du type ; la pondération récente va de 1 à 1/2 sur la fenêtre. Pas de réglage : la carte s'affiche toujours (observation).
-- **C2 appliquer** : réglage `Settings.schedule.bestHours` (force bornée,
-  0 = neutre, désactivé par défaut) ; au créneau,
-  `effort' = effort ÷ (1 + force × boost(type, heure))`, même patron que
-  `dipAdjustedEffort` (le creux est le modèle d'un ajustement doux : il ne
-  touche que le choix au créneau). Score affiché inchangé ; jamais sur les
-  tâches en retard ni remontées par dépendance ; mention `affinityApplied`
-  dans « Pourquoi à cette place ? » (`ui/day/Why.kt`). Préférence manuelle par
-  type (« vers 12 h ») qui prime.
+- **C2 appliquer** (implémenté en 3.6.0) : réglage `Settings.schedule.bestHours` (`BestHoursSettings(enabled = false, strength = 1,
+  preferred = {})`, nul tant que rien n'y est touché, donc absent de l'export ; `ScheduleSettings.bestHours` en `EncodeDefault.NEVER`). Au créneau,
+  `effort' = effort ÷ (1 + force × gain(type, heure))`, **même patron que `dipAdjustedEffort`** : l'affinité n'intervient que dans le choix au
+  créneau (`Scheduling.placementScore` / `selectionKey`), jamais dans `sortKey` ni dans le score affiché, ni dans le remplissage des fenêtres de
+  deep work (qui reste « les plus urgentes »). Jamais sur une tâche **en retard** (palier 0) ni **remontée par dépendance** (`effective != own`) :
+  l'affinité ne réordonne que les autres. Désactivé (ou `bestHours` nul), `buildDaySchedule(…, affinity = null)` est exactement le code d'avant
+  (`DifferentialTest` inchangé). Détail du moteur dans `ordonnancement.md` § Meilleures heures au créneau.
+  - **Force** : un interrupteur et **trois niveaux** nommés Faible / Moyenne / Forte (`strength` 0 / 1 / 2 → `BestHours.strengthOf` = 0,15 / 0,30 / 0,50 ;
+    Moyenne par défaut). Le gain valant au plus 1, l'effort est au plus divisé par 1,5 : une tâche d'une priorité plus haute ne se fait pas doubler
+    (P0 contre P1 : rapport de valeurs 4).
+  - **Gain** (`Affinity.boost`, ∈ [0, 1]) : **détecté** = `lift − 1` borné à [0, 1] de la tranche de 2 h de l'heure du créneau, pour les types dont le
+    profil est **fiable** (`BestHours.affinity`) et les tranches qui portent au moins 10 % du temps du type ; rien pour un type peu fiable, sans
+    type ou inconnu. Sans contraste (un seul type chronométré, lift 1) le gain est nul : la détection ne pousse que ce qui se distingue du rythme global.
+  - **Préférence manuelle** : **une heure préférée par type** (0 à 23, champ vide = détection ; `BestHoursSettings.preferred`, type → heure, comparé sans
+    la casse). Elle **prime** sur la détection pour ce type (la détection est alors ignorée) et marche sans aucun historique de chrono. Gain =
+    `max(0, 1 − |heure − préférée| / 3)` : plein à l'heure dite, nul à ± 3 h (`Affinity.PREFERRED_RADIUS_HOURS`).
+  - **Mention** : `ScheduledTask.affinity` (`AffinitySource.DETECTED` ou `MANUAL`, `affinityApplied` en dérive) n'est posé que si l'affinité a **changé le
+    choix** du créneau (comparé au choix que le creux seul aurait fait) ; dans ce cas `dipApplied` reste faux (une seule mention). La vue Jour affiche la
+    note « heure préférée pour « Dev » » / « ton heure habituelle pour « Dev » » à côté du créneau, et « Pourquoi à cette place ? » une phrase de plus
+    (`why_affinity_*`) qui dit que ce n'est qu'une préférence : l'urgence et les tâches en retard passent d'abord.
+  - **Interface** : carte **Meilleures heures** (`BestHoursCard`) dans les Réglages, après « Contextes » : interrupteur « Préférer mes heures habituelles »,
+    force en trois boutons segmentés et, quand c'est activé, un champ « Heure préférée pour <type> (0–23) » par type de « Types de tâche » (plus ceux
+    qui ont une heure mais ont quitté la liste, signalés « type inconnu » : jamais perdus en silence). Champs du formulaire :
+    `schedule.bestHours.enabled`, `.strength` (0 à 2), `.preferred` (texte `type=heure,…`, `SettingsForm.parsePreferred` / `encodePreferred`) ; une heure
+    hors de 0 à 23 est refusée sur ce champ, à l'enregistrement comme à l'import. « Restaurer les valeurs par défaut » le remet à zéro. Carte du catalogue
+    « Planifier autour de tes meilleures heures » (`besthours_apply`, `since = "3.6.0"`).
+  - **Mesure à la demande** : `DayView.build` ne mesure (`BestHours.measure`, sur les sessions du chrono) que si le réglage est actif ; la mesure n'est faite qu'une
+    fois par construction de la vue (le fuseau et l'instant sont ceux de la vue).
+  - **Écarts avec la rédaction initiale** : la force bornée « 0 = neutre » devient trois niveaux nommés (choix du propriétaire, qui rend le
+    réglage lisible) ; la préférence manuelle est une **heure** par type, pas une plage.
+  - Tests : `AffinityTest` (égalité départagée, retard, dépendance, bornage, creux + affinité, `DayView`), `BestHoursTest` (gain détecté, préférence prioritaire),
+    `SettingsFormTest`, `KairosRepositoryTest.theBestHoursSurviveAnExport…`, `SchedulePlanningUiTest`.
 - **Anti-boucle** : le planning suggère un créneau, l'utilisateur l'honore, la
   mesure le confirme (auto-renforcement). Parades : poids borné, ajustement
   doux, exclusion des tâches en retard ; en v2, mesure d'**efficacité**
@@ -249,7 +273,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
 - **3.4.0** : lot A + B1 (avec les chantiers `retrait-kairos2.md`,
   `durees-apprises.md`, `visite-guidee.md` et `premiere-tache.md`).
 - **3.5.0** : B2 (livré) + C1 (livré).
-- **3.6.0** : C2. Échelles libres réévaluées après retours.
+- **3.6.0** : C2 (livré). Échelles libres réévaluées après retours.
 
 ### Décisions et pièges tracés
 
@@ -267,6 +291,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   qu'elle n'influence quoi que ce soit.
 - **Échelles libres écartées** (voir Hors périmètre).
 
-### Impacts sur les specs existantes (à reporter à l'implémentation)
+### Impacts sur les specs existantes
 
-Étape C2 seulement (les lots A, B1, B2 et l'étape C1 sont reportés) : `ordonnancement.md` (boost).
+Aucun en attente : les lots A, B1, B2 et les étapes C1 et C2 sont reportés dans `vue-jour`, `vue-semaine`, `recurrence`, `reglages`, `ordonnancement`,
+`statistiques` et `modele-donnees`.

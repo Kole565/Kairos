@@ -97,7 +97,8 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   la lecture), `schedule` (`ScheduleSettings?`, nul tant qu'aucun jour de la
   semaine n'a d'horaire propre : `weekdays` = jours 0 (lundi) à 6 (dimanche) → `DaySchedule(free, startHour, endHour)` ;
   `planning-personnalise.md` § Lots B1 et B2 ; non écrit dans l'export tant qu'il est nul ; 3.5 : `DaySchedule.windows` (plusieurs plages `WorkWindow(startHour, endHour, context?)`) et
-  `ScheduleSettings.contexts` (`WorkContext(name, types)`), jamais écrits quand ils sont vides), `learning` (`LearningSettings?` : `enabled` vrai,
+  `ScheduleSettings.contexts` (`WorkContext(name, types)`), jamais écrits quand ils sont vides ; 3.6 : `ScheduleSettings.bestHours` (`BestHoursSettings?` : `enabled` faux, `strength` 1 = Moyenne,
+  `preferred` type → heure 0 à 23, vide ; nul tant qu'il vaut ses défauts, donc absent de l'export ; hors bornes à l'import, l'export est refusé comme corrompu, `SettingsForm.validate`)), `learning` (`LearningSettings?` : `enabled` vrai,
   `history` 5, `minSamples` 3 ; nul = valeurs par défaut, non écrit dans l'export tant qu'il est nul, `durees-apprises.md`) ;
   `Task.seriesId` (identifiant de la première tâche d'une série récurrente, nul par défaut).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,

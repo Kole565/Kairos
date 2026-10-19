@@ -22,6 +22,22 @@ data class ScheduleSettings(
      * § Lot B2). Jamais écrits tant qu'il n'y en a pas : un export de la 3.4 reste identique.
      */
     @EncodeDefault(EncodeDefault.Mode.NEVER) val contexts: List<WorkContext> = emptyList(),
+    /**
+     * Le planning préfère, à score égal, les heures où un type est habituellement travaillé (docs/spec/planning-personnalise.md
+     * § Lot C, étape C2). Nul tant que l'utilisateur n'y a pas touché : un export de la 3.5 reste identique.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val bestHours: BestHoursSettings? = null,
+)
+
+/**
+ * Réglage de l'étape C2 : [enabled] (désactivé par défaut), [strength] (0 Faible, 1 Moyenne, 2 Forte : `BestHours.strengthOf`) et
+ * [preferred] : l'heure préférée (0 à 23) de certains types, par nom de type, qui prime sur la détection.
+ */
+@Serializable
+data class BestHoursSettings(
+    val enabled: Boolean = false,
+    val strength: Int = 1,
+    val preferred: Map<String, Int> = emptyMap(),
 )
 
 /**

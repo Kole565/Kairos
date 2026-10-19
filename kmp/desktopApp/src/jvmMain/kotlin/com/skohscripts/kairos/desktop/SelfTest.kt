@@ -107,6 +107,8 @@ object SelfTest {
                         schedule = com.skohscripts.kairos.core.model.ScheduleSettings(
                             days,
                             listOf(com.skohscripts.kairos.core.model.WorkContext("Travail", listOf("Development", "Meeting")), com.skohscripts.kairos.core.model.WorkContext("Maison", listOf("Learning"))),
+                            // Meilleures heures (étape C2) : activées, force Forte, une heure préférée pour « Development ».
+                            bestHours = com.skohscripts.kairos.core.model.BestHoursSettings(enabled = true, strength = 2, preferred = mapOf("Development" to 9)),
                         ),
                     ),
                 )
@@ -277,8 +279,8 @@ object SelfTest {
             Shot("launch-narrow", 360, 800, launch),
             Shot("settings", 900, 1000, settings),
             Shot("settings-full", 900, 4800, settings),
-            Shot("settings-planning", 900, 6200, plannedSettings),
-            Shot("settings-planning-narrow", 360, 9000, plannedSettings),
+            Shot("settings-planning", 900, 7200, plannedSettings),
+            Shot("settings-planning-narrow", 360, 10500, plannedSettings),
             Shot("day-windows", 1200, 1400, plannedDay),
             Shot("about", 900, 1000, about),
             // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).

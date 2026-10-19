@@ -189,7 +189,12 @@ order (critical path). Cycles are refused.
   shown; a small sample is marked "not reliable".
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
-  usual rhythm. It only observes: it changes nothing in your plan.
+  usual rhythm. This card only observes.
+- **Best hours** (Settings, off by default): the plan prefers, between tasks of
+  similar score, the hours when you usually work each type (detected from the
+  timer, strength Low / Medium / High) or the preferred hour you set for a type.
+  Overdue tasks and urgency still come first; the day view says when it made the
+  difference.
 
 ### Data
 

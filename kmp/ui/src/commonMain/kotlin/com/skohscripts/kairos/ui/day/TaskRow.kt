@@ -402,7 +402,7 @@ private fun TimeSpent(task: Task, ctx: RowContext) {
 private fun KeyBadges(task: Task, ctx: RowContext) {
     // FlowRow : à 360 dp, score, priorité et points passent à la ligne plutôt que d'écraser un libellé.
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-        if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language, ctx.view.learned[task.id], ctx.learning) }
+        if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language, ctx.view.learned[task.id], ctx.learning, ctx.view.schedule.scheduled.firstOrNull { s -> s.task.id == task.id }?.affinity) }
         task.priority?.let { PriorityBadge(it) }
         task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it), nowrap = true) }
     }
