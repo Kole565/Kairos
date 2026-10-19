@@ -13,7 +13,7 @@ décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semai
 `recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lot B1 (fenêtre par jour
 de la semaine) : implémenté en 3.4.0** (voir « Lot B1 (implémenté) »). **B2 (plusieurs plages et
 contextes) : implémenté en 3.5.0** (voir « Lot B2 (implémenté) »). **Lot C : étape C1 (observer) implémentée en 3.5.0, étape C2 (appliquer) implémentée en 3.6.0** (voir « Lot C », ci-dessous). Tous
-les lots sont implémentés ; restent spécifiées, non implémentées, les échelles libres (Hors périmètre).
+les lots sont implémentés. Les **échelles libres** de priorité et de points ne sont **ni spécifiées ni implémentées** : elles sont écartées (voir « Hors périmètre / différé » et « Décisions et pièges tracés »), seuls des libellés personnalisés des niveaux restant envisageables.
 
 ## 1. Besoin métier (cahier des charges)
 
