@@ -1,0 +1,61 @@
+name: Planned work (maintainers)
+description: A scoped follow-up or roadmap item, written as Context / Need / Expected outcome
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For roadmap items. Follow the repository workflow: specify first in `docs/spec/`, implement, then make the spec match the code (see `CLAUDE.md` and `docs/ROADMAP.md`). Add a **domain label** and, while it is not scheduled, **`needs-decision`** or **`needs-spec`** (or `deferred` for something a spec explicitly leaves out), then pick a milestone.
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What exists today, which spec or decision is concerned (file and section), what was already ruled out and why.
+    validations:
+      required: true
+  - type: textarea
+    id: need
+    attributes:
+      label: Need
+      description: What a user lives through today, in their words.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome
+      description: Verifiable criteria. Mention the tests, "null by default" settings and unchanged exports, FR/EN strings, and the specs, README and catalogue card to update.
+      placeholder: |
+        - …
+        - Spec updated (`docs/spec/….md`), FR/EN strings, `StringsParityTest` green
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Domain
+      description: Also apply the matching label (`planning`, `guide`, `statistics`, `recurrence`, `week-view`, `team`, `settings`, `distribution`, `interface`, `accessibility`, `sync`, `android`, `i18n`).
+      options:
+        - planning
+        - guide
+        - statistics
+        - recurrence
+        - week-view
+        - team
+        - settings
+        - distribution
+        - interface
+        - accessibility
+        - sync
+        - android
+        - i18n
+    validations:
+      required: true
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Repository constraints checked
+      options:
+        - label: No network permission, free dependencies only (F-Droid), reproducible APK
+        - label: Solo mode stays untouched (export and `TeamIsolationTest`) unless the Team space is the point
+        - label: New settings are "null by default" and absent from exports until used
