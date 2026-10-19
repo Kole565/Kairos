@@ -122,6 +122,10 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   (« je travaille à 10 h » n'est pas « les documents, c'est à 10 h »).
 - `peak` : la tranche au plus fort lift parmi celles qui portent au moins 20 % du temps du type ; `null` quand le type se répartit sans pointe.
 - `reliable` : au moins 5 sessions retenues **et** 120 minutes réelles ; sinon le profil reste affiché, marqué « peu fiable ».
+- **Affinité (3.6, étape C2)** : `BestHours.affinity(settings, result)` rend `null` si `schedule.bestHours` n'est pas actif, sinon l'`Affinity` du moteur : pour chaque type
+  **fiable** et non vide, le gain de chaque tranche est `lift − 1` borné à [0, 1] si elle porte au moins 10 % du temps du type (`AFFINITY_MIN_SHARE`), sinon 0 ; les
+  heures préférées des réglages l'accompagnent et priment. `BestHours.strengthOf(niveau)` = 0,15 / 0,30 / 0,50. La carte Statistiques reste une observation : elle n'est pas
+  filtrée par le réglage. Voir `ordonnancement.md` § Meilleures heures au créneau.
 - Tri par temps réel décroissant, puis par nom. Tests : `BestHoursTest` (déterministe sur une base de sessions fixée), `BestHoursUiTest`.
 
 ### Écran (`StatsScreen`, `ui`)

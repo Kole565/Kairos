@@ -1305,4 +1305,21 @@
     <string name="stats_hours_share">%1$s %2$d %</string>
     <string name="card_besthours_title">Quand tu travailles chaque type</string>
     <string name="card_besthours_body">Les Statistiques montrent maintenant, pour chaque type de tâche, les tranches de 2 h où tu travailles vraiment, comparées à ton rythme habituel. Observation seulement : rien ne change dans ton planning.</string>
+    <string name="besthours_settings_title">Meilleures heures</string>
+    <string name="besthours_settings_body">Kairos peut préférer, entre des tâches de score voisin, les heures où tu travailles d’habitude chaque type de tâche (mesurées avec le chrono, voir Statistiques). Désactivé par défaut ; les tâches en retard et l’urgence passent toujours avant.</string>
+    <string name="besthours_enable">Préférer mes heures habituelles</string>
+    <string name="besthours_strength">Force</string>
+    <string name="besthours_strength_0">Faible</string>
+    <string name="besthours_strength_1">Moyenne</string>
+    <string name="besthours_strength_2">Forte</string>
+    <string name="besthours_preferred_title">Heure préférée par type</string>
+    <string name="besthours_preferred_body">Laisser vide pour utiliser les heures détectées. Une heure préférée l’emporte sur la détection et marche sans historique de chrono.</string>
+    <string name="besthours_hour_label">Heure préférée pour %1$s (0–23)</string>
+    <string name="besthours_no_types">Ajoute des types dans « Types de tâche » pour leur donner une heure préférée.</string>
+    <string name="note_affinity_detected">ton heure habituelle pour « %1$s »</string>
+    <string name="note_affinity_manual">heure préférée pour « %1$s »</string>
+    <string name="why_affinity_detected">Placée ici car tu travailles d’habitude les tâches « %1$s » vers cette heure (voir Statistiques). Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
+    <string name="why_affinity_manual">Placée ici car tu as réglé une heure préférée pour « %1$s ». Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
+    <string name="card_besthours_apply_title">Planifier autour de tes meilleures heures</string>
+    <string name="card_besthours_apply_body">Dans les Réglages, active « Préférer mes heures habituelles » : entre des tâches de score voisin, Kairos choisit celle dont tu travailles d’habitude le type à cette heure, ou à l’heure que tu lui as donnée. Les tâches en retard et l’urgence passent toujours avant.</string>
 </resources>

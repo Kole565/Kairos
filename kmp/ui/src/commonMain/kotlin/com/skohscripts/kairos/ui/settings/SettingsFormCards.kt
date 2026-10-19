@@ -275,6 +275,7 @@ internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, 
         if (index == 0) {
             ScheduleCard(values, errors, onChange)
             ContextsCard(values, errors, onChange)
+            BestHoursCard(values, errors, onChange)
         }
     }
     AdvancedGroup(values, errors, onChange)

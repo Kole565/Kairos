@@ -27,6 +27,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.skohscripts.kairos.core.engine.AffinitySource
 import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.LearningSettings
@@ -36,6 +37,8 @@ import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.generated.resources.Res
+import com.skohscripts.kairos.ui.generated.resources.why_affinity_detected
+import com.skohscripts.kairos.ui.generated.resources.why_affinity_manual
 import com.skohscripts.kairos.ui.generated.resources.why_deadline_in
 import com.skohscripts.kairos.ui.generated.resources.why_deadline_overdue
 import com.skohscripts.kairos.ui.generated.resources.why_deadline_today
@@ -64,7 +67,14 @@ import org.jetbrains.compose.resources.stringResource
  * (`wsjf_breakdown`), en menu MD3 flottant.
  */
 @Composable
-internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: String, learned: DurationEstimator.Estimate? = null, learning: LearningSettings = LearningSettings()) {
+internal fun ScoreBadge(
+    task: Task,
+    why: Scheduling.WsjfBreakdown,
+    language: String,
+    learned: DurationEstimator.Estimate? = null,
+    learning: LearningSettings = LearningSettings(),
+    affinity: AffinitySource? = null,
+) {
     var open by remember { mutableStateOf(false) }
     val score = Dates.number(why.score, language)
     val title = stringResource(Res.string.why_title)
@@ -118,6 +128,11 @@ internal fun ScoreBadge(task: Task, why: Scheduling.WsjfBreakdown, language: Str
                         stringResource(Res.string.why_learned_weak, it.samples, learning.minSamples)
                     }
                     Text(text, style = MaterialTheme.typography.bodySmall)
+                }
+                // Meilleures heures (étape C2) : l'heure du type a fait préférer cette tâche sur ce créneau.
+                affinity?.let {
+                    val res = if (it == AffinitySource.MANUAL) Res.string.why_affinity_manual else Res.string.why_affinity_detected
+                    Text(stringResource(res, task.taskType.trim()), style = MaterialTheme.typography.bodySmall)
                 }
                 Text(stringResource(Res.string.why_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

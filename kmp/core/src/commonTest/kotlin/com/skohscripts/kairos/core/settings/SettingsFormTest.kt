@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.settings
 
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.TeamSettings
@@ -398,6 +399,63 @@ class SettingsFormTest {
     @Test
     fun restoringTheDefaultsClearsTheWindowsAndTheContexts() {
         val custom = validate(*twoWindows, "schedule.c1.name" to "Work").settings!!
+        val restored = SettingsForm.restoreDefaults(SettingsForm.values(custom))
+        assertNull(SettingsForm.validate(restored, custom).settings!!.schedule)
+    }
+
+    // --- Meilleures heures (étape C2) ----------------------------------------------------------------------------
+
+    @Test
+    fun theBestHoursDefaultsAreWrittenAsNothing() {
+        val values = SettingsForm.values(base)
+        assertEquals("false", values["schedule.bestHours.enabled"])
+        assertEquals("1", values["schedule.bestHours.strength"])
+        assertEquals("", values["schedule.bestHours.preferred"])
+        assertNull(validate("schedule.bestHours.enabled" to "false", "schedule.bestHours.strength" to "1").settings!!.schedule)
+    }
+
+    @Test
+    fun enablingTheBestHoursCreatesOnlyThatSubObject() {
+        val on = validate("schedule.bestHours.enabled" to "true", "schedule.bestHours.strength" to "2", "schedule.bestHours.preferred" to "Dev=9, Réunion=14").settings!!
+        assertEquals(BestHoursSettings(true, 2, mapOf("Dev" to 9, "Réunion" to 14)), on.schedule!!.bestHours)
+        assertEquals(emptyMap(), on.schedule!!.weekdays)
+        assertEquals("Dev=9,Réunion=14", SettingsForm.values(on)["schedule.bestHours.preferred"])
+        // Revenir aux valeurs par défaut défait l'objet, et le sous-objet `schedule` avec lui.
+        val off = SettingsForm.validate(SettingsForm.values(on) + mapOf("schedule.bestHours.enabled" to "false", "schedule.bestHours.strength" to "1", "schedule.bestHours.preferred" to ""), on)
+        assertNull(off.settings!!.schedule)
+    }
+
+    @Test
+    fun theBestHoursSitBesideTheDaysAndTheContexts() {
+        val both = validate("schedule.bestHours.enabled" to "true", "schedule.c1.name" to "Work").settings!!
+        assertEquals("Work", both.schedule!!.contexts.single().name)
+        assertEquals(true, both.schedule!!.bestHours!!.enabled)
+        // Vider les contextes garde les meilleures heures (et inversement).
+        val noContext = SettingsForm.validate(SettingsForm.values(both) + ("schedule.c1.name" to ""), both).settings!!
+        assertEquals(true, noContext.schedule!!.bestHours!!.enabled)
+    }
+
+    @Test
+    fun theStrengthLevelAndTheHoursAreBounded() {
+        assertEquals(FieldErrorKind.TOO_LARGE, validate("schedule.bestHours.strength" to "3").fieldErrors["schedule.bestHours.strength"]!!.kind)
+        assertEquals(FieldErrorKind.TOO_SMALL, validate("schedule.bestHours.strength" to "-1").fieldErrors["schedule.bestHours.strength"]!!.kind)
+        val tooLate = validate("schedule.bestHours.preferred" to "Dev=24").fieldErrors["schedule.bestHours.preferred"]!!
+        assertEquals(FieldErrorKind.TOO_LARGE, tooLate.kind)
+        assertEquals("23", tooLate.bound)
+        assertEquals(FieldErrorKind.TOO_SMALL, validate("schedule.bestHours.preferred" to "Dev=-2").fieldErrors["schedule.bestHours.preferred"]!!.kind)
+        assertEquals(FieldErrorKind.NOT_INTEGER, validate("schedule.bestHours.preferred" to "Dev=midi").fieldErrors["schedule.bestHours.preferred"]!!.kind)
+        assertNull(validate("schedule.bestHours.preferred" to "Dev=0, Mail=23").fieldErrors["schedule.bestHours.preferred"])
+    }
+
+    @Test
+    fun thePreferredHoursEncodeAndDecodeAndSkipTheEmptyOnes() {
+        assertEquals(mapOf("Dev" to "9", "Mail" to ""), SettingsForm.parsePreferred("Dev=9, Mail=, =3, sans-egal"))
+        assertEquals("Dev=9", SettingsForm.encodePreferred(mapOf("Dev" to "9", "Mail" to "", "" to "4")))
+    }
+
+    @Test
+    fun restoringTheDefaultsClearsTheBestHours() {
+        val custom = validate("schedule.bestHours.enabled" to "true", "schedule.bestHours.preferred" to "Dev=9").settings!!
         val restored = SettingsForm.restoreDefaults(SettingsForm.values(custom))
         assertNull(SettingsForm.validate(restored, custom).settings!!.schedule)
     }

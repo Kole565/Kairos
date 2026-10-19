@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.day.DayView
+import com.skohscripts.kairos.core.engine.AffinitySource
 import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -108,6 +109,8 @@ import com.skohscripts.kairos.ui.generated.resources.inbox_title
 import com.skohscripts.kairos.ui.generated.resources.later_hint
 import com.skohscripts.kairos.ui.generated.resources.later_title
 import com.skohscripts.kairos.ui.generated.resources.note_conflict
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_detected
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_manual
 import com.skohscripts.kairos.ui.generated.resources.note_dip
 import com.skohscripts.kairos.ui.generated.resources.note_pushed
 import com.skohscripts.kairos.ui.generated.resources.note_pushed_pinned
@@ -664,6 +667,10 @@ private fun AgendaRow(item: Scheduling.ScheduledTask, ctx: RowContext, dipTrough
                 WarnBadge(stringResource(res, time, after))
             }
             if (item.dipApplied) WarnBadge(stringResource(Res.string.note_dip, dipTroughHour), KairosIcons.Schedule)
+            item.affinity?.let {
+                val res = if (it == AffinitySource.MANUAL) Res.string.note_affinity_manual else Res.string.note_affinity_detected
+                WarnBadge(stringResource(res, item.task.taskType.trim()), KairosIcons.Schedule)
+            }
             item.conflictWith?.let { ErrorBadge(stringResource(Res.string.note_conflict, it)) }
         },
     )

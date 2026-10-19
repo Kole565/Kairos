@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.settings
 
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.ScheduleSettings
@@ -26,6 +27,8 @@ class SettingField internal constructor(
     val minExclusive: Boolean = false,
     internal val read: (Settings) -> String,
     internal val write: (Settings, String) -> Settings,
+    /** Contrôle propre à un champ texte, en plus de sa nature (`null` : texte libre). */
+    internal val validate: ((String) -> FieldError?)? = null,
 )
 
 enum class FieldErrorKind { REQUIRED, NOT_INTEGER, NOT_NUMBER, TOO_SMALL, TOO_LARGE, INVALID_DATE, INVALID_COLOR, DUPLICATE, UNKNOWN_CONTEXT }
@@ -116,8 +119,11 @@ object SettingsForm {
     /** Écrit [change] sur [Settings.schedule] ; le sous-objet redevient nul quand il ne porte plus rien. */
     private fun withSchedule(settings: Settings, change: (ScheduleSettings) -> ScheduleSettings): Settings {
         val next = change(settings.schedule ?: ScheduleSettings())
-        return settings.copy(schedule = next.takeIf { it.weekdays.isNotEmpty() || it.contexts.isNotEmpty() })
+        return settings.copy(schedule = next.takeIf { it.isCustomized() })
     }
+
+    /** Vrai si le sous-objet porte quelque chose : sinon il redevient nul (rien n'entre dans l'export). */
+    private fun ScheduleSettings.isCustomized() = weekdays.isNotEmpty() || contexts.isNotEmpty() || bestHours != null
 
     private fun custom(settings: Settings, day: Int): DaySchedule? = settings.schedule?.weekdays?.get(day)?.takeIf { !it.free }
 
@@ -232,6 +238,70 @@ object SettingsForm {
     }
 
     /**
+     * Réglage des meilleures heures (étape C2) : lu sur [BestHoursSettings] (défauts si absent), écrit par [change]. Tant que la valeur écrite est
+     * celle par défaut, `bestHours` **reste nul** (ou y revient) : sauver le formulaire sans y toucher n'écrit rien.
+     */
+    private fun bestHours(
+        key: String,
+        kind: FieldKind,
+        min: Double? = null,
+        max: Double? = null,
+        validate: ((String) -> FieldError?)? = null,
+        get: (BestHoursSettings) -> String,
+        change: (BestHoursSettings, String) -> BestHoursSettings,
+    ) = SettingField(
+        key, kind, min, max,
+        read = { get(it.schedule?.bestHours ?: BestHoursSettings()) },
+        write = { s, v ->
+            val next = change(s.schedule?.bestHours ?: BestHoursSettings(), v.trim())
+            withSchedule(s) { it.copy(bestHours = next.takeIf { b -> b != BestHoursSettings() }) }
+        },
+        validate = validate,
+    )
+
+    /**
+     * Les heures préférées saisies, `type=heure` séparés par des virgules (un type ne contient pas de virgule), en texte : type → heure,
+     * dans l'ordre. Une entrée sans « = » est ignorée. Aucune validation (voir [validate]).
+     */
+    fun parsePreferred(text: String): Map<String, String> {
+        val out = LinkedHashMap<String, String>()
+        for (entry in text.split(',')) {
+            val at = entry.lastIndexOf('=')
+            if (at < 0) continue
+            val type = entry.substring(0, at).trim()
+            if (type.isNotEmpty()) out[type] = entry.substring(at + 1).trim()
+        }
+        return out
+    }
+
+    /** L'inverse de [parsePreferred] : les types sans heure (texte vide) sont omis. */
+    fun encodePreferred(hours: Map<String, String>): String =
+        hours.filter { (type, hour) -> type.isNotBlank() && hour.isNotBlank() }.entries.joinToString(",") { (type, hour) -> "${type.trim()}=${hour.trim()}" }
+
+    /** Une heure préférée lisible, entre 0 et 23 : sinon l'erreur de ce champ, comme un champ entier borné. */
+    private fun preferredError(text: String): FieldError? {
+        for (hour in parsePreferred(text).values) {
+            val n = hour.toIntOrNull()
+            when {
+                n == null && !Regex("-?[0-9]+").matches(hour) -> return FieldError(FieldErrorKind.NOT_INTEGER)
+                n == null -> return if (hour.startsWith("-")) FieldError(FieldErrorKind.TOO_SMALL, "0") else FieldError(FieldErrorKind.TOO_LARGE, "23")
+                n < 0 -> return FieldError(FieldErrorKind.TOO_SMALL, "0")
+                n > 23 -> return FieldError(FieldErrorKind.TOO_LARGE, "23")
+            }
+        }
+        return null
+    }
+
+    private val BEST_HOURS_FIELDS: List<SettingField> = listOf(
+        bestHours("schedule.bestHours.enabled", FieldKind.BOOL, get = { it.enabled.toString() }) { b, v -> b.copy(enabled = v == "true") },
+        bestHours("schedule.bestHours.strength", FieldKind.INT, 0.0, 2.0, get = { it.strength.toString() }) { b, v -> b.copy(strength = v.toInt()) },
+        bestHours(
+            "schedule.bestHours.preferred", FieldKind.TEXT, validate = ::preferredError,
+            get = { encodePreferred(it.preferred.mapValues { (_, hour) -> hour.toString() }) },
+        ) { b, v -> b.copy(preferred = parsePreferred(v).mapValues { (_, hour) -> hour.toInt() }) },
+    )
+
+    /**
      * Réglage des durées apprises : lu sur [LearningSettings] (défauts si `learning` est nul), écrit par [change]. Même règle
      * d'isolation que [team] : tant que la valeur écrite est celle par défaut, `learning` **reste nul** (ou y revient).
      */
@@ -307,7 +377,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + LEARNING_FIELDS
+    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + BEST_HOURS_FIELDS + LEARNING_FIELDS
 
     private val byKey = FIELDS.associateBy { it.key }
 
@@ -398,13 +468,14 @@ object SettingsForm {
     private fun dropEmptyContexts(settings: Settings): Settings {
         val schedule = settings.schedule ?: return settings
         val kept = schedule.contexts.filter { it.name.isNotBlank() }
-        return settings.copy(schedule = schedule.copy(contexts = kept).takeIf { it.weekdays.isNotEmpty() || it.contexts.isNotEmpty() })
+        return settings.copy(schedule = schedule.copy(contexts = kept).takeIf { it.isCustomized() })
     }
 
     private fun check(f: SettingField, raw: String): FieldError? {
         val text = raw.trim()
         return when (f.kind) {
-            FieldKind.BOOL, FieldKind.TEXT -> null
+            FieldKind.BOOL -> null
+            FieldKind.TEXT -> f.validate?.invoke(text)
             FieldKind.COLOR -> if (normalizeColor(text) == null) FieldError(FieldErrorKind.INVALID_COLOR, text) else null
             FieldKind.DATES -> text.split(',').map { it.trim() }.firstOrNull { it.isNotEmpty() && parseDate(it) == null }
                 ?.let { FieldError(FieldErrorKind.INVALID_DATE, it) }

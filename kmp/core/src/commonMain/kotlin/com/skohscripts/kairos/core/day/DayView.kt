@@ -14,6 +14,7 @@ import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TimeBlock
 import com.skohscripts.kairos.core.model.WorkSession
+import com.skohscripts.kairos.core.stats.BestHours
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -175,7 +176,13 @@ data class DayView(
 
             // Durées apprises des tâches sans estimation explicite (docs/spec/durees-apprises.md) : les fiables servent au placement.
             val learned = DurationEstimator.estimates(snapshot, instant)
-            val schedule = Scheduling.buildDaySchedule(all, dayBlocks, day, now, settings, blockedIds, effective, DurationEstimator.appliedMinutes(learned))
+            // Heures habituelles ou préférées par type (étape C2) : mesurées seulement si le réglage est actif, sinon `null` (comme avant).
+            val affinity = if (settings.schedule?.bestHours?.enabled == true) {
+                BestHours.affinity(settings, BestHours.measure(snapshot.tasks, snapshot.workSessions, instant, settings, timeZone))
+            } else {
+                null
+            }
+            val schedule = Scheduling.buildDaySchedule(all, dayBlocks, day, now, settings, blockedIds, effective, DurationEstimator.appliedMinutes(learned), affinity)
             val timeline = Scheduling.buildTimeline(schedule, dayBlocks, day, settings)
 
             val parentTitle = all.filter { it.parentId != null && it.parentId in byId }

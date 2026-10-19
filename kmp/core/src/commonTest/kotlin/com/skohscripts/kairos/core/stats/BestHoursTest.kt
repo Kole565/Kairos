@@ -1,9 +1,13 @@
 package com.skohscripts.kairos.core.stats
 
+import com.skohscripts.kairos.core.engine.AffinitySource
+import com.skohscripts.kairos.core.model.BestHoursSettings
+import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.WorkSession
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlin.math.abs
@@ -146,5 +150,67 @@ class BestHoursTest {
         val tasks = listOf(task(1, "Short"), task(2, "Long"))
         val result = measure(tasks, listOf(session(1, 12, "10:00", "10:30"), session(2, 12, "11:00", "13:00")))
         assertEquals(listOf("Long", "Short"), result.profiles.map { it.type })
+    }
+
+    // --- Étape C2 : l'affinité tirée de la mesure -------------------------------------------------------------------
+
+    private fun enabled(strength: Int = 1, preferred: Map<String, Int> = emptyMap()) =
+        Settings(schedule = ScheduleSettings(bestHours = BestHoursSettings(enabled = true, strength = strength, preferred = preferred)))
+
+    private val detectionTasks = listOf(task(1, "Dev"), task(2, "Mail"), task(3, "Rare"))
+    private val detectionSessions = (1..6).map { session(1, it + 5, "10:00", "11:00") } +
+        (1..6).map { session(2, it + 5, "14:00", "15:00") } + listOf(session(3, 12, "16:00", "17:00"))
+
+    @Test
+    fun disabledOrAbsentSettingGivesNoAffinity() {
+        val result = measure(detectionTasks, detectionSessions)
+        assertNull(BestHours.affinity(Settings(), result))
+        assertNull(BestHours.affinity(Settings(schedule = ScheduleSettings(bestHours = BestHoursSettings(enabled = false))), result))
+    }
+
+    @Test
+    fun aReliableTypeIsDrawnToItsUsualBucketOnly() {
+        val affinity = BestHours.affinity(enabled(), measure(detectionTasks, detectionSessions))!!
+        assertEquals(1.0, affinity.boost("Dev", LocalTime(10, 30)), 1e-9)
+        assertEquals(1.0, affinity.boost("dev ", LocalTime(11, 59)), 1e-9) // sans la casse ni les espaces
+        assertEquals(0.0, affinity.boost("Dev", LocalTime(14, 0)), 1e-9)
+        assertEquals(1.0, affinity.boost("Mail", LocalTime(14, 0)), 1e-9)
+    }
+
+    @Test
+    fun anUnreliableTypeAndAnUntypedTaskHaveNoAffinity() {
+        val affinity = BestHours.affinity(enabled(), measure(detectionTasks, detectionSessions))!!
+        assertEquals(0.0, affinity.boost("Rare", LocalTime(16, 0)), 1e-9) // une seule session : peu fiable
+        assertEquals(0.0, affinity.boost("", LocalTime(10, 0)), 1e-9)
+        assertEquals(0.0, affinity.boost("Inconnu", LocalTime(10, 0)), 1e-9)
+    }
+
+    @Test
+    fun theThreeLevelsAreIncreasingAndBounded() {
+        assertEquals(listOf(0.15, 0.3, 0.5), listOf(0, 1, 2).map(BestHours::strengthOf))
+        assertEquals(0.15, BestHours.strengthOf(-4), 1e-9)
+        assertEquals(0.5, BestHours.strengthOf(9), 1e-9)
+        val affinity = BestHours.affinity(enabled(strength = 2), measure(detectionTasks, detectionSessions))!!
+        assertEquals(1.5, affinity.factor("Dev", LocalTime(10, 0)), 1e-9)
+        assertEquals(1.0, affinity.factor("Dev", LocalTime(15, 0)), 1e-9)
+    }
+
+    @Test
+    fun aManualPreferencePrevailsOverDetectionAndFadesAroundItsHour() {
+        val affinity = BestHours.affinity(enabled(preferred = mapOf("Dev" to 15)), measure(detectionTasks, detectionSessions))!!
+        assertEquals(AffinitySource.MANUAL, affinity.source("dev"))
+        assertEquals(AffinitySource.DETECTED, affinity.source("Mail"))
+        assertEquals(1.0, affinity.boost("Dev", LocalTime(15, 0)), 1e-9)
+        assertEquals(0.5, affinity.boost("Dev", LocalTime(13, 30)), 1e-9)
+        assertEquals(0.0, affinity.boost("Dev", LocalTime(12, 0)), 1e-9)
+        // L'heure habituelle détectée (10 h) ne compte plus pour ce type.
+        assertEquals(0.0, affinity.boost("Dev", LocalTime(10, 30)), 1e-9)
+    }
+
+    @Test
+    fun aManualPreferenceWorksWithoutAnySession() {
+        val affinity = BestHours.affinity(enabled(preferred = mapOf("Docs" to 12)), measure(emptyList(), emptyList()))!!
+        assertEquals(1.0, affinity.boost("Docs", LocalTime(12, 0)), 1e-9)
+        assertEquals(0.0, affinity.boost("Dev", LocalTime(12, 0)), 1e-9)
     }
 }

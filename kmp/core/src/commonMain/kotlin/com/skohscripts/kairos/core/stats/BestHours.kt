@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.stats
 
+import com.skohscripts.kairos.core.engine.Affinity
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.minutesBetween
 import com.skohscripts.kairos.core.model.Settings
@@ -17,8 +18,9 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
 /**
- * Quand on travaille vraiment, par type de tâche (docs/spec/planning-personnalise.md § Lot C, étape C1). Pur : sessions, tâches, instant,
- * fuseau et réglages en paramètres. **Observe seulement** : aucun effet sur le planning (l'étape C2 viendra, désactivée par défaut).
+ * Quand on travaille vraiment, par type de tâche (docs/spec/planning-personnalise.md § Lot C, étapes C1 et C2). Pur : sessions, tâches,
+ * instant, fuseau et réglages en paramètres. [measure] **observe seulement** (carte Statistiques) ; [affinity] en tire, si l'utilisateur l'a activé
+ * (C2, désactivé par défaut), la préférence du planning.
  *
  * Les sessions du chrono sont la donnée : le chrono peut être lancé sur n'importe quelle tâche, depuis n'importe quel classement, donc
  * l'heure où l'on a vraiment travaillé est indépendante de l'heure où Kairos l'avait suggérée. Les minutes de chaque session sont
@@ -61,6 +63,32 @@ object BestHours {
     /** Les profils, du type le plus chronométré au moins chronométré, et la répartition [global] de tout le temps retenu. */
     data class Result(val profiles: List<Profile>, val global: List<Double>, val sessions: Int) {
         val hasData: Boolean get() = profiles.isNotEmpty()
+    }
+
+    /** Les trois forces du réglage (0 Faible, 1 Moyenne, 2 Forte) : le diviseur de l'effort est `1 + force × gain`, gain ∈ [0, 1]. */
+    private val STRENGTHS = doubleArrayOf(0.15, 0.3, 0.5)
+
+    /** La force numérique du niveau [level] du réglage (un niveau hors de 0..2 est ramené dans les bornes). */
+    fun strengthOf(level: Int): Double = STRENGTHS[level.coerceIn(0, STRENGTHS.lastIndex)]
+
+    /** Une tranche ne compte pour la détection que si elle porte au moins cette part du temps du type (pas de pointe sur du bruit). */
+    private const val AFFINITY_MIN_SHARE = 0.1
+
+    /**
+     * L'affinité du réglage C2 : `null` si [BestHoursSettings.enabled] est faux (rien ne change). Détection : le gain d'une tranche est son
+     * « lift » moins 1, borné à [0, 1], pour les seuls types **fiables** et les tranches qui portent assez de leur temps ; les heures
+     * préférées des réglages priment sur la détection.
+     */
+    fun affinity(settings: Settings, result: Result): Affinity? {
+        val best = settings.schedule?.bestHours?.takeIf { it.enabled } ?: return null
+        val detected = HashMap<String, List<Double>>()
+        for (p in result.profiles) {
+            if (!p.reliable || p.type.isEmpty()) continue
+            detected[p.type.lowercase()] = List(BUCKETS) { b -> if (p.share[b] >= AFFINITY_MIN_SHARE) (p.lift[b] - 1.0).coerceIn(0.0, 1.0) else 0.0 }
+        }
+        val preferred = HashMap<String, Int>()
+        for ((type, hour) in best.preferred) if (hour in 0..23 && type.isNotBlank()) preferred[type.trim().lowercase()] = hour
+        return Affinity(strengthOf(best.strength), detected, preferred, BUCKET_HOURS)
     }
 
     /** Début de la tranche [bucket], en heures (0, 2, 4…). */

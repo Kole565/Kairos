@@ -58,7 +58,8 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
    notes « à partir de 14h05, après « Réunion » » (« (épinglée) » si
    l'obstacle est une tâche épinglée, jamais pour une fenêtre de deep work :
   `ObstacleKind.DEEPWORK`, que le test différentiel range avec `PINNED`), « créneau creux (~15 h) : tâche
-   légère privilégiée », « chevauche « Réunion » ». Vide : « Aucune tâche à
+   légère privilégiée », « heure préférée pour « Dev » » ou « ton heure habituelle pour « Dev » » (3.6, meilleures heures :
+   seulement si elles ont changé le choix du créneau), « chevauche « Réunion » ». Vide : « Aucune tâche à
    faire n'est actuellement planifiée ».
 7. **Sections secondaires**, chacune avec son compte et une phrase de rôle,
    absentes si vides : « Sans créneau aujourd'hui » (**dépliée**),
@@ -99,7 +100,9 @@ atténué.
 **Pourquoi à cette place ?** : valeur de la priorité, ce qu'ajoute la date
 la plus proche (« Échéance dépassée de 12 j », « Date programmée demain »,
 « Aucune échéance »), l'effort et sa provenance, le score ; une tâche en
-retard le dit en tête. Le score n'est affiché que pour une tâche qualifiée.
+retard le dit en tête. Le score n'est affiché que pour une tâche qualifiée. Quand les meilleures heures ont fait préférer la tâche sur son créneau (3.6),
+une phrase de plus le dit (« Placée ici car tu travailles d'habitude les tâches « Dev » vers cette heure » ou « … car tu as réglé une heure préférée pour « Dev » ») et rappelle
+que ce n'est qu'une préférence : l'urgence et les tâches en retard passent d'abord (`ScoreBadge(affinity)`, lu sur `DayView.schedule`).
 
 **Guide des points** (« Comment estimer les points ? », replié) : estimer
 en taille relative (volume × complexité × incertitude), en comparant à ses

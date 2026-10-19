@@ -73,7 +73,7 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 since, tour)`, **dans l'ordre de la visite**.
 
 - **Chapitres** (`GuideChapter`) : `FIRST_STEPS` (capture, qualification, « faire dans l'ordre », « Découvrir Kairos »,
-  première tâche), `PLAN` (priorité, points et estimation ; score et placement ; plages et contextes ; horaires par jour), `FOLLOW` (chrono ;
+  première tâche), `PLAN` (priorité, points et estimation ; score et placement ; plages et contextes ; meilleures heures, 3.6 ; horaires par jour), `FOLLOW` (chrono ;
   durées apprises ; semaine ; statistiques), `ORGANIZE` (sous-tâches ; récurrence et déplacer ; bloqueurs ; créneaux et
   deep work), `TEAM` (les six cartes d'équipe), `SETTINGS` (réglages clairs ; données). `FeatureCatalog.chapters(teamEnabled)`
   n'offre `TEAM` que si l'espace Équipe est activé.
