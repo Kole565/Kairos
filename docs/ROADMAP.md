@@ -27,11 +27,30 @@ Une version n'est plus « brouillon » quand ses issues ont une spec à jour dan
 
 | Famille | Labels |
 |---|---|
-| Type | `enhancement`, `bug`, `documentation`, `feedback` (retour utilisateur à trier) |
-| Domaine | `planning`, `guide`, `statistics`, `recurrence`, `week-view`, `team`, `settings`, `distribution`, `interface`, `accessibility`, `sync`, `android` |
-| État | `deferred` (écarté pour l'instant par une spec, reprenable), `needs-decision` (choix produit ou conception à trancher avant de coder), `needs-spec` (spec à écrire avant de coder) |
+| Type | `bug`, `enhancement` ; `documentation` (documentation seule) ; `feedback` (retour utilisateur à trier) |
+| Domaine | `planning`, `guide`, `statistics`, `recurrence`, `week-view`, `team`, `settings`, `distribution`, `interface`, `accessibility`, `sync`, `android`, `i18n` |
+| État (issue non planifiée) | `deferred` (écarté pour l'instant par une spec, reprenable), `needs-decision` (choix produit ou conception à trancher avant de coder), `needs-spec` (spec à écrire avant de coder) |
+| Standard GitHub | `duplicate`, `invalid`, `wontfix`, `question`, `good first issue`, `help wanted` |
 
-### Modèle d'issue
+### Une issue propre
+
+- Un **type** (`bug` ou `enhancement`), au moins un **domaine**.
+- Un **milestone** : une version quand l'issue est planifiée, `Backlog` sinon.
+- Une issue du `Backlog` porte un **label d'état** qui dit ce qui la retient ; une issue
+  rangée dans une version n'en porte plus (`deferred` et `needs-*` sortent à la planification).
+- Un retour utilisateur non encore qualifié porte `feedback` (vue `Feedback` du Project).
+- Les issues closes gardent leurs labels de type et de domaine (historique cherchable).
+
+### Modèles d'issue (`.github/ISSUE_TEMPLATE/`)
+
+| Modèle | Pour | Labels posés |
+|---|---|---|
+| `bug_report.yml` | Un défaut : étapes, attendu, constaté, version, plateforme, rapport de plantage Android ; rappelle de ne pas joindre un export de la base | `bug` |
+| `feature_request.yml` | Une idée d'utilisateur, en **Context / Need / Expected outcome** | `enhancement`, `feedback` |
+| `planned_work.yml` | Un élément de feuille de route écrit par un mainteneur, avec rappel du workflow et des contraintes du dépôt | `enhancement` |
+
+`config.yml` désactive les issues vides et renvoie vers l'index des specs et vers ce
+document. Les formulaires sont en anglais, comme les issues.
 
 Les issues de suivi suivent le gabarit **Context / Need / Expected outcome** : le
 contexte (ce qui existe, la décision déjà consignée), le besoin (ce que vit

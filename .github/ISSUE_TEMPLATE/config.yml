@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Design decisions and specs
+    url: https://github.com/SKOHscripts/Kairos/blob/main/docs/spec/README.md
+    about: Choices already made (offline, no account, scheduling rules…) are recorded here. Check before asking for a change.
+  - name: Roadmap and how issues are triaged
+    url: https://github.com/SKOHscripts/Kairos/blob/main/docs/ROADMAP.md
+    about: Milestones, labels and the path of a feedback from "Inbox" to a release.

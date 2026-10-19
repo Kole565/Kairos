@@ -1,0 +1,103 @@
+name: Bug report
+description: Something in Kairos does not work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Kairos is offline and keeps your data on your device: **please do not attach an export of your database** (it contains your task titles). Describe the smallest example that shows the problem instead.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before sending
+      options:
+        - label: I searched the existing issues and this one is not already reported.
+          required: true
+        - label: I use the latest published version, or I mention the one I use below.
+          required: false
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happens?
+      description: A short description of the problem, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you did, step by step, starting from the screen where it begins.
+      placeholder: |
+        1. Open the Day view
+        2. Create a task "Write report" with 5 points
+        3. Press "Move…" and pick tomorrow
+        4. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens instead?
+      description: Error messages, wrong dates or order, missing items… Screenshots are welcome (check they show nothing private).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kairos version
+      description: Shown in "About and guide" in the app (for example 3.6.0).
+      placeholder: "3.6.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android (APK or F-Droid)
+        - Windows
+        - Linux
+        - macOS
+        - Web (browser)
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Device, system version and browser
+      description: For example "Redmi Note 12, Android 15" or "Firefox 140 on Fedora 42".
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where in the app?
+      options:
+        - Day view and planning
+        - Week view
+        - Recurring tasks and slots
+        - Timer and alerts
+        - Statistics
+        - Settings
+        - Guide and first-task coaching
+        - Team space
+        - Export, import and data
+        - Appearance and languages
+        - Start-up, crash or update
+        - Not sure
+  - type: textarea
+    id: crash
+    attributes:
+      label: Crash report or logs
+      description: |
+        On Android, if Kairos showed a "Kairos stopped" screen at launch, press "Share report" and paste the report here (it stays on your device unless you share it).
+      render: text
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else?
+      description: Does it happen every time? Did it work in an earlier version? Which settings are involved (working hours, contexts, learned durations, best hours…)?
