@@ -1,0 +1,1 @@
+Kairos 3.5.0 : plusieurs plages de travail par jour et contextes (Travail, Maison…) qui réservent des plages à des types de tâche ; une carte Statistiques qui montre, pour chaque type, les heures où tu travailles vraiment, comparées à ton rythme habituel (observation seulement, rien ne change dans ton planning).
