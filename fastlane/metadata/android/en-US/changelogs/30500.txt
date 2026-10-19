@@ -1,0 +1,1 @@
+Kairos 3.5.0: several working windows per day and contexts (Work, Home…) that reserve windows for task types; a Statistics card showing, for each type, the hours when you really work, compared with your usual rhythm (observation only, nothing changes in your plan).
