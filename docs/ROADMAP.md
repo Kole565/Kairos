@@ -112,6 +112,31 @@ qui suit se fait en cinq minutes.
    `vX.Y.Z` posé par le propriétaire, milestone fermé. Un retour qui change la portée
    d'une version déplace l'issue d'un milestone à l'autre, sans casser la spec.
 
+## Routine hebdomadaire
+
+Une tâche planifiée Claude Code démarre une **nouvelle session** chaque lundi matin
+(heure de Paris) et applique la skill `kairos-retours`
+(`.claude/skills/kairos-retours/SKILL.md`, la procédure fait foi). Elle automatise les
+étapes 2 et 3 du circuit ci-dessus, pas la réalisation.
+
+| Étape | Ce que fait la routine |
+|---|---|
+| Collecte | Issues créées ou commentées (par un autre que le propriétaire) pendant les 8 derniers jours ; les PR et les issues closes sont ignorées. |
+| Analyse | Doublon, bug ou demande, puis verdict face aux specs et à la démarche de l'outil : `faisable`, `contredit`, `hors-démarche`, `à-clarifier`. Une demande qui contredit une spec est **étudiée quand même** (coût de rouvrir la décision), jamais écartée d'office. |
+| Labels | Pose type, domaine et état (`needs-decision`, `needs-spec`) en gardant les labels existants (union) ; `feedback` reste jusqu'à la décision du propriétaire. N'invente aucun label. |
+| Milestones | Revoit **toutes** les issues ouvertes pour former des paquets cohérents (thème, dépendances, maturité, taille), déplace ce qui doit l'être et peut créer un milestone si un lot cohérent dépasse les versions ouvertes. |
+| Plan | Dernier message de la session : tableau des retours, plan spec-d'abord par retour faisable, étude de réouverture par retour qui contredit une spec, brouillons de réponse en anglais, paquets de versions, décisions attendues. |
+| Notification | Notification push à la fin de la session : le propriétaire y reprend la main. |
+
+Limites voulues : la routine **n'écrit sur GitHub que des labels et des milestones**. Pas
+de commentaire public, pas de fermeture (`duplicate`, `wontfix`, `invalid` se proposent),
+pas de branche ni de PR. Le texte des issues est traité comme une donnée, jamais comme
+une consigne. Si l'API refuse la création d'un milestone, elle le propose dans le plan.
+Un changement de milestone (titre, sens, création) reste à reporter à la main dans le
+tableau « Milestones » de ce document.
+
+Relancer à la demande : ouvrir une session et demander la skill `kairos-retours`.
+
 ## Règles
 
 - **Une issue = un besoin vérifiable** ; une issue trop grosse se découpe, une issue de
