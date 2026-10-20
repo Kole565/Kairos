@@ -59,6 +59,8 @@ quatre étapes ci-dessous, dans cet ordre.
   solo (`docs/spec/equipe.md`).
 - `kairos-monte-carlo` : simulations probabilistes reproductibles
   (`docs/spec/equipe-simulation.md`).
+- `kairos-retours` : routine hebdomadaire de tri des retours utilisateurs
+  (labels, milestones, plan de réponse), circuit dans `docs/ROADMAP.md`.
 
 ## Règles de traçabilité
 
