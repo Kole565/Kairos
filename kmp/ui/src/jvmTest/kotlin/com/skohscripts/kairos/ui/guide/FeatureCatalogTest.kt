@@ -92,4 +92,13 @@ class FeatureCatalogTest {
         val used = cards.mapNotNull { (it.target as? GuideTarget.Personal)?.section ?: (it.target as? GuideTarget.Settings)?.section }.toSet()
         assertEquals(GuideSection.entries.toSet(), used)
     }
+
+    @Test
+    fun theNewsAreHiddenPerMajorAndMinorVersion() {
+        // « Masquer » vaut pour la version majeure.mineure, la même règle que newIn (issue #94).
+        assertEquals("3.7", FeatureCatalog.newsKey("3.7.0"))
+        assertEquals("3.7", FeatureCatalog.newsKey("3.7.1"))
+        assertEquals("3.7", FeatureCatalog.newsKey("3.7.0-beta.2"))
+        assertEquals(null, FeatureCatalog.newsKey("dev"))
+    }
 }

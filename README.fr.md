@@ -241,8 +241,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   journée et te félicite une fois qu’elle est réellement créée. Rien n’est
   écrit si tu renonces.
 - **Découvrir Kairos** : des chapitres sur chaque fonctionnalité (Réglages,
-  aide ou Accueil), à rouvrir quand tu veux, et une section **« Nouveau dans
-  cette version »** sur l’Accueil. « Voir l’écran » défile jusqu’à l’endroit
+  aide ou Accueil), à rouvrir quand tu veux (un chapitre lu jusqu’au bout est
+  coché), et une section **« Nouveau dans cette version »** sur l’Accueil, qui
+  reste masquée pour la version une fois fermée. Réglages → À propos → « Revoir
+  le guide depuis le début » fait tout revenir. « Voir l’écran » défile jusqu’à l’endroit
   dont parle la carte et le met en valeur un instant.
 
 ### Gestion d'équipe (facultative)
@@ -336,7 +338,7 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Statistiques | Fenêtre des indicateurs | 8 semaines |
 | Équipe | Équipe | Gestion d’équipe, puis ses seuils, sa charge et ses prévisions | désactivé |
 | Données | Données, réglages par défaut | Export, import, restaurer les valeurs par défaut | |
-| À propos | | Découvrir Kairos, À propos et guide | |
+| À propos | | Découvrir Kairos, À propos et guide, revoir le guide depuis le début | |
 
 ## Développement
 

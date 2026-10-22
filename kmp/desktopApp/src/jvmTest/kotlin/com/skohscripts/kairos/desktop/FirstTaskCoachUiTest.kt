@@ -125,6 +125,8 @@ class FirstTaskCoachUiTest {
         assertEquals("Send the quote to Marc", task.title)
         assertEquals("Before Friday", task.description)
         assertEquals(25, task.estimatedMinutes)
+        // Mené à son terme : retenu, l'invitation ne reviendra plus (docs/spec/premiere-tache.md, issue #94).
+        waitUntil(timeoutMillis = 15_000) { repository.snapshot.value.settings.guide?.firstTaskDone == true }
 
         // Où elle est placée : trois étapes. Sans priorité ni points, la tâche attend dans « À traiter ».
         onNodeWithText("Show me where it is placed").performClick()

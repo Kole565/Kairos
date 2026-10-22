@@ -227,7 +227,10 @@ order (critical path). Cycles are refused.
   options), then shows where your task lands in the day and congratulates you
   once it is really created. Nothing is written if you give up.
 - **Discover Kairos**: chapters on every feature (Settings, help or Home),
-  reopened whenever you like, and a **“New in this version”** section on Home.
+  reopened whenever you like (a chapter read to the end is checked), and a
+  **“New in this version”** section on Home, which stays hidden for the version
+  once dismissed. Settings → About → “See the guide again from the start”
+  brings everything back.
   “Show me the screen” scrolls to the exact place a card talks about and
   marks it for a moment.
 
@@ -317,7 +320,7 @@ you press "Save").
 | | Statistics | Window of the indicators | 8 weeks |
 | Team | Team | Team management, then its thresholds, load and forecasts | off |
 | Data | Data, default settings | Export, import, restore the defaults | |
-| About | | Discover Kairos, About & guide | |
+| About | | Discover Kairos, About & guide, see the guide again from the start | |
 
 ## Development
 

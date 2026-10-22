@@ -13,6 +13,7 @@ import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.NoteStatus
 import com.skohscripts.kairos.core.notes.NoteConversion
 import com.skohscripts.kairos.core.model.PRIORITY_VALUES
+import com.skohscripts.kairos.core.model.GuideSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
@@ -1127,6 +1128,24 @@ class KairosRepository(
     suspend fun updateSettings(settings: Settings) = write {
         queries.writeSettings(json.encodeToString(Settings.serializer(), withTeamIdentity(settings)))
     }
+
+    /**
+     * Change ce que le guide a retenu (docs/spec/visite-guidee.md § Persistance) : [change] reçoit `guide` (ou ses valeurs
+     * par défaut s'il est nul) ; un résultat égal aux valeurs par défaut est enregistré nul, et rien n'est écrit si rien ne
+     * change. Lu dans l'écriture : deux changements rapprochés ne s'écrasent pas.
+     */
+    suspend fun updateGuide(change: (GuideSettings) -> GuideSettings) {
+        fun next(settings: Settings) = change(settings.guide ?: GuideSettings()).takeUnless { it == GuideSettings() }
+        // Rien à changer : pas d'écriture (ni publication, ni sauvegarde déclenchée).
+        if (next(state.value.settings) == state.value.settings.guide) return
+        write {
+            val settings = state.value.settings
+            queries.writeSettings(json.encodeToString(Settings.serializer(), settings.copy(guide = next(settings))))
+        }
+    }
+
+    /** Le guide repart du début : `guide` remis à nul (« Revoir le guide depuis le début »). */
+    suspend fun resetGuide() = updateGuide { GuideSettings() }
 
     /** [settings] avec l'identité de l'équipe posée si elle manque (voir [updateSettings]). */
     @OptIn(ExperimentalUuidApi::class)

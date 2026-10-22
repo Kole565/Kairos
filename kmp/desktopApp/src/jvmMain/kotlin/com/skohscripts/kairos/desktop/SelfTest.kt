@@ -25,6 +25,7 @@ import com.skohscripts.kairos.ui.notes.NotesScreen
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpotState
 import com.skohscripts.kairos.ui.guide.LocalGuideSpot
@@ -295,6 +296,8 @@ object SelfTest {
             Shot("settings", 900, 1000, settings),
             Shot("settings-narrow", 360, 1000, settings),
             Shot("settings-tracking-narrow", 360, 1200, settingsIn(services, SettingsCategory.TRACKING)),
+            // « À propos » : « Revoir le guide depuis le début » (issue #94), inactif sur une base qui n'a rien retenu.
+            Shot("settings-about-narrow", 360, 900, settingsIn(services, SettingsCategory.ABOUT)),
             Shot("settings-advanced", 900, 2600, settingsIn(services, SettingsCategory.PLANNING)),
             Shot("settings-planning", 900, 5000, plannedSettings),
             Shot("settings-planning-narrow", 360, 8500, plannedSettings),
@@ -336,7 +339,8 @@ object SelfTest {
             Shot("home-team", 900, 1500, atWidth(900.dp) { HomeScreen(teamEnabled = true, onOpen = {}, onTour = {}, onAbout = {}) }),
             Shot("home-new", 900, 1900, atWidth(900.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}, version = "3.4.0") }),
             Shot("home-new-narrow", 360, 2900, atWidth(360.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}, version = "3.4.0") }),
-            Shot("discover", 900, 800, overScrim { DiscoverDialog(teamEnabled = true, onFirstTask = {}, onChapter = {}, onDismiss = {}) }),
+            // Un chapitre parcouru jusqu'au bout : coché, « · lu » (issue #94).
+            Shot("discover", 900, 800, overScrim { DiscoverDialog(teamEnabled = true, onFirstTask = {}, onChapter = {}, onDismiss = {}, read = setOf(GuideChapter.PLAN)) }),
             Shot("discover-narrow", 360, 800, overScrim { DiscoverDialog(teamEnabled = false, onFirstTask = {}, onChapter = {}, onDismiss = {}) }),
             Shot("first-task-coach", 900, 1000, atWidth(900.dp) { DayScreen(services, firstTaskRequest = true) }),
             Shot("first-task-coach-narrow", 360, 900, atWidth(360.dp) { DayScreen(services, firstTaskRequest = true) }),

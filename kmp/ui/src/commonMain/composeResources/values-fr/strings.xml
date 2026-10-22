@@ -1347,4 +1347,10 @@
     <string name="guide_spot_missing_blocked">Aucune tâche bloquée pour l’instant.</string>
     <string name="guide_spot_missing_parents">Aucune tâche mère en cours pour l’instant.</string>
     <string name="guide_spot_missing_stats">Pas encore de statistiques : termine ou chronomètre d’abord quelques tâches.</string>
+    <!-- Mémoire du guide (docs/spec/visite-guidee.md § Persistance, issue #94). -->
+    <string name="discover_chapter_read">%1$s · lu</string>
+    <string name="guide_reset_title">Revoir le guide depuis le début</string>
+    <string name="guide_reset_body">Les chapitres lus, la section « Nouveau dans cette version » masquée et l’accompagnement de la première tâche reviennent comme au premier jour. Tes réglages et tes tâches ne bougent pas.</string>
+    <string name="guide_reset_action">Recommencer</string>
+    <string name="guide_reset_done">Le guide repart du début.</string>
 </resources>

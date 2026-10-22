@@ -353,8 +353,8 @@ fun DayScreen(
                     }
                 }
                 // Aucune tâche à soi (les exemples ne comptent pas) : l'invitation à l'accompagnement, qui disparaît d'elle-même
-                // dès la première tâche (état dérivé des données, rien n'est mémorisé).
-                if (!inviteDismissed && snapshot.tasks.none { !ExampleData.isExample(it) }) {
+                // dès la première tâche, et ne revient plus une fois l'accompagnement mené à son terme (issue #94).
+                if (!inviteDismissed && snapshot.settings.guide?.firstTaskDone != true && snapshot.tasks.none { !ExampleData.isExample(it) }) {
                     block("first-task") {
                         FirstTaskInvite(
                             onStart = { creating = true; coachStep = 0 },
@@ -506,12 +506,15 @@ fun DayScreen(
             // Fermer la fiche n'écrit rien ; rouvrir recommence au titre.
             onDismiss = { creating = false; coachStep = -1 },
             onSave = { edit ->
+                // Enregistrée avec l'accompagnement actif : il est mené à son terme, l'invitation ne revient plus (issue #94).
+                val coached = coachStep >= 0
                 creating = false
                 coachStep = -1
                 scope.launch {
                     // La création réelle (et non le dernier clic du coach) déclenche les félicitations.
                     val id = repository.createTask(edit.title) ?: return@launch
                     repository.updateTask(id, edit)
+                    if (coached) repository.updateGuide { it.copy(firstTaskDone = true) }
                     placedId = id
                     congrats = true
                 }

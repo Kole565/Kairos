@@ -1345,4 +1345,10 @@
     <string name="guide_spot_missing_blocked">No blocked task right now.</string>
     <string name="guide_spot_missing_parents">No task with sub-tasks in progress right now.</string>
     <string name="guide_spot_missing_stats">No statistics yet: finish or time a few tasks first.</string>
+    <!-- Mémoire du guide (docs/spec/visite-guidee.md § Persistance, issue #94). -->
+    <string name="discover_chapter_read">%1$s · read</string>
+    <string name="guide_reset_title">See the guide again from the start</string>
+    <string name="guide_reset_body">Read chapters, the hidden “New in this version” section and the first-task walkthrough come back as on day one. Your settings and tasks are not touched.</string>
+    <string name="guide_reset_action">Start over</string>
+    <string name="guide_reset_done">The guide starts over.</string>
 </resources>

@@ -143,13 +143,16 @@ object FeatureCatalog {
 
     /**
      * Les cartes que [version] ajoute : celles dont [FeatureCard.since] a les mêmes numéros majeur et mineur (une version corrective
-     * `3.4.1` ou une préversion `3.4.0-beta.2` garde la section de la `3.4.0`). Rien n'est mémorisé : la section dépend de la
-     * version de l'application, pas d'un « vu » (docs/spec/visite-guidee.md § Persistance).
+     * `3.4.1` ou une préversion `3.4.0-beta.2` garde la section de la `3.4.0`). « Masquer » la retient pour [newsKey]
+     * (docs/spec/visite-guidee.md § Persistance).
      */
     fun newIn(version: String): List<FeatureCard> {
         val minor = minorOf(version) ?: return emptyList()
         return cards.filter { minorOf(it.since) == minor }
     }
+
+    /** « majeur.mineur » de [version] (`3.7.1` → `"3.7"`), sous lequel « Masquer » la section « Nouveau » est retenu ; nul si illisible. */
+    fun newsKey(version: String): String? = minorOf(version)?.let { (major, minor) -> "$major.$minor" }
 
     private fun minorOf(version: String): Pair<Int, Int>? {
         val parts = version.substringBefore('-').split('.')

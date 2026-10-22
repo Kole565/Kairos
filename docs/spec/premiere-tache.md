@@ -29,8 +29,10 @@ déroutant sans explication.
 
 1. **Entrée** : l'accueil du premier lancement propose « Créer ma première
    tâche » à côté de « Visite guidée ». Une carte d'invitation reste sur la vue
-   Jour tant que l'utilisateur n'a créé aucune tâche autre que les exemples, et
-   le hub « Découvrir Kairos » permet de rejouer l'accompagnement.
+   Jour tant que l'utilisateur n'a créé aucune tâche autre que les exemples **et n'a jamais mené l'accompagnement à son
+   terme** (3.7.0, issue #94 : une tâche enregistrée depuis la fiche guidée ; l'invitation ne revient plus, même si l'on
+   supprime ensuite toutes ses tâches) ; « Pas maintenant » la masque pour la session. Le hub « Découvrir Kairos »
+   permet toujours de rejouer l'accompagnement.
 2. **Création guidée dans la vraie fiche** : l'utilisateur remplit la vraie
    fiche d'une nouvelle tâche. Un panneau d'explication, en bas de la fiche, met
    en évidence le champ expliqué et dit à quoi il sert, avec « Précédent »,
@@ -73,7 +75,6 @@ déroutant sans explication.
 
 - La fiche de l'espace Équipe (chapitre ultérieur de `visite-guidee.md`).
 - Une récurrente pas à pas, l'accompagnement des réglages.
-- Mémoriser que l'accompagnement a été fait.
 
 ## 2. Solution technique
 
@@ -120,7 +121,9 @@ cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`
   l'acquitte (`onFirstTaskHandled`) et ouvre la fiche. Mêmes chemins : `GuideTarget.FirstTask` (cartes du catalogue, hub
   « Découvrir Kairos » : on rejoue l'accompagnement ; l'enregistrement reste un geste volontaire).
 - Carte d'invitation `FirstTaskInvite` en tête de la vue Jour tant que `snapshot.tasks.none { !ExampleData.isExample(it) }`
-  (état **dérivé des données**, sans persistance), masquable pour la session (« Pas maintenant »). `ExampleData.isExample`
+  et que `settings.guide?.firstTaskDone` n'est pas vrai, masquable pour la session (« Pas maintenant »). `DayScreen`
+  pose `firstTaskDone` (`KairosRepository.updateGuide`) quand une tâche est enregistrée depuis la fiche alors que
+  l'accompagnement est actif (`coachStep >= 0`) ; `visite-guidee.md` § Persistance. `ExampleData.isExample`
   reconnaît le préfixe de titre « [Exemple] » / « [Example] » dans les deux langues.
 
 ### Décisions et pièges tracés
@@ -131,8 +134,10 @@ cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`
   on ne félicite pas d'une tâche qui n'existe pas.
 - **Ordre : félicitations d'abord, puis la place** (choix à l'implémentation) : le dialogue vient dès la création et propose
   d'expliquer la place ; il ne dépend d'aucune étape du coach.
-- **Pas de persistance** : l'invitation disparaît d'elle-même dès la première
-  tâche ; pas de réglage de plus.
+- **Pas de persistance** (3.4) : l'invitation disparaissait d'elle-même dès la première tâche. **Rouvert en 3.7.0**
+  (issue #94) : l'accompagnement mené à son terme est retenu (`Settings.guide`, nul par défaut), pour qu'une base vidée
+  ne réinvite pas quelqu'un qui l'a déjà fait. « Pas maintenant » reste valable pour la session (choix du
+  propriétaire).
 - **Textes partagés** avec le catalogue : la carte « Créer ta première tâche » du chapitre « Premiers pas » lance ce même
   accompagnement.
 - **Aucune animation décorative** : sobriété du design system.
