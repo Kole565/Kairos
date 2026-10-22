@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.guide.GuideSection
+import com.skohscripts.kairos.ui.guide.GuideSpot
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -224,7 +226,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                     SettingsCategory.DAY, SettingsCategory.PLANNING, SettingsCategory.TRACKING -> SettingsFormCards(category, values, errors, onChange)
                     SettingsCategory.TEAM -> TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services, onChange = onChange)
                     SettingsCategory.DATA -> {
-                        DataCard(services)
+                        GuideSpot(GuideSection.SETTINGS_DATA) { DataCard(services) }
                         RestoreDefaultsCard {
                             // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
                             values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->

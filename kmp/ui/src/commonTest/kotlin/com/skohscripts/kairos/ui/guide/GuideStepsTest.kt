@@ -18,8 +18,8 @@ class GuideStepsTest {
     @Test
     fun theKairosTourOnlyOpensPersonalScreensAndTheTeamTourOnlyTeamScreens() {
         // Les Réglages (dernière étape) sont communs aux deux espaces et ne changent pas d'espace.
-        assertTrue(GuideSteps.of(GuideKind.PERSONAL).all { it.target is GuideTarget.Personal || it.target == GuideTarget.Settings })
-        assertEquals(GuideTarget.Settings, GuideSteps.of(GuideKind.PERSONAL).last().target)
+        assertTrue(GuideSteps.of(GuideKind.PERSONAL).all { it.target is GuideTarget.Personal || it.target is GuideTarget.Settings })
+        assertEquals(GuideTarget.Settings(GuideSection.SETTINGS_DATA), GuideSteps.of(GuideKind.PERSONAL).last().target)
         assertTrue(GuideSteps.of(GuideKind.TEAM).all { it.target is GuideTarget.Team })
     }
 

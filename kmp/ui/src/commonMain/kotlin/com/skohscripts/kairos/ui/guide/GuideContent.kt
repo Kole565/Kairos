@@ -1,6 +1,9 @@
 package com.skohscripts.kairos.ui.guide
 
 import com.skohscripts.kairos.ui.generated.resources.Res
+import com.skohscripts.kairos.ui.generated.resources.guide_spot_missing_blocked
+import com.skohscripts.kairos.ui.generated.resources.guide_spot_missing_parents
+import com.skohscripts.kairos.ui.generated.resources.guide_spot_missing_stats
 import com.skohscripts.kairos.ui.generated.resources.help_day
 import com.skohscripts.kairos.ui.generated.resources.help_notes
 import com.skohscripts.kairos.ui.generated.resources.help_settings
@@ -22,6 +25,7 @@ import com.skohscripts.kairos.ui.generated.resources.title_team_members
 import com.skohscripts.kairos.ui.generated.resources.title_week
 import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.navigation.NavEntry
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import com.skohscripts.kairos.ui.navigation.TeamDestination
 import org.jetbrains.compose.resources.StringResource
 
@@ -32,15 +36,41 @@ enum class GuideKind { PERSONAL, TEAM }
  * Écran qu'ouvre « Voir l’écran » (et les boutons « Ouvrir » de l'Accueil). La coquille change d'espace au besoin :
  * une cible d'équipe ouvre l'espace Équipe, une cible Perso l'espace Perso. [Team.exchanges] ouvre l'onglet « Échanges »
  * de l'écran Équipe (`NavState.exchangesTab`). [Settings] ouvre les Réglages (écran secondaire, les mêmes dans les deux
- * espaces) sans changer d'espace.
+ * espaces) sans changer d'espace. [section] : l'endroit de l'écran à montrer (docs/spec/visite-guidee.md, issue #95).
  */
 sealed interface GuideTarget {
-    data class Personal(val destination: Destination) : GuideTarget
+    data class Personal(val destination: Destination, val section: GuideSection? = null) : GuideTarget
     data class Team(val destination: TeamDestination, val exchanges: Boolean = false) : GuideTarget
-    data object Settings : GuideTarget
+    data class Settings(val section: GuideSection? = null) : GuideTarget
 
     /** Lance l'accompagnement de la première tâche (docs/spec/premiere-tache.md) : ne change pas d'écran, ouvre la fiche. */
     data object FirstTask : GuideTarget
+}
+
+/** Écran qui porte une [GuideSection]. */
+enum class GuideScreen { DAY, SETTINGS, STATS }
+
+/**
+ * Endroit précis d'un écran qu'une carte du guide fait voir : l'écran défile jusqu'à lui et le met en valeur
+ * (docs/spec/visite-guidee.md, issue #95). [settingsCategory] : la catégorie des Réglages à ouvrir d'abord. [missing] :
+ * le message quand la section est absente (vide), pour celles qui peuvent l'être.
+ */
+enum class GuideSection(
+    val screen: GuideScreen,
+    val settingsCategory: SettingsCategory? = null,
+    val missing: StringResource? = null,
+) {
+    DAY_INBOX(GuideScreen.DAY),
+    DAY_AGENDA(GuideScreen.DAY),
+    DAY_NOW(GuideScreen.DAY),
+    DAY_BLOCKED(GuideScreen.DAY, missing = Res.string.guide_spot_missing_blocked),
+    DAY_PARENTS(GuideScreen.DAY, missing = Res.string.guide_spot_missing_parents),
+    SETTINGS_CONTEXTS(GuideScreen.SETTINGS, SettingsCategory.DAY),
+    SETTINGS_HOURS(GuideScreen.SETTINGS, SettingsCategory.DAY),
+    SETTINGS_BEST_HOURS(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
+    SETTINGS_LEARNED(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
+    SETTINGS_DATA(GuideScreen.SETTINGS, SettingsCategory.DATA),
+    STATS_HOURS(GuideScreen.STATS, missing = Res.string.guide_spot_missing_stats),
 }
 
 /**

@@ -143,7 +143,8 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   `Stacks`, `Monitoring`) ; aide, Accueil et visite guidée (`accueil.md`) : `Help` ; soutien (`soutien.md`) : `Favorite` ;
   Réglages rangés par catégories (`reglages.md`) : `Tune`, `Sort`, `Timer`, `Database` (catégories), `Translate`,
   `Palette`, `Update`, `Work`, `CalendarViewWeek`, `Workspaces`, `Label`, `LightMode`, `History`, `Shield`,
-  `Leaderboard`, `Bedtime`, `SettingsBackupRestore` (titres des cartes).
+  `Leaderboard`, `Bedtime`, `SettingsBackupRestore` (titres des cartes) ; guide (`visite-guidee.md`, issue #95) : `Spot`
+  (étiquette « Ici » d'une section montrée).
   `Construction` (écran « En construction ») est retiré au
   jalon M5, plus rien n'étant en construction.
 - `KairosLogo.kt` : le cadran solaire (cadran `#FFEEDC`, anneau `#FFCC85`

@@ -82,6 +82,7 @@ import com.skohscripts.kairos.ui.guide.FeatureCatalog
 import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideKind
 import com.skohscripts.kairos.ui.guide.GuideTarget
+import com.skohscripts.kairos.ui.guide.LocalGuideSpot
 import com.skohscripts.kairos.ui.guide.HelpDialog
 import com.skohscripts.kairos.ui.guide.HelpTopic
 import com.skohscripts.kairos.ui.screens.AboutScreen
@@ -188,13 +189,22 @@ fun AppShell(
             is GuideTarget.Personal -> {
                 if (team) onSpaceChange(Space.PERSONAL)
                 onNavigate(target.destination)
+                // Après la navigation, qui efface toute demande en attente (KairosApp).
+                nav.guideSpot.pending = target.section
             }
             is GuideTarget.Team -> if (teamModeEnabled) {
                 if (!team) onSpaceChange(Space.TEAM)
                 nav.exchangesTab = target.exchanges
                 onNavigateTeam(target.destination)
             }
-            GuideTarget.Settings -> onOpenSettings()
+            is GuideTarget.Settings -> {
+                onOpenSettings()
+                // La roue crantée ouvre la liste : la section ouvre d'abord sa catégorie (docs/spec/reglages.md).
+                target.section?.let { section ->
+                    nav.settings.category = section.settingsCategory
+                    nav.guideSpot.pending = section
+                }
+            }
             GuideTarget.FirstTask -> startFirstTask()
         }
     }
@@ -276,7 +286,7 @@ fun AppShell(
             CompositionLocalProvider(LocalMessages provides showMessage) { UpdateBanner(services) }
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo) {
+                CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo, LocalGuideSpot provides nav.guideSpot) {
                     val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout, onDiscover = { discover = true }) }
                     when {
                         secondary == Secondary.SETTINGS -> SettingsScreen(services, nav.settings, onDiscover = { discover = true }, onOpenAbout = onOpenAbout)

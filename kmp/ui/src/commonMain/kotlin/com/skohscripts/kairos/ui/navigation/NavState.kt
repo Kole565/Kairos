@@ -3,6 +3,7 @@ package com.skohscripts.kairos.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.skohscripts.kairos.ui.guide.GuideSpotState
 import com.skohscripts.kairos.ui.settings.SettingsNav
 import kotlinx.datetime.LocalDate
 
@@ -23,4 +24,7 @@ class NavState {
 
     /** Catégorie ouverte dans les Réglages (docs/spec/reglages.md) : la coquille en tire le titre et la flèche retour. */
     val settings = SettingsNav()
+
+    /** Section qu'une carte du guide demande de montrer, et celle mise en valeur (docs/spec/visite-guidee.md, issue #95). */
+    val guideSpot = GuideSpotState()
 }

@@ -102,26 +102,26 @@ object FeatureCatalog {
     val cards: List<FeatureCard> = listOf(
         // --- Premiers pas
         FeatureCard("capture", GuideChapter.FIRST_STEPS, { KairosIcons.Notes }, Res.string.guide_you_capture_title, Res.string.guide_you_capture_body, GuideTarget.Personal(Destination.NOTES), tour = true),
-        FeatureCard("qualify", GuideChapter.FIRST_STEPS, { KairosIcons.Edit }, Res.string.guide_you_qualify_title, Res.string.guide_you_qualify_body, GuideTarget.Personal(Destination.DAY), tour = true),
-        FeatureCard("do", GuideChapter.FIRST_STEPS, { KairosIcons.Today }, Res.string.guide_you_do_title, Res.string.guide_you_do_body, GuideTarget.Personal(Destination.DAY), tour = true),
+        FeatureCard("qualify", GuideChapter.FIRST_STEPS, { KairosIcons.Edit }, Res.string.guide_you_qualify_title, Res.string.guide_you_qualify_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_INBOX), tour = true),
+        FeatureCard("do", GuideChapter.FIRST_STEPS, { KairosIcons.Today }, Res.string.guide_you_do_title, Res.string.guide_you_do_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_AGENDA), tour = true),
         FeatureCard("discover", GuideChapter.FIRST_STEPS, { KairosIcons.Layers }, Res.string.card_discover_title, Res.string.card_discover_body, GuideTarget.Personal(Destination.HOME), since = "3.4.0"),
         FeatureCard("first_task", GuideChapter.FIRST_STEPS, { KairosIcons.Add }, Res.string.card_first_task_title, Res.string.card_first_task_body, GuideTarget.FirstTask, since = "3.4.0"),
         // --- Planifier
-        FeatureCard("points", GuideChapter.PLAN, { KairosIcons.Balance }, Res.string.card_points_title, Res.string.card_points_body, GuideTarget.Personal(Destination.DAY)),
-        FeatureCard("score", GuideChapter.PLAN, { KairosIcons.Star }, Res.string.card_score_title, Res.string.card_score_body, GuideTarget.Personal(Destination.DAY)),
-        FeatureCard("contexts", GuideChapter.PLAN, { KairosIcons.Layers }, Res.string.card_contexts_title, Res.string.card_contexts_body, GuideTarget.Settings, since = "3.5.0"),
-        FeatureCard("besthours_apply", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_besthours_apply_title, Res.string.card_besthours_apply_body, GuideTarget.Settings, since = "3.6.0"),
-        FeatureCard("hours", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_hours_title, Res.string.card_hours_body, GuideTarget.Settings, since = "3.4.0"),
+        FeatureCard("points", GuideChapter.PLAN, { KairosIcons.Balance }, Res.string.card_points_title, Res.string.card_points_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_INBOX)),
+        FeatureCard("score", GuideChapter.PLAN, { KairosIcons.Star }, Res.string.card_score_title, Res.string.card_score_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_AGENDA)),
+        FeatureCard("contexts", GuideChapter.PLAN, { KairosIcons.Layers }, Res.string.card_contexts_title, Res.string.card_contexts_body, GuideTarget.Settings(GuideSection.SETTINGS_CONTEXTS), since = "3.5.0"),
+        FeatureCard("besthours_apply", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_besthours_apply_title, Res.string.card_besthours_apply_body, GuideTarget.Settings(GuideSection.SETTINGS_BEST_HOURS), since = "3.6.0"),
+        FeatureCard("hours", GuideChapter.PLAN, { KairosIcons.Schedule }, Res.string.card_hours_title, Res.string.card_hours_body, GuideTarget.Settings(GuideSection.SETTINGS_HOURS), since = "3.4.0"),
         // --- Suivre
-        FeatureCard("time", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY), tour = true),
-        FeatureCard("learned", GuideChapter.FOLLOW, { KairosIcons.TrendingUp }, Res.string.card_learned_title, Res.string.card_learned_body, GuideTarget.Settings, since = "3.4.0"),
-        FeatureCard("besthours", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.card_besthours_title, Res.string.card_besthours_body, GuideTarget.Personal(Destination.STATS), since = "3.5.0"),
+        FeatureCard("time", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_NOW), tour = true),
+        FeatureCard("learned", GuideChapter.FOLLOW, { KairosIcons.TrendingUp }, Res.string.card_learned_title, Res.string.card_learned_body, GuideTarget.Settings(GuideSection.SETTINGS_LEARNED), since = "3.4.0"),
+        FeatureCard("besthours", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.card_besthours_title, Res.string.card_besthours_body, GuideTarget.Personal(Destination.STATS, GuideSection.STATS_HOURS), since = "3.5.0"),
         FeatureCard("week", GuideChapter.FOLLOW, { KairosIcons.DateRange }, Res.string.card_week_title, Res.string.card_week_body, GuideTarget.Personal(Destination.WEEK)),
         FeatureCard("stats", GuideChapter.FOLLOW, { KairosIcons.BarChart }, Res.string.guide_you_stats_title, Res.string.guide_you_stats_body, GuideTarget.Personal(Destination.STATS), tour = true),
         // --- Organiser
-        FeatureCard("subtasks", GuideChapter.ORGANIZE, { KairosIcons.Layers }, Res.string.card_subtasks_title, Res.string.card_subtasks_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("subtasks", GuideChapter.ORGANIZE, { KairosIcons.Layers }, Res.string.card_subtasks_title, Res.string.card_subtasks_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_PARENTS)),
         FeatureCard("recurrence", GuideChapter.ORGANIZE, { KairosIcons.Repeat }, Res.string.card_recurrence_title, Res.string.card_recurrence_body, GuideTarget.Personal(Destination.DAY), since = "3.4.0"),
-        FeatureCard("dependencies", GuideChapter.ORGANIZE, { KairosIcons.Block }, Res.string.card_dependencies_title, Res.string.card_dependencies_body, GuideTarget.Personal(Destination.DAY)),
+        FeatureCard("dependencies", GuideChapter.ORGANIZE, { KairosIcons.Block }, Res.string.card_dependencies_title, Res.string.card_dependencies_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_BLOCKED)),
         FeatureCard("slots", GuideChapter.ORGANIZE, { KairosIcons.PushPin }, Res.string.card_slots_title, Res.string.card_slots_body, GuideTarget.Personal(Destination.DAY)),
         // --- Équipe
         FeatureCard("team_members", GuideChapter.TEAM, { KairosIcons.Groups }, Res.string.guide_team_members_title, Res.string.guide_team_members_body, GuideTarget.Team(TeamDestination.MEMBERS)),
@@ -131,8 +131,8 @@ object FeatureCatalog {
         FeatureCard("team_forecast", GuideChapter.TEAM, { KairosIcons.Monitoring }, Res.string.guide_team_forecast_title, Res.string.guide_team_forecast_body, GuideTarget.Team(TeamDestination.FORECAST)),
         FeatureCard("team_exchanges", GuideChapter.TEAM, { KairosIcons.SwapHoriz }, Res.string.guide_team_exchanges_title, Res.string.guide_team_exchanges_body, GuideTarget.Team(TeamDestination.MEMBERS, exchanges = true)),
         // --- Réglages
-        FeatureCard("settings", GuideChapter.SETTINGS, { KairosIcons.Settings }, Res.string.card_settings_title, Res.string.card_settings_body, GuideTarget.Settings, since = "3.4.0"),
-        FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings, tour = true),
+        FeatureCard("settings", GuideChapter.SETTINGS, { KairosIcons.Settings }, Res.string.card_settings_title, Res.string.card_settings_body, GuideTarget.Settings(), since = "3.4.0"),
+        FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), tour = true),
     )
 
     /** Les cartes d'un chapitre, dans l'ordre. */

@@ -1340,4 +1340,9 @@
     <!-- Vue Semaine : « Déplacer » vers un jour signalé (docs/spec/vue-semaine.md, issue #106). -->
     <string name="week_move_holiday">%1$s · public holiday</string>
     <string name="week_move_day_off">%1$s · day off</string>
+    <!-- Guide : section montrée par une carte (docs/spec/visite-guidee.md, issue #95). -->
+    <string name="guide_spot_here">Here</string>
+    <string name="guide_spot_missing_blocked">No blocked task right now.</string>
+    <string name="guide_spot_missing_parents">No task with sub-tasks in progress right now.</string>
+    <string name="guide_spot_missing_stats">No statistics yet: finish or time a few tasks first.</string>
 </resources>

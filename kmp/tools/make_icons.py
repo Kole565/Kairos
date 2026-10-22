@@ -98,6 +98,8 @@ ICONS = {
     "Leaderboard": ("leaderboard", False),
     "Bedtime": ("bedtime", False),
     "SettingsBackupRestore": ("settings_backup_restore", False),
+    # Guide : l'étiquette « Ici » de la section qu'une carte fait voir (docs/spec/visite-guidee.md, issue #95).
+    "Spot": ("my_location", False),
 }
 
 

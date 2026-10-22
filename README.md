@@ -228,6 +228,8 @@ order (critical path). Cycles are refused.
   once it is really created. Nothing is written if you give up.
 - **Discover Kairos**: chapters on every feature (Settings, help or Home),
   reopened whenever you like, and a **“New in this version”** section on Home.
+  “Show me the screen” scrolls to the exact place a card talks about and
+  marks it for a moment.
 
 ### Team management (optional)
 
