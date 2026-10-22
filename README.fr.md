@@ -171,7 +171,8 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 ### Créneaux et deep work
 
 - **Créneaux occupés** (réunions, déjeuner…), ponctuels ou récurrents
-  (quotidien, jours ouvrés, hebdomadaire), modifiables et supprimables.
+  (quotidien, jours ouvrés, hebdomadaire), modifiables et supprimables ; un
+  créneau « jours ouvrés » saute les jours fériés, comme une tâche « jours ouvrés ».
 - **Deep work** : un créneau réservé à une seule tâche, la plus urgente ; les
   autres le contournent.
 - **Frise** de la journée : planifié, occupé, épinglé, deep work, conflits, et

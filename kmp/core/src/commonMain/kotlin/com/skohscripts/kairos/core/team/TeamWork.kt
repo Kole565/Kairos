@@ -146,7 +146,9 @@ object TeamWork {
         val busy = snapshot.timeBlocks.filter { it.kind == BlockKind.BUSY }
         if (busy.isEmpty()) return 0.0
         val oneOff = busy.filter { it.recurrence == BlockRecurrence.NONE && it.start < end && it.end > start }
-        val recurring = Recurrence.expandRecurringBlocks(busy.filter { it.recurrence != BlockRecurrence.NONE }, day, day)
+        // Un créneau « jours ouvrés » n'occupe pas un férié (docs/spec/recurrence.md, issue #109).
+        val holidays = Workdays.holidaysFor(day, settings.holidaysFr, settings.extraHolidays)
+        val recurring = Recurrence.expandRecurringBlocks(busy.filter { it.recurrence != BlockRecurrence.NONE }, day, day, holidays)
         return Scheduling.busyMinutesInWindow(oneOff + recurring, start, end) / 60.0
     }
 

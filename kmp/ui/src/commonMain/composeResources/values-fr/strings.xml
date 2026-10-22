@@ -373,7 +373,7 @@
     <string name="settings_section_types">Types de tâches</string>
     <string name="settings_section_stats">Statistiques</string>
     <string name="settings_section_holidays">Jours fériés</string>
-    <string name="settings_section_holidays_body">Utilisés pour les jours ouvrés : « Décaler », séries « le N du mois ».</string>
+    <string name="settings_section_holidays_body">Utilisés pour les jours ouvrés : « Décaler », tâches et créneaux « jours ouvrés », séries « le N du mois ».</string>
     <string name="setting_default_duration">Durée par défaut d’une tâche (min)</string>
     <string name="setting_default_duration_help">Attribuée à une tâche sans estimation pour la placer dans la journée (jamais enregistrée).</string>
     <string name="setting_meeting_buffer">Marge après un créneau occupé (min)</string>

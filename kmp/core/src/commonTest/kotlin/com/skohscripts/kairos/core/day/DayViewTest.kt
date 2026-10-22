@@ -208,4 +208,21 @@ class DayViewTest {
     fun nothing_to_do_means_no_next_step() {
         assertNull(build(KairosSnapshot()).nextUp)
     }
+
+    @Test
+    fun a_weekday_slot_is_not_on_a_public_holiday() {
+        // Créneau « jours ouvrés » commencé le lundi 9 novembre 2026 ; le mercredi 11 est férié (calendrier français).
+        val standUp = TimeBlock(
+            7, "Stand-up", LocalDateTime(2026, 11, 9, 9, 30), LocalDateTime(2026, 11, 9, 9, 45),
+            recurrence = BlockRecurrence.WEEKDAYS, createdAt = t0,
+        )
+        val snapshot = KairosSnapshot(timeBlocks = listOf(standUp), settings = Settings(holidaysFr = true))
+        val armistice = DayView.build(snapshot, LocalDate(2026, 11, 11), null, paris)
+        assertEquals(emptyList(), armistice.dayBlocks)
+        assertEquals(emptyList(), armistice.editableBlocks)
+        assertEquals(listOf("Stand-up"), DayView.build(snapshot, LocalDate(2026, 11, 12), null, paris).dayBlocks.map { it.title })
+        // Sans le calendrier français, le mercredi redevient un jour ouvré.
+        val noFrench = snapshot.copy(settings = Settings(holidaysFr = false))
+        assertEquals(listOf(7L), DayView.build(noFrench, LocalDate(2026, 11, 11), null, paris).dayBlocks.map { it.id })
+    }
 }
