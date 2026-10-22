@@ -179,9 +179,15 @@ object Recurrence {
     /**
      * Occurrences des créneaux récurrents sur `[rangeStart, rangeEnd]` : le
      * créneau stocké est le modèle (date d'origine, heures), jamais avant son
-     * origine. Les occurrences gardent l'identifiant du modèle.
+     * origine. Les occurrences gardent l'identifiant du modèle. [holidays] : `weekdays` saute aussi les fériés, comme
+     * une tâche « jours ouvrés » (issue #109) ; vide par défaut, les fichiers d'or n'en ont pas.
      */
-    fun expandRecurringBlocks(templates: List<TimeBlock>, rangeStart: LocalDate, rangeEnd: LocalDate): List<TimeBlock> {
+    fun expandRecurringBlocks(
+        templates: List<TimeBlock>,
+        rangeStart: LocalDate,
+        rangeEnd: LocalDate,
+        holidays: Set<LocalDate> = emptySet(),
+    ): List<TimeBlock> {
         val out = mutableListOf<TimeBlock>()
         for (tpl in templates) {
             if (tpl.recurrence == BlockRecurrence.NONE) continue
@@ -191,7 +197,7 @@ object Recurrence {
             while (day <= rangeEnd) {
                 val recurs = when (tpl.recurrence) {
                     BlockRecurrence.DAILY -> true
-                    BlockRecurrence.WEEKDAYS -> Workdays.weekday(day) < 5
+                    BlockRecurrence.WEEKDAYS -> Workdays.isWorkday(day, holidays)
                     BlockRecurrence.WEEKLY -> Workdays.weekday(day) == Workdays.weekday(origin)
                     BlockRecurrence.NONE -> false
                 }

@@ -3,6 +3,7 @@ package com.skohscripts.kairos.core.week
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.engine.Recurrence
 import com.skohscripts.kairos.core.engine.TimeTracking
+import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -49,7 +50,9 @@ data class WeekView(
             val open = snapshot.tasks.filter { it.status == TaskStatus.TODO && filter.matches(it) }
             val done = snapshot.tasks.filter { it.status == TaskStatus.DONE && filter.matches(it) }
             val templates = snapshot.timeBlocks.filter { it.recurrence != BlockRecurrence.NONE }
-            val occurrences = Recurrence.expandRecurringBlocks(templates, monday, sunday)
+            // Fériés des réglages : un créneau « jours ouvrés » les saute (docs/spec/recurrence.md, issue #109).
+            val holidays = Workdays.holidaysFor(monday, snapshot.settings.holidaysFr, snapshot.settings.extraHolidays)
+            val occurrences = Recurrence.expandRecurringBlocks(templates, monday, sunday, holidays)
             val oneOff = snapshot.timeBlocks.filter { it.recurrence == BlockRecurrence.NONE }
             val days = (0..6).map { i ->
                 val day = monday.plus(DatePeriod(days = i))

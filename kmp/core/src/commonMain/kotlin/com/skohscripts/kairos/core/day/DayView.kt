@@ -168,10 +168,10 @@ data class DayView(
             val nextDayStart = day.plus(DatePeriod(days = 1)).atTime(0, 0)
             val oneOff = snapshot.timeBlocks.filter { it.recurrence == BlockRecurrence.NONE && it.start < nextDayStart && it.end > dayStart }
             val templates = snapshot.timeBlocks.filter { it.recurrence != BlockRecurrence.NONE }
-            val dayBlocks = oneOff + Recurrence.expandRecurringBlocks(templates, day, day)
+            val dayBlocks = oneOff + Recurrence.expandRecurringBlocks(templates, day, day, holidays)
             val editable = snapshot.timeBlocks.filter {
                 if (it.recurrence == BlockRecurrence.NONE) it.start.date == day
-                else Recurrence.expandRecurringBlocks(listOf(it), day, day).isNotEmpty()
+                else Recurrence.expandRecurringBlocks(listOf(it), day, day, holidays).isNotEmpty()
             }.sortedBy { it.start.time }
 
             // Durées apprises des tâches sans estimation explicite (docs/spec/durees-apprises.md) : les fiables servent au placement.

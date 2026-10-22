@@ -4,11 +4,11 @@ _Rôle : les obligations qui se répètent et le report au jour ouvré suivant.
 Fichiers couverts : `kmp/core/src/commonMain/.../core/engine/Recurrence.kt`
 (calcul pur), son usage dans `data/KairosRepository.kt` (`toggleDone`,
 `ensureCalendarOccurrences`, `snooze`, `updateTask`) et dans
-`core/day/DayView.kt` (créneaux du jour). Tests :
+`core/day/DayView.kt` (créneaux du jour), `core/week/WeekView.kt`, `core/team/TeamWork.kt` (charge de « moi »). Tests :
 `core/src/commonTest/.../engine/RecurrenceTest.kt`, partie calendaire de
 `DifferentialTest`, `data/.../KairosRepositoryTest.kt`._
 
-État : **jalon M2**. La partie calendaire est figée par les fichiers d'or de
+État : **jalon M2** ; fériés des créneaux « jours ouvrés » implémentés en 3.7.0 (issue #109). La partie calendaire est figée par les fichiers d'or de
 `DifferentialTest` (`calendar.json`, source de vérité depuis
 `retrait-kairos2.md`).
 
@@ -58,6 +58,11 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   la même heure les jours concernés, jamais avant sa date d'origine ; le
   modifier ou le supprimer agit sur toutes ses occurrences (seul le modèle
   est stocké), ce que la confirmation de suppression dit.
+- Un créneau « jours ouvrés » saute, comme une tâche « jours ouvrés », les week-ends **et les fériés** des réglages
+  (calendrier français s'il est activé, jours fériés supplémentaires) : le stand-up quotidien n'apparaît ni le 1er mai
+  ni un jour de pont déclaré (3.7.0, issue #109). Ni dans la vue Jour, ni dans la vue Semaine, ni dans la charge de
+  « moi » de l'espace Équipe. Quotidien et hebdomadaire ignorent les fériés, comme avant. L'aide de la carte
+  « Jours fériés » des Réglages le dit (« … tâches et créneaux « jours ouvrés »… »).
 
 ### Critères de succès
 
@@ -66,13 +71,16 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 - Échéances suivantes, jours ouvrés, décalage et créneaux récurrents
   identiques aux fichiers d'or sur le jeu calendaire
   (`DifferentialTest.calendar_matches_golden`).
+- Un créneau « jours ouvrés » saute un férié tombé en semaine et un jour supplémentaire déclaré, garde les autres
+  jours d'une semaine sans férié, et quotidien et hebdomadaire ne changent pas
+  (`RecurrenceTest.weekday_slots_skip_holidays_like_weekday_tasks`,
+  `weekday_slots_keep_every_workday_of_a_week_without_holiday`, `daily_and_weekly_slots_ignore_holidays`) ; la vue Jour d'un férié, la vue Semaine et la charge de « moi » l'appliquent
+  (`DayViewTest.a_weekday_slot_is_not_on_a_public_holiday`, `WeekViewTest.a_weekday_slot_skips_the_holidays_of_the_week`,
+  `TeamWorkTest.aWeekdayMeetingTakesNoCapacityOnAHoliday`).
 
 ### Hors périmètre / différé
 
-- Créneaux mensuels, fériés dans la règle « jours ouvrés » des créneaux,
-  modification d'une seule occurrence, rattrapage des mois manqués.
-  **Fériés des créneaux, décidé le 2026-10-22** (issue #109, `3.7.0`) : un créneau « jours ouvrés » sautera les fériés
-  **par défaut**, comme les tâches, sans réglage de plus (les créneaux existants changent : c'est le comportement attendu).
+- Créneaux mensuels, modification d'une seule occurrence, rattrapage des mois manqués.
 
 ## 2. Solution technique
 
@@ -103,9 +111,13 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
   occurrences d'une même série partagent ainsi un identifiant qui survit aux renommages ; il alimente la durée apprise.
 - `nextSnoozeDate(échéance, aujourd'hui, fériés)` : jour ouvré suivant
   l'échéance si elle est à venir, sinon aujourd'hui.
-- `expandRecurringBlocks(modèles, début, fin)` : pour chaque jour de
+- `expandRecurringBlocks(modèles, début, fin, fériés = ∅)` : pour chaque jour de
   `[max(début, origine), fin]` où la règle s'applique, une copie à la même
-  heure et de même durée, qui garde l'identifiant du modèle.
+  heure et de même durée, qui garde l'identifiant du modèle. `WEEKDAYS` s'applique les jours
+  `Workdays.isWorkday(jour, fériés)` (le même prédicat que `nextDeadline`). Les appelants passent les fériés des
+  réglages (`Workdays.holidaysFor`) : `DayView.build` (créneaux du jour et créneaux modifiables), `WeekView.build`
+  (calculés depuis le lundi : `holidaysFor` couvre l'année d'avant et les deux suivantes, une semaine à cheval sur
+  le Nouvel An y est), `TeamWork.busyHours` (charge de « moi »). Les fichiers d'or n'en passent pas.
 - Dépôt : `toggleDone` insère `nextOccurrence` dans la transaction qui
   termine la tâche ; `ensureCalendarOccurrences` recalcule dans sa
   transaction et n'écrit que s'il y a lieu ; `snooze` et les fériés viennent
@@ -117,6 +129,11 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 ### Décisions et pièges tracés
 
+- **Les créneaux « jours ouvrés » sautent aussi les fériés** (2026-10-22, issue #109, décision du propriétaire) :
+  **par défaut**, sans réglage. Les deux règles portent le même libellé « jours ouvrés » et se comportaient
+  différemment. Les créneaux existants changent (un stand-up disparaît le 1er mai) : c'est le comportement attendu.
+  Écarté : un interrupteur désactivé par défaut (un sous-objet de réglages nul de plus pour garder une incohérence).
+  Paramètre `fériés = ∅` par défaut, comme `nextDeadline` : les fichiers d'or (`calendar.json`) restent identiques.
 - **« Jours ouvrés » saute les fériés** (2026-10-12, demande explicite après le test
   exploratoire : l'occurrence suivant le mardi 10 nov. tombait le mercredi 11, férié).
   `nextDeadline` reçoit les

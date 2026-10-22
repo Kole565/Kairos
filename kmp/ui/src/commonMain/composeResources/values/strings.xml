@@ -372,7 +372,7 @@
     <string name="settings_section_types">Task types</string>
     <string name="settings_section_stats">Statistics</string>
     <string name="settings_section_holidays">Public holidays</string>
-    <string name="settings_section_holidays_body">Used for working days: “Snooze”, “on day N of the month” series.</string>
+    <string name="settings_section_holidays_body">Used for working days: “Snooze”, “weekdays” tasks and slots, “on day N of the month” series.</string>
     <string name="setting_default_duration">Default task duration (min)</string>
     <string name="setting_default_duration_help">Given to a task without an estimate to place it in the day (never saved).</string>
     <string name="setting_meeting_buffer">Buffer after a busy slot (min)</string>

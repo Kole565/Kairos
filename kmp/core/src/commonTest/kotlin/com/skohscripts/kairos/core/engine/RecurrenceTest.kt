@@ -1,12 +1,15 @@
 package com.skohscripts.kairos.core.engine
 
+import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
+import com.skohscripts.kairos.core.model.TimeBlock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.atTime
 import kotlinx.datetime.plus
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -204,5 +207,47 @@ class RecurrenceTest {
         assertNull(next.progressPercent)
         assertNull(next.startedOn)
         assertNull(next.teamUid)
+    }
+
+    // --- Créneaux « jours ouvrés » et fériés (issue #109) --------------------------------------------------------------
+
+    private fun slot(recurrence: BlockRecurrence, origin: LocalDate = LocalDate(2026, 11, 2)) =
+        TimeBlock(1, "Stand-up", origin.atTime(9, 30), origin.atTime(9, 45), recurrence = recurrence, createdAt = Instant.parse("2026-11-01T08:00:00Z"))
+
+    private fun days(blocks: List<TimeBlock>) = blocks.map { it.start.date }
+
+    @Test
+    fun weekday_slots_skip_holidays_like_weekday_tasks() {
+        // Semaine du 9 novembre 2026 : mercredi 11 férié (Armistice), vendredi 13 déclaré jour de pont.
+        val monday = LocalDate(2026, 11, 9)
+        val holidays = setOf(LocalDate(2026, 11, 11), LocalDate(2026, 11, 13))
+        val got = Recurrence.expandRecurringBlocks(listOf(slot(BlockRecurrence.WEEKDAYS)), monday, monday.plus(DatePeriod(days = 6)), holidays)
+        assertEquals(listOf(LocalDate(2026, 11, 9), LocalDate(2026, 11, 10), LocalDate(2026, 11, 12)), days(got))
+        // Même heure, même durée, même identifiant que le modèle.
+        assertEquals(LocalDateTime(2026, 11, 12, 9, 30), got.last().start)
+        assertEquals(LocalDateTime(2026, 11, 12, 9, 45), got.last().end)
+        assertEquals(1L, got.last().id)
+        // Le même jour, une tâche « jours ouvrés » aurait sauté les mêmes fériés.
+        assertEquals(LocalDate(2026, 11, 12), Recurrence.nextDeadline(TaskRecurrence.WEEKDAYS, LocalDate(2026, 11, 10), holidays = holidays))
+    }
+
+    @Test
+    fun weekday_slots_keep_every_workday_of_a_week_without_holiday() {
+        val monday = LocalDate(2026, 11, 16)
+        val got = Recurrence.expandRecurringBlocks(listOf(slot(BlockRecurrence.WEEKDAYS)), monday, monday.plus(DatePeriod(days = 6)), setOf(LocalDate(2026, 11, 11)))
+        assertEquals((0..4).map { monday.plus(DatePeriod(days = it)) }, days(got))
+        // Sans fériés passés (fichiers d'or), seul le week-end est sauté, comme avant.
+        val armisticeWeek = Recurrence.expandRecurringBlocks(listOf(slot(BlockRecurrence.WEEKDAYS)), LocalDate(2026, 11, 9), LocalDate(2026, 11, 15))
+        assertEquals(5, armisticeWeek.size)
+    }
+
+    @Test
+    fun daily_and_weekly_slots_ignore_holidays() {
+        val wednesday = LocalDate(2026, 11, 11)
+        val holidays = setOf(wednesday)
+        assertEquals(listOf(wednesday), days(Recurrence.expandRecurringBlocks(listOf(slot(BlockRecurrence.DAILY)), wednesday, wednesday, holidays)))
+        // Hebdomadaire ancré sur le mercredi 4 novembre : le mercredi férié garde son occurrence.
+        val weekly = slot(BlockRecurrence.WEEKLY, origin = LocalDate(2026, 11, 4))
+        assertEquals(listOf(wednesday), days(Recurrence.expandRecurringBlocks(listOf(weekly), wednesday, wednesday, holidays)))
     }
 }

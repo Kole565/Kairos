@@ -241,4 +241,14 @@ class TeamWorkTest {
         // Sans « moi », elles ne comptent pas.
         assertTrue(Effort.teamCalibration(snapshot(done, listOf(other)), mondayMorning).none { it.key == "3" && it.reliable })
     }
+
+    @Test
+    fun aWeekdayMeetingTakesNoCapacityOnAHoliday() {
+        // Réunion « jours ouvrés » de 10 h à 12 h ; le mardi est déclaré jour férié supplémentaire.
+        val s = snapshot(emptyList(), listOf(me), settings = settings().copy(extraHolidays = day(1).toString()))
+            .copy(timeBlocks = listOf(block(monday, 10, 12, BlockRecurrence.WEEKDAYS)))
+        assertEquals(2.0, TeamWork.busyHours(s, monday), 1e-9)
+        assertEquals(0.0, TeamWork.busyHours(s, day(1)), 1e-9)
+        assertEquals(2.0, TeamWork.busyHours(s, day(2)), 1e-9)
+    }
 }

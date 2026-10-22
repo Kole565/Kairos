@@ -3,6 +3,7 @@ package com.skohscripts.kairos.core.week
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
+import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TimeBlock
@@ -69,5 +70,18 @@ class WeekViewTest {
         assertEquals(90, week.spentMinutes)
         assertEquals(emptyMap(), week.spentByType)
         assertEquals(listOf(1L), WeekView.build(snapshot, wed, t0, TimeZone.UTC, DayFilter(priority = 2)).days[2].tasks.map { it.id })
+    }
+
+    @Test
+    fun a_weekday_slot_skips_the_holidays_of_the_week() {
+        // Semaine du 9 novembre 2026 : Armistice le mercredi, jour de pont déclaré le vendredi.
+        val snapshot = KairosSnapshot(
+            timeBlocks = listOf(
+                TimeBlock(1, "Stand-up", LocalDateTime(2026, 11, 2, 9, 30), LocalDateTime(2026, 11, 2, 9, 45), recurrence = BlockRecurrence.WEEKDAYS, createdAt = t0),
+            ),
+            settings = Settings(holidaysFr = true, extraHolidays = "2026-11-13"),
+        )
+        val week = WeekView.build(snapshot, LocalDate(2026, 11, 11), t0, TimeZone.UTC)
+        assertEquals(listOf(1, 1, 0, 1, 0, 0, 0), week.days.map { it.blocks.size })
     }
 }
