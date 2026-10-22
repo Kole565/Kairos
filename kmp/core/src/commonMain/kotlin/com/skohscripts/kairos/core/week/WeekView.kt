@@ -2,6 +2,7 @@ package com.skohscripts.kairos.core.week
 
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.engine.Recurrence
+import com.skohscripts.kairos.core.engine.Schedule
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockRecurrence
@@ -19,7 +20,9 @@ import kotlin.time.Instant
 
 /**
  * Un jour de la grille semaine : échéances à faire, tâches faites ce jour-là, créneaux, et les tâches **programmées pour**
- * ce jour ([scheduled], dont l'échéance n'est pas déjà ce jour-là : une tâche, une seule ligne).
+ * ce jour ([scheduled], dont l'échéance n'est pas ce jour-là). Une tâche programmée n'est qu'à son jour programmé : une
+ * tâche, une seule ligne dans la semaine (issue #106). [holiday] : férié des réglages ; [dayOff] : jour libre des
+ * horaires par jour. Le menu « Déplacer » les signale sans les interdire.
  */
 data class WeekDay(
     val date: LocalDate,
@@ -27,11 +30,13 @@ data class WeekDay(
     val done: List<Task>,
     val blocks: List<TimeBlock>,
     val scheduled: List<Task> = emptyList(),
+    val holiday: Boolean = false,
+    val dayOff: Boolean = false,
 )
 
 /**
  * Vue Semaine (docs/spec/vue-semaine.md) :
- * sept jours du lundi au dimanche ; tâches à faire groupées par **échéance**
+ * sept jours du lundi au dimanche ; tâches à faire groupées par **échéance**, sauf celles programmées un autre jour
  * (priorité d'abord, sans priorité en dernier), tâches faites par jour de
  * complétion (titre), tâches programmées pour le jour, créneaux du jour (occurrences des récurrents comprises)
  * ; temps chronométré de la semaine, total et par type. Le filtre réduit les
@@ -58,11 +63,15 @@ data class WeekView(
                 val day = monday.plus(DatePeriod(days = i))
                 WeekDay(
                     date = day,
-                    tasks = open.filter { it.deadline == day }.sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 })),
+                    // Programmée un autre jour : elle n'est qu'à ce jour-là, pas à son échéance (docs/spec/vue-semaine.md).
+                    tasks = open.filter { it.deadline == day && (it.scheduledDate == null || it.scheduledDate == day) }
+                        .sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 })),
                     done = done.filter { it.updatedAt.toLocalDateTime(timeZone).date == day }.sortedBy { it.title },
                     blocks = (oneOff + occurrences).filter { it.start.date == day }.sortedBy { it.start },
                     scheduled = open.filter { it.scheduledDate == day && it.deadline != day }
                         .sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 }, { it.title })),
+                    holiday = day in holidays,
+                    dayOff = Schedule.windowsFor(day, snapshot.settings).isEmpty(),
                 )
             }
             val sessions = TimeTracking.sessionsInRange(snapshot.workSessions, monday, sunday, timeZone)
