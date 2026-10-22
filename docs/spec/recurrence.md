@@ -71,6 +71,8 @@ Et « Décaler » : repousser une tâche au prochain jour ouvré.
 
 - Créneaux mensuels, fériés dans la règle « jours ouvrés » des créneaux,
   modification d'une seule occurrence, rattrapage des mois manqués.
+  **Fériés des créneaux, décidé le 2026-10-22** (issue #109, `3.7.0`) : un créneau « jours ouvrés » sautera les fériés
+  **par défaut**, comme les tâches, sans réglage de plus (les créneaux existants changent : c'est le comportement attendu).
 
 ## 2. Solution technique
 

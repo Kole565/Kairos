@@ -55,7 +55,8 @@ rôles et règles d'usage de la couleur restent ceux de Material Design 3.
 
 ### Hors périmètre
 
-- Thème sombre (la charte n'a qu'un thème clair).
+- Thème sombre (la charte n'a qu'un thème clair). **Décision rouverte le 2026-10-22** (issue #72, visée pour `3.7.0`) :
+  spec à écrire avant tout code (schéma sombre généré depuis la graine, interrupteur à deux états proposé par l'issue).
 - Logo, icônes d'application, page de téléchargement et fiches des magasins :
   ils gardent le miel, couleur de l'identité de Kairos.
 - Couleur « fait » (vert « ok ») et rouge d'erreur : fixes, quelle que soit la

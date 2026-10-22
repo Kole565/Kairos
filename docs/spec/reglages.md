@@ -139,7 +139,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 ### Hors périmètre / différé
 
-- Thème sombre (`navigation-theme.md`, `apparence.md`).
+- Thème sombre (`navigation-theme.md`, `apparence.md` : décision rouverte pour `3.7.0`, issue #72).
 - Recherche parmi les réglages : sept catégories se parcourent d'un coup d'œil ; à rouvrir si elles grossissent.
 - Réglage du chemin de la base, d'un proxy ou du niveau de journalisation (voir
   l'en-tête).
