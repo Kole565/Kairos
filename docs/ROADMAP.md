@@ -14,7 +14,7 @@ utilisateurs) ; ce document est en français comme le reste de `docs/`.
 
 | Milestone | Sens |
 |---|---|
-| `3.7.0` | Prochaine version : suites du guide, de la vue Semaine, des créneaux récurrents et des statistiques, petites et bien cadrées. |
+| `3.7.0` | Prochaine version : suites du guide (#94, #95), déplacer depuis la vue Semaine (#106), fériés des créneaux « jours ouvrés » par défaut (#109), export et filtres des statistiques (#113, #114), thème sombre (#72, décision de la charte rouverte, spec d'abord) ; les Réglages par catégories (PR #124) y sont déjà. |
 | `3.8.0` | Version suivante : vue Mois, créneaux mensuels, occurrence unique, graphiques de statistiques, correction des estimations, accompagnement de la fiche Équipe. |
 | `Backlog` | Non planifié : décision ou spec à écrire d'abord, dépendance externe (signature, synchronisation) ou attente de retours. |
 
