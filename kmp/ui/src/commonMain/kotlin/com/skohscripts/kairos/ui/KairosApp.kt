@@ -215,6 +215,8 @@ private fun KairosShell(
                         secondaryParent = null
                     },
                     onOpenSettings = {
+                        // La roue crantée ouvre toujours la liste des catégories (docs/spec/reglages.md).
+                        nav.settings.category = null
                         secondary = Secondary.SETTINGS
                         secondaryParent = null
                     },

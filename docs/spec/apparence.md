@@ -24,7 +24,7 @@ rôles et règles d'usage de la couleur restent ceux de Material Design 3.
 
 ### Comportement attendu (utilisateur)
 
-- Réglages → carte **Apparence**, avant « Mises à jour » et « Données » :
+- Réglages → catégorie « Général » → carte **Apparence**, après « Langue » et avant « Mises à jour » (`reglages.md`) :
   - une rangée de **pastilles** : le miel (par défaut) et sept autres
     couleurs nommées ; la pastille choisie porte une coche ;
   - sur **Android 12 et plus**, une pastille « Couleurs du système » en tête :

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.icons.KairosIcons
 import androidx.compose.runtime.Composable
 import com.skohscripts.kairos.core.settings.FieldError
 import com.skohscripts.kairos.ui.app.AppServices
@@ -35,7 +36,7 @@ internal fun TeamSettingsCard(
     onChange: (String, String) -> Unit,
 ) {
     SettingsCard {
-        SettingsCardHeader(stringResource(Res.string.settings_section_team), stringResource(Res.string.setting_team_enabled_help))
+        SettingsCardHeader(KairosIcons.Groups, stringResource(Res.string.settings_section_team), stringResource(Res.string.setting_team_enabled_help))
         SettingInput("team.enabled", values["team.enabled"].orEmpty(), errors["team.enabled"]) { onChange("team.enabled", it) }
         if (savedEnabled) {
             SettingInput("team.name", values["team.name"].orEmpty(), errors["team.name"]) { onChange("team.name", it) }

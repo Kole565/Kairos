@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -92,8 +94,8 @@ class TeamSpaceUiTest {
 
     /** Ouvre les Réglages depuis l'espace courant (roue crantée de la barre du haut, la même dans les deux espaces). */
     private fun ComposeUiTest.openSettingsPage() {
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.TEAM)
+        waitText("Team management")
     }
 
     private fun ComposeUiTest.toggleTeamMode() {
@@ -170,7 +172,7 @@ class TeamSpaceUiTest {
         onAllNodesWithText("Forecast").onFirst().performClick()
         waitText("Run the simulation")
         openSettingsPage()
-        onNodeWithText("Working day").assertExists()
+        onNodeWithTag("settings-category-GENERAL").assertExists()
 
         // Le nom de l'équipe préfixe les titres de l'espace Équipe.
         onNodeWithText("Team name").performScrollTo().performTextInput("Platform")
@@ -207,7 +209,7 @@ class TeamSpaceUiTest {
         waitGone("Hide the Team space?")
         assertTrue(repository.snapshot.value.settings.teamModeEnabled)
         assertTrue(selectorShown())
-        onNodeWithText("Working day").assertExists()
+        onNodeWithText("Team management").assertExists()
 
         // « Hide » : retour à l'espace Perso, vue Jour, plus de sélecteur ; les données restent.
         onNodeWithText("Save").performClick()

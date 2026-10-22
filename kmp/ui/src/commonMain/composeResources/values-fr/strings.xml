@@ -1063,7 +1063,7 @@
     <string name="help_day">« Maintenant » te dit quoi faire. Les tâches à traiter attendent leur priorité, leurs points et leur échéance ; le score (valeur divisée par effort) règle l’ordre. Lance le chrono pour mesurer le temps réel.</string>
     <string name="help_week">Les sept jours de la semaine : échéances, tâches faites, créneaux et temps réel. Touche un jour pour l’ouvrir dans la vue Jour.</string>
     <string name="help_stats">Ce que tu fais vraiment : débit, temps passé par type de tâche et calibration de tes estimations (tes points comparés au temps réel).</string>
-    <string name="help_settings">Horaires, pauses, alertes, apparence, gestion d’équipe et tes données : exporte, importe, ou renvoie ton avancement à ton manager. Pense à « Enregistrer » en bas.</string>
+    <string name="help_settings">Les réglages sont rangés par catégorie : général, journée et horaires, planification, chrono et statistiques, équipe, données. Une modification est gardée d’une catégorie à l’autre jusqu’à « Enregistrer », en bas.</string>
     <string name="help_team_board">Le suivi de l’équipe : qui fait quoi, l’avancement et les signaux (retards, blocages, tâches non estimées). Touchez une tâche pour la détailler, la réaffecter ou saisir son avancement.</string>
     <string name="help_team_backlog">Les tâches de l’équipe : créez-les ici, qualifiez-les (priorité, points, catégorie, échéance), puis assignez-les à un membre, ou demandez une suggestion de répartition.</string>
     <string name="help_team_members">Les membres, leur capacité et leur charge sur l’horizon choisi. Touchez un membre pour sa fiche (absences, activité). L’onglet « Échanges » sert à envoyer des tâches et à recevoir l’avancement par fichier.</string>
@@ -1322,4 +1322,21 @@
     <string name="why_affinity_manual">Placée ici car tu as réglé une heure préférée pour « %1$s ». Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
     <string name="card_besthours_apply_title">Planifier autour de tes meilleures heures</string>
     <string name="card_besthours_apply_body">Dans les Réglages, active « Préférer mes heures habituelles » : entre des tâches de score voisin, Kairos choisit celle dont tu travailles d’habitude le type à cette heure, ou à l’heure que tu lui as donnée. Les tâches en retard et l’urgence passent toujours avant.</string>
+    <!-- Réglages rangés par catégories (docs/spec/reglages.md). -->
+    <string name="settings_cat_general">Général</string>
+    <string name="settings_cat_general_hint">Langue, apparence</string>
+    <string name="settings_cat_general_hint_updates">Langue, apparence, mises à jour</string>
+    <string name="settings_cat_day">Journée et horaires</string>
+    <string name="settings_cat_day_hint">Journée de travail, horaires par jour de la semaine, contextes, jours fériés</string>
+    <string name="settings_cat_planning">Planification</string>
+    <string name="settings_cat_planning_hint">Types de tâches, meilleures heures, durées apprises, garde-fous, score de priorité</string>
+    <string name="settings_cat_tracking">Chrono et statistiques</string>
+    <string name="settings_cat_tracking_hint">Alertes du chrono, fenêtre des statistiques</string>
+    <string name="settings_cat_team">Équipe</string>
+    <string name="settings_cat_team_hint">Gestion d’équipe, suivi, charge et prévisions</string>
+    <string name="settings_cat_data">Données</string>
+    <string name="settings_cat_data_hint">Export, import, valeurs par défaut</string>
+    <string name="settings_cat_about">À propos</string>
+    <string name="settings_cat_about_hint">Découvrir Kairos, guide, version</string>
+    <string name="settings_cat_has_error">Un champ à corriger</string>
 </resources>

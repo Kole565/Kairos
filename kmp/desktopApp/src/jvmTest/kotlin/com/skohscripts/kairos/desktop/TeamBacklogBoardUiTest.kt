@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ComposeUiTest
@@ -370,8 +371,8 @@ class TeamBacklogBoardUiTest {
     fun theTeamCardOfTheSettingsOffersTheThreeTrackingThresholds() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.TEAM)
+        waitText("Team management")
         onNodeWithText("No progress after (working days)").performScrollTo().assertExists()
         onNodeWithText("Bounced from (reassignments)").performScrollTo().assertExists()
         onNodeWithText("In-progress limit per member").performScrollTo().assertExists()

@@ -74,7 +74,7 @@ import org.jetbrains.compose.resources.stringResource
 internal fun ScheduleCard(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
     val contextNames = contextNames(values)
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.schedule_title), stringResource(Res.string.settings_schedule_body))
+        SettingsCardHeader(KairosIcons.CalendarViewWeek, stringResource(Res.string.schedule_title), stringResource(Res.string.settings_schedule_body))
         DAYS.forEachIndexed { day, name ->
             val mode = values["schedule.d$day.mode"] ?: SettingsForm.SCHEDULE_DEFAULT
             val label = stringResource(name)
@@ -156,7 +156,7 @@ internal fun ContextsCard(values: Map<String, String>, errors: Map<String, Field
     val lastFilled = (1..SettingsForm.MAX_CONTEXTS).lastOrNull { slot -> !values["schedule.c$slot.name"].isNullOrBlank() || typesOf[slot - 1].isNotEmpty() } ?: 0
     val shown = minOf(SettingsForm.MAX_CONTEXTS, lastFilled + 1)
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.contexts_title), stringResource(Res.string.contexts_body))
+        SettingsCardHeader(KairosIcons.Workspaces, stringResource(Res.string.contexts_title), stringResource(Res.string.contexts_body))
         for (slot in 1..shown) {
             val nameKey = "schedule.c$slot.name"
             val typesKey = "schedule.c$slot.types"

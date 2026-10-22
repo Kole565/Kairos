@@ -79,7 +79,7 @@ rien changer pour qui ne l'active pas.
 
 #### Activation
 
-- Réglages → nouvelle carte **Équipe**, placée après « Apparence ». Elle
+- Réglages → carte **Équipe**, seule dans sa catégorie « Équipe » (`reglages.md` ; avant le 2026-10-22, placée après « Apparence »). Elle
   contient un interrupteur « Gestion d'équipe » (désactivé par défaut) et la
   phrase « Gérer une équipe : membres, backlog partagé, charge et
   prévisions. Sans effet sur vos tâches personnelles. ».
@@ -477,8 +477,8 @@ aussi son événement de journal dans la même transaction,
   `TeamIsolationTest` (`data`), `TeamSpaceUiTest` (`desktopApp` : mode solo
   sans sélecteur ; activation, espace Équipe et retour ; confirmation de la
   désactivation ; tâches d'équipe dans la vue Jour seulement assignées à
-  « moi » et mode activé). Auto-test : captures `desktop-settings-full.png`
-  (solo), `desktop-team.png`, `desktop-team-narrow.png` (360 dp),
+  « moi » et mode activé). Auto-test : captures `desktop-settings.png`
+  (solo, catégorie Général), `desktop-team.png`, `desktop-team-narrow.png` (360 dp),
   `desktop-team-settings.png`.
 - Jalon E2 (`ui/team/`) : `TeamMembersScreen(services)` (bouton, état vide,
   cartes, « Anciens membres (n) » repliable), `MemberSheet` (branché au

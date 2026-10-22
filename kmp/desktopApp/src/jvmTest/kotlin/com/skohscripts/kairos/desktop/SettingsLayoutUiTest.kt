@@ -11,6 +11,9 @@ import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
@@ -31,6 +34,7 @@ import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import com.skohscripts.kairos.ui.settings.SettingsScreen
 import com.skohscripts.kairos.ui.theme.KairosTheme
 import kotlinx.coroutines.runBlocking
@@ -38,6 +42,7 @@ import java.util.Locale
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -46,7 +51,8 @@ import kotlin.time.Instant
  * Largeur des champs des Réglages (docs/spec/densite.md § Réglages) : un champ
  * numérique est borné à 320 dp (son aide suit la même largeur) et ne déborde
  * jamais d'une fenêtre de téléphone (360 dp) ; un champ de texte libre garde
- * la pleine largeur de la carte.
+ * la pleine largeur de la carte. Et un enregistrement refusé ramène au champ fautif, dans sa catégorie
+ * (docs/spec/reglages.md).
  */
 @OptIn(ExperimentalTestApi::class)
 class SettingsLayoutUiTest {
@@ -70,14 +76,16 @@ class SettingsLayoutUiTest {
         AppServices(repository, files, { _, _ -> }, clock = clock)
     }
 
-    private fun ComposeUiTest.settingsAt(width: Dp) {
+    /** Les Réglages à [width], ouverts sur [category] (sa ligne de la liste, sur un ou deux volets). */
+    private fun ComposeUiTest.settingsAt(width: Dp, category: SettingsCategory = SettingsCategory.DAY) {
         val services = services()
         setContent {
             KairosTheme {
                 Box(Modifier.width(width).height(2000.dp)) { SettingsScreen(services) {} }
             }
         }
-        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Working day").fetchSemanticsNodes().isNotEmpty() }
+        openSettingsCategory(category)
+        waitUntil(timeoutMillis = 15_000) { onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
     }
 
     /** Compose n'offre que `assertWidthIsAtLeast` et `assertWidthIsEqualTo` : la borne haute se lit sur les limites du nœud. */
@@ -85,6 +93,12 @@ class SettingsLayoutUiTest {
         val bounds = getUnclippedBoundsInRoot()
         val width = bounds.right - bounds.left
         assertTrue(width <= max, "largeur $width au-delà de $max")
+    }
+
+    /** Lignes de la liste portant [tag] et l'avertissement « A field to fix » (fusionné dans la ligne cliquable, ou dessous). */
+    private fun ComposeUiTest.flaggedRows(tag: String): Int {
+        val warning = hasContentDescription("A field to fix")
+        return onAllNodes(hasTestTag(tag) and (warning or hasAnyDescendant(warning))).fetchSemanticsNodes().size
     }
 
     private fun ComposeUiTest.field(label: String): SemanticsNodeInteraction = onNode(hasSetTextAction() and hasText(label))
@@ -107,29 +121,33 @@ class SettingsLayoutUiTest {
 
     @Test
     fun aFreeTextFieldKeepsTheFullWidthOfItsCard() = runComposeUiTest {
-        settingsAt(1000.dp)
+        settingsAt(1000.dp, SettingsCategory.PLANNING)
         field("Types offered when editing").assertWidthIsAtLeast(400.dp)
     }
 
     @Test
-    fun aRefusedSaveScrollsToTheFlaggedField() = runComposeUiTest {
+    fun aRefusedSaveOpensTheCategoryOfTheFlaggedFieldAndScrollsToIt() = runComposeUiTest {
         val services = services()
-        // Fenêtre basse : le champ fautif (en bas de page) n'est pas à l'écran avant l'enregistrement.
-        setContent { KairosTheme { Box(Modifier.width(400.dp).height(500.dp)) { SettingsScreen(services) {} } } }
-        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Working day").fetchSemanticsNodes().isNotEmpty() }
-        field("Statistics window (weeks)").performScrollTo().performTextReplacement("abc")
-        // Remonter en tête, puis enregistrer : la page doit redescendre vers l'erreur.
-        onNodeWithText("Working day").performScrollTo()
+        // Deux volets, fenêtre basse : le champ fautif (en bas de « Day and hours ») n'est pas à l'écran.
+        setContent { KairosTheme { Box(Modifier.width(1000.dp).height(500.dp)) { SettingsScreen(services) {} } } }
+        openSettingsCategory(SettingsCategory.DAY)
+        field("Extra public holidays").performScrollTo().performTextReplacement("25/12")
+        // Passer à une autre catégorie, puis enregistrer : l'écran revient à « Day and hours » et descend vers l'erreur.
+        openSettingsCategory(SettingsCategory.GENERAL)
+        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Appearance").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("Save").performClick()
-        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("A whole number is expected.").fetchSemanticsNodes().isNotEmpty() }
+        waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Unreadable date: “25/12” (format YYYY-MM-DD).").fetchSemanticsNodes().isNotEmpty() }
         waitUntil(timeoutMillis = 15_000) {
-            runCatching { field("Statistics window (weeks)").assertIsDisplayed() }.isSuccess
+            runCatching { field("Extra public holidays").assertIsDisplayed() }.isSuccess
         }
+        // La ligne de la catégorie le signale (icône d'avertissement décrite, pas la couleur seule).
+        assertEquals(1, flaggedRows("settings-category-DAY"))
+        assertEquals(0, flaggedRows("settings-category-GENERAL"))
     }
 
     @Test
     fun tabLeavesTheMultilineTypesFieldInsteadOfTypingATab() = runComposeUiTest {
-        settingsAt(1000.dp)
+        settingsAt(1000.dp, SettingsCategory.PLANNING)
         field("Types offered when editing").performScrollTo().performClick().assertIsFocused()
         field("Types offered when editing").performKeyInput { pressKey(Key.Tab) }
         waitForIdle()

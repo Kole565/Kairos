@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -136,10 +137,10 @@ class TeamExchangeUiTest {
     private fun ComposeUiTest.count(text: String, substring: Boolean = false) =
         onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().size
 
-    /** Réglages (roue crantée de la barre du haut), formulaire chargé. */
+    /** Réglages (roue crantée de la barre du haut) → Données, carte chargée. */
     private fun ComposeUiTest.openSettingsPage() {
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.DATA)
+        waitText("Import")
     }
 
     /** Réglages → Données → « Importer » (le sélecteur simulé rend [Files.toOpen]). */

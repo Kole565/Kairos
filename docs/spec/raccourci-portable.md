@@ -37,7 +37,7 @@ montrer. Sur un poste verrouillé, c'est pourtant la seule version possible
 - Si les raccourcis existent mais ouvrent **une autre copie** (nouvelle
   version dézippée ailleurs), le bandeau propose de les mettre à jour vers
   celle-ci (« Mettre à jour »), sauf après « Non merci ».
-- Réglages → carte **Raccourci** (copie portable seulement, après « Mises à
+- Réglages → catégorie « Général » → carte **Raccourci** (copie portable seulement, après « Mises à
   jour ») : l'état (aucun raccourci, créé, ouvre une autre copie), et
   « Créer le raccourci » / « Mettre à jour le raccourci » / « Retirer le
   raccourci ».
@@ -91,7 +91,7 @@ montrer. Sur un poste verrouillé, c'est pourtant la seule version possible
 - `ShortcutBanner` (`AppShell`, sous le bandeau des mises à jour) : bandeau
   neutre comme lui (`surfaceContainerHigh`, icône `InstallDesktop`), affiché
   si `status ≠ CREATED` et pas `declined`.
-- `ShortcutCard` (Réglages, entre les cartes Mises à jour et Données) : aide selon
+- `ShortcutCard` (Réglages, catégorie Général, après la carte Mises à jour ; icône de titre `InstallDesktop`) : aide selon
   `target`, ligne d'état en `onSurfaceVariant`, boutons à contour « Créer »
   ou « Mettre à jour » (sauf `CREATED`) et « Retirer » (sauf `MISSING`).
 - Résultat de chaque action en snackbar (`LocalMessages`) : « Raccourci

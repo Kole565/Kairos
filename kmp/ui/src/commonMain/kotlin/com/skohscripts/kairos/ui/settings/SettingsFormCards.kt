@@ -43,6 +43,7 @@ import com.skohscripts.kairos.ui.theme.KairosTextButton
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
@@ -196,25 +197,47 @@ private val TEXTS: Map<String, FieldText> = mapOf(
     "team.deadlineRiskPercent" to FieldText(Res.string.setting_team_risk, Res.string.setting_team_risk_help),
 )
 
-/** Sections de l'écran, dans l'ordre de l'écran. */
-private class Section(val title: StringResource, val body: StringResource?, val keys: List<String>, val advanced: Boolean = false)
+/** Sections du formulaire, dans l'ordre de l'écran ; chacune est rangée dans la catégorie de ses champs. */
+private class Section(
+    val title: StringResource,
+    val body: StringResource?,
+    val icon: ImageVector,
+    val keys: List<String>,
+    val advanced: Boolean = false,
+) {
+    val category: SettingsCategory get() = SettingsCategory.of(keys.first())
+}
 
-private val SECTIONS = listOf(
-    Section(Res.string.settings_section_day, null, listOf("defaultTaskDurationMinutes", "meetingBufferMinutes", "workdayStartHour", "workdayEndHour")),
-    // « Avancé : comment les tâches sont ordonnées » : replié, rien à régler pour s'en servir (docs/spec/planning-personnalise.md).
-    Section(Res.string.settings_section_wsjf, Res.string.settings_section_wsjf_body, listOf("priorityValueBase", "urgencyHorizonDays", "urgencyPeak", "defaultFibonacciPoints"), advanced = true),
+private val WORKDAY = Section(
+    Res.string.settings_section_day, null, KairosIcons.Work,
+    listOf("defaultTaskDurationMinutes", "meetingBufferMinutes", "workdayStartHour", "workdayEndHour"),
+)
+private val HOLIDAYS = Section(Res.string.settings_section_holidays, Res.string.settings_section_holidays_body, KairosIcons.EventBusy, listOf("holidaysFr", "extraHolidays"))
+private val TYPES = Section(Res.string.settings_section_types, null, KairosIcons.Label, listOf("taskTypes"))
+private val LEARNING = Section(
+    Res.string.settings_section_learning, Res.string.settings_section_learning_body, KairosIcons.History,
+    listOf("learning.enabled", "learning.history", "learning.minSamples"),
+)
+private val GUARDS = Section(Res.string.settings_section_guards, null, KairosIcons.Shield, listOf("staleOverdueDays", "staleUntouchedDays", "priorityOverloadThreshold"))
+private val CHRONO = Section(
+    Res.string.settings_chrono_title, Res.string.settings_chrono_body, KairosIcons.NotificationsActive,
+    listOf("timerIdleAlertMinutes", "pomodoroFocusMinutes", "timerAlertSound"),
+)
+private val STATS = Section(Res.string.settings_section_stats, null, KairosIcons.BarChart, listOf("statsWindowWeeks"))
+
+// « Avancé : comment les tâches sont ordonnées » : replié, rien à régler pour s'en servir (docs/spec/planning-personnalise.md).
+private val ADVANCED = listOf(
+    Section(
+        Res.string.settings_section_wsjf, Res.string.settings_section_wsjf_body, KairosIcons.Leaderboard,
+        listOf("priorityValueBase", "urgencyHorizonDays", "urgencyPeak", "defaultFibonacciPoints"), advanced = true,
+    ),
     Section(
         Res.string.settings_section_dip,
         Res.string.settings_section_dip_body,
+        KairosIcons.Bedtime,
         listOf("cognitiveDipEnabled", "cognitiveDipStartHour", "cognitiveDipTroughHour", "cognitiveDipEndHour", "cognitiveDipPenalty"),
         advanced = true,
     ),
-    Section(Res.string.settings_section_guards, null, listOf("staleOverdueDays", "staleUntouchedDays", "priorityOverloadThreshold")),
-    Section(Res.string.settings_section_types, null, listOf("taskTypes")),
-    Section(Res.string.settings_section_stats, null, listOf("statsWindowWeeks")),
-    Section(Res.string.settings_section_learning, Res.string.settings_section_learning_body, listOf("learning.enabled", "learning.history", "learning.minSamples")),
-    Section(Res.string.settings_chrono_title, Res.string.settings_chrono_body, listOf("timerIdleAlertMinutes", "pomodoroFocusMinutes", "timerAlertSound")),
-    Section(Res.string.settings_section_holidays, Res.string.settings_section_holidays_body, listOf("holidaysFr", "extraHolidays")),
 )
 
 /**
@@ -253,38 +276,61 @@ internal fun SettingsClickableCard(onClick: () -> Unit, modifier: Modifier = Mod
     }
 }
 
-/** Titre de carte en `titleMedium` (annoncé comme titre) et, facultatif, sa phrase d'introduction, groupés (`s`). */
+/**
+ * Titre de carte en `titleMedium` (annoncé comme titre) précédé de son icône (décorative, neutre : la charte réserve
+ * la couleur) et, facultative, sa phrase d'introduction dessous sur toute la largeur, groupés (`s`).
+ */
 @Composable
-internal fun SettingsCardHeader(title: String, body: String? = null) {
+internal fun SettingsCardHeader(icon: ImageVector, title: String, body: String? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.s)) {
-        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading())
+        }
         body?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
     }
 }
 
 /**
- * Les cartes du formulaire des Réglages (docs/spec/reglages.md) : une
- * carte « filled » par section, un champ par réglage, l'erreur du champ à la
- * place de son aide. L'état (textes, erreurs) appartient à l'écran.
+ * Les cartes du formulaire d'une catégorie des Réglages (docs/spec/reglages.md) : une carte « filled » par section,
+ * un champ par réglage, l'erreur du champ à la place de son aide. L'état (textes, erreurs) appartient à l'écran.
+ * Les catégories Général, Équipe, Données et À propos n'ont pas de section ici : l'écran y pose ses propres cartes.
  */
 @Composable
-internal fun SettingsFormCards(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
-    SECTIONS.filterNot { it.advanced }.forEachIndexed { index, section ->
-        SectionCard(section, values, errors, onChange)
-        // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
-        if (index == 0) {
+internal fun SettingsFormCards(
+    category: SettingsCategory,
+    values: Map<String, String>,
+    errors: Map<String, FieldError>,
+    onChange: (String, String) -> Unit,
+) {
+    when (category) {
+        SettingsCategory.DAY -> {
+            SectionCard(WORKDAY, values, errors, onChange)
+            // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
             ScheduleCard(values, errors, onChange)
             ContextsCard(values, errors, onChange)
-            BestHoursCard(values, errors, onChange)
+            SectionCard(HOLIDAYS, values, errors, onChange)
         }
+        SettingsCategory.PLANNING -> {
+            SectionCard(TYPES, values, errors, onChange)
+            // Les heures préférées se donnent par type : la carte suit les types.
+            BestHoursCard(values, errors, onChange)
+            SectionCard(LEARNING, values, errors, onChange)
+            SectionCard(GUARDS, values, errors, onChange)
+            AdvancedGroup(values, errors, onChange)
+        }
+        SettingsCategory.TRACKING -> {
+            SectionCard(CHRONO, values, errors, onChange)
+            SectionCard(STATS, values, errors, onChange)
+        }
+        else -> Unit
     }
-    AdvancedGroup(values, errors, onChange)
 }
 
 @Composable
 private fun SectionCard(section: Section, values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
     SettingsCard {
-        SettingsCardHeader(stringResource(section.title), section.body?.let { stringResource(it) })
+        SettingsCardHeader(section.icon, stringResource(section.title), section.body?.let { stringResource(it) })
         section.keys.forEach { key -> SettingInput(key, values[key].orEmpty(), errors[key]) { onChange(key, it) } }
     }
 }
@@ -295,7 +341,7 @@ private fun SectionCard(section: Section, values: Map<String, String>, errors: M
  */
 @Composable
 private fun AdvancedGroup(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
-    val advanced = SECTIONS.filter { it.advanced }
+    val advanced = ADVANCED
     var userOpen by rememberSaveable { mutableStateOf(false) }
     val open = userOpen || advanced.any { section -> section.keys.any { it in errors } }
     SettingsCard {

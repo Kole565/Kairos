@@ -76,7 +76,7 @@ in the [GitHub releases](https://github.com/SKOHscripts/Kairos/releases).
 
 **Updates.** On Android, through F-Droid or a new APK. On the desktop, Kairos
 checks every 6 hours for a new version and announces it in a banner
-("Download" opens its page); setting in Settings → Updates. The web version is
+("Download" opens its page); setting in Settings → General → Updates. The web version is
 always the latest.
 
 ## Features
@@ -206,7 +206,7 @@ order (critical path). Cycles are refused.
   to a file** kept up to date on every change.
 - Interface in **French** and **English**: the system language (French if the
   system is in French, English otherwise), or the one you pick in Settings →
-  Language. More languages are coming in a future version.
+  General → Language. More languages are coming in a future version.
 
 ### Finding your way
 
@@ -273,7 +273,7 @@ order (critical path). Cycles are refused.
 
 ### Appearance
 
-- **Theme color** of your choice (Settings → Appearance): honey by default,
+- **Theme color** of your choice (Settings → General → Appearance): honey by default,
   seven other suggested colors, or a free color (`#RRGGBB`). The whole theme is
   derived from it (Material Design 3), contrast included.
 - On **Android 12 and later**, "System colors" follows the wallpaper colors
@@ -283,26 +283,37 @@ order (critical path). Cycles are refused.
 
 ## Settings
 
-Every setting is explained under its field; a single "Save", and an invalid
-field says why. Language and appearance come first; the priority score and the
-afternoon dip sit under a collapsed "Advanced: how tasks are ordered" group,
-and "Restore default settings" refills the form with the defaults (the team
-space is untouched; nothing is saved until you press "Save").
+Settings are grouped by category, each with its icon and a summary of what it
+holds: tap one to open it (on a wide window, the list and the category sit side
+by side). Every setting is explained under its field; a single "Save" for all
+categories (a change is kept while you move from one to another), and an
+invalid field says why: a refused save opens its category and scrolls to it.
+The priority score and the afternoon dip sit under a collapsed "Advanced: how
+tasks are ordered" group, and "Restore default settings" (Data) refills the
+form with the defaults (the team space is untouched; nothing is saved until
+you press "Save").
 
-| Section | Settings | Default |
-|---|---|---|
-| Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
-| Priority score (WSJF), advanced | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
-| Afternoon dip, advanced | On/off, start, trough, end, strength | on, 1 pm – 3 pm – 4 pm, 1 |
-| Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
-| Task types | List of types | |
-| Statistics | Window of the indicators | 8 weeks |
-| Timer alerts | Forgotten timer, suggested break, fallback sound | 180 min, 50 min, off |
-| Public holidays | French calendar, extra dates | on |
-| Language | Interface language (System, Français, English) | System |
-| Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
-| Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
-| Updates (desktop) | Check for new versions | on |
+| Category | Section | Settings | Default |
+|---|---|---|---|
+| General | Language | Interface language (System, Français, English) | System |
+| | Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
+| | Updates (desktop) | Check for new versions | on |
+| | Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
+| Day and hours | Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
+| | Hours by day of the week | Usual, custom (one to four windows) or day off | usual |
+| | Contexts | Up to four, each with its task types | none |
+| | Public holidays | French calendar, extra dates | on |
+| Planning | Task types | List of types | |
+| | Best hours | Prefer my usual hours, strength, preferred hour per type | off |
+| | Learned durations | On/off, occurrences considered, occurrences needed | on, 5, 3 |
+| | Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
+| | Priority score (WSJF), advanced | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
+| | Afternoon dip, advanced | On/off, start, trough, end, strength | on, 1 pm – 3 pm – 4 pm, 1 |
+| Timer and statistics | Timer alerts | Forgotten timer, suggested break, fallback sound | 180 min, 50 min, off |
+| | Statistics | Window of the indicators | 8 weeks |
+| Team | Team | Team management, then its thresholds, load and forecasts | off |
+| Data | Data, default settings | Export, import, restore the defaults | |
+| About | | Discover Kairos, About & guide | |
 
 ## Development
 

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -318,8 +319,8 @@ class TeamLoadUiTest {
         val services = services { }
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.TEAM)
+        waitText("Team management")
         listOf("Load horizon (weeks)", "Focus rate", "Hours per point", "Load alert from (%)", "Affinity tolerance (working days)").forEach {
             onNodeWithText(it).performScrollTo().assertExists()
         }

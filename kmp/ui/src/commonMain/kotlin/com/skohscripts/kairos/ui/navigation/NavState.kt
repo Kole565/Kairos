@@ -3,6 +3,7 @@ package com.skohscripts.kairos.ui.navigation
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.skohscripts.kairos.ui.settings.SettingsNav
 import kotlinx.datetime.LocalDate
 
 /**
@@ -10,7 +11,7 @@ import kotlinx.datetime.LocalDate
  * le jour de la vue Jour (`null` = aujourd'hui, qui avance tout seul) et la
  * semaine de la vue Semaine (`null` = la semaine courante) ; et, dans l'espace
  * Équipe, l'onglet « Échanges » de l'écran Équipe (docs/spec/equipe-echanges.md),
- * que la visite guidée peut ouvrir directement.
+ * que la visite guidée peut ouvrir directement ; enfin la catégorie ouverte des Réglages.
  */
 class NavState {
     var day by mutableStateOf<LocalDate?>(null)
@@ -19,4 +20,7 @@ class NavState {
 
     /** L'accompagnement de la première tâche est demandé (docs/spec/premiere-tache.md) : la vue Jour ouvre la fiche et l'acquitte. */
     var firstTaskRequest by mutableStateOf(false)
+
+    /** Catégorie ouverte dans les Réglages (docs/spec/reglages.md) : la coquille en tire le titre et la flèche retour. */
+    val settings = SettingsNav()
 }

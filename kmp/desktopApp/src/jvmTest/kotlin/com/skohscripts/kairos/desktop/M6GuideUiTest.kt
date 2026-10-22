@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -140,11 +141,12 @@ class M6GuideUiTest {
         onNodeWithText("Close").performClick()
         waitGone("Help: Settings")
 
-        // « À propos et guide » ouvert depuis les Réglages : la flèche y ramène, puis à l'Accueil.
+        // « À propos et guide » ouvert depuis les Réglages (catégorie À propos) : la flèche y ramène, puis à l'Accueil.
+        openSettingsCategory(SettingsCategory.ABOUT)
         onNodeWithText("About & guide").performScrollTo().performClick()
         waitText("Source code")
         onNodeWithContentDescription("Back").performClick()
-        waitText("Appearance")
+        waitText("Discover Kairos")
         onNodeWithContentDescription("Back").performClick()
         waitText("What is Kairos for?")
     }
@@ -198,8 +200,8 @@ class M6GuideUiTest {
         waitText("6 cards")
         onNodeWithText("Close").performClick()
         waitGone("6 cards")
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.ABOUT)
+        waitText("Discover Kairos")
         onNodeWithText("Discover Kairos").performScrollTo().performClick()
         waitText("6 cards")
     }

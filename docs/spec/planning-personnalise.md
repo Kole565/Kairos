@@ -250,7 +250,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
     choix** du créneau (comparé au choix que le creux seul aurait fait) ; dans ce cas `dipApplied` reste faux (une seule mention). La vue Jour affiche la
     note « heure préférée pour « Dev » » / « ton heure habituelle pour « Dev » » à côté du créneau, et « Pourquoi à cette place ? » une phrase de plus
     (`why_affinity_*`) qui dit que ce n'est qu'une préférence : l'urgence et les tâches en retard passent d'abord.
-  - **Interface** : carte **Meilleures heures** (`BestHoursCard`) dans les Réglages, après « Contextes » : interrupteur « Préférer mes heures habituelles »,
+  - **Interface** : carte **Meilleures heures** (`BestHoursCard`) dans les Réglages, catégorie « Planification », après « Types de tâches » (après « Contextes » jusqu'au rangement par catégories du 2026-10-22, `reglages.md`) : interrupteur « Préférer mes heures habituelles »,
     force en trois boutons segmentés et, quand c'est activé, un champ « Heure préférée pour <type> (0–23) » par type de « Types de tâche » (plus ceux
     qui ont une heure mais ont quitté la liste, signalés « type inconnu » : jamais perdus en silence). Champs du formulaire :
     `schedule.bestHours.enabled`, `.strength` (0 à 2), `.preferred` (texte `type=heure,…`, `SettingsForm.parsePreferred` / `encodePreferred`) ; une heure

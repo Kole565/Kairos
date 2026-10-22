@@ -30,7 +30,7 @@ base. Il faut donc pouvoir :
 
 ### Comportement attendu (utilisateur)
 
-- Réglages → carte **Données** :
+- Réglages → catégorie « Données » → carte **Données** (suivie de « Réglages par défaut », `reglages.md`) :
   - le texte rappelle que les données restent sur l'appareil ; sur le
     bureau, le dossier des données est affiché ;
   - **Exporter** : enregistre un fichier `kairos-export-AAAAMMJJ-HHMM.json`

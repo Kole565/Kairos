@@ -25,6 +25,8 @@ import com.skohscripts.kairos.ui.notes.NotesScreen
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.settings.SettingsCategory
+import com.skohscripts.kairos.ui.settings.SettingsNav
 import com.skohscripts.kairos.ui.settings.SettingsScreen
 import kotlinx.coroutines.runBlocking
 import com.skohscripts.kairos.ui.theme.KairosTheme
@@ -49,6 +51,7 @@ import com.skohscripts.kairos.ui.team.forecast.ForecastSpec
 import com.skohscripts.kairos.ui.team.forecast.ScenarioEditorContent
 import com.skohscripts.kairos.ui.team.forecast.TeamUiState
 import com.skohscripts.kairos.ui.app.AppServices
+import androidx.compose.runtime.remember
 import com.skohscripts.kairos.core.team.forecast.ForecastOptions
 import com.skohscripts.kairos.core.team.forecast.ForecastScope
 import com.skohscripts.kairos.ui.navigation.LocalWindowWidth
@@ -88,6 +91,10 @@ object SelfTest {
         val app: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { services } }
         val launch: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { services } }
         val settings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(services) {} } } }
+        // Une catégorie des Réglages ouverte d'office (docs/spec/reglages.md) : sur un volet, la liste viendrait seule.
+        val settingsIn: (AppServices, SettingsCategory) -> @Composable () -> Unit = { s, category ->
+            { KairosTheme { Surface { SettingsScreen(s, remember { SettingsNav().apply { this.category = category } }) {} } } }
+        }
         val about: @Composable () -> Unit = { KairosTheme { Surface { AboutScreen() } } }
         // Seconde base avec un chrono en marche sur la première tâche qualifiée.
         val timed = runBlocking {
@@ -114,7 +121,7 @@ object SelfTest {
                 )
             }
         }
-        val plannedSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(planned) {} } } }
+        val plannedSettings = settingsIn(planned, SettingsCategory.DAY)
         val plannedDay: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { planned } }
         // Cinquième base : des sessions chronométrées à des heures variées sur trois types, pour la carte « Quand tu travailles chaque type ».
         val hoursServices = runBlocking {
@@ -253,9 +260,9 @@ object SelfTest {
         }
         val exchangesTab = NavState().apply { exchangesTab = true }
         val memberApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { exchange.member } }
-        val memberSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(exchange.member) {} } } }
+        val memberSettings = settingsIn(exchange.member, SettingsCategory.DATA)
         val teamApp: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, initialTeamDestination = TeamDestination.BOARD) { team } }
-        val teamSettings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(team) {} } } }
+        val teamSettings = settingsIn(team, SettingsCategory.TEAM)
         val notes: @Composable () -> Unit = { KairosTheme { Surface { NotesScreen(services) {} } } }
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
         val stats: @Composable () -> Unit = { KairosTheme { Surface { StatsScreen(timed) } } }
@@ -277,10 +284,14 @@ object SelfTest {
             // Ouverture réelle : l'Accueil, première destination ; Réglages dans la barre du haut (docs/spec/navigation-theme.md).
             Shot("launch", 1200, 1000, launch),
             Shot("launch-narrow", 360, 800, launch),
+            // Réglages par catégories : deux volets (« Général » d'office), la liste seule à 360 dp, puis une catégorie par capture.
             Shot("settings", 900, 1000, settings),
-            Shot("settings-full", 900, 4800, settings),
-            Shot("settings-planning", 900, 7200, plannedSettings),
-            Shot("settings-planning-narrow", 360, 10500, plannedSettings),
+            Shot("settings-narrow", 360, 1000, settings),
+            Shot("settings-tracking-narrow", 360, 1200, settingsIn(services, SettingsCategory.TRACKING)),
+            Shot("settings-advanced", 900, 2600, settingsIn(services, SettingsCategory.PLANNING)),
+            Shot("settings-planning", 900, 4200, plannedSettings),
+            Shot("settings-planning-narrow", 360, 7000, plannedSettings),
+            Shot("settings-besthours", 900, 2600, settingsIn(planned, SettingsCategory.PLANNING)),
             Shot("day-windows", 1200, 1400, plannedDay),
             Shot("about", 900, 1000, about),
             // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).
@@ -298,7 +309,7 @@ object SelfTest {
             // Espace Équipe (état vide du jalon E1) : large, puis 360 dp (téléphone) avec le sélecteur dans la barre.
             Shot("team", 1200, 1000, teamApp),
             Shot("team-narrow", 360, 800, teamApp),
-            Shot("team-settings", 900, 5600, teamSettings),
+            Shot("team-settings", 900, 2600, teamSettings),
             // Jalon E6 : échanges par fichier (aperçu d'un paquet, d'un rapport ; fiche membre ; vue Jour du membre ; Réglages du membre).
             Shot("team-exchange-pack", 900, 1100, exchangeCard(exchange.packPreview)),
             Shot("team-exchange-pack-narrow", 360, 1300, exchangeCard(exchange.packPreview)),
@@ -308,7 +319,7 @@ object SelfTest {
             Shot("team-exchange-sheet-narrow", 360, 2100, atWidth(360.dp) { TeamMembersScreen(exchange.manager, initialSheetMemberId = exchange.alexId) }),
             Shot("exchange-day", 1200, 1700, memberApp),
             Shot("exchange-day-narrow", 420, 2600, memberApp),
-            Shot("exchange-settings", 900, 4900, memberSettings),
+            Shot("exchange-settings", 900, 1400, memberSettings),
             // Écran Équipe du jalon E2 : large, puis 360 dp ; fiche membre (dialogue, plein écran) et éditeur d'absence.
             Shot("home", 900, 1500, atWidth(900.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}) }),
             Shot("home-narrow", 360, 2300, atWidth(360.dp) { HomeScreen(teamEnabled = false, onOpen = {}, onTour = {}, onAbout = {}) }),

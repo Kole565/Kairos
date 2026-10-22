@@ -177,8 +177,8 @@ remplacer ; une version stable s'installe par-dessus la précédente.
   `desktop-about.png`, `desktop-day-full.png`,
   `desktop-day-full-narrow.png`, `desktop-day-chrono.png`,
   `desktop-notes.png`, `desktop-week.png`, `desktop-week-narrow.png`,
-  `desktop-stats.png`, `desktop-settings-full.png` : Réglages entiers en
-  900 × 4800 px), puis, sur une base où la gestion d'équipe est activée,
+  `desktop-stats.png`, puis les Réglages par catégories, `reglages.md` : `desktop-settings-narrow.png`,
+  `desktop-settings-tracking-narrow.png`, `desktop-settings-advanced.png`), puis, sur une base où la gestion d'équipe est activée,
   l'espace Équipe (`desktop-team.png`, `desktop-team-narrow.png` en 360 px,
   `desktop-team-settings.png`, et, depuis le jalon E2, l'écran Équipe, la
   fiche d'un membre et l'éditeur d'absence, chacun en 1200 et 360 px :

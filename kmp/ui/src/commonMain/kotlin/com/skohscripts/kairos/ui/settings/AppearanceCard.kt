@@ -54,7 +54,7 @@ internal fun AppearanceCard(value: String, error: FieldError?, onChange: (String
     val system = LocalSystemColorScheme.current
     val chosen = SettingsForm.normalizeColor(value)
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.settings_section_appearance), stringResource(Res.string.theme_help))
+        SettingsCardHeader(KairosIcons.Palette, stringResource(Res.string.settings_section_appearance), stringResource(Res.string.theme_help))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (system != null) {
                 Swatch(system.primary, stringResource(Res.string.theme_system), chosen == Settings.SYSTEM_THEME) { onChange(Settings.SYSTEM_THEME) }

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
@@ -99,7 +100,7 @@ class M5ScreensUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.DAY)
         waitText("Hours by day of the week")
         // Mardi (le 2e jour) : horaire propre ; dimanche (le 7e) : jour libre.
         onAllNodesWithText("Custom")[1].performScrollTo().performClick()
@@ -118,7 +119,7 @@ class M5ScreensUiTest {
     fun anEndBeforeTheStartIsRefusedOnItsField() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.DAY)
         waitText("Hours by day of the week")
         onAllNodesWithText("Custom")[0].performScrollTo().performClick()
         type("From (hour, 0-23)", "15")
@@ -134,10 +135,12 @@ class M5ScreensUiTest {
         val repository = services.repository
         runBlocking { repository.updateSettings(repository.snapshot.value.settings.copy(workdayStartHour = 7)) }
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Working day")
+        openSettings(SettingsCategory.DATA)
+        waitText("Restore default settings")
         onNodeWithText("Restore default settings").performScrollTo().performClick()
-        // Le formulaire montre la valeur par défaut, mais rien n'est enregistré avant « Save ».
+        // Le formulaire montre la valeur par défaut (dans sa catégorie), mais rien n'est enregistré avant « Save ».
+        openSettingsCategory(SettingsCategory.DAY)
+        waitText("Working day")
         onNode(hasSetTextAction() and hasText("9")).assertExists()
         assertEquals(7, repository.snapshot.value.settings.workdayStartHour)
         onNodeWithText("Save").performClick()
@@ -149,7 +152,7 @@ class M5ScreensUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.DAY)
         waitText("Working day")
 
         // Un champ hors bornes : message sous le champ, rien d'enregistré.
@@ -165,9 +168,11 @@ class M5ScreensUiTest {
         assertEquals(9, repository.snapshot.value.settings.workdayStartHour)
 
         // Valeurs valides, décimale à la virgule, interrupteur : tout est enregistré d'un coup. Le score et le creux sont
-        // dans le groupe « Avancé », replié : on l'ouvre.
-        onNodeWithText("Advanced: how tasks are ordered").performScrollTo().performClick()
+        // dans le groupe « Avancé » de la catégorie Planification, replié : on l'ouvre. Le début de journée tapé dans
+        // « Day and hours » reste en attente pendant le passage d'une catégorie à l'autre.
         type("Start of day (hour, 0-23)", "8")
+        openSettingsCategory(SettingsCategory.PLANNING)
+        onNodeWithText("Advanced: how tasks are ordered").performScrollTo().performClick()
         type("Value base per priority", "2,5")
         onNodeWithText("Enable the afternoon dip").performScrollTo().performClick()
         onNodeWithText("Save").performClick()
@@ -189,7 +194,7 @@ class M5ScreensUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.GENERAL)
         waitText("Appearance")
         // Le fond de l'écran est la surface du schéma : celle du miel, puis celle de la graine choisie.
         val honey = ThemeColors.schemeFor(Settings.DEFAULT_THEME_COLOR, null)
@@ -265,7 +270,7 @@ class M5ScreensUiTest {
         waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Add Kairos to the applications menu", substring = true).fetchSemanticsNodes().isEmpty() }
 
         // Réglages → Raccourci : l'état, puis « Retirer » ; le bandeau revient.
-        openSettings()
+        openSettings(SettingsCategory.GENERAL)
         waitText("Shortcut created for this copy.")
         onNodeWithText("Remove the shortcut").performScrollTo().performClick()
         waitText("No shortcut.")
@@ -283,8 +288,8 @@ class M5ScreensUiTest {
     fun anInstalledCopyHasNoShortcutCard() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Working day")
+        openSettings(SettingsCategory.GENERAL)
+        waitText("Appearance")
         assertEquals(0, onAllNodesWithText("Shortcut").fetchSemanticsNodes().size)
     }
 

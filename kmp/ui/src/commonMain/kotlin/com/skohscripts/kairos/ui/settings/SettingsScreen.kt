@@ -41,6 +41,23 @@ import com.skohscripts.kairos.ui.generated.resources.settings_restore_action
 import com.skohscripts.kairos.ui.generated.resources.settings_restore_body
 import com.skohscripts.kairos.ui.generated.resources.settings_restore_title
 import com.skohscripts.kairos.ui.generated.resources.settings_unsaved
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.key
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import com.skohscripts.kairos.ui.generated.resources.settings_cat_general_hint_updates
+import com.skohscripts.kairos.ui.generated.resources.settings_cat_has_error
+import org.jetbrains.compose.resources.StringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -120,13 +137,13 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Réglages (docs/spec/reglages.md) : le formulaire complet (une carte par
- * section, validation par champ, un seul « Enregistrer » dans une barre
- * fixée en bas), puis les données (export, import) et « À propos et guide ».
- * Rien n'est enregistré tant qu'un champ est invalide.
+ * Réglages (docs/spec/reglages.md) : un seul formulaire (validation par champ, un seul « Enregistrer » dans une barre
+ * fixée en bas), montré par catégories ([SettingsCategory]) : la liste, puis une catégorie à la fois ; les deux côte à
+ * côte dès [SETTINGS_TWO_PANE_MIN]. L'état du formulaire vit ici, au-dessus des catégories : une modification survit
+ * au passage d'une catégorie à l'autre. Rien n'est enregistré tant qu'un champ est invalide.
  */
 @Composable
-fun SettingsScreen(services: AppServices, onDiscover: () -> Unit = {}, onOpenAbout: () -> Unit) {
+fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { SettingsNav() }, onDiscover: () -> Unit = {}, onOpenAbout: () -> Unit) {
     val snapshot by services.repository.snapshot.collectAsState()
     val current = snapshot.settings
     val language = uiLanguage()
@@ -164,9 +181,11 @@ fun SettingsScreen(services: AppServices, onDiscover: () -> Unit = {}, onOpenAbo
         val settings = result.settings
         when {
             settings == null -> scope.launch {
-                // Défiler d'abord vers ce qui est refusé (champ fautif, sinon bandeau des règles entre champs).
-                val first = result.fieldErrors.keys.firstOrNull() ?: ErrorReveal.GENERAL
-                launch { withFrameNanos { }; withFrameNanos { }; runCatching { reveal.reveal(first) } }
+                // Ouvrir la catégorie du premier champ refusé (dans l'ordre des catégories, sinon celle de la règle
+                // violée), puis y défiler : la catégorie doit d'abord être composée et mesurée, d'où les deux images.
+                val first = result.fieldErrors.keys.minByOrNull { SettingsCategory.of(it).ordinal }
+                (first?.let { SettingsCategory.of(it) } ?: result.general?.let { SettingsCategory.of(it) })?.let { nav.category = it }
+                launch { withFrameNanos { }; withFrameNanos { }; runCatching { reveal.reveal(first ?: ErrorReveal.GENERAL) } }
                 messages(getString(Res.string.settings_not_saved))
             }
             current.teamModeEnabled && !settings.teamModeEnabled -> confirmHide = settings
@@ -174,65 +193,87 @@ fun SettingsScreen(services: AppServices, onDiscover: () -> Unit = {}, onOpenAbo
         }
     }
 
+    val onChange: (String, String) -> Unit = { key, value ->
+        values = values + (key to value)
+        errors = errors - key
+    }
+    // Catégories à signaler dans la liste : un champ refusé, ou la règle entre champs violée.
+    val flagged = remember(errors, general) { errors.keys.map { SettingsCategory.of(it) }.toSet() + setOfNotNull(general?.let { SettingsCategory.of(it) }) }
+
+    val categoryContent: @Composable (SettingsCategory, Boolean) -> Unit = { category, twoPane ->
+        Column(
+            verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(KairosSpacing.l),
+        ) {
+            // Sur deux volets, la barre du haut dit « Réglages » : le titre de la catégorie est en tête de son volet.
+            if (twoPane) Text(stringResource(category.title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.fillMaxWidth().heading())
+            general?.takeIf { SettingsCategory.of(it) == category }?.let {
+                Box(Modifier.fillMaxWidth().bringIntoViewRequester(reveal.requester(ErrorReveal.GENERAL))) { GeneralErrorBanner(it) }
+            }
+            CompositionLocalProvider(LocalErrorReveal provides reveal) {
+                when (category) {
+                    SettingsCategory.GENERAL -> {
+                        LanguageCard(values["language"].orEmpty()) { onChange("language", it) }
+                        AppearanceCard(values["themeColor"].orEmpty(), errors["themeColor"]) { onChange("themeColor", it) }
+                        services.updates?.let { updates ->
+                            UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { onChange("updateCheckEnabled", it) }
+                        }
+                        services.shortcuts?.let { ShortcutCard(it) }
+                    }
+                    SettingsCategory.DAY, SettingsCategory.PLANNING, SettingsCategory.TRACKING -> SettingsFormCards(category, values, errors, onChange)
+                    SettingsCategory.TEAM -> TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services, onChange = onChange)
+                    SettingsCategory.DATA -> {
+                        DataCard(services)
+                        RestoreDefaultsCard {
+                            // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
+                            values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->
+                                if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
+                            }
+                            errors = emptyMap()
+                            general = null
+                        }
+                    }
+                    SettingsCategory.ABOUT -> {
+                        // « Découvrir Kairos » (docs/spec/visite-guidee.md) : le hub des chapitres, rouvert à tout moment.
+                        SettingsLinkCard(KairosIcons.PlayArrow, Res.string.settings_discover_entry, Res.string.settings_discover_entry_hint, onDiscover)
+                        SettingsLinkCard(KairosIcons.Info, Res.string.settings_about_entry, Res.string.settings_about_entry_hint, onOpenAbout)
+                    }
+                }
+            }
+        }
+    }
+
     Column(Modifier.fillMaxSize()) {
-        Box(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(KairosSpacing.l),
-            ) {
-                Text(stringResource(Res.string.settings_intro), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth())
-                general?.let { Box(Modifier.fillMaxWidth().bringIntoViewRequester(reveal.requester(ErrorReveal.GENERAL))) { GeneralErrorBanner(it) } }
-                CompositionLocalProvider(LocalErrorReveal provides reveal) {
-                    // Langue et apparence d'abord : ce qu'on cherche en premier, puis le reste du formulaire.
-                    LanguageCard(values["language"].orEmpty()) {
-                        values = values + ("language" to it)
-                    }
-                    AppearanceCard(values["themeColor"].orEmpty(), errors["themeColor"]) {
-                        values = values + ("themeColor" to it)
-                        errors = errors - "themeColor"
-                    }
-                    SettingsFormCards(values, errors) { key, value ->
-                        values = values + (key to value)
-                        errors = errors - key
-                    }
-                    TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services) { key, value ->
-                        values = values + (key to value)
-                        errors = errors - key
+        BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+            // Mesuré sur la largeur offerte à l'écran, pas sur la fenêtre : le rail en prend déjà 80 dp.
+            val twoPane = maxWidth >= SETTINGS_TWO_PANE_MIN
+            SideEffect { nav.singlePane = !twoPane }
+            val shown = nav.category ?: SettingsCategory.GENERAL.takeIf { twoPane }
+            val generalHint = if (services.updates != null) Res.string.settings_cat_general_hint_updates else SettingsCategory.GENERAL.hint
+            val list: @Composable () -> Unit = {
+                SettingsCategoryList(selected = shown.takeIf { twoPane }, twoPane = twoPane, flagged = flagged, generalHint = generalHint) { nav.category = it }
+            }
+            if (twoPane) {
+                Row(Modifier.fillMaxSize()) {
+                    Box(Modifier.width(SETTINGS_LIST_WIDTH).fillMaxHeight().verticalScroll(rememberScrollState()).padding(KairosSpacing.l)) { list() }
+                    VerticalDivider()
+                    // Une catégorie choisie s'ouvre en haut de son volet (un défilement par catégorie).
+                    key(shown) {
+                        Box(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
+                            categoryContent(shown ?: SettingsCategory.GENERAL, true)
+                        }
                     }
                 }
-                RestoreDefaultsCard {
-                    // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
-                    values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->
-                        if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
+            } else {
+                key(shown) {
+                    Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
+                        if (shown == null) {
+                            Box(Modifier.widthIn(max = 720.dp).fillMaxWidth().padding(KairosSpacing.l)) { list() }
+                        } else {
+                            categoryContent(shown, false)
+                        }
                     }
-                    errors = emptyMap()
-                    general = null
-                }
-                services.updates?.let { updates ->
-                    UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { values = values + ("updateCheckEnabled" to it) }
-                }
-                services.shortcuts?.let { ShortcutCard(it) }
-                DataCard(services)
-                // « Découvrir Kairos » (docs/spec/visite-guidee.md) : le hub des chapitres, rouvert à tout moment.
-                SettingsClickableCard(onClick = onDiscover) {
-                    ListItem(
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        leadingContent = { Icon(KairosIcons.PlayArrow, contentDescription = null) },
-                        headlineContent = { Text(stringResource(Res.string.settings_discover_entry)) },
-                        supportingContent = { Text(stringResource(Res.string.settings_discover_entry_hint)) },
-                        trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
-                    )
-                }
-                SettingsClickableCard(onClick = onOpenAbout) {
-                    ListItem(
-                        // Le fond de la ligne est celui de la carte « filled », pas la surface par défaut du ListItem.
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        leadingContent = { Icon(KairosIcons.Info, contentDescription = null) },
-                        headlineContent = { Text(stringResource(Res.string.settings_about_entry)) },
-                        supportingContent = { Text(stringResource(Res.string.settings_about_entry_hint)) },
-                        trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
-                    )
                 }
             }
         }
@@ -256,6 +297,82 @@ fun SettingsScreen(services: AppServices, onDiscover: () -> Unit = {}, onOpenAbo
 }
 
 /**
+ * Liste des catégories (docs/spec/reglages.md) : phrase d'introduction, puis une ligne par catégorie (icône, titre,
+ * résumé) dans une carte « filled ». Sur deux volets, la ligne choisie est en conteneur de sélection (charte) et se
+ * lit comme un onglet ; sur un seul, chaque ligne ouvre sa catégorie (chevron). Une catégorie qui contient une
+ * erreur le dit (icône d'avertissement, jamais la couleur seule).
+ */
+@Composable
+private fun SettingsCategoryList(
+    selected: SettingsCategory?,
+    twoPane: Boolean,
+    flagged: Set<SettingsCategory>,
+    generalHint: StringResource,
+    onOpen: (SettingsCategory) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
+        Text(stringResource(Res.string.settings_intro), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.fillMaxWidth())
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            elevation = CardDefaults.cardElevation(0.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(KairosSpacing.s)) {
+                SettingsCategory.entries.forEach { category ->
+                    val isSelected = category == selected
+                    val hasError = category in flagged
+                    val action = if (twoPane) {
+                        Modifier.selectable(isSelected, role = Role.Tab) { onOpen(category) }
+                    } else {
+                        Modifier.clickable(role = Role.Button) { onOpen(category) }
+                    }
+                    val content = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+                    ListItem(
+                        colors = ListItemDefaults.colors(
+                            containerColor = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                            headlineColor = content,
+                            leadingIconColor = if (isSelected) content else MaterialTheme.colorScheme.onSurfaceVariant,
+                            supportingColor = if (isSelected) content else MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
+                        leadingContent = { Icon(category.icon, contentDescription = null) },
+                        headlineContent = { Text(stringResource(category.title)) },
+                        supportingContent = { Text(stringResource(if (category == SettingsCategory.GENERAL) generalHint else category.hint)) },
+                        trailingContent = if (hasError || !twoPane) {
+                            {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(KairosSpacing.s)) {
+                                    if (hasError) {
+                                        Icon(KairosIcons.Warning, contentDescription = stringResource(Res.string.settings_cat_has_error), tint = MaterialTheme.colorScheme.error)
+                                    }
+                                    if (!twoPane) Icon(KairosIcons.ChevronRight, contentDescription = null)
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                        modifier = Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).then(action).testTag("settings-category-${category.name}"),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Ligne qui ouvre un autre écran (« Découvrir Kairos », « À propos et guide ») : carte cliquable, icône, chevron. */
+@Composable
+private fun SettingsLinkCard(icon: ImageVector, title: StringResource, hint: StringResource, onClick: () -> Unit) {
+    SettingsClickableCard(onClick = onClick) {
+        ListItem(
+            // Le fond de la ligne est celui de la carte « filled », pas la surface par défaut du ListItem.
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            leadingContent = { Icon(icon, contentDescription = null) },
+            headlineContent = { Text(stringResource(title)) },
+            supportingContent = { Text(stringResource(hint)) },
+            trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
+        )
+    }
+}
+
+/**
  * Mises à jour (bureau) : le réglage de vérification (enregistré avec le
  * reste du formulaire), la version installée, le résultat de la dernière
  * vérification et « Vérifier maintenant ».
@@ -271,7 +388,7 @@ private fun UpdatesCard(updates: UpdateService, enabled: String, onEnabled: (Str
         return "${Dates.dayMonth(t.date, language)} ${Dates.time(t, language)}"
     }
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.settings_section_updates), stringResource(Res.string.update_help))
+        SettingsCardHeader(KairosIcons.Update, stringResource(Res.string.settings_section_updates), stringResource(Res.string.update_help))
         SettingInput("updateCheckEnabled", enabled, null, onEnabled)
         Text(stringResource(Res.string.update_installed, KairosBuild.VERSION_NAME), style = MaterialTheme.typography.bodyMedium)
         val line = when (val s = status) {
@@ -329,7 +446,7 @@ private fun SaveBar(dirty: Boolean, onReset: () -> Unit, onSave: () -> Unit) {
 @Composable
 private fun RestoreDefaultsCard(onRestore: () -> Unit) {
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.settings_restore_title), stringResource(Res.string.settings_restore_body))
+        SettingsCardHeader(KairosIcons.SettingsBackupRestore, stringResource(Res.string.settings_restore_title), stringResource(Res.string.settings_restore_body))
         KairosOutlinedButton(onClick = onRestore) { Text(stringResource(Res.string.settings_restore_action)) }
     }
 }
@@ -352,7 +469,7 @@ private fun DataCard(services: AppServices) {
     val origins = remember(stored) { ReceivedTasks.origins(stored) }
 
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.data_title), stringResource(Res.string.data_body))
+        SettingsCardHeader(KairosIcons.Database, stringResource(Res.string.data_title), stringResource(Res.string.data_body))
         services.dataLocation?.let {
             Text(
                 stringResource(Res.string.data_location, it),
