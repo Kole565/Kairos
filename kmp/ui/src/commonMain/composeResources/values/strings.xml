@@ -1061,7 +1061,7 @@
     <string name="help_day">“Up next” tells you what to do. Tasks to process are waiting for their priority, points and deadline; the score (value divided by effort) sets the order. Start the timer to measure real time.</string>
     <string name="help_week">The seven days of the week: deadlines, finished tasks, time slots and real time. Tap a day to open it in the Day view.</string>
     <string name="help_stats">What you really do: throughput, time spent by task type, and the calibration of your estimates (your points against real time).</string>
-    <string name="help_settings">Hours, breaks, alerts, appearance, team management and your data: export, import, or send your progress back to your manager. Remember “Save” at the bottom.</string>
+    <string name="help_settings">Settings are grouped by category: general, day and hours, planning, timer and statistics, team, data. A change is kept from one category to the next until you press “Save” at the bottom.</string>
     <string name="help_team_board">Team tracking: who does what, progress and signals (delays, blockers, unestimated tasks). Tap a task to see its details, reassign it or enter its progress.</string>
     <string name="help_team_backlog">The team’s tasks: create them here, qualify them (priority, points, category, deadline), then assign them to a member, or ask for a suggested split.</string>
     <string name="help_team_members">The members, their capacity and their load over the chosen horizon. Tap a member for their sheet (absences, activity). The “Exchanges” tab sends tasks and receives progress by file.</string>
@@ -1320,4 +1320,21 @@
     <string name="why_affinity_manual">Placed here because you set a preferred hour for “%1$s”. A soft preference only: urgency and overdue tasks come first.</string>
     <string name="card_besthours_apply_title">Plan around your best hours</string>
     <string name="card_besthours_apply_body">In Settings, turn on “Prefer my usual hours”: between tasks of similar score, Kairos picks the one whose type you usually work at that time, or at the hour you set for it. Overdue tasks and urgency still come first.</string>
+    <!-- Réglages rangés par catégories (docs/spec/reglages.md). -->
+    <string name="settings_cat_general">General</string>
+    <string name="settings_cat_general_hint">Language, appearance</string>
+    <string name="settings_cat_general_hint_updates">Language, appearance, updates</string>
+    <string name="settings_cat_day">Day and hours</string>
+    <string name="settings_cat_day_hint">Working day, hours by day of the week, contexts, public holidays</string>
+    <string name="settings_cat_planning">Planning</string>
+    <string name="settings_cat_planning_hint">Task types, best hours, learned durations, safeguards, priority score</string>
+    <string name="settings_cat_tracking">Timer and statistics</string>
+    <string name="settings_cat_tracking_hint">Timer alerts, statistics window</string>
+    <string name="settings_cat_team">Team</string>
+    <string name="settings_cat_team_hint">Team management, follow-up, load and forecasts</string>
+    <string name="settings_cat_data">Data</string>
+    <string name="settings_cat_data_hint">Export, import, default settings</string>
+    <string name="settings_cat_about">About</string>
+    <string name="settings_cat_about_hint">Discover Kairos, guide, version</string>
+    <string name="settings_cat_has_error">A field to fix</string>
 </resources>

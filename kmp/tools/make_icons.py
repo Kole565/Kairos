@@ -80,6 +80,24 @@ ICONS = {
     "Help": ("help", False),
     # Soutien : le cœur de la barre du haut et de « À propos » (docs/spec/soutien.md).
     "Favorite": ("favorite", False),
+    # Réglages rangés par catégories (docs/spec/reglages.md) : icônes des catégories et des cartes.
+    "Tune": ("tune", False),
+    "Sort": ("sort", False),
+    "Timer": ("timer", False),
+    "Database": ("database", False),
+    "Translate": ("translate", False),
+    "Palette": ("palette", False),
+    "Update": ("update", False),
+    "Work": ("work", False),
+    "CalendarViewWeek": ("calendar_view_week", False),
+    "Workspaces": ("workspaces", False),
+    "Label": ("label", False),
+    "LightMode": ("light_mode", False),
+    "History": ("history", False),
+    "Shield": ("shield", False),
+    "Leaderboard": ("leaderboard", False),
+    "Bedtime": ("bedtime", False),
+    "SettingsBackupRestore": ("settings_backup_restore", False),
 }
 
 

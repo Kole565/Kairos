@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -311,8 +312,8 @@ class TeamMembersUiTest {
 
     /** Réglages (roue crantée de la barre du haut), formulaire chargé. */
     private fun ComposeUiTest.openSettingsPage() {
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.TEAM)
+        waitText("Team management")
     }
 
     private fun teamData(repository: KairosRepository) = runBlocking {

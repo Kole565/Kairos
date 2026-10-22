@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.icons.KairosIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,7 +55,7 @@ private val LEVELS: List<StringResource> = listOf(Res.string.besthours_strength_
 internal fun BestHoursCard(values: Map<String, String>, errors: Map<String, FieldError>, onChange: (String, String) -> Unit) {
     val enabled = values[ENABLED] == "true"
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(stringResource(Res.string.besthours_settings_title), stringResource(Res.string.besthours_settings_body))
+        SettingsCardHeader(KairosIcons.LightMode, stringResource(Res.string.besthours_settings_title), stringResource(Res.string.besthours_settings_body))
         SwitchRow(enabled, stringResource(Res.string.besthours_enable)) { onChange(ENABLED, it.toString()) }
         if (!enabled) return@SettingsCard
         val level = (values[STRENGTH]?.toIntOrNull() ?: 1).coerceIn(0, LEVELS.lastIndex)

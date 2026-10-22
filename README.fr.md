@@ -79,7 +79,7 @@ bon fichier pour ton système. Tous les fichiers, et leurs sommes de contrôle
 **Mises à jour.** Sur Android, par F-Droid ou un nouvel APK. Sur
 le bureau, Kairos vérifie toutes les 6 heures s’il existe une nouvelle version
 et l’annonce dans un bandeau (« Télécharger » ouvre sa page) ; réglage dans
-Réglages → Mises à jour. La version web est toujours la dernière.
+Réglages → Général → Mises à jour. La version web est toujours la dernière.
 
 ## Fonctionnalités
 
@@ -217,7 +217,7 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
 - Interface en **français** et en **anglais** : la langue du système (français
   si le système est en français, anglais sinon), ou celle que tu choisis dans
-  Réglages → Langue. D’autres langues arriveront dans une prochaine version.
+  Réglages → Général → Langue. D’autres langues arriveront dans une prochaine version.
 
 ### S’y retrouver
 
@@ -291,7 +291,7 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 ### Apparence
 
-- **Couleur du thème** au choix (Réglages → Apparence) : le miel par défaut,
+- **Couleur du thème** au choix (Réglages → Général → Apparence) : le miel par défaut,
   sept autres couleurs proposées, ou une couleur libre (`#RRGGBB`). Tout le
   thème en est dérivé (Material Design 3), contrastes compris.
 - Sur **Android 12 et plus**, « Couleurs du système » suit les couleurs du
@@ -302,27 +302,38 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 ## Réglages
 
-Chaque réglage est expliqué sous son champ ; un seul « Enregistrer », et un
-champ invalide dit pourquoi. La langue et l’apparence viennent en premier ; le score de priorité et
-le creux de l’après-midi sont dans un groupe replié « Avancé : comment les
-tâches sont ordonnées », et « Restaurer les valeurs par défaut » remplit le
-formulaire des valeurs par défaut (l’espace Équipe n’est pas touché ; rien
-n’est enregistré avant « Enregistrer »).
+Les réglages sont rangés par catégorie, chacune avec son icône et le résumé de
+ce qu’elle contient : on en touche une pour l’ouvrir (en fenêtre large, la liste
+et la catégorie sont côte à côte). Chaque réglage est expliqué sous son champ ;
+un seul « Enregistrer » pour toutes les catégories (une modification est
+gardée d’une catégorie à l’autre), et un champ invalide dit pourquoi : un
+enregistrement refusé ouvre sa catégorie et y défile. Le score de priorité et
+le creux de l’après-midi sont dans un groupe replié « Avancé : comment les
+tâches sont ordonnées », et « Restaurer les valeurs par défaut » (Données)
+remplit le formulaire des valeurs par défaut (l’espace Équipe n’est pas
+touché ; rien n’est enregistré avant « Enregistrer »).
 
-| Section | Réglages | Défaut |
-|---|---|---|
-| Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
-| Score de priorité (WSJF), avancé | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
-| Creux de l’après-midi, avancé | Activé, début, creux, fin, force | activé, 13 h – 15 h – 16 h, 1 |
-| Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
-| Types de tâches | Liste des types | |
-| Statistiques | Fenêtre des indicateurs | 8 semaines |
-| Alertes du chrono | Chrono oublié, pause suggérée, son de secours | 180 min, 50 min, désactivé |
-| Jours fériés | Calendrier français, dates supplémentaires | activé |
-| Langue | Langue de l’interface (Système, Français, English) | Système |
-| Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
-| Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
-| Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
+| Catégorie | Section | Réglages | Défaut |
+|---|---|---|---|
+| Général | Langue | Langue de l’interface (Système, Français, English) | Système |
+| | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
+| | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
+| | Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
+| Journée et horaires | Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
+| | Horaires par jour de la semaine | Comme d’habitude, personnalisé (une à quatre plages) ou jour libre | comme d’habitude |
+| | Contextes | Jusqu’à quatre, chacun avec ses types de tâche | aucun |
+| | Jours fériés | Calendrier français, dates supplémentaires | activé |
+| Planification | Types de tâches | Liste des types | |
+| | Meilleures heures | Préférer mes heures habituelles, force, heure préférée par type | désactivé |
+| | Durées apprises | Activé, occurrences considérées, occurrences nécessaires | activé, 5, 3 |
+| | Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
+| | Score de priorité (WSJF), avancé | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
+| | Creux de l’après-midi, avancé | Activé, début, creux, fin, force | activé, 13 h – 15 h – 16 h, 1 |
+| Chrono et statistiques | Alertes du chrono | Chrono oublié, pause suggérée, son de secours | 180 min, 50 min, désactivé |
+| | Statistiques | Fenêtre des indicateurs | 8 semaines |
+| Équipe | Équipe | Gestion d’équipe, puis ses seuils, sa charge et ses prévisions | désactivé |
+| Données | Données, réglages par défaut | Export, import, restaurer les valeurs par défaut | |
+| À propos | | Découvrir Kairos, À propos et guide | |
 
 ## Développement
 

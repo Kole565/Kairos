@@ -1,17 +1,18 @@
 # Réglages
 
-_Rôle : tout ce qui se règle dans Kairos, depuis un seul écran, avec une
+_Rôle : tout ce qui se règle dans Kairos, depuis un seul écran rangé par catégories, avec une
 validation par champ. Fichiers couverts :
 `kmp/core/src/commonMain/.../core/settings/SettingsForm.kt` (champs, bornes,
 validation, pur), `kmp/core/.../model/Settings.kt` (modèle, décrit par
-`modele-donnees.md`), `kmp/ui/.../settings/` (`SettingsScreen.kt`,
+`modele-donnees.md`), `kmp/ui/.../settings/` (`SettingsScreen.kt`, `SettingsCategory.kt`,
 `SettingsFormCards.kt`). La carte Données est décrite par `export-import.md`,
 la carte Mises à jour par `mises-a-jour.md`, la carte
 Apparence par `apparence.md`, la carte Langue par `i18n.md`. Tests :
-`core/.../settings/SettingsFormTest.kt`,
-`M5ScreensUiTest.anInvalidFieldBlocksSavingThenAValidFormIsSaved`._
+`core/.../settings/SettingsFormTest.kt`, `ui/.../settings/SettingsCategoryTest.kt`,
+`M5ScreensUiTest.anInvalidFieldBlocksSavingThenAValidFormIsSaved`, `SettingsCategoriesUiTest`,
+`SettingsLayoutUiTest`._
 
-État : **jalon M5**. Kairos n'a aucun secret à stocker (pas de trousseau) ni
+État : **jalon M5** ; rangement par catégories implémenté le 2026-10-22. Kairos n'a aucun secret à stocker (pas de trousseau) ni
 de réglage de chemin de base, de proxy ou de niveau de log : tout ce qui se
 règle l'est depuis ce formulaire.
 
@@ -25,55 +26,72 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 ### Comportement attendu (utilisateur)
 
-- Destination « Réglages », une carte par section, dans cet ordre (3.4, `planning-personnalise.md` lot A : **Langue** et
-  **Apparence** viennent **en premier**, puis les cartes ci-dessous ; **Score de priorité** et **Creux de l'après-midi** sont
-  regroupés dans un groupe replié « Avancé : comment les tâches sont ordonnées », ouvert d'office quand un de leurs champs est
-  en erreur ; une carte « Réglages par défaut » avec **« Restaurer les valeurs par défaut »** précède « Données »)
-  :
-  **Journée de travail** (durée par défaut d'une tâche, marge après un
-  créneau occupé, début et fin de journée), puis **Horaires par jour de la semaine**
-  (3.4, lot B1 : pour chaque jour, « Comme d'habitude », « Personnalisé » avec « De » et « À » en heures, ou « Jour libre » ;
-  champs `schedule.dN.mode`, `.start`, `.end`, N = 0 lundi … 6 dimanche ; `ScheduleCard` ; 3.5, lot B2 : un jour personnalisé a une à quatre **plages**
-  (`schedule.dN.count`, `.ctx`, `schedule.dN.wK.start|end|ctx`), chacune réservable à un contexte, « Ajouter une plage » ; une plage commence après la fin de la précédente
-  (« Au moins … » sur son début)), puis la carte **Contextes** (`ContextsCard` : jusqu'à quatre, nom unique et types de tâche en pastilles, un type n'est que dans un contexte ; un type
-  sorti de « Types de tâche » reste, signalé « type inconnu »), puis la carte **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md` : interrupteur
-`schedule.bestHours.enabled` désactivé par défaut, force `schedule.bestHours.strength` en trois niveaux Faible / Moyenne / Forte (0 à 2, Moyenne par défaut), et une heure préférée facultative
-(0 à 23) par type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…` ; `BestHoursCard`, qui n'affiche la force et les heures que si l'interrupteur est actif ; une heure
-hors des bornes est refusée sur ce champ ; `schedule` reste nul tant que les trois valent leur défaut), **Score de priorité (WSJF)**
-  (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
-  défaut), **Creux de l'après-midi** (activé, début, creux le plus profond,
-  fin, force de la pénalité), **Garde-fous** (seuils « traîne » en retard et
-  sans date, seuil de surcharge P0), **Types de tâches**, **Statistiques**, **Durées apprises** (3.4, `durees-apprises.md` : interrupteur `learning.enabled`, occurrences considérées `learning.history` ≥ 3, occurrences nécessaires `learning.minSamples` ≥ 2 et au plus `history`, sinon `TOO_LARGE` sur `learning.minSamples` ; `Settings.learning` reste nul tant que les trois valent leur défaut)
-  (fenêtre en semaines), **Alertes du chrono** (chrono oublié, pause
-  suggérée, son de secours), **Jours fériés** (français, dates
-  supplémentaires), **Langue** (Système, Français ou English, avant
-  Apparence ; `i18n.md` § Choix de la langue), **Apparence** (couleur du
-  thème, `apparence.md`),
-  **Équipe** (interrupteur « Gestion d'équipe », puis, mode activé, nom de
-  l'équipe et du manager, seuils « sans avancement », « ballottée » et
-  limite d'en-cours, horizon, taux de focus, heures par point, seuil
-  d'alerte de charge et tolérance d'affinité (`equipe-charge.md`),
-  tirages par simulation, historique, échantillon minimum et seuil
-  d'échéance en danger (`equipe-simulation.md`), « Supprimer les données d'équipe… » avec sauvegarde
-  préalable ; désactivation confirmée, `equipe.md`,
-  `equipe-backlog-suivi.md`), puis
-  sur le bureau **Mises à jour**, sur une copie portable **Raccourci**
-  (`raccourci-portable.md`), puis **Données** et
-  « À propos et guide ».
+- Écran secondaire « Réglages » (roue crantée, `navigation-theme.md`), **rangé par catégories** (2026-10-22, sur le
+  modèle des réglages de Rethink : une liste de catégories, chacune avec son icône, son titre et un résumé de ce
+  qu'elle contient). Toucher une catégorie ouvre son écran ; ses cartes s'y suivent, chacune avec son icône à côté du
+  titre. Les catégories, dans cet ordre, et leurs cartes :
+  1. **Général** (« Langue, apparence », « …, mises à jour » sur le bureau) : **Langue** (Système, Français ou
+     English ; `i18n.md` § Choix de la langue), **Apparence** (couleur du thème, `apparence.md`), puis sur le
+     bureau **Mises à jour** (`mises-a-jour.md`) et sur une copie portable **Raccourci** (`raccourci-portable.md`).
+  2. **Journée et horaires** : **Journée de travail** (durée par défaut d'une tâche, marge après un créneau occupé,
+     début et fin de journée), **Horaires par jour de la semaine** (3.4, lot B1 : pour chaque jour, « Comme
+     d'habitude », « Personnalisé » avec « De » et « À » en heures, ou « Jour libre » ; champs `schedule.dN.mode`,
+     `.start`, `.end`, N = 0 lundi … 6 dimanche ; `ScheduleCard` ; 3.5, lot B2 : un jour personnalisé a une à
+     quatre **plages** (`schedule.dN.count`, `.ctx`, `schedule.dN.wK.start|end|ctx`), chacune réservable à un
+     contexte, « Ajouter une plage » ; une plage commence après la fin de la précédente (« Au moins … » sur son
+     début)), **Contextes** (`ContextsCard` : jusqu'à quatre, nom unique et types de tâche en pastilles, un type
+     n'est que dans un contexte ; un type sorti de « Types de tâche » reste, signalé « type inconnu »),
+     **Jours fériés** (français, dates supplémentaires).
+  3. **Planification** : **Types de tâches**, **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md` :
+     interrupteur `schedule.bestHours.enabled` désactivé par défaut, force `schedule.bestHours.strength` en trois
+     niveaux Faible / Moyenne / Forte (0 à 2, Moyenne par défaut), et une heure préférée facultative (0 à 23) par
+     type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…` ; `BestHoursCard`, qui
+     n'affiche la force et les heures que si l'interrupteur est actif ; une heure hors des bornes est refusée sur
+     ce champ ; `schedule` reste nul tant que les trois valent leur défaut), **Durées apprises** (3.4,
+     `durees-apprises.md` : interrupteur `learning.enabled`, occurrences considérées `learning.history` ≥ 3,
+     occurrences nécessaires `learning.minSamples` ≥ 2 et au plus `history`, sinon `TOO_LARGE` sur
+     `learning.minSamples` ; `Settings.learning` reste nul tant que les trois valent leur défaut), **Garde-fous**
+     (seuils « traîne » en retard et sans date, seuil de surcharge P0), puis le groupe replié **« Avancé : comment
+     les tâches sont ordonnées »** (`planning-personnalise.md` lot A, ouvert d'office quand un de ses champs est en
+     erreur) : **Score de priorité** (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
+     défaut) et **Creux de l'après-midi** (activé, début, creux le plus profond, fin, force de la pénalité).
+  4. **Chrono et statistiques** : **Alertes du chrono** (chrono oublié, pause suggérée, son de secours),
+     **Statistiques** (fenêtre en semaines).
+  5. **Équipe** : la carte **Équipe** (interrupteur « Gestion d'équipe », puis, mode activé, nom de l'équipe et du
+     manager, seuils « sans avancement », « ballottée » et limite d'en-cours, horizon, taux de focus, heures par
+     point, seuil d'alerte de charge et tolérance d'affinité (`equipe-charge.md`), tirages par simulation,
+     historique, échantillon minimum et seuil d'échéance en danger (`equipe-simulation.md`), « Supprimer les
+     données d'équipe… » avec sauvegarde préalable ; désactivation confirmée, `equipe.md`,
+     `equipe-backlog-suivi.md`).
+  6. **Données** : **Données** (export, import, `export-import.md`), puis **Réglages par défaut** avec
+     **« Restaurer les valeurs par défaut »**.
+  7. **À propos** : **« Découvrir Kairos »** puis **« À propos et guide »**, deux lignes qui ouvrent chacune leur
+     écran.
+- **Téléphone et fenêtre étroite** (moins de 840 dp de large pour l'écran) : la liste des catégories, sous la phrase
+  d'introduction, puis une catégorie à la fois ; la barre du haut prend le titre de la catégorie, et la flèche
+  retour (ou le retour système, ou Échap) revient à la liste, puis ferme les Réglages. Rouvrir les Réglages
+  (roue crantée) montre toujours la liste ; revenir de « À propos et guide » ramène à la catégorie quittée.
+- **Fenêtre large** (840 dp ou plus) : la liste à gauche (320 dp), la catégorie choisie à droite (« Général »
+  d'office), avec son titre en tête ; la ligne choisie est en conteneur de sélection. La flèche retour ferme les
+  Réglages.
+- Une catégorie qui contient un champ refusé le dit sur sa ligne (icône d'avertissement, « Un champ à corriger »).
 - Chaque champ a un libellé court et, dessous, une phrase qui dit à quoi il
   sert ; un booléen est un interrupteur dont
   toute la ligne se touche.
 - Une barre fixée en bas porte « Enregistrer » (actif dès qu'une valeur
   change), « Annuler les modifications » et « Modifications non
-  enregistrées ». Un seul « Enregistrer » pour tout le formulaire.
+  enregistrées ». Un seul « Enregistrer » pour tout le formulaire, **toutes catégories confondues** : la barre
+  reste sous la liste comme sous chaque catégorie, et une modification faite dans une catégorie survit au passage
+  dans une autre jusqu'à « Enregistrer » ou « Annuler les modifications ».
 - À l'enregistrement : chaque champ invalide affiche son erreur à la place de
   son aide (« Au plus 23. », « Un nombre entier est attendu. », « Date
   illisible : « 25/12 » (format AAAA-MM-JJ). »…), un message dit
   « Réglages non enregistrés », et **rien** n'est enregistré. Corriger un
   champ efface son erreur. Les règles entre champs (début de journée avant
   la fin ; début ≤ creux le plus profond ≤ fin) s'affichent dans un bandeau
-  en tête, une fois chaque champ valide. Un enregistrement refusé **défile**
-  jusqu'au premier champ fautif (sinon jusqu'au bandeau) : à 360 dp, le champ
+  en tête de leur catégorie (« Journée et horaires », « Planification »), une fois chaque champ valide. Un
+  enregistrement refusé **ouvre la catégorie** du premier champ fautif (dans l'ordre des catégories ; sinon celle
+  du bandeau) et y **défile** jusqu'au champ (sinon jusqu'au bandeau) : à 360 dp, le champ
   est trois cartes plus bas et le message « Réglages non enregistrés » ne disait
   pas où regarder (`ErrorReveal` : un `BringIntoViewRequester` par clé, fourni par
   `LocalErrorReveal`).
@@ -107,11 +125,22 @@ hors des bornes est refusée sur ce champ ; `schedule` reste nul tant que les tr
 - « Restaurer les valeurs par défaut » remplit le formulaire sans rien enregistrer ; « Enregistrer » les pose
   (`M5ScreensUiTest.restoringTheDefaultsFillsTheFormAndStillNeedsASave`) ; les champs `team.*` ne bougent pas
   (`SettingsFormTest.restoring_the_defaults_resets_every_field_but_the_team_ones`).
+- Chaque champ du formulaire appartient à une catégorie, et chaque règle entre champs aussi
+  (`SettingsCategoryTest`).
+- Sur un téléphone, la liste des catégories s'affiche d'abord ; une catégorie s'ouvre avec son titre dans la barre,
+  la flèche retour ramène à la liste puis ferme les Réglages
+  (`SettingsCategoriesUiTest.onAPhoneACategoryOpensUnderItsTitleAndBackReturnsToTheList`).
+- En fenêtre large, la liste et « Général » sont côte à côte, et choisir une catégorie la montre à droite
+  (`SettingsCategoriesUiTest.aWideWindowShowsTheListAndTheChosenCategorySideBySide`).
+- Une valeur changée dans une catégorie survit au passage dans une autre et s'enregistre avec le reste
+  (`SettingsCategoriesUiTest.anEditSurvivesSwitchingCategoryAndIsSavedWithTheRest`).
+- Un enregistrement refusé ouvre la catégorie du champ fautif, y défile jusqu'à lui, et la ligne de la catégorie
+  le signale (`SettingsLayoutUiTest.aRefusedSaveOpensTheCategoryOfTheFlaggedFieldAndScrollsToIt`).
 
 ### Hors périmètre / différé
 
-- Choix de la langue (on suit le système, `i18n.md`), thème sombre
-  (`navigation-theme.md`, `apparence.md`).
+- Thème sombre (`navigation-theme.md`, `apparence.md`).
+- Recherche parmi les réglages : sept catégories se parcourent d'un coup d'œil ; à rouvrir si elles grossissent.
 - Réglage du chemin de la base, d'un proxy ou du niveau de journalisation (voir
   l'en-tête).
 
@@ -156,6 +185,48 @@ hors des bornes est refusée sur ce champ ; `schedule` reste nul tant que les tr
   `heading`), `SettingInput` : `OutlinedTextField` (largeur bornée à 320 dp pour un nombre, pleine largeur pour un texte), clavier
   numérique ou décimal, `supportingText` = erreur sinon aide ; `SwitchRow` :
   `Switch` dans une ligne `toggleable` (rôle interrupteur, 48 dp).
+- **Catégories** (`SettingsCategory.kt`) : `SettingsCategory` (`GENERAL`, `DAY`, `PLANNING`, `TRACKING`, `TEAM`,
+  `DATA`, `ABOUT`, dans l'ordre de la liste), chacune avec son titre, son résumé et son icône (`Tune`, `Schedule`,
+  `Sort`, `Timer`, `Groups`, `Database`, `Info`). `SettingsCategory.of(clé)` range chaque champ de `SettingsForm` :
+  `language`, `themeColor`, `updateCheckEnabled` → Général ; journée de travail, `schedule.dN.*`, `schedule.cN.*`
+  (contextes), `holidaysFr`, `extraHolidays` → Journée et horaires ; `taskTypes`, `schedule.bestHours.*`,
+  `learning.*`, garde-fous, score, creux → Planification ; chrono et `statsWindowWeeks` → Chrono et statistiques ;
+  `team.*` → Équipe. Une clé inconnue lève une erreur (aucune ne tombe en silence hors de l'écran) ;
+  `SettingsCategory.of(GeneralError)` : `WORKDAY_ORDER` → Journée et horaires, `DIP_ORDER` → Planification.
+- **Navigation interne** (`SettingsNav`, porté par `NavState.settings` pour que la coquille le lise) : `category`
+  (catégorie ouverte, `null` = la liste) et `singlePane` (posé par l'écran selon sa largeur). `AppShell` en tire
+  `inCategory` = `singlePane` et une catégorie ouverte : titre de la barre = titre de la catégorie, flèche retour,
+  `BackHandler` (retour système, Échap) → `category = null` ; sinon ils ferment l'écran secondaire. `onOpenSettings`
+  remet `category` à `null` ; ouvrir « À propos » puis revenir ne la touche pas.
+- **Mise en page** (`SettingsScreen`) : `BoxWithConstraints` ; deux volets si la largeur offerte à l'écran est
+  d'au moins 840 dp (`SETTINGS_TWO_PANE_MIN`) : liste de 320 dp (`SettingsCategoryList`), séparée de la catégorie
+  par un `VerticalDivider`, catégorie bornée à 720 dp et centrée ; chaque volet défile seul. Un seul volet sinon :
+  la liste, ou la catégorie ouverte, colonne bornée à 720 dp. Deux volets sans catégorie choisie affichent
+  `GENERAL`. `SaveBar` sous les volets dans les deux cas.
+- **Liste** (`SettingsCategoryList`) : phrase d'introduction, puis une `ListItem` par catégorie dans une carte
+  « filled » (`surfaceContainerLow`, sans ombre, marge intérieure `KairosSpacing.s`, `densite.md`), coins de ligne
+  12 dp (`shapes.medium`) : icône en tête (`onSurfaceVariant`), titre,
+  résumé, puis en fin de ligne l'icône `Warning` (teinte `error`, description « Un champ à corriger ») si la
+  catégorie contient une erreur et, sur un seul volet, le chevron. Deux volets : la ligne choisie est en
+  `secondaryContainer` (sélection, charte) et `selectable` (rôle onglet) ; un seul volet : `clickable`
+  (rôle bouton). Chaque ligne porte la balise de test `settings-category-<NOM>`.
+- **Contenu d'une catégorie** (`categoryContent` de `SettingsScreen`) : sur deux volets, le titre de la catégorie en
+  `titleLarge` (`heading`) ; le bandeau de la règle entre champs si elle relève de cette catégorie ; puis ses
+  cartes. `SettingsFormCards(category, …)` rend les sections du formulaire de la catégorie (`SECTIONS`, chacune
+  rangée par sa catégorie) et y insère `ScheduleCard` et `ContextsCard` après « Journée de travail »,
+  `BestHoursCard` après « Types de tâches », le groupe « Avancé » en fin de Planification.
+- **Icônes de section** : `SettingsCardHeader(titre, aide, icône)` met l'icône (24 dp, `onSurfaceVariant`, décorative)
+  devant le titre, l'aide dessous sur toute la largeur. Langue `Translate`, Apparence `Palette`, Mises à jour
+  `Update`, Raccourci `InstallDesktop`, Journée de travail `Work`, Horaires par jour `CalendarViewWeek`, Contextes
+  `Workspaces`, Jours fériés `EventBusy`, Types de tâches `Label`, Meilleures heures `LightMode`, Durées apprises
+  `History`, Garde-fous `Shield`, Score de priorité `Leaderboard`, Creux de l'après-midi `Bedtime`, Alertes du chrono
+  `NotificationsActive`, Statistiques `BarChart`, Équipe `Groups`, Données `Database`, Réglages par défaut
+  `SettingsBackupRestore` ; « Découvrir Kairos » `PlayArrow` et « À propos et guide » `Info` gardent leur
+  `ListItem` dans une carte cliquable (`SettingsLinkCard`).
+- Enregistrement refusé : catégorie à ouvrir = la première, dans l'ordre de `SettingsCategory`, qui contient une
+  erreur de champ (sinon celle de la règle violée) ; `nav.category` y passe, deux images plus tard
+  (`withFrameNanos`, la catégorie doit être composée et mesurée), `ErrorReveal.reveal` sur son premier champ fautif
+  (sinon le bandeau).
 - Bandeau de règle inter-champs : conteneur d'erreur et icône `Warning`
   (un vrai échec, charte). `SaveBar` : `Surface` `surfaceContainer` sous la
   colonne défilante, `Button` « Enregistrer », `TextButton` « Annuler les
@@ -167,7 +238,22 @@ hors des bornes est refusée sur ce champ ; `schedule` reste nul tant que les tr
 
 - **Un seul formulaire, un seul « Enregistrer »** : la carte
   du chrono du jalon M3, qui avait son propre bouton, y est fondue
-  (`ChronoSettingsCard` retiré).
+  (`ChronoSettingsCard` retiré). Décision **gardée** au passage aux catégories (2026-10-22) : l'état du
+  formulaire reste dans `SettingsScreen`, au-dessus des catégories, et les règles entre champs (journée, creux)
+  restent vérifiées d'un coup. Écartés : un « Enregistrer » par catégorie (confirmer chaque sortie de catégorie,
+  règles entre champs coupées en deux) et l'application immédiate à la Rethink (un champ texte à moitié tapé
+  serait refusé ou appliqué à chaque frappe, « Annuler les modifications » disparaîtrait).
+- **Catégories plutôt qu'une page** (2026-10-22) : vingt cartes à la suite rendaient l'écran brouillon, surtout à
+  360 dp. Liste de catégories puis sous-écrans (Rethink, MD3 « list-detail ») ; écartés : une seule page à
+  en-têtes (toujours aussi longue) et des onglets (sept onglets ne tiennent pas à 360 dp). Deux volets dès 840 dp
+  (classe de fenêtre « étendue » MD3), mesurés sur la largeur offerte à l'écran et non sur la fenêtre : le rail
+  en prend déjà 80. Pas de dépendance `material3-adaptive` pour si peu : `BoxWithConstraints`.
+- **Icônes par catégorie et par carte, pas par champ** : une icône devant chaque champ doublait la hauteur visuelle
+  des cartes et demandait une cinquantaine d'icônes de plus ; les champs gardent libellé et aide.
+- **Icônes neutres** (`onSurfaceVariant`), pas de pastille colorée comme chez Rethink : la charte réserve la couleur
+  (« Tout le reste est neutre »).
+- **Restaurer les valeurs par défaut dans « Données »** : c'est un geste sur l'ensemble des réglages, pas sur une
+  catégorie ; il reste soumis à « Enregistrer ».
 - **Validation à l'enregistrement, pas à la frappe** : on ne crie pas
   « Obligatoire » pendant qu'on efface pour retaper.
 - **Dates supplémentaires validées** : une date illisible est signalée

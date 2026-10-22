@@ -141,7 +141,7 @@ ferme toute session ouverte ; n'écrit rien s'il n'y en a pas.
 - `rememberLiveMinutes` : minuteur vivant (une seconde) du badge de ligne et
   de « En ce moment ».
 - Réglages : les deux seuils et le son, section « Alertes du chrono » du
-  formulaire commun (`reglages.md` ; carte séparée au jalon M3, fondue au
+  formulaire commun, catégorie « Chrono et statistiques » (`reglages.md` ; carte séparée au jalon M3, fondue au
   jalon M5).
 
 ### Android

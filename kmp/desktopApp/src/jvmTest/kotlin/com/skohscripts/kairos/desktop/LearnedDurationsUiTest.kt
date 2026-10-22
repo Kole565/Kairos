@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
@@ -91,7 +92,7 @@ class LearnedDurationsUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.PLANNING)
         waitUntil(timeoutMillis = 15_000) { onAllNodesWithText("Learned durations").fetchSemanticsNodes().isNotEmpty() }
         onNodeWithText("Learn durations from past occurrences").performScrollTo().performClick()
         onNodeWithText("Save").performClick()

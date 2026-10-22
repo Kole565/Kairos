@@ -194,8 +194,8 @@ history = 5, minSamples = 3)`. Nul = comportement par défaut (**actif**).
 `SettingsForm` expose `learning.enabled`, `learning.history` (≥ 3) et
 `learning.minSamples` (≥ 2, au plus `history` : `TOO_LARGE` sur
 `learning.minSamples`) et ne crée l'objet qu'en cas d'écart ; `team` n'est
-jamais touché. Carte « Durées apprises » dans Réglages
-(`SettingsFormCards`, hors section avancée).
+jamais touché. Carte « Durées apprises » dans Réglages, catégorie « Planification »
+(`SettingsFormCards`, hors section avancée, `reglages.md`).
 
 ### Interface
 

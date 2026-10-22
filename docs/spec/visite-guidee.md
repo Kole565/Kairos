@@ -90,7 +90,7 @@ since, tour)`, **dans l'ordre de la visite**.
   forme courte) et garde la mesure du plus long titre et du plus long texte.
 - **Hub « Découvrir Kairos »** (`DiscoverDialog`) : « Créer ma première tâche » puis un chapitre par ligne avec son nombre
   de cartes ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
-  l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos ») ; états `discover` et `chapter` de
+  l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos » de la catégorie « À propos », `reglages.md`) ; états `discover` et `chapter` de
   `AppShell` (`rememberSaveable`, rien n'est mémorisé au-delà).
 - **« Nouveau dans cette version »** : `HomeScreen(version = KairosBuild.VERSION_NAME)` affiche, sous le bloc teinté, les
   cartes de `newIn(version)` (toute la carte ouvre sa cible) avec un bouton « Masquer » valable pour la session

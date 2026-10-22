@@ -50,7 +50,7 @@ l'instant, mais le même outil le génère depuis la même graine). Pour changer
 couleur : changer la graine et regénérer tout le schéma, jamais retoucher un
 rôle isolé.
 
-Le miel est la graine **par défaut** : dans Réglages → Apparence, chacun peut en
+Le miel est la graine **par défaut** : dans Réglages → Général → Apparence, chacun peut en
 choisir une autre (graines proposées, couleur libre, couleurs du système sur
 Android 12 et plus). Tout le schéma en est alors recalculé par le même
 algorithme, embarqué dans l'application ; les valeurs ci-dessous sont celles du

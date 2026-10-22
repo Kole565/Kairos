@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
@@ -82,7 +83,7 @@ class SchedulePlanningUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.DAY)
         waitText("Contexts")
         // Un contexte « Work » avec le type « Développement ».
         onAllNodes(hasSetTextAction() and hasText("Context name"))[0].performScrollTo().performTextInput("Work")
@@ -107,7 +108,7 @@ class SchedulePlanningUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.DAY)
         waitText("Contexts")
         onAllNodesWithText("Custom")[1].performScrollTo().performClick()
         onNodeWithText("Add a window").performScrollTo().performClick()
@@ -153,7 +154,7 @@ class SchedulePlanningUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.PLANNING)
         waitText("Best hours")
         // Désactivé : ni la force ni les heures préférées ne sont proposées.
         assertEquals(0, onAllNodesWithText("Preferred hour per type").fetchSemanticsNodes().size)
@@ -171,7 +172,7 @@ class SchedulePlanningUiTest {
         val services = services()
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
+        openSettings(SettingsCategory.PLANNING)
         waitText("Best hours")
         onNodeWithText("Prefer my usual hours").performScrollTo().performClick()
         waitText("Preferred hour per type")

@@ -30,7 +30,7 @@ savoir.
   les écrans, « Kairos X.Y.Z est disponible (tu as A.B.C). », avec
   « Télécharger » (ouvre la page de la version dans le navigateur) et
   « Plus tard » (masque cette version ; la suivante réapparaît).
-- Réglages → Mises à jour : le réglage (enregistré avec le reste du
+- Réglages → Général → Mises à jour : le réglage (enregistré avec le reste du
   formulaire), la version installée, le résultat de la dernière vérification
   (« Pas encore vérifié. », « À jour (vérifié le 29/09 09h15). », « Kairos
   3.0.1 est disponible (…) », « Vérification impossible le … (hors

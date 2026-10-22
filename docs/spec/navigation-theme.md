@@ -28,8 +28,9 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 - **Réglages** : une roue crantée (`KairosIcons.Settings`, « Réglages ») à
   droite de la barre d'application, sur toutes les destinations des deux
   espaces ; elle ouvre les Réglages en écran secondaire (titre « Réglages »,
-  flèche retour), les mêmes dans les deux espaces. Elle disparaît quand un
-  écran secondaire est ouvert.
+  flèche retour), les mêmes dans les deux espaces, toujours sur la liste de leurs catégories (`reglages.md`). Sur un
+  seul volet, une catégorie ouverte prend le titre de la barre et la flèche (ou le retour système, ou Échap) ramène
+  d'abord à la liste. Elle disparaît quand un écran secondaire est ouvert.
 - **Forme de la navigation** :
   - fenêtre de 600 dp de large ou plus, sur toute plateforme : **rail
     vertical** à gauche, avec le logo et « Kairos » en tête ;
@@ -139,7 +140,10 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   `Unarchive`, au jalon E3 `SwapHoriz`, `MoreVert`, `HourglassEmpty`, au jalon E4
   `Balance`, au jalon E5 `Casino`, `Science`, `CompareArrows`, `Refresh`,
   `Star` (et `StarFilled`), `ContentCopy` (et les variantes pleines de `Groups`, `ViewKanban`,
-  `Stacks`, `Monitoring`) ; aide, Accueil et visite guidée (`accueil.md`) : `Help` ; soutien (`soutien.md`) : `Favorite`.
+  `Stacks`, `Monitoring`) ; aide, Accueil et visite guidée (`accueil.md`) : `Help` ; soutien (`soutien.md`) : `Favorite` ;
+  Réglages rangés par catégories (`reglages.md`) : `Tune`, `Sort`, `Timer`, `Database` (catégories), `Translate`,
+  `Palette`, `Update`, `Work`, `CalendarViewWeek`, `Workspaces`, `Label`, `LightMode`, `History`, `Shield`,
+  `Leaderboard`, `Bedtime`, `SettingsBackupRestore` (titres des cartes).
   `Construction` (écran « En construction ») est retiré au
   jalon M5, plus rien n'étant en construction.
 - `KairosLogo.kt` : le cadran solaire (cadran `#FFEEDC`, anneau `#FFCC85`
@@ -184,7 +188,8 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   aujourd'hui et à la semaine courante ; `onOpenDay(jour)` ouvre la vue Jour d'un jour donné.
 - `AppShell` :
   - `TopAppBar` avec le titre, fidèle à ce qui est affiché :
-    « Réglages », « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
+    « Réglages » (ou le titre de la catégorie des Réglages ouverte seule à l'écran, `NavState.settings`, `reglages.md`),
+    « À propos et guide », « Jour · mercredi 30 septembre 2026 » pour un
     autre jour qu'aujourd'hui, « Semaine · du lundi 28 septembre 2026 »
     (sans rail : `Dates.dayShort` et `Dates.short`, la date longue tenait sur
     trois lignes à 380 dp), sinon celui de la destination ; `maxLines = 2` ; flèche retour quand un écran secondaire est ouvert ; sinon, sans rail,

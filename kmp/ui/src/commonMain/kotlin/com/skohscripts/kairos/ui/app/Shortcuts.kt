@@ -124,7 +124,7 @@ fun ShortcutCard(shortcuts: ShortcutService) {
     val message = LocalMessages.current
     SettingsCard(spacing = KairosSpacing.m) {
         val help = if (shortcuts.target == ShortcutTarget.APP_MENU) Res.string.shortcut_help_menu else Res.string.shortcut_help_windows
-        SettingsCardHeader(stringResource(Res.string.settings_section_shortcut), stringResource(help))
+        SettingsCardHeader(KairosIcons.InstallDesktop, stringResource(Res.string.settings_section_shortcut), stringResource(help))
         val line = when (status) {
             ShortcutStatus.MISSING -> Res.string.shortcut_status_missing
             ShortcutStatus.CREATED -> Res.string.shortcut_status_created

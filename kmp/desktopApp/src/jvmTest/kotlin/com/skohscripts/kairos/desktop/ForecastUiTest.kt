@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
@@ -306,8 +307,8 @@ class ForecastUiTest {
         val services = services(history = false)
         val repository = services.repository
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        openSettings()
-        waitText("Appearance")
+        openSettings(SettingsCategory.TEAM)
+        waitText("Team management")
         listOf("Draws per simulation", "History considered (weeks)", "Reliable minimum sample", "Deadline at risk below (%)").forEach {
             onNodeWithText(it).performScrollTo().assertExists()
         }

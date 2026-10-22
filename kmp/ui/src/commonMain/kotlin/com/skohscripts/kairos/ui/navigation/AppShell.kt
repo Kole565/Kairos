@@ -131,8 +131,11 @@ fun AppShell(
     onOpenAbout: () -> Unit,
     onCloseSecondary: () -> Unit,
 ) {
+    // Une catégorie des Réglages ouverte seule à l'écran (téléphone) : le retour ramène d'abord à la liste.
+    val inSettingsCategory = secondary == Secondary.SETTINGS && nav.settings.inCategory
+    val back: () -> Unit = { if (inSettingsCategory) nav.settings.category = null else onCloseSecondary() }
     // Retour système (Android) ou Échap (bureau, web) : ferme l'écran secondaire (Réglages ou « À propos »).
-    BackHandler(enabled = secondary != null) { onCloseSecondary() }
+    BackHandler(enabled = secondary != null) { back() }
     // Aide de l'écran courant (« ? ») et visite guidée en cours : états de la coquille, rien n'est mémorisé au-delà.
     var helpOpen by rememberSaveable { mutableStateOf(false) }
     val uriHandler = LocalUriHandler.current
@@ -204,6 +207,7 @@ fun AppShell(
     }
     // Titre fidèle à ce qui est affiché : « Aujourd'hui » seulement si c'est vrai.
     val title = when {
+        inSettingsCategory -> stringResource(nav.settings.category!!.title)
         secondary == Secondary.SETTINGS -> stringResource(Res.string.title_settings)
         secondary == Secondary.ABOUT -> stringResource(Res.string.title_about)
         team && teamName.isNotBlank() -> stringResource(Res.string.title_team_named, teamName, stringResource(current.title))
@@ -233,7 +237,7 @@ fun AppShell(
             },
             navigationIcon = {
                 if (secondary != null) {
-                    IconButton(onClick = onCloseSecondary) {
+                    IconButton(onClick = back) {
                         Icon(KairosIcons.ArrowBack, contentDescription = stringResource(Res.string.action_back))
                     }
                 } else if (layout != NavigationLayout.RAIL) {
@@ -275,7 +279,7 @@ fun AppShell(
                 CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo) {
                     val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout, onDiscover = { discover = true }) }
                     when {
-                        secondary == Secondary.SETTINGS -> SettingsScreen(services, onDiscover = { discover = true }, onOpenAbout = onOpenAbout)
+                        secondary == Secondary.SETTINGS -> SettingsScreen(services, nav.settings, onDiscover = { discover = true }, onOpenAbout = onOpenAbout)
                         secondary == Secondary.ABOUT -> AboutScreen()
                         team -> TeamDestinationScreen(teamDestination, services, nav, onTour = { guide = GuideKind.TEAM }, home = home)
                         else -> DestinationScreen(destination, services, nav, onOpenDay, onNavigate, home, onDiscover = { discover = true })

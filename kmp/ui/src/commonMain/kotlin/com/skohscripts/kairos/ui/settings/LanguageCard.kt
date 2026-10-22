@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.icons.KairosIcons
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -33,7 +34,7 @@ internal fun LanguageCard(value: String, onChange: (String) -> Unit) {
     val chosen = UiLanguage.normalize(value)
     val title = stringResource(Res.string.settings_section_language)
     SettingsCard(spacing = KairosSpacing.m) {
-        SettingsCardHeader(title, stringResource(Res.string.language_help))
+        SettingsCardHeader(KairosIcons.Translate, title, stringResource(Res.string.language_help))
         KairosSegmentedRow(Modifier.fillMaxWidth().semantics { contentDescription = title }) {
             OPTIONS.forEachIndexed { index, (setting, label) ->
                 KairosSegmentedButton(
