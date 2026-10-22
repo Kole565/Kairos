@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.guide.GuideSection
+import com.skohscripts.kairos.ui.guide.GuideSpot
 import com.skohscripts.kairos.ui.app.tabLeavesField
 import com.skohscripts.kairos.ui.app.heading
 import androidx.compose.foundation.layout.Arrangement
@@ -307,15 +309,16 @@ internal fun SettingsFormCards(
         SettingsCategory.DAY -> {
             SectionCard(WORKDAY, values, errors, onChange)
             // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
-            ScheduleCard(values, errors, onChange)
-            ContextsCard(values, errors, onChange)
+            // Cartes que le guide sait montrer (docs/spec/visite-guidee.md, issue #95).
+            GuideSpot(GuideSection.SETTINGS_HOURS) { ScheduleCard(values, errors, onChange) }
+            GuideSpot(GuideSection.SETTINGS_CONTEXTS) { ContextsCard(values, errors, onChange) }
             SectionCard(HOLIDAYS, values, errors, onChange)
         }
         SettingsCategory.PLANNING -> {
             SectionCard(TYPES, values, errors, onChange)
             // Les heures préférées se donnent par type : la carte suit les types.
-            BestHoursCard(values, errors, onChange)
-            SectionCard(LEARNING, values, errors, onChange)
+            GuideSpot(GuideSection.SETTINGS_BEST_HOURS) { BestHoursCard(values, errors, onChange) }
+            GuideSpot(GuideSection.SETTINGS_LEARNED) { SectionCard(LEARNING, values, errors, onChange) }
             SectionCard(GUARDS, values, errors, onChange)
             AdvancedGroup(values, errors, onChange)
         }

@@ -55,6 +55,10 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.ui.guide.CoachPanel
+import com.skohscripts.kairos.ui.guide.GuideMark
+import com.skohscripts.kairos.ui.guide.GuideScreen
+import com.skohscripts.kairos.ui.guide.GuideSection
+import com.skohscripts.kairos.ui.guide.LocalGuideSpot
 import com.skohscripts.kairos.ui.guide.CoachSession
 import com.skohscripts.kairos.ui.guide.FirstTaskCoach
 import androidx.compose.ui.Modifier
@@ -248,6 +252,32 @@ fun DayScreen(
         withFrameNanos { }
         if (editingId == null && editingBlock == null && !creating) runCatching { rootFocus.requestFocus() }
     }
+    // Section qu'une carte du guide demande de montrer (docs/spec/visite-guidee.md, issue #95). La liste est paresseuse :
+    // une ligne hors de l'écran n'est pas composée, on y défile donc par sa position, comme les raccourcis.
+    val spot = LocalGuideSpot.current
+    val wantedSection = spot.pending?.takeIf { it.screen == GuideScreen.DAY }
+    LaunchedEffect(wantedSection) {
+        val section = wantedSection ?: return@LaunchedEffect
+        spot.pending = null
+        // Hors de l'effet : consommer la demande change sa clé, ce qui l'annulerait avant la fin de la mise en valeur.
+        scope.launch {
+            // Absente si vide (les sections repliables) : on le dit, l'écran reste en haut. Lu sur la vue, pas sur
+            // `positions`, qui garde la place d'une section disparue.
+            val present = when (section) {
+                GuideSection.DAY_BLOCKED -> view.blocked.isNotEmpty()
+                GuideSection.DAY_PARENTS -> view.parents.isNotEmpty()
+                else -> true
+            }
+            if (!present) {
+                section.missing?.let { showMessage(getString(it)) }
+                return@launch
+            }
+            DAY_SPOT_SECTIONS[section]?.let { sectionOpen[it] = true }
+            awaitComposed()
+            positions[DAY_SPOT_ITEMS.getValue(section)]?.let { listState.scrollToItem(it) }
+            spot.show(section)
+        }
+    }
     // La tâche qu'on vient de créer : la liste défile jusqu'à sa ligne, mise en évidence pendant l'explication de sa place.
     LaunchedEffect(placedId, placedStep) {
         val id = placedId ?: return@LaunchedEffect
@@ -311,7 +341,7 @@ fun DayScreen(
                 fun block(key: String, content: @Composable () -> Unit) = list.one(key) { Box(Modifier.padding(top = KairosListBlockExtra)) { content() } }
                 fun rows(key: String, tasks: List<Task>, row: @Composable (Task) -> Unit) = list.rows(key, tasks, row)
                 fun section(key: String, title: StringResource, hint: StringResource, count: Int, showEmpty: Boolean = false, content: () -> Unit) =
-                    list.section(key, title, hint, count, sectionOpen, showEmpty, content)
+                    list.section(key, title, hint, count, sectionOpen, showEmpty, DAY_SPOT_SECTIONS.entries.firstOrNull { it.value == key }?.key, content)
 
                 one("storage") { StorageBanner(services, showWhenLinked = false) }
                 if (day != today) {
@@ -342,7 +372,9 @@ fun DayScreen(
                 }
 
                 // --- À traiter
-                one("inbox-title") { SectionTitle(stringResource(Res.string.inbox_title), view.inbox.size, Modifier.padding(top = KairosListSectionExtra)) }
+                one("inbox-title") {
+                    GuideMark(GuideSection.DAY_INBOX) { SectionTitle(stringResource(Res.string.inbox_title), view.inbox.size, Modifier.padding(top = KairosListSectionExtra)) }
+                }
                 one("inbox-help") {
                     Column {
                         // Liste vidée par le filtre seulement : ne pas annoncer que tout est clarifié.
@@ -363,13 +395,15 @@ fun DayScreen(
 
                 // --- Maintenant, puis bandeau de surcharge (un avertissement, jamais en tête)
                 block("now") {
-                    NowCard(
-                        view, language, notifyState,
-                        onDone = { t -> scope.launch { repository.toggleDone(t.id) } },
-                        onSnooze = { t -> scope.launch { repository.snooze(t.id) } },
-                        onToggleTimer = toggleTimer,
-                        onEnableAlerts = { scope.launch { services.notifier.requestPermission() } },
-                    )
+                    GuideMark(GuideSection.DAY_NOW) {
+                        NowCard(
+                            view, language, notifyState,
+                            onDone = { t -> scope.launch { repository.toggleDone(t.id) } },
+                            onSnooze = { t -> scope.launch { repository.snooze(t.id) } },
+                            onToggleTimer = toggleTimer,
+                            onEnableAlerts = { scope.launch { services.notifier.requestPermission() } },
+                        )
+                    }
                 }
                 if (view.priorityOverload) block("overload") { OverloadBanner(view.priorityOverloadCount) }
 
@@ -384,9 +418,11 @@ fun DayScreen(
 
                 // --- Aujourd'hui, dans l'ordre
                 one("agenda-title") {
-                    Column(Modifier.padding(top = KairosListSectionExtra)) {
-                        Text(stringResource(Res.string.agenda_title), style = MaterialTheme.typography.titleMedium)
-                        Hint(stringResource(if (view.agenda.isEmpty()) Res.string.agenda_empty else Res.string.agenda_hint))
+                    GuideMark(GuideSection.DAY_AGENDA) {
+                        Column(Modifier.padding(top = KairosListSectionExtra)) {
+                            Text(stringResource(Res.string.agenda_title), style = MaterialTheme.typography.titleMedium)
+                            Hint(stringResource(if (view.agenda.isEmpty()) Res.string.agenda_empty else Res.string.agenda_hint))
+                        }
                     }
                 }
                 list.count(view.agenda.map { it.task.id })
@@ -627,25 +663,47 @@ private class ListBuilder(private val scope: LazyListScope, private val position
         count: Int,
         open: SnapshotStateMap<String, Boolean>,
         showEmpty: Boolean,
+        /** Section que le guide sait montrer : son titre porte la mise en valeur (issue #95). */
+        spot: GuideSection?,
         content: () -> Unit,
     ) {
         if (count == 0 && !showEmpty) return
         val isOpen = open[key] ?: false
         one("section-$key") {
-            Column(Modifier.padding(top = KairosListSectionExtra)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().disclosure(isOpen, heading = true) { open[key] = !isOpen }.padding(vertical = 6.dp),
-                ) {
-                    Icon(if (isOpen) KairosIcons.ExpandLess else KairosIcons.ExpandMore, contentDescription = null)
-                    Text("${stringResource(title)} ($count)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 4.dp))
+            Spotted(spot) {
+                Column(Modifier.padding(top = KairosListSectionExtra)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().disclosure(isOpen, heading = true) { open[key] = !isOpen }.padding(vertical = 6.dp),
+                    ) {
+                        Icon(if (isOpen) KairosIcons.ExpandLess else KairosIcons.ExpandMore, contentDescription = null)
+                        Text("${stringResource(title)} ($count)", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 4.dp))
+                    }
+                    if (isOpen) Hint(stringResource(hint))
                 }
-                if (isOpen) Hint(stringResource(hint))
             }
         }
         if (isOpen) content()
     }
 }
+
+/** [GuideMark] quand [section] est donnée, rien sinon. */
+@Composable
+private fun Spotted(section: GuideSection?, content: @Composable () -> Unit) {
+    if (section == null) content() else GuideMark(section, content = content)
+}
+
+/** Section repliable (clé de `sectionOpen`) qu'ouvre une section du guide. */
+private val DAY_SPOT_SECTIONS = mapOf(GuideSection.DAY_BLOCKED to "blocked", GuideSection.DAY_PARENTS to "parents")
+
+/** Élément de tête de la liste (clé de `positions`) de chaque section du guide de la vue Jour. */
+private val DAY_SPOT_ITEMS = mapOf(
+    GuideSection.DAY_INBOX to "inbox-title",
+    GuideSection.DAY_AGENDA to "agenda-title",
+    GuideSection.DAY_NOW to "now",
+    GuideSection.DAY_BLOCKED to "section-blocked",
+    GuideSection.DAY_PARENTS to "section-parents",
+)
 
 /** Ligne de l'agenda : heure, étiquettes de placement (épinglée, deep work, chemin critique), notes. */
 @Composable

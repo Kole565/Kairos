@@ -1342,4 +1342,9 @@
     <!-- Vue Semaine : « Déplacer » vers un jour signalé (docs/spec/vue-semaine.md, issue #106). -->
     <string name="week_move_holiday">%1$s · férié</string>
     <string name="week_move_day_off">%1$s · jour libre</string>
+    <!-- Guide : section montrée par une carte (docs/spec/visite-guidee.md, issue #95). -->
+    <string name="guide_spot_here">Ici</string>
+    <string name="guide_spot_missing_blocked">Aucune tâche bloquée pour l’instant.</string>
+    <string name="guide_spot_missing_parents">Aucune tâche mère en cours pour l’instant.</string>
+    <string name="guide_spot_missing_stats">Pas encore de statistiques : termine ou chronomètre d’abord quelques tâches.</string>
 </resources>

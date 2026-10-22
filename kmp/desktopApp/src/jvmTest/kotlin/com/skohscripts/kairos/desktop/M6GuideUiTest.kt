@@ -183,10 +183,10 @@ class M6GuideUiTest {
         waitText("Priority, points and estimate")
         repeat(4) { onNodeWithText("Next").performClick() }
         waitText("Step 5 of 5")
-        // La dernière carte du chapitre (horaires par jour) ouvre les Réglages.
+        // La dernière carte du chapitre (horaires par jour) ouvre les Réglages, sur sa carte (issue #95).
         onNodeWithText("Show me the screen").performClick()
         waitGone("Step 5 of 5")
-        waitText("Appearance")
+        waitText("Hours by day of the week")
     }
 
     @Test

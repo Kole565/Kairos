@@ -185,6 +185,8 @@ private fun KairosShell(
                     secondary = secondary,
                     nav = nav,
                     onNavigate = {
+                        // Navigation à la main : une section demandée par le guide et pas encore montrée n'a plus lieu d'être (issue #95).
+                        nav.guideSpot.pending = null
                         // La navigation principale ramène à aujourd'hui et à la semaine courante.
                         nav.day = null
                         nav.week = null
@@ -193,11 +195,13 @@ private fun KairosShell(
                         secondaryParent = null
                     },
                     onNavigateTeam = {
+                        nav.guideSpot.pending = null
                         teamDestination = it
                         secondary = null
                         secondaryParent = null
                     },
                     onSpaceChange = {
+                        nav.guideSpot.pending = null
                         // Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou Suivi), pas son Accueil.
                         nav.day = null
                         nav.week = null
@@ -209,12 +213,14 @@ private fun KairosShell(
                         persistSpace(it)
                     },
                     onOpenDay = { day ->
+                        nav.guideSpot.pending = null
                         nav.day = day
                         destination = Destination.DAY
                         secondary = null
                         secondaryParent = null
                     },
                     onOpenSettings = {
+                        nav.guideSpot.pending = null
                         // La roue crantée ouvre toujours la liste des catégories (docs/spec/reglages.md).
                         nav.settings.category = null
                         secondary = Secondary.SETTINGS

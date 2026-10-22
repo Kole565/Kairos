@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.guide
 
+import com.skohscripts.kairos.ui.navigation.Destination
 import com.skohscripts.kairos.ui.navigation.TeamDestination
 import java.io.File
 import kotlin.test.Test
@@ -66,5 +67,29 @@ class FeatureCatalogTest {
         assertEquals(emptyList(), known.keys.filter { it !in listed }, "entrées de README_FEATURES absentes du README")
         val ids = cards.map { it.id }.toSet()
         assertEquals(emptyList(), known.values.filter { it !in ids })
+    }
+
+    @Test
+    fun sectionsBelongToTheScreenTheyOpen() {
+        // Une section citée par une carte est sur l'écran que la carte ouvre (docs/spec/visite-guidee.md, issue #95).
+        cards.forEach { card ->
+            when (val target = card.target) {
+                is GuideTarget.Personal -> target.section?.let { section ->
+                    val screen = when (target.destination) {
+                        Destination.DAY -> GuideScreen.DAY
+                        Destination.STATS -> GuideScreen.STATS
+                        else -> null
+                    }
+                    assertEquals(screen, section.screen, card.id)
+                }
+                is GuideTarget.Settings -> target.section?.let { assertEquals(GuideScreen.SETTINGS, it.screen, card.id) }
+                else -> Unit
+            }
+        }
+        // Une section des Réglages ouvre sa catégorie ; les autres n'en ont pas.
+        GuideSection.entries.forEach { assertEquals(it.screen == GuideScreen.SETTINGS, it.settingsCategory != null, it.name) }
+        // Chaque section sert au moins une carte.
+        val used = cards.mapNotNull { (it.target as? GuideTarget.Personal)?.section ?: (it.target as? GuideTarget.Settings)?.section }.toSet()
+        assertEquals(GuideSection.entries.toSet(), used)
     }
 }

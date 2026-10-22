@@ -25,6 +25,9 @@ import com.skohscripts.kairos.ui.notes.NotesScreen
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.guide.GuideSection
+import com.skohscripts.kairos.ui.guide.GuideSpotState
+import com.skohscripts.kairos.ui.guide.LocalGuideSpot
 import com.skohscripts.kairos.ui.settings.SettingsCategory
 import com.skohscripts.kairos.ui.settings.SettingsNav
 import com.skohscripts.kairos.ui.settings.SettingsScreen
@@ -91,6 +94,10 @@ object SelfTest {
         val app: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { services } }
         val launch: @Composable () -> Unit = { KairosApp(Platform.DESKTOP) { services } }
         val settings: @Composable () -> Unit = { KairosTheme { Surface { SettingsScreen(services) {} } } }
+        // Mise en valeur figée d'une section du guide (« Durées apprises ») : elle ne dure que 3 s à l'écran.
+        val spotted: (@Composable () -> Unit) -> @Composable () -> Unit = { content ->
+            { CompositionLocalProvider(LocalGuideSpot provides remember { GuideSpotState().apply { shown = GuideSection.SETTINGS_LEARNED } }) { content() } }
+        }
         // Une catégorie des Réglages ouverte d'office (docs/spec/reglages.md) : sur un volet, la liste viendrait seule.
         val settingsIn: (AppServices, SettingsCategory) -> @Composable () -> Unit = { s, category ->
             { KairosTheme { Surface { SettingsScreen(s, remember { SettingsNav().apply { this.category = category } }) {} } } }
@@ -292,6 +299,9 @@ object SelfTest {
             Shot("settings-planning", 900, 5000, plannedSettings),
             Shot("settings-planning-narrow", 360, 8500, plannedSettings),
             Shot("settings-besthours", 900, 2600, settingsIn(planned, SettingsCategory.PLANNING)),
+            // Section montrée par une carte du guide, figée (docs/spec/visite-guidee.md, issue #95) : contour et « Ici ».
+            Shot("guide-spot", 900, 2600, spotted(settingsIn(services, SettingsCategory.PLANNING))),
+            Shot("guide-spot-narrow", 360, 3400, spotted(settingsIn(services, SettingsCategory.PLANNING))),
             Shot("day-windows", 1200, 1400, plannedDay),
             Shot("about", 900, 1000, about),
             // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).

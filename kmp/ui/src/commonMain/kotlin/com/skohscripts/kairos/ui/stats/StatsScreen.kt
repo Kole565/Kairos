@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.stats
 
+import com.skohscripts.kairos.ui.guide.GuideSection
+import com.skohscripts.kairos.ui.guide.GuideSpot
+import com.skohscripts.kairos.ui.guide.MissingGuideSection
 import com.skohscripts.kairos.ui.app.heading
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -123,6 +126,8 @@ fun StatsScreen(services: AppServices) {
         Column(Modifier.widthIn(max = 960.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
             if (!stats.hasAnyData) {
                 Text(stringResource(Res.string.stats_empty), style = MaterialTheme.typography.bodyLarge)
+                // Aucun panneau : une section demandée par le guide est absente, on le dit (issue #95).
+                MissingGuideSection(GuideSection.STATS_HOURS)
                 return@Column
             }
             // Tuiles souples : 4 par ligne au large, 2 sur un téléphone, jamais une seule étirée ; même hauteur par ligne.
@@ -187,12 +192,15 @@ fun StatsScreen(services: AppServices) {
                 }
             }
 
-            Panel(KairosIcons.Schedule, stringResource(Res.string.stats_hours_title), stringResource(Res.string.stats_hours_hint, stats.windowWeeks)) {
-                if (!hours.hasData) {
-                    Muted(stringResource(Res.string.stats_hours_empty))
-                } else {
-                    val noType = stringResource(Res.string.stats_no_type)
-                    hours.profiles.forEach { profile -> HoursProfile(profile, profile.type.ifEmpty { noType }, language) }
+            // Panneau que la carte « Quand tu travailles chaque type » fait voir (docs/spec/visite-guidee.md, issue #95).
+            GuideSpot(GuideSection.STATS_HOURS) {
+                Panel(KairosIcons.Schedule, stringResource(Res.string.stats_hours_title), stringResource(Res.string.stats_hours_hint, stats.windowWeeks)) {
+                    if (!hours.hasData) {
+                        Muted(stringResource(Res.string.stats_hours_empty))
+                    } else {
+                        val noType = stringResource(Res.string.stats_no_type)
+                        hours.profiles.forEach { profile -> HoursProfile(profile, profile.type.ifEmpty { noType }, language) }
+                    }
                 }
             }
 

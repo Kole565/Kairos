@@ -242,7 +242,8 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   écrit si tu renonces.
 - **Découvrir Kairos** : des chapitres sur chaque fonctionnalité (Réglages,
   aide ou Accueil), à rouvrir quand tu veux, et une section **« Nouveau dans
-  cette version »** sur l’Accueil.
+  cette version »** sur l’Accueil. « Voir l’écran » défile jusqu’à l’endroit
+  dont parle la carte et le met en valeur un instant.
 
 ### Gestion d'équipe (facultative)
 
