@@ -1,6 +1,8 @@
 package com.skohscripts.kairos.core.model
 
 import com.skohscripts.kairos.core.settings.UiLanguage
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 /**
@@ -60,6 +62,11 @@ data class Settings(
      * [LearningSettings] (actif) ; même règle que [team] : sauver le formulaire sans y toucher n'en crée jamais.
      */
     val learning: LearningSettings? = null,
+    /**
+     * Ce que le guide a retenu (docs/spec/visite-guidee.md § Persistance, issue #94). `null` tant qu'il n'a rien retenu :
+     * même règle que [team], une base ou un export qui n'y a jamais touché ne change pas.
+     */
+    val guide: GuideSettings? = null,
 ) {
     /** L'espace Équipe est activé (valeur enregistrée). */
     val teamModeEnabled: Boolean get() = team?.enabled == true
@@ -147,3 +154,16 @@ data class TeamSettings(
         const val SPACE_TEAM = "team"
     }
 }
+
+/**
+ * Mémoire du guide, sous-objet [Settings.guide] : [newsHidden] la version « majeur.mineur » dont la section « Nouveau dans
+ * cette version » est masquée, [readChapters] les chapitres du hub parcourus jusqu'au bout (noms de `GuideChapter`),
+ * [firstTaskDone] l'accompagnement de la première tâche mené à son terme. Aucun n'est écrit à sa valeur par défaut.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+data class GuideSettings(
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val newsHidden: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val readChapters: List<String> = emptyList(),
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val firstTaskDone: Boolean = false,
+)

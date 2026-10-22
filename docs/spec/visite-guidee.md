@@ -5,13 +5,15 @@ au bon moment, depuis une source unique. Fichiers couverts :
 `kmp/ui/.../ui/guide/FeatureCatalog.kt`, `GuideContent.kt`, `GuideSpot.kt`, `GuideDialog.kt`,
 `DiscoverDialog.kt`, `HelpDialog.kt`, `ui/screens/HomeScreen.kt`,
 `ui/settings/SettingsScreen.kt`, `ui/navigation/AppShell.kt`, et la mise en valeur des sections dans `DayScreen.kt`,
-`StatsScreen.kt` et les cartes des Réglages, ressources `values/`
-et `values-fr/`. Tests : `FeatureCatalogTest`, `GuideStepsTest`, `M6GuideUiTest`, `GuideSpotUiTest`,
+`StatsScreen.kt` et les cartes des Réglages, la mémoire du guide (`core/model/Settings.kt` `GuideSettings`,
+`KairosRepository.updateGuide`), ressources `values/`
+et `values-fr/`. Tests : `FeatureCatalogTest`, `GuideStepsTest`, `M6GuideUiTest`, `GuideSpotUiTest`, `GuideMemoryUiTest`,
+`KairosRepositoryTest.theGuideMemoryIsWrittenOnlyWhenUsed`, `KairosRepositoryTest.theGuideMemorySurvivesAnExportAndIsAbsentByDefault`,
 `StringsParityTest`._
 
 État : **issue #64 (retour du propriétaire)**, spécifiée le 2026-10-13,
 **implémentée en 3.4.0** (voir « Écarts avec la spécification initiale ») ; cartes qui ouvrent la section précise d'un
-écran en 3.7.0 (issue #95).
+écran en 3.7.0 (issue #95) ; le guide se souvient de ce qui a été vu en 3.7.0 (issue #94).
 **Rouvre explicitement** les décisions de `accueil.md` § La visite guidée (deux
 listes de 6 étapes écrites en dur, aucune persistance) ; le reste de `accueil.md`
 est inchangé.
@@ -36,7 +38,8 @@ découvrir sans que l'utilisateur ait à lire une documentation.
    Planifier (priorité, points, score, horaires par jour, heures préférées) ;
    Suivre (chrono, durées apprises, statistiques) ; Organiser (dépendances,
    sous-tâches, récurrences, déplacer) ; Équipe (si l'espace est activé) ;
-   Réglages.
+   Réglages. Un chapitre **parcouru jusqu'au bout** (sa dernière carte atteinte, puis « Terminer » ou « Voir l'écran »)
+   porte une coche et « · lu » (« 5 cartes · lu ») ; il reste ouvrable (3.7.0, issue #94).
 3. **Chaque carte pointe vers l'écran** qu'elle décrit (« Voir l'écran »), vers la
    section précise quand elle existe (3.7.0, issue #95) : l'écran s'ouvre, **défile** jusqu'à la section et la
    **met en valeur** environ 3 s (contour primaire de 2 dp et étiquette « Ici » avec icône, qui apparaissent et
@@ -54,12 +57,16 @@ découvrir sans que l'utilisateur ait à lire une documentation.
    Section absente (vide, par exemple aucune tâche bloquée, ou des statistiques sans données) : l'écran s'ouvre en
    haut et un message bref le dit (« Aucune tâche bloquée pour l'instant. »).
 4. **« Nouveau dans cette version »** : sur l'accueil, une section liste les
-   cartes ajoutées par la version courante, masquable pour la session. Rien
-   n'est mémorisé d'une version à l'autre.
+   cartes ajoutées par la version courante. « Masquer » la retire **pour cette version** (mêmes numéros majeur et
+   mineur : une `3.7.1` ne la ramène pas) ; la version suivante (`3.8.0`) a de nouveau la sienne (3.7.0, issue #94 ;
+   avant : masquée pour la session seulement).
 5. **L'aide d'un écran** (bouton « ? ») et la visite lisent les **mêmes
    textes** ; aucun texte n'est écrit à deux endroits.
 6. L'accompagnement de la **première tâche** (`premiere-tache.md`) fait partie
-   des chapitres et réutilise ces cartes.
+   des chapitres et réutilise ces cartes. Une fois mené à son terme, son invitation ne revient plus (`premiere-tache.md`).
+7. **Repartir de zéro** (3.7.0, issue #94) : Réglages → « À propos » → **« Revoir le guide depuis le début »** efface
+   aussitôt ce que le guide a retenu (chapitres lus, « Nouveau » masqué, accompagnement fait), avec « Annuler » ;
+   « Restaurer les valeurs par défaut » l'efface aussi, à l'enregistrement (`reglages.md`).
 
 ### Critères de succès
 
@@ -73,6 +80,13 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 - Les cartes « Équipe » n'apparaissent que si l'espace est activé.
 - Textes FR/EN (`StringsParityTest`), 360 dp sans débordement, cibles de 48 dp,
   captures `--self-test` regardées.
+- Ce que le guide retient n'est écrit qu'au premier usage : une base ou un export qui n'y a jamais touché ne change pas
+  (`KairosRepositoryTest.theGuideMemoryIsWrittenOnlyWhenUsed`, `DifferentialTest` et
+  `TeamIsolationTest.soloExportIsByteIdentical` inchangés) ; il passe l'export et l'import
+  (`KairosRepositoryTest.theGuideMemorySurvivesAnExportAndIsAbsentByDefault`).
+- « Masquer » la section « Nouveau » tient après un redémarrage de la même version ; un chapitre parcouru jusqu'au bout
+  est coché dans le hub ; « Revoir le guide depuis le début » ramène tout, et « Annuler » rend l'état d'avant
+  (`GuideMemoryUiTest`).
 - Une section visée appartient à l'écran de sa carte, et une section des Réglages à une catégorie
   (`FeatureCatalogTest.sectionsBelongToTheScreenTheyOpen`).
 - « Durées apprises » ouvre la catégorie « Planification » et met sa carte en valeur ; « Bloqueurs » ouvre la section
@@ -81,8 +95,8 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 
 ### Hors périmètre / différé
 
-- Mémoriser ce que l'utilisateur a « vu » (option ultérieure : `Settings.guide`
-  nullable, qui resterait nul tant que rien n'est écrit).
+- Mémoriser chaque carte vue (seuls les chapitres terminés le sont) et « Pas maintenant » de l'invitation à la première
+  tâche (valable pour la session, `premiere-tache.md`).
 - Visite interactive qui manipule l'écran à la place de l'utilisateur.
 - Vidéos ou animations.
 
@@ -141,11 +155,26 @@ since, tour)`, **dans l'ordre de la visite**.
   cartes de `newIn(version)` (toute la carte ouvre sa cible) avec un bouton « Masquer » valable pour la session
   (`rememberSaveable`).
 
-### Persistance
+### Persistance (3.7.0, issue #94)
 
-Aucune : la section « Nouveau » dépend de la version de l'application, pas d'un
-« vu ». Un éventuel `Settings.guide` suivrait le patron « nul par défaut » du
-reste de la 3.4 (`planning-personnalise.md`).
+- `Settings.guide` : `GuideSettings?`, **nul par défaut** (patron de `team`, `schedule`, `learning`) : rien n'est écrit
+  dans la base ni dans l'export tant que le guide n'a rien retenu. `GuideSettings` : `newsHidden` (`"3.7"`, la version
+  majeure.mineure dont « Nouveau » est masqué, nul sinon), `readChapters` (noms de `GuideChapter` terminés),
+  `firstTaskDone` (accompagnement mené à son terme) ; aucun n'est écrit à sa valeur par défaut.
+- `KairosRepository.updateGuide(change)` : applique `change` à `guide ?: GuideSettings()` et enregistre `null` si le
+  résultat vaut `GuideSettings()` ; n'écrit rien s'il ne change rien. `resetGuide()` remet `guide` à nul.
+- `FeatureCatalog.newsKey(version)` : `"majeur.mineur"` d'une version lisible (`3.7.1` → `"3.7"`), nul sinon ; la même
+  règle que `newIn`.
+- Écritures : `HomeScreen` (« Masquer » → `onHideNews`, la coquille écrit `newsHidden`), `AppShell` (un chapitre du hub
+  terminé : `GuideDialog(onFinish)`, appelé par « Terminer » sur la dernière carte ou « Voir l'écran » sur elle, ajoute
+  le chapitre à `readChapters`), `DayScreen` (tâche enregistrée depuis la fiche avec l'accompagnement actif :
+  `firstTaskDone`), carte « Revoir le guide depuis le début » des Réglages (`resetGuide`, puis « Annuler » réécrit
+  l'état d'avant).
+- Lectures : `HomeScreen(newsHidden)` ; `DiscoverDialog(read)` (coche `CheckCircleFilled` en vert « ok » et « · lu »
+  dans l'aide de la ligne, jamais la couleur seule) ; `FirstTaskInvite` absente si `firstTaskDone`.
+- Le formulaire des Réglages ignore `guide` : son état est indexé sur les réglages **sans** `guide` (une écriture du
+  guide ne remet pas à zéro des modifications non enregistrées), et `validate(values, current)` garde le `guide`
+  courant.
 
 ### Règle de livraison
 
@@ -167,7 +196,14 @@ met à jour une carte dans le même changement ; `FeatureCatalogTest` casse sino
 - **Catalogue unique** (écarté : garder des listes par écran, qui divergent) : la
   dérive entre visite, aide et README est le défaut à éviter.
 - **Pas de « vu » persistant** (écarté pour la 3.4) : évite un réglage de plus ;
-  la section « Nouveau » est peu intrusive.
+  la section « Nouveau » est peu intrusive. **Repris en 3.7.0** (issue #94) sous la forme d'un sous-objet nul par
+  défaut, sans effet sur les bases et les exports de ceux qui n'y touchent pas.
+- **Chapitre « lu » : parcouru jusqu'au bout** (choix du propriétaire) : l'ouvrir ne suffit pas, et le compte carte par
+  carte (« 3/5 ») était plus lourd pour peu de gain.
+- **« Masquer » vaut pour la version majeure.mineure** : une version corrective n'ajoute pas de carte (`newIn` suit la
+  même règle) ; la ramener aurait été du bruit.
+- **Remise à zéro : deux chemins** (choix du propriétaire) : « Restaurer les valeurs par défaut », comme le demandait
+  l'issue, et un bouton dédié, immédiat et annulable, pour qui veut revoir le guide sans toucher à ses réglages.
 - **Visite initiale courte** (écarté : une visite exhaustive d'emblée) : un
   nouveau venu abandonne une visite de vingt étapes ; le hub porte la profondeur.
 - **Titres de l'étape** : le dialogue mesure déjà le plus long titre et le plus

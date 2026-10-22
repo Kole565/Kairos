@@ -23,11 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import com.skohscripts.kairos.core.KairosBuild
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,9 +103,12 @@ fun HomeScreen(
     onDiscover: () -> Unit = {},
     /** Version de l'application : les cartes que cette version ajoute ouvrent la section « Nouveau dans cette version ». */
     version: String = KairosBuild.VERSION_NAME,
+    /** « Nouveau » déjà masqué pour cette version (docs/spec/visite-guidee.md § Persistance, issue #94). */
+    newsHidden: Boolean = false,
+    /** « Masquer » : la coquille le retient pour la version (`FeatureCatalog.newsKey`). */
+    onHideNews: () -> Unit = {},
 ) {
     val news = remember(version) { FeatureCatalog.newIn(version) }
-    var newsHidden by rememberSaveable { mutableStateOf(false) }
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(
             verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
@@ -132,11 +131,11 @@ fun HomeScreen(
                     Text(stringResource(Res.string.home_why_body), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            // « Nouveau dans cette version » : les cartes que la version courante ajoute au catalogue ; masquable pour la session, rien n'est mémorisé.
+            // « Nouveau dans cette version » : les cartes que la version courante ajoute au catalogue ; « Masquer » vaut pour la version.
             if (news.isNotEmpty() && !newsHidden) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(Res.string.home_new_title, version.substringBefore('-')), style = MaterialTheme.typography.titleMedium, modifier = Modifier.heading().weight(1f))
-                    KairosTextButton(onClick = { newsHidden = true }) { Text(stringResource(Res.string.home_new_hide)) }
+                    KairosTextButton(onClick = onHideNews) { Text(stringResource(Res.string.home_new_hide)) }
                 }
                 news.forEach { card ->
                     OutlinedCard(onClick = { onOpen(card.target) }, modifier = Modifier.fillMaxWidth()) {

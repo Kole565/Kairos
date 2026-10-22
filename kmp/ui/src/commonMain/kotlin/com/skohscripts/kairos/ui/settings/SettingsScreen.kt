@@ -1,5 +1,12 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.generated.resources.action_revert
+import com.skohscripts.kairos.ui.generated.resources.guide_reset_done
+import com.skohscripts.kairos.ui.generated.resources.guide_reset_action
+import com.skohscripts.kairos.ui.generated.resources.guide_reset_body
+import com.skohscripts.kairos.ui.generated.resources.guide_reset_title
+import com.skohscripts.kairos.ui.app.LocalUndoMessages
+import com.skohscripts.kairos.core.model.GuideSettings
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpot
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -150,20 +157,26 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
     val current = snapshot.settings
     val language = uiLanguage()
     // Décimales à la virgule en français (« 0,8 », comme l'aide l'écrit) ; la validation lit les deux.
-    val saved = remember(current, language) {
+    // Le formulaire ignore ce que le guide a retenu (issue #94) : une écriture du guide (« Revoir le guide… ») ne remet pas
+    // à zéro des modifications non enregistrées.
+    val formKey = current.copy(guide = null)
+    val saved = remember(formKey, language) {
         SettingsForm.values(current).mapValues { (key, value) ->
             if (!language.startsWith("en") && SettingsForm.field(key).kind == FieldKind.DECIMAL) value.replace('.', ',') else value
         }
     }
-    var values by remember(current) { mutableStateOf(saved) }
-    var errors by remember(current) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
-    var general by remember(current) { mutableStateOf<GeneralError?>(null) }
-    val dirty = values != saved
+    var values by remember(formKey) { mutableStateOf(saved) }
+    var errors by remember(formKey) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
+    var general by remember(formKey) { mutableStateOf<GeneralError?>(null) }
+    // « Restaurer les valeurs par défaut » remet aussi le guide à zéro, à l'enregistrement : il suffit à rendre le
+    // formulaire modifié quand le guide a retenu quelque chose (docs/spec/reglages.md).
+    var restored by remember(formKey) { mutableStateOf(false) }
+    val dirty = values != saved || (restored && current.guide != null)
     val scope = rememberCoroutineScope()
     val messages = LocalMessages.current
 
     // Réglages valides en attente de confirmation : masquer l'espace Équipe demande de confirmer.
-    var confirmHide by remember(current) { mutableStateOf<Settings?>(null) }
+    var confirmHide by remember(formKey) { mutableStateOf<Settings?>(null) }
 
     fun write(settings: Settings) {
         scope.launch {
@@ -180,7 +193,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
         val result = SettingsForm.validate(values, current)
         errors = result.fieldErrors
         general = result.general
-        val settings = result.settings
+        val settings = result.settings?.let { if (restored) it.copy(guide = null) else it }
         when {
             settings == null -> scope.launch {
                 // Ouvrir la catégorie du premier champ refusé (dans l'ordre des catégories, sinon celle de la règle
@@ -234,12 +247,14 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                             }
                             errors = emptyMap()
                             general = null
+                            restored = true
                         }
                     }
                     SettingsCategory.ABOUT -> {
                         // « Découvrir Kairos » (docs/spec/visite-guidee.md) : le hub des chapitres, rouvert à tout moment.
                         SettingsLinkCard(KairosIcons.PlayArrow, Res.string.settings_discover_entry, Res.string.settings_discover_entry_hint, onDiscover)
                         SettingsLinkCard(KairosIcons.Info, Res.string.settings_about_entry, Res.string.settings_about_entry_hint, onOpenAbout)
+                        GuideResetCard(services, current.guide)
                     }
                 }
             }
@@ -279,7 +294,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                 }
             }
         }
-        SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null }, onSave = ::save)
+        SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null; restored = false }, onSave = ::save)
     }
 
     confirmHide?.let { settings ->
@@ -371,6 +386,29 @@ private fun SettingsLinkCard(icon: ImageVector, title: StringResource, hint: Str
             supportingContent = { Text(stringResource(hint)) },
             trailingContent = { Icon(KairosIcons.ChevronRight, contentDescription = null) },
         )
+    }
+}
+
+/**
+ * « Revoir le guide depuis le début » (docs/spec/visite-guidee.md § Persistance, issue #94) : efface aussitôt ce que le guide
+ * a retenu, sans passer par « Enregistrer » (ce n'est pas un réglage) ; « Annuler » rend l'état d'avant. Inactif tant que
+ * le guide n'a rien retenu.
+ */
+@Composable
+private fun GuideResetCard(services: AppServices, memory: GuideSettings?) {
+    val scope = rememberCoroutineScope()
+    val undo = LocalUndoMessages.current
+    SettingsCard(spacing = KairosSpacing.m) {
+        SettingsCardHeader(KairosIcons.Refresh, stringResource(Res.string.guide_reset_title), stringResource(Res.string.guide_reset_body))
+        KairosOutlinedButton(enabled = memory != null, onClick = {
+            val before = memory ?: return@KairosOutlinedButton
+            scope.launch {
+                services.repository.resetGuide()
+                undo(getString(Res.string.guide_reset_done), getString(Res.string.action_revert)) {
+                    scope.launch { services.repository.updateGuide { before } }
+                }
+            }
+        }) { Text(stringResource(Res.string.guide_reset_action)) }
     }
 }
 

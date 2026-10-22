@@ -48,7 +48,14 @@ fun GuideDialog(kind: GuideKind, onOpen: (GuideTarget) -> Unit, onDismiss: () ->
  * docs/spec/visite-guidee.md) ; [key] distingue l'étape courante d'une sélection à l'autre.
  */
 @Composable
-fun GuideDialog(steps: List<FeatureCard>, key: String, onOpen: (GuideTarget) -> Unit, onDismiss: () -> Unit) {
+fun GuideDialog(
+    steps: List<FeatureCard>,
+    key: String,
+    onOpen: (GuideTarget) -> Unit,
+    onDismiss: () -> Unit,
+    /** La sélection est parcourue jusqu'au bout : « Terminer » ou « Voir l'écran » sur sa dernière carte (issue #94). */
+    onFinish: () -> Unit = {},
+) {
     var index by rememberSaveable(key) { mutableIntStateOf(0) }
     val step = steps[index.coerceIn(0, steps.lastIndex)]
     val last = index >= steps.lastIndex
@@ -89,13 +96,13 @@ fun GuideDialog(steps: List<FeatureCard>, key: String, onOpen: (GuideTarget) -> 
                         )
                     }
                 }
-                KairosTextButton(onClick = { onOpen(step.target) }) {
+                KairosTextButton(onClick = { if (last) onFinish(); onOpen(step.target) }) {
                     Text(stringResource(if (step.target == GuideTarget.FirstTask) Res.string.guide_first_task_go else Res.string.guide_see_screen))
                 }
             }
         },
         confirmButton = {
-            KairosTextButton(onClick = { if (last) onDismiss() else index++ }) {
+            KairosTextButton(onClick = { if (last) { onFinish(); onDismiss() } else index++ }) {
                 Text(stringResource(if (last) Res.string.guide_finish else Res.string.guide_next))
             }
         },

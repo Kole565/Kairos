@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.guide
 
+import com.skohscripts.kairos.ui.theme.LocalKairosExtraColors
+import com.skohscripts.kairos.ui.generated.resources.discover_chapter_read
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,7 +35,14 @@ import org.jetbrains.compose.resources.stringResource
  * n'est proposé que si l'espace Équipe est activé. Choisir une entrée ferme le hub ; rien n'est mémorisé.
  */
 @Composable
-fun DiscoverDialog(teamEnabled: Boolean, onFirstTask: () -> Unit, onChapter: (GuideChapter) -> Unit, onDismiss: () -> Unit) {
+fun DiscoverDialog(
+    teamEnabled: Boolean,
+    onFirstTask: () -> Unit,
+    onChapter: (GuideChapter) -> Unit,
+    onDismiss: () -> Unit,
+    /** Chapitres parcourus jusqu'au bout (docs/spec/visite-guidee.md § Persistance, issue #94). */
+    read: Set<GuideChapter> = emptySet(),
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(KairosIcons.PlayArrow, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
@@ -41,9 +50,12 @@ fun DiscoverDialog(teamEnabled: Boolean, onFirstTask: () -> Unit, onChapter: (Gu
         text = {
             // Défile : sur un écran bas, toutes les entrées restent atteignables.
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Entry(KairosIcons.Add, stringResource(Res.string.discover_first_task), stringResource(Res.string.discover_first_task_hint), onFirstTask)
+                Entry(KairosIcons.Add, stringResource(Res.string.discover_first_task), stringResource(Res.string.discover_first_task_hint), onClick = onFirstTask)
                 FeatureCatalog.chapters(teamEnabled).forEach { chapter ->
-                    Entry(chapter.icon(), stringResource(chapter.title), stringResource(Res.string.discover_chapter_count, FeatureCatalog.chapter(chapter).size)) {
+                    val count = stringResource(Res.string.discover_chapter_count, FeatureCatalog.chapter(chapter).size)
+                    // Lu : la coche en vert « ok » et « · lu » dans le texte, jamais la couleur seule.
+                    val done = chapter in read
+                    Entry(chapter.icon(), stringResource(chapter.title), if (done) stringResource(Res.string.discover_chapter_read, count) else count, done) {
                         onChapter(chapter)
                     }
                 }
@@ -55,11 +67,16 @@ fun DiscoverDialog(teamEnabled: Boolean, onFirstTask: () -> Unit, onChapter: (Gu
 
 /** Ligne cliquable (≥ 48 dp : `ListItem` à deux lignes), fond transparent pour garder celui du dialogue. */
 @Composable
-private fun Entry(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, hint: String, onClick: () -> Unit) {
+private fun Entry(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, hint: String, read: Boolean = false, onClick: () -> Unit) {
     ListItem(
         leadingContent = { Icon(icon, contentDescription = null) },
         headlineContent = { Text(title) },
         supportingContent = { Text(hint) },
+        trailingContent = if (read) {
+            { Icon(KairosIcons.CheckCircleFilled, contentDescription = null, tint = LocalKairosExtraColors.current.ok) }
+        } else {
+            null
+        },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = Modifier.clickable(role = Role.Button, onClick = onClick),
     )

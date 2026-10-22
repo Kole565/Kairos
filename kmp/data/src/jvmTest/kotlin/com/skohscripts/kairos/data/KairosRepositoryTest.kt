@@ -2,6 +2,7 @@ package com.skohscripts.kairos.data
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
+import com.skohscripts.kairos.core.model.GuideSettings
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.ScheduleSettings
@@ -151,6 +152,36 @@ class KairosRepositoryTest {
         // Les identifiants continuent après le plus grand importé.
         val newId = target.createTask("Après import")!!
         assertTrue(newId > source.snapshot.value.tasks.maxOf { it.id })
+    }
+
+    @Test
+    fun theGuideMemoryIsWrittenOnlyWhenUsed() = runTest {
+        // Ce que le guide retient (docs/spec/visite-guidee.md § Persistance) : nul tant que rien n'est retenu.
+        val repo = empty()
+        assertEquals(null, repo.snapshot.value.settings.guide)
+        repo.updateGuide { it }
+        assertEquals(null, repo.snapshot.value.settings.guide)
+        repo.updateGuide { it.copy(readChapters = it.readChapters + "PLAN") }
+        repo.updateGuide { it.copy(firstTaskDone = true) }
+        assertEquals(GuideSettings(readChapters = listOf("PLAN"), firstTaskDone = true), repo.snapshot.value.settings.guide)
+        // Revenir aux valeurs par défaut enregistre nul, comme « Revoir le guide depuis le début ».
+        repo.updateGuide { it.copy(readChapters = emptyList(), firstTaskDone = false) }
+        assertEquals(null, repo.snapshot.value.settings.guide)
+        repo.updateGuide { it.copy(newsHidden = "3.7") }
+        repo.resetGuide()
+        assertEquals(null, repo.snapshot.value.settings.guide)
+    }
+
+    @Test
+    fun theGuideMemorySurvivesAnExportAndIsAbsentByDefault() {
+        val now = Instant.parse("2026-10-22T07:00:00Z")
+        val plain = ExportCodec.encode(KairosSnapshot(settings = Settings()), "3.7.0", now)
+        assertTrue("guide" !in plain, "sans rien de retenu, l'export ne porte aucun objet guide")
+        val memory = Settings(guide = GuideSettings(newsHidden = "3.7", readChapters = listOf("PLAN", "FOLLOW"), firstTaskDone = true))
+        assertEquals(memory, ExportCodec.decode(ExportCodec.encode(KairosSnapshot(settings = memory), "3.7.0", now)).settings)
+        // Un seul champ retenu : les autres ne sont pas écrits.
+        val one = ExportCodec.encode(KairosSnapshot(settings = Settings(guide = GuideSettings(firstTaskDone = true))), "3.7.0", now)
+        assertTrue("readChapters" !in one && "newsHidden" !in one)
     }
 
     @Test

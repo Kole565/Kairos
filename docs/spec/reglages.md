@@ -66,7 +66,9 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   6. **Données** : **Données** (export, import, `export-import.md`), puis **Réglages par défaut** avec
      **« Restaurer les valeurs par défaut »**.
   7. **À propos** : **« Découvrir Kairos »** puis **« À propos et guide »**, deux lignes qui ouvrent chacune leur
-     écran.
+     écran, puis **« Revoir le guide depuis le début »** (3.7.0, issue #94, `visite-guidee.md` § Persistance) : texte et
+     bouton « Recommencer », inactif tant que le guide n'a rien retenu ; il efface aussitôt ce qu'il a retenu (pas
+     besoin d'« Enregistrer ») et un message « Le guide repart du début. » propose « Annuler ».
 - **Téléphone et fenêtre étroite** (moins de 840 dp de large pour l'écran) : la liste des catégories, sous la phrase
   d'introduction, puis une catégorie à la fois ; la barre du haut prend le titre de la catégorie, et la flèche
   retour (ou le retour système, ou Échap) revient à la liste, puis ferme les Réglages. Rouvrir les Réglages
@@ -103,6 +105,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 - Les réglages valent aussitôt partout (planning, score, alertes, stats).
 - « Restaurer les valeurs par défaut » remplit le formulaire des valeurs par défaut (`SettingsForm.restoreDefaults`), **sauf** les
   champs `team.*`, jamais touchés ; rien n'est écrit avant « Enregistrer » et « Annuler les modifications » revient en arrière.
+  Il remet aussi le guide à zéro **à l'enregistrement** (3.7.0, issue #94) : « Enregistrer » devient actif si le guide a
+  retenu quelque chose, même quand tous les champs valent déjà leur défaut.
 - « WSJF » n'est plus dans le titre de la section du score ni dans l'aide de l'agenda (jargon ; il reste expliqué dans « À propos
   et guide »).
 
@@ -233,6 +237,12 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   modifications ».
 - Enregistrer : `SettingsForm.validate` puis `updateSettings`, message
   « Réglages enregistrés. » ou « Réglages non enregistrés… ».
+- **Guide** (3.7.0, issue #94, `visite-guidee.md` § Persistance) : l'état du formulaire est indexé sur
+  `current.copy(guide = null)` (une écriture du guide ne remet pas à zéro des modifications en cours) ; « Restaurer les
+  valeurs par défaut » pose `restored`, qui rend le formulaire modifié si `current.guide` n'est pas nul et fait
+  enregistrer `guide = null` ; « Annuler les modifications » l'efface. `GuideResetCard` (catégorie « À propos »,
+  icône `Refresh`) : `KairosRepository.resetGuide()` puis le message à annulation (`LocalUndoMessages`), qui réécrit
+  l'état d'avant par `updateGuide`.
 
 ### Décisions et pièges tracés
 

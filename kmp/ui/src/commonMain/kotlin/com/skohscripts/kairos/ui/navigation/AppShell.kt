@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.navigation
 
+import androidx.compose.runtime.collectAsState
+import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosFilterChip
 import androidx.compose.foundation.Image
@@ -151,6 +153,10 @@ fun AppShell(
     ChronoWatcher(services, alerts)
     UpdateWatcher(services)
     val scope = rememberCoroutineScope()
+    // Ce que le guide a retenu (docs/spec/visite-guidee.md § Persistance, issue #94).
+    val stored by services.repository.snapshot.collectAsState()
+    val memory = stored.settings.guide
+    val newsKey = FeatureCatalog.newsKey(KairosBuild.VERSION_NAME)
     val showMessage: (String) -> Unit = { message -> scope.launch { snackbar.showSnackbar(message) } }
     // Message avec une action : l'action n'est jouée que si l'utilisateur la choisit avant la fin du message.
     val showUndo: (String, String, () -> Unit) -> Unit = { message, label, action ->
@@ -287,7 +293,13 @@ fun AppShell(
             CompositionLocalProvider(LocalMessages provides showMessage) { ShortcutBanner(services) }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 CompositionLocalProvider(LocalMessages provides showMessage, LocalUndoMessages provides showUndo, LocalGuideSpot provides nav.guideSpot) {
-                    val home: @Composable () -> Unit = { HomeScreen(teamModeEnabled, openTarget, { guide = it }, onOpenAbout, onDiscover = { discover = true }) }
+                    val home: @Composable () -> Unit = {
+                        HomeScreen(
+                            teamModeEnabled, openTarget, { guide = it }, onOpenAbout, onDiscover = { discover = true },
+                            newsHidden = newsKey != null && memory?.newsHidden == newsKey,
+                            onHideNews = { scope.launch { services.repository.updateGuide { it.copy(newsHidden = newsKey) } } },
+                        )
+                    }
                     when {
                         secondary == Secondary.SETTINGS -> SettingsScreen(services, nav.settings, onDiscover = { discover = true }, onOpenAbout = onOpenAbout)
                         secondary == Secondary.ABOUT -> AboutScreen()
@@ -316,10 +328,17 @@ fun AppShell(
             onFirstTask = { discover = false; startFirstTask() },
             onChapter = { discover = false; chapter = it },
             onDismiss = { discover = false },
+            read = memory?.readChapters.orEmpty().mapNotNull { name -> GuideChapter.entries.firstOrNull { it.name == name } }.toSet(),
         )
     }
     chapter?.let { picked ->
-        GuideDialog(FeatureCatalog.chapter(picked), "chapter-${picked.name}", onOpen = { target -> chapter = null; openTarget(target) }, onDismiss = { chapter = null })
+        GuideDialog(
+            FeatureCatalog.chapter(picked), "chapter-${picked.name}",
+            onOpen = { target -> chapter = null; openTarget(target) },
+            onDismiss = { chapter = null },
+            // Chapitre parcouru jusqu'au bout : coché dans le hub (issue #94).
+            onFinish = { scope.launch { services.repository.updateGuide { it.copy(readChapters = (it.readChapters + picked.name).distinct()) } } },
+        )
     }
     guide?.let { kind ->
         GuideDialog(kind, onOpen = { target -> guide = null; openTarget(target) }, onDismiss = { guide = null })
