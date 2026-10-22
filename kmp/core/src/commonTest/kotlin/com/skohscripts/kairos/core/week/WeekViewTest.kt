@@ -2,7 +2,9 @@ package com.skohscripts.kairos.core.week
 
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.KairosSnapshot
+import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -29,7 +31,7 @@ class WeekViewTest {
             tasks = listOf(
                 task(1).copy(scheduledDate = wed), // programmée seulement : ce jour-là
                 task(2, deadline = wed).copy(scheduledDate = wed), // échéance le même jour : une seule ligne (l'échéance)
-                task(3, deadline = thu).copy(scheduledDate = wed), // programmée avant son échéance : aux deux jours
+                task(3, deadline = thu).copy(scheduledDate = wed), // programmée avant son échéance : seulement au jour programmé
                 task(4, status = TaskStatus.DONE).copy(scheduledDate = wed), // faite : pas programmée
                 task(5).copy(scheduledDate = LocalDate(2026, 10, 7)), // semaine suivante
             ),
@@ -38,7 +40,22 @@ class WeekViewTest {
         val day = view.days.single { it.date == wed }
         assertEquals(listOf(1L, 3L), day.scheduled.map { it.id })
         assertEquals(listOf(2L), day.tasks.map { it.id })
-        assertEquals(listOf(3L), view.days.single { it.date == thu }.tasks.map { it.id })
+        // Le jeudi de son échéance ne la montre plus (issue #106) : une tâche, une seule ligne dans la semaine.
+        assertEquals(emptyList(), view.days.single { it.date == thu }.tasks.map { it.id })
+        // Programmée après son échéance (déplacée du mercredi au vendredi) : seulement le vendredi.
+        val fri = LocalDate(2026, 10, 2)
+        val moved = WeekView.build(KairosSnapshot(tasks = listOf(task(6, deadline = wed).copy(scheduledDate = fri))), wed, t0, TimeZone.UTC)
+        assertEquals(emptyList(), moved.days.single { it.date == wed }.tasks + moved.days.single { it.date == wed }.scheduled)
+        assertEquals(listOf(6L), moved.days.single { it.date == fri }.scheduled.map { it.id })
+    }
+
+    @Test
+    fun holidays_and_days_off_are_flagged() {
+        // Semaine du 9 novembre 2026 : Armistice le mercredi ; le samedi est un jour libre des horaires par jour.
+        val settings = Settings(holidaysFr = true, schedule = ScheduleSettings(mapOf(5 to DaySchedule(free = true))))
+        val week = WeekView.build(KairosSnapshot(settings = settings), LocalDate(2026, 11, 11), t0, TimeZone.UTC)
+        assertEquals(listOf(false, false, true, false, false, false, false), week.days.map { it.holiday })
+        assertEquals(listOf(false, false, false, false, false, true, false), week.days.map { it.dayOff })
     }
 
     @Test

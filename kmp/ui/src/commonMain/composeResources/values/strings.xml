@@ -1337,4 +1337,7 @@
     <string name="settings_cat_about">About</string>
     <string name="settings_cat_about_hint">Discover Kairos, guide, version</string>
     <string name="settings_cat_has_error">A field to fix</string>
+    <!-- Vue Semaine : « Déplacer » vers un jour signalé (docs/spec/vue-semaine.md, issue #106). -->
+    <string name="week_move_holiday">%1$s · public holiday</string>
+    <string name="week_move_day_off">%1$s · day off</string>
 </resources>

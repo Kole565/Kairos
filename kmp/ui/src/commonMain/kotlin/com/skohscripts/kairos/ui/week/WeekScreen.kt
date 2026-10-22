@@ -75,6 +75,28 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import com.skohscripts.kairos.core.model.Task
+import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.core.model.TaskStatus
+import com.skohscripts.kairos.ui.app.LocalUndoMessages
+import com.skohscripts.kairos.ui.day.DateChoice
+import com.skohscripts.kairos.ui.day.WarnBadge
+import com.skohscripts.kairos.ui.generated.resources.action_move
+import com.skohscripts.kairos.ui.generated.resources.action_revert
+import com.skohscripts.kairos.ui.generated.resources.date_choose
+import com.skohscripts.kairos.ui.generated.resources.deadline_badge
+import com.skohscripts.kairos.ui.generated.resources.task_moved
+import com.skohscripts.kairos.ui.generated.resources.week_move_day_off
+import com.skohscripts.kairos.ui.generated.resources.week_move_holiday
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -97,6 +119,19 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
     val week = remember(snapshot, nav.week, filter, today) { WeekView.build(snapshot, nav.week ?: today, now, timeZone, filter) }
     val backlog = remember(snapshot, filter, today) { DayView.build(snapshot, today, null, timeZone, filter, instant = now).backlog }
     val projects = remember(snapshot) { snapshot.tasks.map { it.projectTag }.filter { it.isNotEmpty() }.distinct().sorted() }
+    val scope = rememberCoroutineScope()
+    val undo = LocalUndoMessages.current
+    // « Déplacer » (issue #106) : programme la tâche pour ce jour, comme la vue Jour ; « Annuler » rend la date d'avant.
+    val onMove: (Task, LocalDate) -> Unit = { task, date ->
+        val before = task.scheduledDate
+        scope.launch {
+            services.repository.schedule(task.id, date)
+            undo(getString(Res.string.task_moved, task.title, Dates.short(date, language, today)), getString(Res.string.action_revert)) {
+                scope.launch { services.repository.schedule(task.id, before) }
+            }
+        }
+    }
+    val move = MoveContext(week.days, today, language, onMove)
 
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.widthIn(max = 1400.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
@@ -133,7 +168,7 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                 if (maxWidth >= 140.dp * 7 + 8.dp * 6) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.height(IntrinsicSize.Max)) {
                         week.days.forEach { day ->
-                            DayCard(day, day.date == today, language, Modifier.weight(1f).fillMaxHeight()) { onOpenDay(day.date) }
+                            DayCard(day, day.date == today, move, Modifier.weight(1f).fillMaxHeight()) { onOpenDay(day.date) }
                         }
                     }
                 } else {
@@ -144,7 +179,7 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         maxItemsInEachRow = columns,
                     ) {
-                        week.days.forEach { day -> DayCard(day, day.date == today, language, Modifier.width(cardWidth)) { onOpenDay(day.date) } }
+                        week.days.forEach { day -> DayCard(day, day.date == today, move, Modifier.width(cardWidth)) { onOpenDay(day.date) } }
                     }
                 }
             }
@@ -173,8 +208,9 @@ private fun BacklogList(titles: List<String>, open: Boolean, onToggle: () -> Uni
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: Modifier, onOpen: () -> Unit) {
+private fun DayCard(day: WeekDay, isToday: Boolean, move: MoveContext, modifier: Modifier, onOpen: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
+    val language = move.language
     Surface(
         color = if (isToday) scheme.secondaryContainer else scheme.surfaceContainerLow,
         border = if (isToday) BorderStroke(1.dp, scheme.secondary) else null,
@@ -199,7 +235,7 @@ private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: 
                 }
             }
             day.tasks.forEach { t ->
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                MovableTask(t, day.date, move) {
                     Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         t.priority?.let { PriorityBadge(it) }
@@ -208,10 +244,15 @@ private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: 
                 }
             }
             day.scheduled.forEach { t ->
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                MovableTask(t, day.date, move) {
                     Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Badge(stringResource(Res.string.week_scheduled))
+                        // Rappel de l'échéance, qui n'est pas ce jour-là ; contour d'avertissement si elle tombe avant.
+                        t.deadline?.let { due ->
+                            val text = stringResource(Res.string.deadline_badge, Dates.short(due, language, day.date))
+                            if (due < day.date) WarnBadge(text) else Badge(text)
+                        }
                         t.priority?.let { PriorityBadge(it) }
                         if (t.projectTag.isNotEmpty()) Badge(t.projectTag)
                     }
@@ -220,5 +261,57 @@ private fun DayCard(day: WeekDay, isToday: Boolean, language: String, modifier: 
             Spacer(Modifier.size(2.dp))
             KairosTextButton(onClick = onOpen) { Text(stringResource(Res.string.week_see_day)) }
         }
+    }
+}
+
+/** Ce qu'il faut à une ligne pour proposer « Déplacer » : les jours de la semaine affichée, aujourd'hui, la langue, l'action. */
+private class MoveContext(val days: List<WeekDay>, val today: LocalDate, val language: String, val onMove: (Task, LocalDate) -> Unit)
+
+/**
+ * Jours proposés par « Déplacer » depuis le jour [from] : ceux de la semaine affichée à partir d'aujourd'hui, sauf [from]
+ * (programmer hier ramènerait la tâche dans « Aujourd'hui » de la vue Jour ; « Choisir une date… » reste libre).
+ */
+internal fun moveTargets(days: List<WeekDay>, from: LocalDate, today: LocalDate): List<WeekDay> =
+    days.filter { it.date >= today && it.date != from }
+
+/**
+ * Ligne d'une tâche dans une carte de jour. Tâche **personnelle** à faire : toute la ligne (48 dp au moins) ouvre
+ * « Déplacer vers un autre jour… » (docs/spec/vue-semaine.md, issue #106) ; une icône de plus ne tenait pas dans une
+ * colonne de 140 dp. Une tâche d'équipe reste une ligne inerte (pas de date programmée, pas de faux bouton).
+ */
+@Composable
+private fun MovableTask(task: Task, from: LocalDate, move: MoveContext, content: @Composable ColumnScope.() -> Unit) {
+    if (task.space != TaskSpace.PERSONAL || task.status != TaskStatus.TODO) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp), content = content)
+        return
+    }
+    var open by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
+    val label = stringResource(Res.string.action_move)
+    Box {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clip(MaterialTheme.shapes.medium)
+                .clickable(onClickLabel = label, role = Role.Button) { open = true },
+            content = content,
+        )
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            moveTargets(move.days, from, move.today).forEach { target ->
+                val day = Dates.dayShort(target.date, move.language)
+                val text = when {
+                    target.holiday -> stringResource(Res.string.week_move_holiday, day)
+                    target.dayOff -> stringResource(Res.string.week_move_day_off, day)
+                    else -> day
+                }
+                DropdownMenuItem(text = { Text(text) }, onClick = { open = false; move.onMove(task, target.date) })
+            }
+            DropdownMenuItem(text = { Text(stringResource(Res.string.date_choose)) }, onClick = { open = false; picking = true })
+        }
+    }
+    if (picking) {
+        DateChoice(task.scheduledDate ?: move.today, onPick = { picking = false; move.onMove(task, it) }, onDismiss = { picking = false })
     }
 }

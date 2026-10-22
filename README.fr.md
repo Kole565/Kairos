@@ -195,7 +195,8 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   « traîne depuis N j » et bandeau de surcharge de P0. On peut regarder un
   autre jour.
 - **Semaine** : sept jours (échéances, tâches programmées, tâches faites, créneaux), temps réel de
-  la semaine par type.
+  la semaine par type ; toucher une tâche la déplace vers un autre jour (fériés et jours libres
+  signalés), avec « Annuler ».
 - **Statistiques** : débit hebdomadaire, calibration des estimations (temps
   réel médian par palier, biais), temps par type, flux, complétude. L’effectif
   est affiché ; un petit échantillon est marqué « peu fiable ».

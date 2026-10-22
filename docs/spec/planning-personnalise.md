@@ -48,7 +48,8 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
    possibilité d'annuler. « Décaler » met l'échéance au jour ouvré suivant et
    programme aussi la tâche pour ce jour. La vue Semaine montre aussi les tâches
    « programmées pour » un jour (elle reste en lecture seule : « Voir le jour » y
-   mène ; écarté : ouvrir la fiche depuis la carte).
+   mène ; écarté : ouvrir la fiche depuis la carte). Depuis la 3.7.0 (issue #106), toucher une tâche d'une carte
+   ouvre seulement « Déplacer vers un autre jour… » (`vue-semaine.md`) ; la fiche reste dans la vue Jour.
 3. **Blocage** : après avoir bloqué une tâche, un retour dit où elle est allée
    (« X attend Y », section « Bloquées » ouverte pour cette fois) ; l'aide de la
    fiche dit ce que fait un bloqueur ; les « Options avancées » de la fiche

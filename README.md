@@ -184,7 +184,8 @@ order (critical path). Cycles are refused.
   "Scheduled later", filters, backlog, timeline; "lingering for N d" badge and
   P0 overload banner. You can look at another day.
 - **Week**: seven days (deadlines, scheduled tasks, finished tasks, slots), the
-  week's real time by type.
+  week's real time by type; tap a task to move it to another day (public
+  holidays and days off are flagged), with "Undo".
 - **Statistics**: weekly throughput, estimation calibration (median real time
   per level, bias), time by type, flow, completeness. The sample size is
   shown; a small sample is marked "not reliable".
