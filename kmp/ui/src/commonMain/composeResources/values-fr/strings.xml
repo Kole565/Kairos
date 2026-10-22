@@ -1353,4 +1353,10 @@
     <string name="guide_reset_body">Les chapitres lus, la section « Nouveau dans cette version » masquée et l’accompagnement de la première tâche reviennent comme au premier jour. Tes réglages et tes tâches ne bougent pas.</string>
     <string name="guide_reset_action">Recommencer</string>
     <string name="guide_reset_done">Le guide repart du début.</string>
+    <!-- Filtres des statistiques (docs/spec/statistiques.md § Filtres, issue #114). -->
+    <string name="stats_period">Période</string>
+    <string name="stats_period_weeks">%1$d sem.</string>
+    <string name="stats_period_all">Tout</string>
+    <string name="stats_filtered">Filtré : %1$d sur %2$d tâches</string>
+    <string name="stats_empty_filtered">Rien pour ce filtre. Change-le ou réinitialise-le plus haut.</string>
 </resources>

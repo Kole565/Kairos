@@ -82,6 +82,9 @@ class StatsDifferentialTest {
             }
             val e = case.getValue("expected").jsonObject
             val d = TaskStats.dashboard(tasks, sessions, today, settings, now, utc)
+            // La vue par défaut de l'écran passe par les filtres (docs/spec/statistiques.md § Filtres) : identique, cas par cas.
+            val query = StatsQuery()
+            assertEquals(d, query.dashboard(query.apply(tasks, sessions, settings, today, utc), today, now, utc), "$msg : vue par défaut")
             assertEquals(e.getValue("windowWeeks").jsonPrimitive.int, d.windowWeeks, msg)
             assertEquals(e.getValue("completedInWindow").jsonPrimitive.int, d.completedInWindow, "$msg : terminées")
             assertEquals(e.getValue("trackedMinutesWindow").jsonPrimitive.int, d.trackedMinutesWindow, "$msg : temps suivi")

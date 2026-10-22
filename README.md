@@ -188,7 +188,9 @@ order (critical path). Cycles are refused.
   holidays and days off are flagged), with "Undo".
 - **Statistics**: weekly throughput, estimation calibration (median real time
   per level, bias), time by type, flow, completeness. The sample size is
-  shown; a small sample is marked "not reliable".
+  shown; a small sample is marked "not reliable". Narrow it down by period
+  (4, 8, 12 weeks or all) and with the same search and filters as the Day
+  view (type, project, priority…); nothing is saved.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
   usual rhythm. This card only observes.
