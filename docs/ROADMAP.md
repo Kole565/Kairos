@@ -14,11 +14,11 @@ utilisateurs) ; ce document est en français comme le reste de `docs/`.
 
 | Milestone | Sens |
 |---|---|
-| `3.7.0` | Prochaine version : suites du guide (#94, #95), déplacer depuis la vue Semaine (#106), fériés des créneaux « jours ouvrés » par défaut (#109), export et filtres des statistiques (#113, #114), thème sombre (#72, décision de la charte rouverte, spec d'abord) ; les Réglages par catégories (PR #124) y sont déjà. |
-| `3.8.0` | Version suivante : vue Mois, créneaux mensuels, occurrence unique, graphiques de statistiques, correction des estimations, accompagnement de la fiche Équipe. |
+| `3.7.0` | Version préparée (`30700`, notes de version FR/EN ; tag `v3.7.0` posé par le propriétaire) : suites du guide (#94, #95), déplacer depuis la vue Semaine (#106), fériés des créneaux « jours ouvrés » par défaut (#109), export et filtres des statistiques (#113, #114), thème sombre (#72), Réglages par catégories (PR #124). |
+| `3.8.0` | Prochaine version : vue Mois, créneaux mensuels, occurrence unique, graphiques de statistiques, correction des estimations, accompagnement de la fiche Équipe. |
 | `Backlog` | Non planifié : décision ou spec à écrire d'abord, dépendance externe (signature, synchronisation) ou attente de retours. |
 
-Le contenu de `3.7.0` et `3.8.0` est un **brouillon de planification** (issues #93 à
+Le contenu de `3.8.0` est un **brouillon de planification** (issues #93 à
 #121 réparties le 2026-10-19) : un milestone se déplace librement, rien n'est promis.
 Une version n'est plus « brouillon » quand ses issues ont une spec à jour dans
 `docs/spec/` (étape 1 du workflow de `CLAUDE.md`).

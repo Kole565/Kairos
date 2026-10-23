@@ -102,6 +102,7 @@ ICONS = {
     "Spot": ("my_location", False),
     "TableView": ("table_view", False),
     "Image": ("image", False),
+    "DarkMode": ("dark_mode", False),
 }
 
 

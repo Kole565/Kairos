@@ -67,8 +67,10 @@ enum class GuideSection(
     DAY_PARENTS(GuideScreen.DAY, missing = Res.string.guide_spot_missing_parents),
     SETTINGS_CONTEXTS(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_HOURS(GuideScreen.SETTINGS, SettingsCategory.DAY),
+    SETTINGS_HOLIDAYS(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_BEST_HOURS(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
     SETTINGS_LEARNED(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
+    SETTINGS_APPEARANCE(GuideScreen.SETTINGS, SettingsCategory.GENERAL),
     SETTINGS_DATA(GuideScreen.SETTINGS, SettingsCategory.DATA),
     STATS_HOURS(GuideScreen.STATS, missing = Res.string.guide_spot_missing_stats),
 }

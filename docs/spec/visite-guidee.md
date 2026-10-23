@@ -90,8 +90,11 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 - Une section visée appartient à l'écran de sa carte, et une section des Réglages à une catégorie
   (`FeatureCatalogTest.sectionsBelongToTheScreenTheyOpen`).
 - « Durées apprises » ouvre la catégorie « Planification » et met sa carte en valeur ; « Bloqueurs » ouvre la section
-  « Bloquées » et la met en valeur ; sans tâche bloquée, le message le dit ; la mise en valeur s'efface d'elle-même
-  (`GuideSpotUiTest`).
+  « Bloquées » et la met en valeur ; sans tâche bloquée, le message le dit ; la mise en valeur s'efface d'elle-même ;
+  « Thème sombre » (3.7.0) met en valeur la carte Apparence, « Les créneaux des jours ouvrés sautent les fériés » la
+  carte « Jours fériés » (`GuideSpotUiTest`).
+- La 3.7.0 liste ses six cartes dans « Nouveau dans cette version » (`FeatureCatalogTest`) ; « Premiers pas » en a six,
+  comme le chapitre de l'équipe (`M6GuideUiTest`).
 
 ### Hors périmètre / différé
 
@@ -108,9 +111,11 @@ découvrir sans que l'utilisateur ait à lire une documentation.
 since, tour)`, **dans l'ordre de la visite**.
 
 - **Chapitres** (`GuideChapter`) : `FIRST_STEPS` (capture, qualification, « faire dans l'ordre », « Découvrir Kairos »,
-  première tâche), `PLAN` (priorité, points et estimation ; score et placement ; plages et contextes ; meilleures heures, 3.6 ; horaires par jour), `FOLLOW` (chrono ;
-  durées apprises ; semaine ; statistiques), `ORGANIZE` (sous-tâches ; récurrence et déplacer ; bloqueurs ; créneaux et
-  deep work), `TEAM` (les six cartes d'équipe), `SETTINGS` (réglages clairs ; données). `FeatureCatalog.chapters(teamEnabled)`
+  première tâche, le guide qui retient et montre l'endroit, 3.7), `PLAN` (priorité, points et estimation ; score et placement ; plages et contextes ; meilleures heures, 3.6 ; horaires par jour), `FOLLOW` (chrono ;
+  durées apprises ; semaine ; déplacer depuis la semaine, 3.7 ; statistiques ; filtres et export des statistiques, 3.7),
+  `ORGANIZE` (sous-tâches ; récurrence et déplacer ; bloqueurs ; créneaux et deep work ; fériés des créneaux « jours
+  ouvrés », 3.7), `TEAM` (les six cartes d'équipe), `SETTINGS` (réglages clairs ; réglages par catégories, 3.7 ; thème
+  sombre, 3.7 ; données). `FeatureCatalog.chapters(teamEnabled)`
   n'offre `TEAM` que si l'espace Équipe est activé.
 - **Visites** : `GuideSteps.of(GuideKind.PERSONAL)` = les cartes `tour = true` (six, comme avant) ;
   `GuideSteps.of(GuideKind.TEAM)` = le chapitre `TEAM` (six). Les textes des douze cartes d'avant gardent leurs
@@ -119,7 +124,8 @@ since, tour)`, **dans l'ordre de la visite**.
   `FirstTask` (lance l'accompagnement de `premiere-tache.md`, sans changer d'écran ; le bouton devient « Créer ma première
   tâche »).
 - **Sections** (`GuideSection`, issue #95) : `DAY_INBOX`, `DAY_AGENDA`, `DAY_NOW`, `DAY_BLOCKED`, `DAY_PARENTS`,
-  `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`, `SETTINGS_DATA`, `STATS_HOURS` ; chacune
+  `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_HOLIDAYS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`,
+  `SETTINGS_APPEARANCE`, `SETTINGS_DATA`, `STATS_HOURS` ; chacune
   connaît son écran (`screen`), sa catégorie des Réglages (`settingsCategory`) et son message d'absence (`missing`, pour
   les sections qui peuvent manquer). `AppShell.openTarget` pose la demande dans `NavState.guideSpot`
   (`GuideSpotState.pending`) après avoir ouvert l'écran ; pour les Réglages, `onOpenSettings()` puis
@@ -131,8 +137,8 @@ since, tour)`, **dans l'ordre de la visite**.
   `GuideSpotState.show(section)` la pose 3 s (`SPOT_MILLIS`) puis l'efface si rien ne l'a remplacée.
   `GuideSpot(section)` = `GuideMark` + `BringIntoViewRequester` : quand la demande en attente est la sienne, il la
   consomme, attend deux images (l'écran doit être mesuré) et se fait défiler à l'écran. Écrans à colonne défilante :
-  les cartes des Réglages (`ContextsCard`, `ScheduleCard`, `BestHoursCard`, carte « Durées apprises » de
-  `SettingsFormCards`, `DataCard`) et le panneau « Quand tu travailles chaque type » de `StatsScreen`.
+  les cartes des Réglages (`ContextsCard`, `ScheduleCard`, carte « Jours fériés », `BestHoursCard`, carte « Durées
+  apprises » de `SettingsFormCards`, `AppearanceCard`, `DataCard`) et le panneau « Quand tu travailles chaque type » de `StatsScreen`.
 - **Vue Jour** (liste paresseuse : une ligne hors de l'écran n'est pas composée, `bringIntoView` n'y peut rien) :
   `DayScreen` consomme la demande lui-même : ouvre la section repliable (`sectionOpen`), attend la composition, puis
   `listState.scrollToItem(positions[clé])` et `show(section)` ; `GuideMark` entoure l'élément de tête (« inbox-title »,
@@ -143,6 +149,11 @@ since, tour)`, **dans l'ordre de la visite**.
   « Durées apprises » mise en valeur et figée (`GuideSpotState.shown` posé d'avance).
 - **`since`** : version de livraison ; `FeatureCatalog.newIn(version)` rend les cartes de **mêmes numéros majeur et mineur**
   (`3.4.1` ou `3.4.0-beta.2` gardent la section de la `3.4.0` ; une version illisible ou sans carte rend une liste vide).
+- **Cartes de la 3.7.0** (une par nouveauté, choix du propriétaire) : `guide_memory` (le guide retient et montre
+  l'endroit, issues #94 et #95 ; Accueil), `week_move` (déplacer depuis la vue Semaine, #106 ; Semaine),
+  `stats_explore` (filtres et export des statistiques, #113 et #114 ; Stats), `holidays_slots` (fériés des créneaux
+  « jours ouvrés », #109 ; section `SETTINGS_HOLIDAYS`), `settings_categories` (Réglages par catégories, PR #124 ;
+  Réglages), `darktheme` (thème sombre, #72 ; section `SETTINGS_APPEARANCE`, icône `DarkMode`).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section
   « Features » de `README.md` à une carte ; `FeatureCatalogTest.readmeFeaturesAreCovered` lit le README et compare.
 - **`GuideDialog`** accepte n'importe quelle sélection (`GuideDialog(steps, key, …)`, `GuideDialog(kind, …)` en est la
