@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.data.KairosRepository
@@ -14,6 +16,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import java.awt.FileDialog
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import java.awt.Frame
 import java.io.File
 import java.util.Locale
@@ -70,6 +74,13 @@ private object DialogFiles : FileService {
         return true
     }
 
+    override suspend fun saveImage(suggestedName: String, image: ImageBitmap): Boolean {
+        val file = choose(FileDialog.SAVE, suggestedName) ?: return false
+        val png = encodePng(image)
+        withContext(Dispatchers.IO) { file.writeBytes(png) }
+        return true
+    }
+
     override suspend fun openText(): String? {
         val file = choose(FileDialog.LOAD, null) ?: return null
         return withContext(Dispatchers.IO) { file.readText() }
@@ -82,6 +93,10 @@ private object DialogFiles : FileService {
         dialog.file?.let { File(dialog.directory, it) }
     }
 }
+
+/** PNG par Skia, le moteur de rendu de Compose sur le bureau (docs/spec/statistiques.md § Export à l'écran). */
+internal fun encodePng(image: ImageBitmap): ByteArray =
+    checkNotNull(Image.makeFromBitmap(image.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)) { "encodage PNG" }.bytes
 
 /** Sauvegardes dans un dossier ; seules les [keep] plus récentes sont gardées. */
 private class FolderBackups(private val folder: File, private val keep: Int = 10) : BackupStore {

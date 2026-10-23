@@ -3,13 +3,16 @@
 _Rôle : un retour empirique sur la façon dont on estime, où va le temps et
 où s'accumulent les retards, pour calibrer ses estimations et le score.
 Fichiers couverts : `kmp/core/src/commonMain/.../core/stats/TaskStats.kt`
-(calcul pur), `core/.../stats/StatsQuery.kt` (filtres, pur), `kmp/ui/.../stats/StatsScreen.kt`. Les repères du guide des
+(calcul pur), `core/.../stats/StatsQuery.kt` (filtres, pur), `core/.../stats/StatsCsv.kt` (export CSV, pur),
+`kmp/ui/.../stats/StatsScreen.kt`, `ui/.../stats/StatsCards.kt` (les cartes), `ui/.../stats/StatsExport.kt` (export). Les repères du guide des
 points et les durées suggérées qui en découlent sont affichés par la vue
 Jour (`vue-jour.md`). Tests : `core/.../stats/StatsDifferentialTest.kt`
 (200 cas contre les fichiers d'or `stats.json`), `core/.../stats/StatsQueryTest.kt`,
-`M4ScreensUiTest.statsShowWhatWasDoneAndTimed`, `calibratedPointsSuggestTheDurationAndFeedTheGuide` et `StatsFilterUiTest`._
+`M4ScreensUiTest.statsShowWhatWasDoneAndTimed`, `calibratedPointsSuggestTheDurationAndFeedTheGuide`, `StatsFilterUiTest`,
+`core/.../stats/StatsCsvTest.kt` (commun), `core/.../stats/StatsCsvGoldenTest.kt` (fichier d'or `stats-export.csv`) et
+`StatsExportUiTest`._
 
-État : **jalon M4** ; filtres interactifs en 3.7.0 (issue #114). Les sorties sont figées par les fichiers d'or de
+État : **jalon M4** ; filtres interactifs (issue #114) et export CSV et image (issue #113) en 3.7.0. Les sorties sont figées par les fichiers d'or de
 `StatsDifferentialTest` (`stats.json`, source de vérité depuis
 `retrait-kairos2.md`).
 
@@ -33,8 +36,21 @@ Destination « Stats », en lecture seule. En tête (3.7.0, issue #114) :
   « Réinitialiser »). Toutes les cartes se recalculent sur les tâches retenues et leurs sessions ; une ligne dit
   l'effectif retenu (« Filtré : 12 sur 40 tâches »). La **calibration** reste sur tout l'historique des tâches retenues :
   la période ne la change pas (comme avant).
-- Le filtre et la période ne vivent qu'à l'écran : jamais écrits dans les réglages ni dans l'export ; quitter les Stats
-  et y revenir rend la vue par défaut, identique à celle d'avant les filtres.
+- Le filtre et la période ne vivent qu'à l'écran : jamais écrits dans les réglages ni dans l'export de données ; quitter
+  les Stats et y revenir rend la vue par défaut, identique à celle d'avant les filtres.
+- **Exporter** (3.7.0, issue #113) : au bout de la ligne de la période, un bouton à icône « Exporter… » (info-bulle),
+  présent seulement quand l'écran montre des chiffres. Il ouvre un menu :
+  - « Tableaux (CSV) » : **un seul fichier** `kairos-stats-AAAAMMJJ-HHMM.csv`, une section par carte, exactement ce que
+    l'écran montre pour la période et le filtre choisis ;
+  - « Image : <titre de la carte> », pour chacune des sept cartes (chiffres clés, débit, calibration, où va le temps,
+    quand tu travailles chaque type, flux et backlog, complétude) : un fichier
+    `kairos-stats-<carte>-AAAAMMJJ-HHMM.png` de la carte seule, rendue hors écran à **600 dp de large, densité ×2**,
+    quel que soit l'appareil, sur le fond de l'écran, avec en pied une légende « Kairos · vendredi 23 octobre 2026 ·
+    8 sem. · Filtré : 12 sur 40 tâches » (le filtre seulement s'il est actif).
+
+  Le fichier passe par la boîte d'enregistrement du système (téléchargement dans le navigateur), comme l'export de
+  données ; message « Statistiques exportées. » ou « Image enregistrée. », « Le fichier n'a pas pu être lu ou écrit. »
+  en cas d'échec ; rien n'est écrit dans la base. Seul l'espace Perso est exporté (l'écran ne montre que lui).
 
 Sans aucune donnée : un état vide qui explique comment les chiffres se construisent (avec un filtre actif : « Rien pour
 ce filtre. Change-le ou réinitialise-le plus haut. », le filtre restant visible pour le changer). Sinon, de haut en bas :
@@ -86,10 +102,19 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
   (`StatsDifferentialTest.dashboard_matches_golden`).
 - Choisir « 4 sem. » change le libellé des chiffres clés ; filtrer sur un type réduit l'effectif (« Filtré : 1 sur 2
   tâches ») ; un filtre sans résultat le dit et se réinitialise ; la ligne tient à 360 dp (`StatsFilterUiTest`).
+- Le CSV d'un instantané fixé est identique, octet pour octet, au fichier d'or `stats-export.csv`
+  (`StatsCsvGoldenTest`) ; un texte qui contient une virgule, un guillemet ou un saut de ligne est entre guillemets, un
+  texte qui commence par `=`, `+`, `-` ou `@` est neutralisé, les nombres ont un point décimal quelle que soit la langue
+  (`StatsCsvTest`).
+- « Tableaux (CSV) » enregistre le CSV de la vue filtrée (le contexte dit la période et le filtre) ; « Image : Débit
+  hebdomadaire » enregistre un PNG de 1 200 px de large ; rien n'est écrit dans la base ; le bouton a une aire tactile
+  de 48 dp, il est absent sans données et le menu tient dans une fenêtre de 360 dp (`StatsExportUiTest`). Vérifié aussi
+  dans Chromium sur la sortie web compilée (téléchargement du CSV et du PNG).
 
 ### Hors périmètre / différé
 
-- Graphiques temporels fins, export, estimation par apprentissage ; un débit par mois pour « Tout ».
+- Graphiques temporels fins, estimation par apprentissage ; un débit par mois pour « Tout ».
+- Image de l'écran entier, PDF, export des prévisions de l'espace Équipe (`equipe-simulation.md`).
 
 ## 2. Solution technique
 
@@ -141,6 +166,53 @@ reçoit **toutes** les tâches, archivées comprises.
   dernières semaines pour `ALL` ; `StatsQuery.hours(...)` = `BestHours.measure` sur la même entrée. Les fichiers d'or ne
   passent pas par `StatsQuery` : la vue par défaut leur est identique par construction (test).
 
+### Export CSV (`StatsCsv`, `core`, 3.7.0)
+
+`StatsCsv.encode(query, input, dashboard, hours, today, now)` : pur, rend le texte du fichier à partir des mêmes
+objets que l'écran (`StatsQuery.Input`, `TaskStats.Dashboard`, `BestHours.Result`) ; rien n'est recalculé.
+
+- UTF-8 avec BOM, fin de ligne CRLF (RFC 4180), séparateur virgule. Une section = une ligne titre (son identifiant
+  seul), une ligne d'en-têtes, ses lignes (zéro possible : l'en-tête reste), une ligne vide. Identifiants et en-têtes
+  en anglais, stables quelle que soit la langue (comme les clés du JSON d'export).
+- Nombres au point décimal (`StatsCsv.decimal`, arrondi au pair comme `pyRound`), dates ISO (`2026-10-23`), instant ISO
+  UTC ; valeur absente (`null`) = cellule vide ; booléens `true` / `false` ; « Sans type » = cellule vide (clé `""`).
+- Textes (types, filtre) : entre guillemets s'ils contiennent `,` `"` CR ou LF (guillemets doublés) ; préfixés d'une
+  apostrophe `'` s'ils commencent par `=`, `+`, `-`, `@`, tabulation ou CR (un tableur les lirait comme formule).
+- Sections, dans l'ordre de l'écran :
+
+| Section | Colonnes | Lignes |
+|---|---|---|
+| `kairos_stats` | `key,value` | `format` (`kairos-stats`), `format_version` (1), `generated_at`, `today`, `period` (semaines, ou `all`), `window_weeks`, `window_start` (lundi), `window_end` (aujourd'hui), `filter_query`, `filter_priority`, `filter_project`, `filter_type`, `filter_points`, `tasks_kept`, `tasks_total` |
+| `summary` | `metric,value` | `completed`, `tracked_minutes`, `median_completion_days`, `deadlines_met_pct`, `deadlines_total` |
+| `throughput` | `week_start,completed,points` | une par semaine affichée (26 au plus pour « Tout ») |
+| `calibration` | `points,tasks,median_minutes,reliable` | une par palier |
+| `estimation_bias` | `ratio,real_minutes,estimated_minutes,tasks,reliable` | une, ou aucune sans biais ; ratio à deux décimales |
+| `time_by_type` | `type,minutes,pct` | une par type |
+| `focus` | `sessions,total_minutes,avg_session_minutes` | une |
+| `hours_by_type` | `type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,share_00` … `share_22` | une par profil ; parts en % à une décimale, lift à deux décimales, pointe vide sans pointe |
+| `backlog` | `metric,value` | `open`, `median_age_days`, `overdue`, `stale` |
+| `completeness` | `field,with,total,pct` | `points`, `estimate`, `type` |
+
+### Export à l'écran (`StatsExport`, `StatsCards`, `ui`, 3.7.0)
+
+- Les sept cartes sont l'énumération `StatsCard` (`title`, `fileKey` : `key-figures`, `throughput`, `calibration`,
+  `time-by-type`, `hours`, `backlog`, `completeness`) et `StatsCardView(carte, …)` les dessine : l'écran et l'image
+  partagent le même code.
+- `StatsExportButton` : `IconButton` (icône `Download`, 40 dp dessinés, aire tactile de 48 dp) dans un `TooltipBox` (`PlainTooltip` « Exporter… »),
+  `DropdownMenu` : « Tableaux (CSV) » (icône `TableView`), puis « Image : <titre> » (icône `Image`) par carte.
+- CSV : `StatsCsv.encode` puis `FileService.saveText`. Image : la carte est composée **hors écran** par
+  `OffscreenCapture` : un `Layout` de taille nulle mesure son contenu (`StatsCardImage`, 600 dp de large) sans
+  contrainte sous une densité forcée à 2 (police ×1) et le dessine **seulement** dans un `GraphicsLayer` (`drawWithContent` + `record`, jamais `drawLayer`) : rien
+  n'apparaît à l'écran. Après le premier dessin et deux images de plus (ressources chargées), `toImageBitmap()`, puis
+  `FileService.saveImage`, puis le rendu caché disparaît. Fond `surface`, marge de 16 dp, légende en `bodySmall`
+  `onSurfaceVariant` : « Kairos », date longue (`Dates.long`), période, `stats_filtered` si un filtre est actif.
+- `FileService.saveImage(nom, ImageBitmap)` encode en PNG et enregistre ; par défaut (doublures de test), il lève
+  `UnsupportedOperationException`, reçue comme une erreur de fichier. Bureau : `asSkiaBitmap` → `Image.encodeToData(PNG)`
+  → `FileDialog`. Web : même encodage Skia, puis téléchargement (`KairosWeb.downloadBase64`). Android :
+  `asAndroidBitmap` (copié en `ARGB_8888` s'il est matériel) → `Bitmap.compress(PNG)` → `CreateDocument("image/png")`.
+- `saveText` choisit le type du fichier d'après l'extension du nom : `.csv` → `text/csv`, sinon `application/json`
+  (Android : un `CreateDocument` par type ; web : type du `Blob`) ; sans cela, Android ajoutait `.json` au nom.
+
 ### Meilleures heures (`BestHours`, `core`, 3.5)
 
 Pur : tâches, sessions, instant, fuseau et réglages en paramètres (`BestHours.measure`). Sessions de la même fenêtre que le tableau de bord
@@ -168,13 +240,15 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   « Période »), puis `FilterCard` de la vue Jour (`ui/day/Filters.kt`), et, filtre actif, `stats_filtered` (« Filtré : n sur
   m tâches »). État local (`remember`) : rien n'est enregistré.
 - `StatTile` : `surfaceContainerLow`, valeur en `headlineSmall` ; seuil
-  franchi = contour `outline` et icône `Warning`. Dans chaque `FlowRow`, une
-  tuile prend `weight(1f)` et au moins 150 dp : quatre par ligne en largeur
-  bureau, deux sur un téléphone (à largeur fixe de 200 dp, un téléphone n'en
-  plaçait qu'une par ligne, écran trois fois trop long ; défaut vu sur les
-  captures des magasins, `publication.md`). `fillMaxRowHeight()` : les
-  tuiles d'une même ligne ont la même hauteur, même quand un libellé passe
-  à la ligne.
+  franchi = contour `outline` et icône `Warning`. Les quatre tuiles d'une carte
+  sont rangées par `TileFlow` (`StatsCards.kt`) : une tuile prend `weight(1f)` et
+  au moins 150 dp ; **quatre par ligne si elles tiennent (636 dp), sinon deux**
+  (`maxItemsInEachRow`), une seule si deux ne tiennent pas (à largeur fixe de
+  200 dp, un téléphone n'en plaçait qu'une par ligne, écran trois fois trop long ;
+  défaut vu sur les captures des magasins, `publication.md` ; entre 600 et 670 dp
+  environ, un rangement 3 + 1 étirait la dernière, vu sur l'image d'une carte en
+  3.7.0). `fillMaxRowHeight()` : les tuiles d'une même ligne ont la même hauteur,
+  même quand un libellé passe à la ligne.
 - `Panel` : `OutlinedCard`, icône, titre, phrase de rôle.
 - `BarRow` : libellé (96 dp), piste neutre `surfaceContainerHighest`,
   remplissage **primaire** à bouts arrondis de 4 dp, valeur écrite à
@@ -207,6 +281,21 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
 - **`remember` et non `rememberSaveable`** : `DayFilter` n'a pas de sauvegarde d'état Android ; comme la vue Jour et la
   vue Semaine, le filtre ne survit pas à la recréation de l'écran, et la vue par défaut revient en quittant les Stats.
 
+- **Un seul CSV par sections** (choix du propriétaire, issue #113) : un seul sélecteur de fichier sur Android et le
+  web ; plusieurs fichiers en auraient demandé un par tableau. Un tableur l'ouvre tel quel ; une section se copie.
+- **Virgule et point décimal** (choix du propriétaire) : CSV standard, lisible par un script ; le point-virgule
+  d'Excel en français est écarté (il n'est pas standard), le BOM permet à Excel de lire les accents.
+- **En-têtes en anglais, identifiants stables** : indépendants de la langue comme les nombres ; un en-tête traduit
+  changerait le fichier selon la langue de l'interface.
+- **Neutraliser les formules** : un type ou un texte de filtre « =… » deviendrait une formule dans un tableur ;
+  l'apostrophe en tête est la parade usuelle (OWASP « CSV injection »), au prix d'un caractère.
+- **Image d'une carte, 600 dp ×2, avec légende** (choix du propriétaire) : une image nette et de même taille sur tous
+  les appareils, que la légende replace dans son contexte (date, période, filtre) une fois collée dans un rapport ;
+  l'image de l'écran entier est écartée (trop haute pour un rapport).
+- **Rendu hors écran par `GraphicsLayer`** et non par `ImageComposeScene` (celle des captures des magasins) : elle
+  n'existe que sur le bureau ; le calque fonctionne sur les trois plateformes et ne dessine rien à l'écran.
+- **Encodage PNG par la plateforme** (`saveImage`) : Skia sur le bureau et le web, `Bitmap.compress` sur Android ;
+  un encodeur PNG maison sans compression aurait produit des fichiers de plusieurs mégaoctets.
 - **Tests différentiels en UTC, écran en fuseau local** : les fichiers d'or
   (`stats.json`) portent des horodatages UTC, lus comme tels par
   `StatsDifferentialTest` ; l'application passe le fuseau du
