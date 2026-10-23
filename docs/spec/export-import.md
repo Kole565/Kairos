@@ -172,8 +172,12 @@ JSON UTF-8 indenté :
 | Plateforme | `FileService` | `BackupStore` |
 |---|---|---|
 | Bureau | `FileDialog` AWT (enregistrer, ouvrir) | `<données>/backups/`, 10 plus récentes |
-| Android | `ActivityResultContracts.CreateDocument("application/json")` et `OpenDocument` (Storage Access Framework, aucune permission) | `files/backups/`, 10 plus récentes |
-| Web | téléchargement (`Blob` + lien) et `<input type=file>` | OPFS `backups/`, 10 plus récentes |
+| Android | `ActivityResultContracts.CreateDocument` (un par type : JSON, CSV, PNG) et `OpenDocument` (Storage Access Framework, aucune permission) | `files/backups/`, 10 plus récentes |
+| Web | téléchargement (`Blob` + lien, type d'après l'extension) et `<input type=file>` | OPFS `backups/`, 10 plus récentes |
+
+`saveText` déduit le type du fichier de l'extension du nom (`mimeOf` : `.csv` → `text/csv`, `.png` → `image/png`,
+sinon `application/json`). `saveImage` (PNG) sert à l'export des statistiques, distinct de l'export de données : il
+n'écrit qu'un fichier de lecture, jamais relu par Kairos (`statistiques.md` § Export).
 
 ### Version web
 

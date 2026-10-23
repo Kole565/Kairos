@@ -91,8 +91,17 @@
     },
 
     // --- Fichiers ponctuels (export, import) ------------------------------------
-    download(name, text) {
-      const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    download(name, text, type) {
+      globalThis.KairosWeb.downloadBlob(name, new Blob([text], { type }));
+    },
+    downloadBase64(name, base64, type) {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      globalThis.KairosWeb.downloadBlob(name, new Blob([bytes], { type }));
+    },
+    downloadBlob(name, blob) {
+      const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = name;

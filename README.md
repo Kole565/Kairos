@@ -190,7 +190,9 @@ order (critical path). Cycles are refused.
   per level, bias), time by type, flow, completeness. The sample size is
   shown; a small sample is marked "not reliable". Narrow it down by period
   (4, 8, 12 weeks or all) and with the same search and filters as the Day
-  view (type, project, priority…); nothing is saved.
+  view (type, project, priority…); nothing is saved. "Export…" saves what the
+  screen shows: the tables as one CSV file (ready for a spreadsheet), or one card
+  as a PNG image with its date, period and filter.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
   usual rhythm. This card only observes.

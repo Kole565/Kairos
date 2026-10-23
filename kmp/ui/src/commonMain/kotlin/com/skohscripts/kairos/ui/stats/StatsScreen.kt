@@ -7,8 +7,9 @@ import com.skohscripts.kairos.ui.generated.resources.stats_empty_filtered
 import com.skohscripts.kairos.ui.generated.resources.stats_filtered
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.material3.SegmentedButtonDefaults
 import com.skohscripts.kairos.ui.theme.KairosSegmentedButton
@@ -17,7 +18,17 @@ import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.LocalPlatform
 import com.skohscripts.kairos.ui.day.FilterCard
 import com.skohscripts.kairos.core.model.Settings
+import com.skohscripts.kairos.core.stats.StatsCsv
 import com.skohscripts.kairos.core.stats.StatsQuery
+import com.skohscripts.kairos.ui.app.LocalMessages
+import com.skohscripts.kairos.ui.app.fileStamp
+import com.skohscripts.kairos.ui.generated.resources.app_name
+import com.skohscripts.kairos.ui.generated.resources.file_error
+import com.skohscripts.kairos.ui.generated.resources.stats_export_done
+import com.skohscripts.kairos.ui.generated.resources.stats_image_done
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpot
 import com.skohscripts.kairos.ui.guide.MissingGuideSection
@@ -34,7 +45,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,78 +64,27 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.skohscripts.kairos.core.stats.BestHours
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
-import com.skohscripts.kairos.ui.day.duration
 import com.skohscripts.kairos.ui.generated.resources.Res
-import com.skohscripts.kairos.ui.generated.resources.stats_bias
-import com.skohscripts.kairos.ui.generated.resources.stats_bias_fair
-import com.skohscripts.kairos.ui.generated.resources.stats_bias_over
-import com.skohscripts.kairos.ui.generated.resources.stats_bias_under
-import com.skohscripts.kairos.ui.generated.resources.stats_calibration_empty
-import com.skohscripts.kairos.ui.generated.resources.stats_calibration_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_calibration_title
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_estimate
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_points
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_row
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_title
-import com.skohscripts.kairos.ui.generated.resources.stats_completeness_type
 import com.skohscripts.kairos.ui.generated.resources.stats_empty
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_empty
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_peak
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_share
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_slot
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_spread
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_title
-import com.skohscripts.kairos.ui.generated.resources.stats_hours_top
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_age
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_overdue
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_stale
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_title
-import com.skohscripts.kairos.ui.generated.resources.stats_flow_wip
-import com.skohscripts.kairos.ui.generated.resources.stats_focus
-import com.skohscripts.kairos.ui.generated.resources.stats_kpi_deadlines
-import com.skohscripts.kairos.ui.generated.resources.stats_kpi_delay
-import com.skohscripts.kairos.ui.generated.resources.stats_kpi_done
-import com.skohscripts.kairos.ui.generated.resources.stats_kpi_tracked
-import com.skohscripts.kairos.ui.generated.resources.stats_no_type
-import com.skohscripts.kairos.ui.generated.resources.stats_percent
-import com.skohscripts.kairos.ui.generated.resources.stats_sample
-import com.skohscripts.kairos.ui.generated.resources.stats_throughput_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_throughput_row
-import com.skohscripts.kairos.ui.generated.resources.stats_throughput_title
-import com.skohscripts.kairos.ui.generated.resources.stats_types_empty
-import com.skohscripts.kairos.ui.generated.resources.stats_types_hint
-import com.skohscripts.kairos.ui.generated.resources.stats_types_row
-import com.skohscripts.kairos.ui.generated.resources.stats_types_title
-import com.skohscripts.kairos.ui.generated.resources.stats_unreliable
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.round
 
 /**
- * Statistiques (docs/spec/statistiques.md), lecture seule : chiffres clés
- * de la fenêtre récente, débit hebdomadaire, calibration de l'estimation et
- * biais, répartition du temps par type et focus, flux et backlog, complétude.
- * Chaque agrégat montre son effectif ; sous 3, « peu fiable ». Barres d'une
- * seule teinte (le primaire) sur une piste neutre, valeur toujours écrite à
- * côté : l'information ne repose jamais sur la couleur seule.
+ * Statistiques (docs/spec/statistiques.md), lecture seule : la période, les filtres et « Exporter… », puis les cartes
+ * ([StatsCard]) : chiffres clés de la fenêtre récente, débit hebdomadaire, calibration de l'estimation et biais,
+ * répartition du temps par type et focus, quand on travaille chaque type, flux et backlog, complétude.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -144,13 +103,50 @@ fun StatsScreen(services: AppServices) {
     // Quand on travaille chaque type (docs/spec/planning-personnalise.md § Lot C, étape C1) : observation seule.
     val hours = remember(input) { query.hours(input, now, timeZone) }
     val projects = remember(snapshot) { snapshot.tasks.map { it.projectTag }.filter { it.isNotEmpty() }.distinct().sorted() }
+    // Export (issue #113) : ce que l'écran montre, rien n'est écrit dans la base. [capture] = carte en cours de rendu hors écran.
+    val scope = rememberCoroutineScope()
+    val messages = LocalMessages.current
+    var capture by remember { mutableStateOf<StatsCard?>(null) }
+    val caption = listOfNotNull(
+        stringResource(Res.string.app_name),
+        Dates.long(today, language),
+        periodLabel(if (input.all) StatsQuery.ALL else stats.windowWeeks),
+        if (query.filter.active) stringResource(Res.string.stats_filtered, input.tasks.size, input.total) else null,
+    ).joinToString(" · ")
 
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
+        capture?.let { card ->
+            OffscreenCapture(
+                onCaptured = { image ->
+                    capture = null
+                    scope.launch {
+                        runCatching { services.files.saveImage("kairos-stats-${card.fileKey}-${fileStamp(services)}.png", image) }
+                            .onSuccess { if (it) messages(getString(Res.string.stats_image_done)) }
+                            .onFailure { messages(getString(Res.string.file_error)) }
+                    }
+                },
+            ) { StatsCardImage({ StatsCardView(card, stats, hours, language) }, caption) }
+        }
         Column(Modifier.widthIn(max = 960.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
             // Une base vide n'a rien à filtrer : l'état vide seul.
             val filterable = snapshot.tasks.isNotEmpty() || snapshot.workSessions.isNotEmpty()
             if (filterable) {
-                PeriodRow(snapshot.settings, query.weeks) { query = query.copy(weeks = it) }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(KairosSpacing.s)) {
+                    PeriodRow(snapshot.settings, query.weeks, Modifier.weight(1f)) { query = query.copy(weeks = it) }
+                    if (stats.hasAnyData) {
+                        StatsExportButton(
+                            onCsv = {
+                                val text = StatsCsv.encode(query, input, stats, hours, today, services.clock.now())
+                                scope.launch {
+                                    runCatching { services.files.saveText("kairos-stats-${fileStamp(services)}.csv", text) }
+                                        .onSuccess { if (it) messages(getString(Res.string.stats_export_done)) }
+                                        .onFailure { messages(getString(Res.string.file_error)) }
+                                }
+                            },
+                            onImage = { capture = it },
+                        )
+                    }
+                }
                 FilterCard(
                     query.filter, filterOpen || query.filter.active, { filterOpen = !(filterOpen || query.filter.active) }, { query = query.copy(filter = it) },
                     projects, snapshot.settings.taskTypeList, remember { FocusRequester() }, LocalPlatform.current != Platform.ANDROID,
@@ -169,162 +165,16 @@ fun StatsScreen(services: AppServices) {
                 MissingGuideSection(GuideSection.STATS_HOURS)
                 return@Column
             }
-            // Tuiles souples : 4 par ligne au large, 2 sur un téléphone, jamais une seule étirée ; même hauteur par ligne.
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                val tile = Modifier.weight(1f).widthIn(min = 150.dp).fillMaxRowHeight()
-                StatTile(stats.completedInWindow.toString(), stringResource(Res.string.stats_kpi_done, stats.windowWeeks), tile)
-                StatTile(duration(stats.trackedMinutesWindow), stringResource(Res.string.stats_kpi_tracked), tile)
-                // Seuils : délai médian de plus de 7 j, moins de 70 % d'échéances tenues.
-                StatTile(stats.flow.completionDelayDays?.toString() ?: "—", stringResource(Res.string.stats_kpi_delay), tile, warn = (stats.flow.completionDelayDays ?: 0) > 7)
-                StatTile(stats.flow.deadlineHitPct?.let { stringResource(Res.string.stats_percent, it) } ?: "—", stringResource(Res.string.stats_kpi_deadlines), tile, warn = (stats.flow.deadlineHitPct ?: 100) < 70)
-            }
-
-            Panel(KairosIcons.TrendingUp, stringResource(Res.string.stats_throughput_title), stringResource(Res.string.stats_throughput_hint)) {
-                val max = stats.throughput.maxOf { it.completed }
-                stats.throughput.forEach { w ->
-                    BarRow(Dates.dayMonth(w.weekStart, language), fraction(w.completed, max), stringResource(Res.string.stats_throughput_row, w.completed, w.points))
-                }
-            }
-
-            Panel(KairosIcons.Schedule, stringResource(Res.string.stats_calibration_title), stringResource(Res.string.stats_calibration_hint)) {
-                if (stats.calibration.isEmpty()) {
-                    Muted(stringResource(Res.string.stats_calibration_empty))
+            StatsCard.entries.forEach { card ->
+                if (card == StatsCard.HOURS) {
+                    // Panneau que la carte « Quand tu travailles chaque type » fait voir (docs/spec/visite-guidee.md, issue #95).
+                    GuideSpot(GuideSection.STATS_HOURS) { StatsCardView(card, stats, hours, language) }
                 } else {
-                    val max = stats.calibration.maxOf { it.medianMinutes ?: 0 }
-                    stats.calibration.forEach { c ->
-                        val sample = stringResource(if (c.reliable) Res.string.stats_sample else Res.string.stats_unreliable, c.count)
-                        BarRow("${c.key} pts", fraction(c.medianMinutes ?: 0, max), "${duration(c.medianMinutes ?: 0)} · $sample", warn = !c.reliable)
-                    }
-                }
-                stats.bias?.let { b ->
-                    val verdict = when {
-                        b.ratio > 1.1 -> Res.string.stats_bias_under
-                        b.ratio < 0.9 -> Res.string.stats_bias_over
-                        else -> Res.string.stats_bias_fair
-                    }
-                    val sample = stringResource(if (b.reliable) Res.string.stats_sample else Res.string.stats_unreliable, b.count)
-                    // Biais important (hors ×0,8–×1,25) : icône d'alerte, comme le badge « à surveiller ».
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                        if (b.ratio > 1.25 || b.ratio < 0.8) {
-                            Icon(KairosIcons.Warning, contentDescription = null, modifier = Modifier.size(18.dp).padding(end = 4.dp))
-                        }
-                        Text(
-                            stringResource(Res.string.stats_bias, twoDecimals(b.ratio), duration(b.realMinutes), duration(b.estimatedMinutes), sample) +
-                                " " + stringResource(verdict),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                }
-            }
-
-            Panel(KairosIcons.Layers, stringResource(Res.string.stats_types_title), stringResource(Res.string.stats_types_hint, stats.windowWeeks)) {
-                if (stats.timeByType.isEmpty()) {
-                    Muted(stringResource(Res.string.stats_types_empty))
-                } else {
-                    val noType = stringResource(Res.string.stats_no_type)
-                    stats.timeByType.forEach { t ->
-                        BarRow(t.key.ifEmpty { noType }, t.pct / 100f, stringResource(Res.string.stats_types_row, duration(t.minutes), t.pct))
-                    }
-                    stats.focus.avgSessionMinutes?.let {
-                        Text(stringResource(Res.string.stats_focus, stats.focus.sessionCount, duration(it)), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
-                    }
-                }
-            }
-
-            // Panneau que la carte « Quand tu travailles chaque type » fait voir (docs/spec/visite-guidee.md, issue #95).
-            GuideSpot(GuideSection.STATS_HOURS) {
-                Panel(KairosIcons.Schedule, stringResource(Res.string.stats_hours_title), stringResource(Res.string.stats_hours_hint, stats.windowWeeks)) {
-                    if (!hours.hasData) {
-                        Muted(stringResource(Res.string.stats_hours_empty))
-                    } else {
-                        val noType = stringResource(Res.string.stats_no_type)
-                        hours.profiles.forEach { profile -> HoursProfile(profile, profile.type.ifEmpty { noType }, language) }
-                    }
-                }
-            }
-
-            Panel(KairosIcons.Inbox, stringResource(Res.string.stats_flow_title), stringResource(Res.string.stats_flow_hint)) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val tile = Modifier.weight(1f).widthIn(min = 150.dp).fillMaxRowHeight()
-                    StatTile(stats.flow.openCount.toString(), stringResource(Res.string.stats_flow_wip), tile, nested = true)
-                    StatTile(stats.flow.medianAgeDays?.toString() ?: "—", stringResource(Res.string.stats_flow_age), tile, nested = true)
-                    StatTile(stats.flow.overdueCount.toString(), stringResource(Res.string.stats_flow_overdue), tile, warn = stats.flow.overdueCount > 0, nested = true)
-                    StatTile(stats.flow.staleCount.toString(), stringResource(Res.string.stats_flow_stale), tile, warn = stats.flow.staleCount > 0, nested = true)
-                }
-            }
-
-            Panel(KairosIcons.CheckCircle, stringResource(Res.string.stats_completeness_title), stringResource(Res.string.stats_completeness_hint)) {
-                val c = stats.completeness
-                listOf(
-                    Triple(Res.string.stats_completeness_points, c.pointsPct, c.withPoints),
-                    Triple(Res.string.stats_completeness_estimate, c.estimatePct, c.withEstimate),
-                    Triple(Res.string.stats_completeness_type, c.typePct, c.withType),
-                ).forEach { (label, pct, n) ->
-                    BarRow(stringResource(label), pct / 100f, stringResource(Res.string.stats_completeness_row, pct, n, c.total))
+                    StatsCardView(card, stats, hours, language)
                 }
             }
         }
     }
-}
-
-/**
- * Le profil horaire d'un type : son nom et ses effectifs (« peu fiable » sous le seuil, avec l'icône d'alerte), la tranche de pointe écrite
- * (part de son temps et lift), les trois plus grandes parts écrites, puis une frise de douze barres d'une seule teinte (une par tranche de
- * 2 h, de minuit à minuit). Aucune barre sans sa valeur écrite : la frise illustre le texte, elle ne le remplace pas.
- */
-@Composable
-private fun HoursProfile(profile: BestHours.Profile, name: String, language: String) {
-    @Composable
-    fun slot(bucket: Int) = stringResource(Res.string.stats_hours_slot, Dates.hour(BestHours.startHour(bucket), language), Dates.hour(BestHours.startHour(bucket) + BestHours.BUCKET_HOURS, language))
-    val sample = stringResource(if (profile.reliable) Res.string.stats_sample else Res.string.stats_unreliable, profile.sessions) + " · " + duration(profile.minutes)
-    val maxShare = profile.share.max().coerceAtLeast(0.0001)
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(name, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f, fill = false))
-            if (!profile.reliable) Icon(KairosIcons.Warning, contentDescription = null, modifier = Modifier.size(14.dp))
-            Text(sample, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        val peak = profile.peak
-        Text(
-            if (peak != null) {
-                stringResource(Res.string.stats_hours_peak, slot(peak), round(profile.share[peak] * 100).toInt(), oneDecimal(profile.lift[peak]))
-            } else {
-                stringResource(Res.string.stats_hours_spread)
-            },
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Row(
-            Modifier.fillMaxWidth().height(36.dp).clearAndSetSemantics { },
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            profile.share.forEach { share ->
-                Box(Modifier.weight(1f).height((36 * (share / maxShare)).coerceAtLeast(2.0).dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
-            }
-        }
-        // Les barres portent leur valeur écrite : les trois plus grandes parts.
-        val top = profile.share.indices.sortedByDescending { profile.share[it] }.take(3).filter { profile.share[it] > 0 }
-        val topShares = top.map { stringResource(Res.string.stats_hours_share, slot(it), round(profile.share[it] * 100).toInt()) }
-        Text(
-            stringResource(Res.string.stats_hours_top, topShares.joinToString(" · ")),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-private fun oneDecimal(x: Double): String {
-    val tenths = round(x * 10).toLong()
-    return "${tenths / 10}.${tenths % 10}"
-}
-
-private fun fraction(value: Int, max: Int): Float = if (max <= 0) 0f else value.toFloat() / max
-
-private fun twoDecimals(x: Double): String {
-    val r = round(x * 100) / 100
-    val whole = r.toLong()
-    val cents = round((r - whole) * 100).toInt()
-    return "$whole.${cents.toString().padStart(2, '0')}"
 }
 
 /**
@@ -478,7 +328,7 @@ internal fun BarRow(
 }
 
 @Composable
-private fun Muted(text: String) {
+internal fun Muted(text: String) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
@@ -487,24 +337,24 @@ private fun Muted(text: String) {
  * pas), « Tout ». [weeks] nul = la fenêtre des réglages, choisie d'office.
  */
 @Composable
-private fun PeriodRow(settings: Settings, weeks: Int?, onChange: (Int?) -> Unit) {
+private fun PeriodRow(settings: Settings, weeks: Int?, modifier: Modifier, onChange: (Int?) -> Unit) {
     val options = remember(settings.statsWindowWeeks) { StatsQuery.periodOptions(settings) }
     val chosen = weeks ?: maxOf(1, settings.statsWindowWeeks)
     val label = stringResource(Res.string.stats_period)
-    KairosSegmentedRow(Modifier.fillMaxWidth().semantics { contentDescription = label }) {
+    KairosSegmentedRow(modifier.semantics { contentDescription = label }) {
         options.forEachIndexed { index, option ->
             KairosSegmentedButton(
                 selected = chosen == option,
                 // La fenêtre des réglages redevient la vue par défaut (weeks nul) : identique à celle d'avant les filtres.
                 onClick = { onChange(if (option == maxOf(1, settings.statsWindowWeeks)) null else option) },
                 shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                label = {
-                    Text(
-                        if (option == StatsQuery.ALL) stringResource(Res.string.stats_period_all) else stringResource(Res.string.stats_period_weeks, option),
-                        maxLines = 1,
-                    )
-                },
+                label = { Text(periodLabel(option), maxLines = 1) },
             )
         }
     }
 }
+
+/** « 8 sem. », ou « Tout » pour [StatsQuery.ALL] : la ligne de la période et la légende des images. */
+@Composable
+private fun periodLabel(weeks: Int): String =
+    if (weeks == StatsQuery.ALL) stringResource(Res.string.stats_period_all) else stringResource(Res.string.stats_period_weeks, weeks)

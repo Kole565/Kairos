@@ -202,6 +202,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   est affiché ; un petit échantillon est marqué « peu fiable ». À resserrer par
   période (4, 8, 12 semaines ou tout) et avec la même recherche et les mêmes
   filtres que la vue Jour (type, projet, priorité…) ; rien n’est enregistré.
+  « Exporter… » enregistre ce que l’écran montre : les tableaux dans un fichier
+  CSV (prêt pour un tableur), ou une carte en image PNG avec sa date, sa période
+  et son filtre.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
   chrono), comparées à ton rythme habituel. Cette carte observe seulement.

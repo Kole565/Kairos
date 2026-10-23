@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.app
 
+import androidx.compose.ui.graphics.ImageBitmap
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.ui.team.forecast.TeamUiState
 import kotlin.time.Clock
@@ -42,11 +43,29 @@ class AppServices(
 
 /** Choix d'un fichier par l'utilisateur (boîtes de dialogue du système). */
 interface FileService {
-    /** Propose d'enregistrer [text] ; `false` si l'utilisateur annule. */
+    /**
+     * Propose d'enregistrer [text] ; `false` si l'utilisateur annule. Le type du fichier suit l'extension du nom
+     * ([mimeOf]) : sans cela, Android ajoutait `.json` à un `.csv`.
+     */
     suspend fun saveText(suggestedName: String, text: String): Boolean
+
+    /**
+     * Propose d'enregistrer [image] en PNG (image d'une carte des Stats, docs/spec/statistiques.md § Export) ; `false`
+     * si l'utilisateur annule. L'encodage est celui de la plateforme. Les doublures de test qui ne l'implémentent pas
+     * lèvent une erreur, reçue comme une erreur de fichier.
+     */
+    suspend fun saveImage(suggestedName: String, image: ImageBitmap): Boolean =
+        throw UnsupportedOperationException("saveImage")
 
     /** Propose d'ouvrir un fichier texte ; `null` si l'utilisateur annule. */
     suspend fun openText(): String?
+}
+
+/** Type MIME d'un fichier enregistré, d'après l'extension de [name] : `.csv`, `.png`, sinon JSON (l'export de données). */
+fun mimeOf(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
+    "csv" -> "text/csv"
+    "png" -> "image/png"
+    else -> "application/json"
 }
 
 /** Sauvegardes automatiques (avant un import) : garde les plus récentes. */

@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.web
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import app.cash.sqldelight.driver.worker.WebWorkerDriver
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.core.KairosBuild
@@ -13,6 +15,7 @@ import com.skohscripts.kairos.ui.app.FileService
 import com.skohscripts.kairos.ui.app.LinkedFileState
 import com.skohscripts.kairos.ui.app.LinkedStorage
 import com.skohscripts.kairos.ui.app.OpenedFile
+import com.skohscripts.kairos.ui.app.mimeOf
 import kotlinx.browser.window
 import kotlinx.coroutines.await
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +23,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import org.w3c.dom.Worker
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Clock
 
 /**
@@ -74,7 +81,16 @@ object WebServices {
 /** Export : téléchargement ; import : sélecteur de fichier du navigateur. */
 private object BrowserFiles : FileService {
     override suspend fun saveText(suggestedName: String, text: String): Boolean {
-        KairosWeb.download(suggestedName, text)
+        KairosWeb.download(suggestedName, text, mimeOf(suggestedName))
+        return true
+    }
+
+    /** PNG par Skia (le moteur de rendu de Compose dans le navigateur), puis téléchargement. */
+    @OptIn(ExperimentalEncodingApi::class)
+    override suspend fun saveImage(suggestedName: String, image: ImageBitmap): Boolean {
+        val png = checkNotNull(Image.makeFromBitmap(image.asSkiaBitmap()).encodeToData(EncodedImageFormat.PNG)) { "encodage PNG" }.bytes
+        // Base64 : une chaîne passe la frontière wasm/JS sans recopie octet par octet.
+        KairosWeb.downloadBase64(suggestedName, Base64.encode(png), "image/png")
         return true
     }
 

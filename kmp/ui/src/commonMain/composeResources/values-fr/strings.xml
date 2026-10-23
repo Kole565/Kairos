@@ -1359,4 +1359,10 @@
     <string name="stats_period_all">Tout</string>
     <string name="stats_filtered">Filtré : %1$d sur %2$d tâches</string>
     <string name="stats_empty_filtered">Rien pour ce filtre. Change-le ou réinitialise-le plus haut.</string>
+    <string name="stats_key_figures">Chiffres clés</string>
+    <string name="stats_export">Exporter…</string>
+    <string name="stats_export_csv">Tableaux (CSV)</string>
+    <string name="stats_export_image">Image : %1$s</string>
+    <string name="stats_export_done">Statistiques exportées.</string>
+    <string name="stats_image_done">Image enregistrée.</string>
 </resources>

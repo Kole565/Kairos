@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.android
 
 import android.content.Context
+import androidx.compose.ui.graphics.ImageBitmap
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.FileService
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +26,9 @@ object KairosProcess {
     private val files = object : FileService {
         override suspend fun saveText(suggestedName: String, text: String) =
             withContext(Dispatchers.Main) { activity?.saveText(suggestedName, text) ?: false }
+
+        override suspend fun saveImage(suggestedName: String, image: ImageBitmap) =
+            withContext(Dispatchers.Main) { activity?.saveImage(suggestedName, image) ?: false }
 
         override suspend fun openText() = withContext(Dispatchers.Main) { activity?.openText() }
     }

@@ -12,7 +12,8 @@ external object KairosWeb : JsAny {
     fun opfsWrite(name: String, text: String): Promise<JsAny?>
     fun opfsBackup(name: String, text: String, keep: Int): Promise<JsAny?>
     fun persist(): Promise<JsBoolean>
-    fun download(name: String, text: String)
+    fun download(name: String, text: String, type: String)
+    fun downloadBase64(name: String, base64: String, type: String)
     fun pickText(): Promise<JsString?>
     fun linkSupported(): Boolean
     fun linkState(): Promise<JsString>

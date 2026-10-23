@@ -2,6 +2,7 @@ package com.skohscripts.kairos.android
 
 import android.Manifest
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -10,16 +11,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
 import com.skohscripts.kairos.ui.KairosApp
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.CrashReportScreen
 import com.skohscripts.kairos.ui.app.FileService
+import com.skohscripts.kairos.ui.app.mimeOf
 import com.skohscripts.kairos.ui.theme.KairosTheme
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 /** Seule activité : l'interface Compose commune, bord à bord (docs/spec/distribution.md § Android). */
 class MainActivity : ComponentActivity(), FileService {
@@ -28,9 +33,10 @@ class MainActivity : ComponentActivity(), FileService {
     private var pendingSave: CompletableDeferred<Uri?>? = null
     private var pendingOpen: CompletableDeferred<Uri?>? = null
 
-    // Sélecteurs du système (Storage Access Framework) : aucune permission de stockage.
-    private val createDocument = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
-        pendingSave?.complete(it)
+    // Sélecteurs du système (Storage Access Framework) : aucune permission de stockage. Un par type de fichier : le
+    // type fixe l'extension que le fournisseur ajoute au nom (un `.csv` enregistré en JSON devenait `.csv.json`).
+    private val createDocument = listOf("application/json", "text/csv", "image/png").associateWith { mime ->
+        registerForActivityResult(ActivityResultContracts.CreateDocument(mime)) { pendingSave?.complete(it) }
     }
     private val openDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) {
         pendingOpen?.complete(it)
@@ -89,12 +95,21 @@ class MainActivity : ComponentActivity(), FileService {
         result.await()
     }
 
-    override suspend fun saveText(suggestedName: String, text: String): Boolean {
+    override suspend fun saveText(suggestedName: String, text: String): Boolean = saveBytes(suggestedName) { text.toByteArray() }
+
+    /** PNG par `Bitmap.compress` ; un bitmap matériel (rendu du calque) est d'abord copié en mémoire. */
+    override suspend fun saveImage(suggestedName: String, image: ImageBitmap): Boolean = saveBytes(suggestedName) {
+        val bitmap = image.asAndroidBitmap().let { if (it.config == Bitmap.Config.HARDWARE) it.copy(Bitmap.Config.ARGB_8888, false) else it }
+        ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+    }
+
+    private suspend fun saveBytes(suggestedName: String, bytes: () -> ByteArray): Boolean {
         val result = CompletableDeferred<Uri?>().also { pendingSave = it }
-        createDocument.launch(suggestedName)
+        createDocument.getValue(mimeOf(suggestedName)).launch(suggestedName)
         val uri = result.await() ?: return false
         withContext(Dispatchers.IO) {
-            contentResolver.openOutputStream(uri, "wt")!!.use { it.write(text.toByteArray()) }
+            val data = bytes()
+            contentResolver.openOutputStream(uri, "wt")!!.use { it.write(data) }
         }
         return true
     }
