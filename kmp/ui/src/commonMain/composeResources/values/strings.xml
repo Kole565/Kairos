@@ -430,6 +430,9 @@
     <string name="update_later">Later</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="theme_help">Kairos’s whole theme is derived from this color, contrasts included. Red stays reserved for urgent items and errors, green for what is done.</string>
+    <string name="theme_dark">Dark theme</string>
+    <string name="theme_dark_system">Follows the system.</string>
+    <string name="theme_dark_chosen">Chosen here: switch it back to follow the system again.</string>
     <string name="settings_section_language">Language</string>
     <string name="language_help">By default, Kairos follows the system language: French if the system is in French, English otherwise.</string>
     <string name="language_system">System</string>

@@ -31,7 +31,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   qu'elle contient). Toucher une catégorie ouvre son écran ; ses cartes s'y suivent, chacune avec son icône à côté du
   titre. Les catégories, dans cet ordre, et leurs cartes :
   1. **Général** (« Langue, apparence », « …, mises à jour » sur le bureau) : **Langue** (Système, Français ou
-     English ; `i18n.md` § Choix de la langue), **Apparence** (couleur du thème, `apparence.md`), puis sur le
+     English ; `i18n.md` § Choix de la langue), **Apparence** (thème sombre et couleur du thème, `apparence.md`), puis sur le
      bureau **Mises à jour** (`mises-a-jour.md`) et sur une copie portable **Raccourci** (`raccourci-portable.md`).
   2. **Journée et horaires** : **Journée de travail** (durée par défaut d'une tâche, marge après un créneau occupé,
      début et fin de journée), **Horaires par jour de la semaine** (3.4, lot B1 : pour chaque jour, « Comme

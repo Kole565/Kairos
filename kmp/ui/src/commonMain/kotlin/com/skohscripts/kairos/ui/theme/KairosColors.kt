@@ -1,6 +1,7 @@
 // GÉNÉRÉ par kmp/tools/make_theme.py (graine #C28417, Tonal spot, spec 2021) : ne pas éditer.
 package com.skohscripts.kairos.ui.theme
 
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
@@ -41,4 +42,43 @@ internal val KairosLightColors = lightColorScheme(
     surfaceContainerLow = Color(0xFFFEF1E5),
     surfaceContainerLowest = Color(0xFFFFFFFF),
     surfaceDim = Color(0xFFE4D8CC),
+)
+
+internal val KairosDarkColors = darkColorScheme(
+    primary = Color(0xFFF4BD6F),
+    onPrimary = Color(0xFF452B00),
+    primaryContainer = Color(0xFF624000),
+    onPrimaryContainer = Color(0xFFFFDDB3),
+    inversePrimary = Color(0xFF7F5610),
+    secondary = Color(0xFFDDC2A1),
+    onSecondary = Color(0xFF3E2D16),
+    secondaryContainer = Color(0xFF56442A),
+    onSecondaryContainer = Color(0xFFFADEBC),
+    tertiary = Color(0xFFB8CEA1),
+    onTertiary = Color(0xFF243515),
+    tertiaryContainer = Color(0xFF3A4C2A),
+    onTertiaryContainer = Color(0xFFD4EABC),
+    background = Color(0xFF18120B),
+    onBackground = Color(0xFFEDE0D4),
+    surface = Color(0xFF18120B),
+    onSurface = Color(0xFFEDE0D4),
+    surfaceVariant = Color(0xFF4F4539),
+    onSurfaceVariant = Color(0xFFD3C4B4),
+    surfaceTint = Color(0xFFF4BD6F),
+    inverseSurface = Color(0xFFEDE0D4),
+    inverseOnSurface = Color(0xFF362F27),
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    outline = Color(0xFF9C8F80),
+    outlineVariant = Color(0xFF4F4539),
+    scrim = Color(0xFF000000),
+    surfaceBright = Color(0xFF3F3830),
+    surfaceContainer = Color(0xFF251F17),
+    surfaceContainerHigh = Color(0xFF2F2921),
+    surfaceContainerHighest = Color(0xFF3B342B),
+    surfaceContainerLow = Color(0xFF201B13),
+    surfaceContainerLowest = Color(0xFF120D07),
+    surfaceDim = Color(0xFF18120B),
 )

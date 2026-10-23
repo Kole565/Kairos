@@ -123,7 +123,8 @@ Compose correspondant avant d'en inventer un. Détail complet :
   `#C28417`**, la couleur du logo : primaire `#7F5610`, conteneur primaire
   `#FFDDB3`, conteneur secondaire `#FADEBC`, tertiaire (sauge) `#D4EABC`, erreur
   `#BA1A1A` / `#FFDAD6`, surface `#FFF8F4`, texte `#201B13` / `#4F4539`,
-  contours `#817567` / `#D3C4B4`, surface inverse `#362F27`.
+  contours `#817567` / `#D3C4B4`, surface inverse `#362F27` (valeurs du thème
+  clair ; le sombre en est généré, surface `#18120B`).
 - Couleurs par `MaterialTheme.colorScheme` et `LocalKairosExtraColors`
   uniquement, **jamais de `Color(0x…)` dans un composant** (seule exception :
   les pastilles de la carte Apparence, qui montrent la graine elle-même). Le
@@ -135,8 +136,9 @@ Compose correspondant avant d'en inventer un. Détail complet :
   score WSJF en chiffre primaire sans pastille ; rouge seulement pour P0, les
   erreurs et les dépassements ; tertiaire seulement pour le deep work ; vert
   « ok » (couleur personnalisée) pour le fait ; sélection en
-  `secondaryContainer` ; sombre (surface inverse) seulement pour la carte
-  « En ce moment » et la snackbar d'alerte. Tout le reste est neutre.
+  `secondaryContainer` ; surface inverse (sombre en thème clair, claire en
+  thème sombre) seulement pour la carte « En ce moment » et la snackbar
+  d'alerte. Tout le reste est neutre.
 - **Pas d'ambre** : indiscernable du miel. Les états « à surveiller » passent
   par la forme (contour + icône) ; le conteneur d'erreur est réservé aux vrais
   échecs.
@@ -144,8 +146,12 @@ Compose correspondant avant d'en inventer un. Détail complet :
   autre (Réglages → Apparence, `docs/spec/apparence.md`), dont tout le schéma
   est recalculé par le même algorithme (`ThemeColors`). Un composant ne
   suppose donc jamais le miel.
-- Un seul thème clair pour l'instant (le schéma sombre se générerait depuis la
-  même graine).
+- Thème **clair et sombre**, générés de la même graine par le même algorithme
+  (`make_theme.py` : `KairosLightColors`, `KairosDarkColors`) ; Kairos suit le
+  système, un interrupteur à deux états choisit l'autre (`docs/spec/apparence.md`).
+  Un composant ne suppose jamais le clair : rôles de `MaterialTheme.colorScheme`
+  seulement ; ce qui doit rester clair (image exportée) passe par
+  `LocalLightColorScheme`.
 
 ## Typographie & icônes
 - **Roboto** 400/500/700, embarquée dans `composeResources/font/` : jamais de

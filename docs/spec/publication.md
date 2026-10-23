@@ -28,9 +28,10 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 ### Comportement attendu (utilisateur)
 
 - Dans F-Droid, une fiche en **français et en anglais** : nom,
-  résumé d'une ligne, description, icône, huit captures d'un téléphone
+  résumé d'une ligne, description, icône, neuf captures d'un téléphone
   (Jour, Semaine, Statistiques, Notes, Réglages, puis, gestion d'équipe
-  activée : Suivi, Équipe avec la charge, Prévisions avec un résultat),
+  activée : Suivi, Équipe avec la charge, Prévisions avec un résultat, enfin
+  la vue Jour en thème sombre, `apparence.md`),
   notes de version. La description présente aussi la gestion d'équipe,
   facultative, échanges par fichier compris.
 - L'APK distribué par F-Droid est **le même** que celui des releases GitHub
@@ -99,7 +100,8 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   textes tactiles) en 1080 × 2400 px, densité 2,625 (téléphone de 411 dp de
   large), pour Jour, Semaine, Statistiques, Notes et Réglages (1 à 5), puis,
   sur une base où la gestion d'équipe est activée, Suivi, Équipe (charge) et
-  Prévisions (6 à 8, `equipe.md`), en `fr-FR` (`Locale.FRANCE`) puis `en-US`
+  Prévisions (6 à 8, `equipe.md`), puis la vue Jour de la capture 1, système en sombre (9, `apparence.md` § Thème
+  sombre ; 1 à 8 imposent un système clair, `systemDark = false`), en `fr-FR` (`Locale.FRANCE`) puis `en-US`
   (`Locale.US`). Les captures 1 à 5 restent celles du mode solo : le jeu de
   l'équipe vit dans une seconde base, pour que les écrans personnels
   n'en montrent rien.
@@ -207,7 +209,7 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   réaliste, temps réel), cartes de téléchargement (Android : APK ; Windows :
   MSI et zip portable ; Linux : `.deb` et `.tar.gz` ; macOS : DMG Apple
   Silicon et Intel ; navigateur), lien vers les releases et `SHA256SUMS`,
-  captures (défilement horizontal), notes de première installation, pied de
+  captures 1 à 5 et 9, le thème sombre (défilement horizontal), notes de première installation, pied de
   page (licence, source, tickets).
 - Marqueurs remplacés par `pages.yml` : `@@DL@@` (base des téléchargements),
   `@@WEB@@` (`app/` ou `preview/`), `@@NOTICE_FR@@` et `@@NOTICE_EN@@`

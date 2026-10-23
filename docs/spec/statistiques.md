@@ -45,7 +45,8 @@ Destination « Stats », en lecture seule. En tête (3.7.0, issue #114) :
   - « Image : <titre de la carte> », pour chacune des sept cartes (chiffres clés, débit, calibration, où va le temps,
     quand tu travailles chaque type, flux et backlog, complétude) : un fichier
     `kairos-stats-<carte>-AAAAMMJJ-HHMM.png` de la carte seule, rendue hors écran à **600 dp de large, densité ×2**,
-    quel que soit l'appareil, sur le fond de l'écran, avec en pied une légende « Kairos · vendredi 23 octobre 2026 ·
+    quel que soit l'appareil, toujours en thème **clair** de la même graine (même quand l'écran est sombre,
+    `apparence.md` § Thème sombre), avec en pied une légende « Kairos · vendredi 23 octobre 2026 ·
     8 sem. · Filtré : 12 sur 40 tâches » (le filtre seulement s'il est actif).
 
   Le fichier passe par la boîte d'enregistrement du système (téléchargement dans le navigateur), comme l'export de
@@ -203,7 +204,7 @@ objets que l'écran (`StatsQuery.Input`, `TaskStats.Dashboard`, `BestHours.Resul
 - CSV : `StatsCsv.encode` puis `FileService.saveText`. Image : la carte est composée **hors écran** par
   `OffscreenCapture` : un `Layout` de taille nulle mesure son contenu (`StatsCardImage`, 600 dp de large) sans
   contrainte sous une densité forcée à 2 (police ×1) et le dessine **seulement** dans un `GraphicsLayer` (`drawWithContent` + `record`, jamais `drawLayer`) : rien
-  n'apparaît à l'écran. Après le premier dessin et deux images de plus (ressources chargées), `toImageBitmap()`, puis
+  n'apparaît à l'écran ; `StatsCardImage` se redessine dans `KairosTheme(LocalLightColorScheme)`. Après le premier dessin et deux images de plus (ressources chargées), `toImageBitmap()`, puis
   `FileService.saveImage`, puis le rendu caché disparaît. Fond `surface`, marge de 16 dp, légende en `bodySmall`
   `onSurfaceVariant` : « Kairos », date longue (`Dates.long`), période, `stats_filtered` si un filtre est actif.
 - `FileService.saveImage(nom, ImageBitmap)` encode en PNG et enregistre ; par défaut (doublures de test), il lève

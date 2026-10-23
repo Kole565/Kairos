@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.ui.theme
 
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.materialkolor.dynamiccolor.ColorSpec
@@ -41,27 +42,30 @@ object ThemeColors {
     )
 
     /**
-     * Schéma de [themeColor] : les couleurs du système si demandé et fournies
-     * ([system]), les valeurs générées de la charte pour le miel, le schéma
-     * calculé sinon ; le miel pour une valeur illisible.
+     * Schéma de [themeColor], clair ou sombre ([dark], docs/spec/apparence.md § Thème sombre) : les couleurs du système si
+     * demandé et fournies ([system]), les valeurs générées de la charte pour le miel, le schéma calculé sinon ; le miel
+     * pour une valeur illisible.
      */
-    fun schemeFor(themeColor: String, system: ColorScheme?): ColorScheme {
-        if (themeColor == Settings.SYSTEM_THEME && system != null) return system
-        val rgb = SettingsForm.parseColor(themeColor) ?: return KairosLightColors
-        if (rgb == SettingsForm.parseColor(Settings.DEFAULT_THEME_COLOR)) return KairosLightColors
-        return seedScheme(rgb)
+    fun schemeFor(themeColor: String, system: ((dark: Boolean) -> ColorScheme)?, dark: Boolean = false): ColorScheme {
+        if (themeColor == Settings.SYSTEM_THEME && system != null) return system(dark)
+        val honey = if (dark) KairosDarkColors else KairosLightColors
+        val rgb = SettingsForm.parseColor(themeColor) ?: return honey
+        if (rgb == SettingsForm.parseColor(Settings.DEFAULT_THEME_COLOR)) return honey
+        return seedScheme(rgb, dark)
     }
 
-    /** Les 36 rôles MD3 du schéma Tonal spot (spec 2021, clair, contraste standard) de la graine [rgb]. */
-    fun seedScheme(rgb: Int): ColorScheme {
+    /** Les 36 rôles MD3 du schéma Tonal spot (spec 2021, contraste standard), clair ou sombre, de la graine [rgb]. */
+    fun seedScheme(rgb: Int, dark: Boolean = false): ColorScheme {
         val s = SchemeTonalSpot(
             sourceColorHct = Hct.fromInt(0xFF000000.toInt() or rgb),
-            isDark = false,
+            isDark = dark,
             contrastLevel = 0.0,
             specVersion = ColorSpec.SpecVersion.SPEC_2021,
         )
         fun c(argb: Int) = Color(argb)
-        return lightColorScheme(
+        // Les 36 rôles calculés remplacent ceux du schéma de base ; la base (claire ou sombre) ne fournit que les rôles
+        // hors calcul (couleurs fixes).
+        return (if (dark) darkColorScheme() else lightColorScheme()).copy(
             primary = c(s.primary),
             onPrimary = c(s.onPrimary),
             primaryContainer = c(s.primaryContainer),

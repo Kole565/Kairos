@@ -29,6 +29,11 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.settings.FieldError
 import com.skohscripts.kairos.core.settings.SettingsForm
+import com.skohscripts.kairos.core.settings.ThemeMode
+import com.skohscripts.kairos.ui.generated.resources.theme_dark
+import com.skohscripts.kairos.ui.generated.resources.theme_dark_chosen
+import com.skohscripts.kairos.ui.generated.resources.theme_dark_system
+import com.skohscripts.kairos.ui.theme.LocalSystemDark
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.settings_error_color
 import com.skohscripts.kairos.ui.generated.resources.settings_section_appearance
@@ -43,18 +48,27 @@ import com.skohscripts.kairos.ui.theme.ThemeColors
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Apparence (docs/spec/apparence.md) : pastilles des graines proposées
- * (« Couleurs du système » en tête là où la plateforme en fournit) et champ
- * de couleur libre, tous liés au réglage `themeColor` du formulaire
- * (enregistré avec le reste, par « Enregistrer »).
+ * Apparence (docs/spec/apparence.md) : interrupteur « Thème sombre » à deux états (réglage `themeMode`), pastilles des
+ * graines proposées (« Couleurs du système » en tête là où la plateforme en fournit) et champ de couleur libre (réglage
+ * `themeColor`), enregistrés avec le reste par « Enregistrer ».
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun AppearanceCard(value: String, error: FieldError?, onChange: (String) -> Unit) {
+internal fun AppearanceCard(mode: String, value: String, error: FieldError?, onModeChange: (String) -> Unit, onChange: (String) -> Unit) {
     val system = LocalSystemColorScheme.current
+    val systemDark = LocalSystemDark.current
     val chosen = SettingsForm.normalizeColor(value)
     SettingsCard(spacing = KairosSpacing.m) {
         SettingsCardHeader(KairosIcons.Palette, stringResource(Res.string.settings_section_appearance), stringResource(Res.string.theme_help))
+        // Deux états à l'écran (issue #72) : le thème affiché ; le rebasculer vers celui du système revient à le suivre.
+        Column {
+            SwitchRow(ThemeMode.isDark(mode, systemDark), stringResource(Res.string.theme_dark)) { onModeChange(ThemeMode.toggled(it, systemDark)) }
+            Text(
+                stringResource(if (ThemeMode.normalize(mode) == Settings.THEME_MODE_SYSTEM) Res.string.theme_dark_system else Res.string.theme_dark_chosen),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             if (system != null) {
                 Swatch(system.primary, stringResource(Res.string.theme_system), chosen == Settings.SYSTEM_THEME) { onChange(Settings.SYSTEM_THEME) }

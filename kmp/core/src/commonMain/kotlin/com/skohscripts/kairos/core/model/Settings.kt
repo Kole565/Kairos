@@ -42,6 +42,8 @@ data class Settings(
     val updateCheckEnabled: Boolean = true,
     /** Graine du thème `#RRGGBB`, ou [SYSTEM_THEME] (docs/spec/apparence.md). */
     val themeColor: String = DEFAULT_THEME_COLOR,
+    /** Thème : [THEME_MODE_SYSTEM] (suit le système), [THEME_MODE_LIGHT] ou [THEME_MODE_DARK] (docs/spec/apparence.md, issue #72). */
+    val themeMode: String = THEME_MODE_SYSTEM,
     /** Langue de l'interface : [LANGUAGE_SYSTEM] (suit le système), [LANGUAGE_FR] ou [LANGUAGE_EN] (docs/spec/i18n.md). */
     val language: String = LANGUAGE_SYSTEM,
     /**
@@ -80,6 +82,11 @@ data class Settings(
 
         /** Couleurs du système (Android 12 et plus), à défaut le miel. */
         const val SYSTEM_THEME = "system"
+
+        /** Thème : celui du système (sombre si le système l'est), ou choisi. */
+        const val THEME_MODE_SYSTEM = "system"
+        const val THEME_MODE_LIGHT = "light"
+        const val THEME_MODE_DARK = "dark"
 
         /** Langue de l'interface : celle du système (français si le système est en français, anglais sinon). */
         const val LANGUAGE_SYSTEM = "system"

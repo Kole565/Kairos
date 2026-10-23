@@ -202,6 +202,7 @@ object FeatureCatalog {
         "Your personal work counts" to "team_members",
         "File exchanges" to "team_exchanges",
         "Theme color" to "settings",
+        "Dark theme" to "settings",
         "Guided first task" to "first_task",
         "Discover Kairos" to "discover",
     )

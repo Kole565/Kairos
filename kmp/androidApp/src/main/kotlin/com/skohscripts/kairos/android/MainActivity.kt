@@ -3,14 +3,18 @@ package com.skohscripts.kairos.android
 import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color as AndroidColor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -62,11 +66,30 @@ class MainActivity : ComponentActivity(), FileService {
         }
         val services = KairosProcess.services(this)
         setContent {
-            // Couleurs du fond d'écran (Material You), proposées dans Réglages → Apparence
+            // Couleurs du fond d'écran (Material You), claires ou sombres, proposées dans Réglages → Apparence
             // à partir d'Android 12 (docs/spec/apparence.md).
-            val system = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) dynamicLightColorScheme(LocalContext.current) else null
-            KairosApp(Platform.ANDROID, systemColorScheme = system, splash = true) { services.await() }
+            val context = LocalContext.current
+            val system = remember(context) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    { dark: Boolean -> if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context) }
+                } else {
+                    null
+                }
+            }
+            KairosApp(Platform.ANDROID, systemColorScheme = system, onDarkTheme = ::applySystemBars, splash = true) { services.await() }
         }
+    }
+
+    /**
+     * Icônes des barres du système selon le thème **affiché**, pas celui du système : un thème sombre choisi sur un
+     * système clair garderait sinon des icônes sombres sur fond sombre (docs/spec/apparence.md § Thème sombre). Voiles
+     * de la barre de navigation à trois boutons : ceux d'`enableEdgeToEdge` par défaut.
+     */
+    private fun applySystemBars(dark: Boolean) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT) { dark },
+            navigationBarStyle = SystemBarStyle.auto(AndroidColor.argb(0xE6, 0xFF, 0xFF, 0xFF), AndroidColor.argb(0x80, 0x1B, 0x1B, 0x1B)) { dark },
+        )
     }
 
     override fun onResume() {

@@ -1,6 +1,8 @@
 package com.skohscripts.kairos.desktop
 
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTouchHeightIsEqualTo
@@ -137,6 +139,20 @@ class StatsExportUiTest {
         assertTrue(image.height > 200, "image trop basse : ${image.height}")
         // Rien n'est écrit dans la base.
         assertEquals(before, services.repository.snapshot.value)
+    }
+
+    /** Écran sombre (issue #72) : l'image d'une carte reste claire, elle va dans un rapport ou à l'impression. */
+    @Test
+    fun anImageStaysLightOnADarkScreen() = runComposeUiTest {
+        val files = Files()
+        val services = services(files)
+        setContent { KairosApp(Platform.DESKTOP, Destination.STATS, TeamDestination.BOARD, systemDark = true) { services } }
+        waitText("task(s) done · 8 wk")
+        onNodeWithContentDescription("Export…").performClick()
+        clickable("Image: Weekly throughput").performClick()
+        waitText("Image saved.")
+        val corner = files.images.values.single().toPixelMap()[4, 4]
+        assertTrue(corner.luminance() > 0.8f, "fond de l'image sombre : $corner")
     }
 
     @Test

@@ -29,6 +29,7 @@
         "taskTypes": "Développement,Revue de code,Réunion,Documentation,Administratif,Veille/formation",
         "updateCheckEnabled": true,
         "themeColor": "#C28417",
+        "themeMode": "system",
         "language": "system"
     },
     "tasks": [
