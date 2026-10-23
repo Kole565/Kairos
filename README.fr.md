@@ -306,6 +306,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   thème en est dérivé (Material Design 3), contrastes compris.
 - Sur **Android 12 et plus**, « Couleurs du système » suit les couleurs du
   fond d’écran (Material You).
+- **Thème sombre** : Kairos suit le système (sombre quand ton téléphone, ton
+  ordinateur ou ton navigateur l’est). L’interrupteur « Thème sombre » (Réglages →
+  Général → Apparence) choisit l’autre thème ; le rebasculer suit à nouveau le
+  système. Les images exportées des statistiques restent claires.
 - Au lancement, une **page de démarrage** (Android, bureau, web) : l’aiguille
   du cadran solaire fait un tour et se pose sur le logo, puis l’application
   apparaît en fondu. Un toucher l’abrège.
@@ -327,6 +331,7 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 |---|---|---|---|
 | Général | Langue | Langue de l’interface (Système, Français, English) | Système |
 | | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
+| | Apparence | Thème sombre (interrupteur à deux états) | suit le système |
 | | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
 | | Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
 | Journée et horaires | Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |

@@ -360,6 +360,8 @@ object SettingsForm {
             read = { it.themeColor },
             write = { s, v -> s.copy(themeColor = normalizeColor(v)!!) },
         ),
+        // Thème : normalisé à l'écriture (une valeur inconnue suit le système), jamais refusé.
+        text("themeMode", FieldKind.TEXT, { it.themeMode }) { s, v -> s.copy(themeMode = ThemeMode.normalize(v)) },
         // Langue : normalisée à l'écriture (une valeur inconnue suit le système), jamais refusée.
         text("language", FieldKind.TEXT, { it.language }) { s, v -> s.copy(language = UiLanguage.normalize(v)) },
         team("team.enabled", FieldKind.BOOL, get = { it.enabled.toString() }) { t, v -> t.copy(enabled = v == "true") },

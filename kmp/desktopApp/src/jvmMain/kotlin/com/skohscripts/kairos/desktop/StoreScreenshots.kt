@@ -55,8 +55,9 @@ import kotlin.time.Instant
  * `--store-screenshots=<dossier fastlane/metadata/android>` rend hors écran,
  * en français et en anglais, l'interface **Android** en largeur téléphone
  * (1080 × 2400 px, densité 2,625) sur un jeu de données réaliste, et écrit
- * `<langue>/images/phoneScreenshots/1.png` à `8.png` (1 à 5 : espace Perso, base solo ; 6 à 8 : espace Équipe,
- * seconde base de [StoreTeam]). Rien de ce jeu n'est livré dans
+ * `<langue>/images/phoneScreenshots/1.png` à `9.png` (1 à 5 : espace Perso, base solo ; 6 à 8 : espace Équipe,
+ * seconde base de [StoreTeam] ; 9 : la vue Jour en thème sombre, issue #72). Thème du système imposé (clair, sombre pour
+ * la 9) : les captures ne dépendent pas de la machine. Rien de ce jeu n'est livré dans
  * l'application : c'est une vitrine, pas des exemples.
  */
 object StoreScreenshots {
@@ -84,9 +85,9 @@ object StoreScreenshots {
                 val services = runBlocking { services(locale.language) }
                 val png = render {
                     if (destination != null) {
-                        KairosApp(Platform.ANDROID, destination) { services }
+                        KairosApp(Platform.ANDROID, destination, systemDark = false) { services }
                     } else {
-                        KairosApp(Platform.ANDROID, Destination.DAY, initialSecondary = Secondary.SETTINGS) { services }
+                        KairosApp(Platform.ANDROID, Destination.DAY, initialSecondary = Secondary.SETTINGS, systemDark = false) { services }
                     }
                 }
                 File(out, "${i + 1}.png").writeBytes(png)
@@ -95,9 +96,13 @@ object StoreScreenshots {
                 val services = runBlocking { teamServices(locale.language, destination) }
                 // Les calculs de l'espace Équipe (charge, historique) se font hors composition : on attend la stabilité.
                 val scroll = if (destination == TeamDestination.FORECAST) FORECAST_SCROLL else 0f
-                val png = render(settle = true, wheel = scroll) { KairosApp(Platform.ANDROID, initialTeamDestination = destination) { services } }
+                val png = render(settle = true, wheel = scroll) { KairosApp(Platform.ANDROID, initialTeamDestination = destination, systemDark = false) { services } }
                 File(out, "${shots.size + i + 1}.png").writeBytes(png)
             }
+            // Capture 9 : la vue Jour de la capture 1, système en sombre, rien de réglé (docs/spec/apparence.md § Thème sombre).
+            val darkServices = runBlocking { services(locale.language) }
+            val dark = render { KairosApp(Platform.ANDROID, Destination.DAY, systemDark = true) { darkServices } }
+            File(out, "${shots.size + teamShots.size + 1}.png").writeBytes(dark)
         }
         println("Captures des magasins écrites dans $metadataDir")
         0

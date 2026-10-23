@@ -13,6 +13,7 @@ import androidx.compose.ui.ImageComposeScene
 import com.skohscripts.kairos.ui.app.SplashFrame
 import com.skohscripts.kairos.ui.guide.GuideDialog
 import com.skohscripts.kairos.ui.navigation.Destination
+import com.skohscripts.kairos.ui.navigation.Secondary
 import com.skohscripts.kairos.ui.navigation.TeamDestination
 import com.skohscripts.kairos.ui.day.DayScreen
 import com.skohscripts.kairos.ui.guide.DiscoverDialog
@@ -274,6 +275,9 @@ object SelfTest {
         val notes: @Composable () -> Unit = { KairosTheme { Surface { NotesScreen(services) {} } } }
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
         val stats: @Composable () -> Unit = { KairosTheme { Surface { StatsScreen(timed) } } }
+        // Thème sombre (docs/spec/apparence.md § Thème sombre, issue #72) : système en sombre, rien de réglé.
+        fun dark(s: AppServices, destination: Destination = Destination.DAY, secondary: Secondary? = null, team: TeamDestination = TeamDestination.HOME): @Composable () -> Unit =
+            { KairosApp(Platform.DESKTOP, destination, team, secondary, systemDark = true) { s } }
         // Les deux dernières, très hautes, montrent toute la vue Jour (agenda, sections, frise).
         // Fiche de « moi » : ses tâches perso d'exemple comptent dans sa charge (pastille « Perso »), ses créneaux
         // réduisent sa capacité, et une récurrence hebdomadaire projette ses occurrences (docs/spec/equipe-moi.md).
@@ -319,6 +323,14 @@ object SelfTest {
             Shot("stats", 1200, 1600, stats),
             Shot("stats-hours", 1200, 2600, hoursStats),
             Shot("stats-hours-narrow", 360, 4200, hoursStats),
+            Shot("dark", 1200, 1000, dark(services)),
+            Shot("dark-narrow", 420, 1600, dark(services)),
+            Shot("dark-chrono", 1200, 1000, dark(timed)),
+            Shot("dark-week", 1200, 1000, dark(services, Destination.WEEK)),
+            Shot("dark-stats", 1200, 2600, dark(hoursServices, Destination.STATS)),
+            Shot("dark-notes", 900, 1000, dark(services, Destination.NOTES)),
+            Shot("dark-settings", 1200, 1000, dark(services, secondary = Secondary.SETTINGS)),
+            Shot("dark-team", 1200, 1000, dark(team, team = TeamDestination.BOARD)),
             // Espace Équipe (état vide du jalon E1) : large, puis 360 dp (téléphone) avec le sélecteur dans la barre.
             Shot("team", 1200, 1000, teamApp),
             Shot("team-narrow", 360, 800, teamApp),

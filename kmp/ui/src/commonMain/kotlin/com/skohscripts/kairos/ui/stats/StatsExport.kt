@@ -42,6 +42,8 @@ import com.skohscripts.kairos.ui.generated.resources.stats_export_csv
 import com.skohscripts.kairos.ui.generated.resources.stats_export_image
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.theme.KairosSpacing
+import com.skohscripts.kairos.ui.theme.KairosTheme
+import com.skohscripts.kairos.ui.theme.LocalLightColorScheme
 import kotlinx.coroutines.CompletableDeferred
 import org.jetbrains.compose.resources.stringResource
 
@@ -91,15 +93,20 @@ internal fun StatsExportButton(onCsv: () -> Unit, onImage: (StatsCard) -> Unit) 
     }
 }
 
-/** L'image d'une carte : la carte à [STATS_IMAGE_WIDTH] sur le fond de l'écran, la légende en pied. */
+/**
+ * L'image d'une carte : la carte à [STATS_IMAGE_WIDTH] sur le fond de l'écran, la légende en pied ; toujours en thème
+ * **clair** de la même graine, même quand l'écran est sombre (elle va dans un rapport ou à l'impression, issue #72).
+ */
 @Composable
 internal fun StatsCardImage(content: @Composable () -> Unit, caption: String) {
-    Column(
-        Modifier.width(STATS_IMAGE_WIDTH).background(MaterialTheme.colorScheme.surface).padding(KairosSpacing.l),
-        verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
-    ) {
-        content()
-        Text(caption, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    KairosTheme(LocalLightColorScheme.current) {
+        Column(
+            Modifier.width(STATS_IMAGE_WIDTH).background(MaterialTheme.colorScheme.surface).padding(KairosSpacing.l),
+            verticalArrangement = Arrangement.spacedBy(KairosSpacing.m),
+        ) {
+            content()
+            Text(caption, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 

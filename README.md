@@ -289,6 +289,10 @@ order (critical path). Cycles are refused.
   derived from it (Material Design 3), contrast included.
 - On **Android 12 and later**, "System colors" follows the wallpaper colors
   (Material You).
+- **Dark theme**: Kairos follows the system (dark when your phone, computer or
+  browser is). The "Dark theme" switch (Settings → General → Appearance) picks the
+  other theme; switching it back follows the system again. Exported statistics
+  images stay light.
 - At launch, a **startup page** (Android, desktop, web): the sundial hand makes
   one turn and settles on the logo, then the app fades in. A tap skips it.
 
@@ -308,6 +312,7 @@ you press "Save").
 |---|---|---|---|
 | General | Language | Interface language (System, Français, English) | System |
 | | Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
+| | Appearance | Dark theme (two-state switch) | follows the system |
 | | Updates (desktop) | Check for new versions | on |
 | | Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
 | Day and hours | Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |

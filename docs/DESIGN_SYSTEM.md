@@ -45,8 +45,10 @@ domaine.
 Générés par l'algorithme officiel (material-color-utilities, portage Python
 `materialyoucolor`, `SchemeTonalSpot`, spec 2021, contraste standard) depuis la
 graine **`#C28417`**, par `kmp/tools/make_theme.py`, dans `KairosColors.kt`
-(`lightColorScheme`, 36 rôles). Un seul thème clair (pas de mode sombre pour
-l'instant, mais le même outil le génère depuis la même graine). Pour changer de
+(`lightColorScheme`, 36 rôles). **Thème sombre** (issue #72, 3.7.0) : le même
+outil génère `KairosDarkColors` (`darkColorScheme`, mêmes 36 rôles, `isDark`)
+depuis la même graine ; Kairos suit le système, un interrupteur à deux états
+choisit l'autre thème (`docs/spec/apparence.md` § Thème sombre). Pour changer de
 couleur : changer la graine et regénérer tout le schéma, jamais retoucher un
 rôle isolé.
 
@@ -85,7 +87,9 @@ la carte Apparence, qui montrent la graine elle-même.
 
 `LocalKairosExtraColors` : `ok` `#36693D`, `okContainer` `#B7F1B8`,
 `onOkContainer` `#1D5127` (palette tonale teinte 150°, chroma 36, mêmes tons
-que les rôles d'erreur). **Non harmonisée** vers la graine : harmonisée, elle
+que les rôles d'erreur). En thème sombre, comme l'erreur sombre : `ok`
+`#9CD49F` (ton 80), `okContainer` `#1D5127` et `onOkContainer` `#B7F1B8`
+(conteneur et texte échangés). **Non harmonisée** vers la graine : harmonisée, elle
 virait à l'olive, trop proche de la tertiaire.
 
 ### Pas d'ambre d'avertissement (décision)
@@ -120,8 +124,8 @@ contour et icône, bandeau de dégradation neutre.
    impossible).
 8. **La sélection** (destination active, volets de capture, pastilles
    choisies, créneaux de travail) utilise `secondaryContainer`.
-9. **Le sombre** (surface inverse) est réservé à la carte « En ce moment » et
-   à la snackbar d'alerte du chrono.
+9. **La surface inverse** (sombre en thème clair, claire en thème sombre) est
+   réservée à la carte « En ce moment » et à la snackbar d'alerte du chrono.
 
 ### Badges (pilules)
 

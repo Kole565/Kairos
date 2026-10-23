@@ -23,14 +23,23 @@ import org.jetbrains.compose.resources.Font
 /**
  * Couleur personnalisée « fait / ok » (docs/DESIGN_SYSTEM.md § Couleur
  * personnalisée) : hors schéma MD3, volontairement NON harmonisée vers la
- * graine (elle virait à l'olive, trop proche de la tertiaire).
+ * graine (elle virait à l'olive, trop proche de la tertiaire). Mêmes tons que
+ * les rôles d'erreur : 40 / 90 / 30 en clair.
  */
 @Immutable
 data class KairosExtraColors(
     val ok: Color = Color(0xFF36693D),
     val okContainer: Color = Color(0xFFB7F1B8),
     val onOkContainer: Color = Color(0xFF1D5127),
-)
+) {
+    companion object {
+        /**
+         * Le « ok » du thème sombre (docs/spec/apparence.md § Thème sombre), comme l'erreur sombre : ton 80 de la même
+         * palette (teinte 150°, chroma 36), conteneur et texte du conteneur échangés avec ceux du clair (tons 30 / 90).
+         */
+        fun dark() = KairosExtraColors(ok = Color(0xFF9CD49F), okContainer = Color(0xFF1D5127), onOkContainer = Color(0xFFB7F1B8))
+    }
+}
 
 val LocalKairosExtraColors = staticCompositionLocalOf { KairosExtraColors() }
 
@@ -82,21 +91,41 @@ private fun kairosTypography(): Typography {
  */
 val LocalSystemColorScheme = staticCompositionLocalOf<ColorScheme?> { null }
 
+/** Le système est en sombre (posé par `KairosApp`) : l'interrupteur de la carte Apparence en dépend. */
+val LocalSystemDark = staticCompositionLocalOf { false }
+
 /**
- * Thème Kairos : un seul thème clair (docs/spec/navigation-theme.md), du
- * schéma de la charte (miel) par défaut ou de celui de la couleur choisie
- * (`ThemeColors.schemeFor`, docs/spec/apparence.md).
+ * Le schéma **clair** de la graine courante, même en thème sombre : ce qui doit rester clair (l'image exportée d'une
+ * carte des Stats, docs/spec/statistiques.md § Export) s'y redessine.
+ */
+val LocalLightColorScheme = staticCompositionLocalOf { KairosLightColors }
+
+/**
+ * Thème Kairos, clair ou sombre ([dark], docs/spec/apparence.md § Thème sombre), du schéma de la charte (miel) par
+ * défaut ou de celui de la couleur choisie (`ThemeColors.schemeFor`) ; [light] : le schéma clair de la même graine,
+ * exposé par [LocalLightColorScheme].
  */
 @Composable
-fun KairosTheme(colorScheme: ColorScheme = KairosLightColors, content: @Composable () -> Unit) {
+fun KairosTheme(
+    colorScheme: ColorScheme = KairosLightColors,
+    dark: Boolean = false,
+    light: ColorScheme = if (dark) KairosLightColors else colorScheme,
+    content: @Composable () -> Unit,
+) {
     MaterialTheme(
         colorScheme = colorScheme,
         typography = kairosTypography(),
         shapes = KairosShapes,
     ) {
         androidx.compose.runtime.CompositionLocalProvider(
-            LocalKairosExtraColors provides KairosExtraColors(),
+            LocalKairosExtraColors provides if (dark) KairosExtraColors.dark() else KairosExtraColors(),
+            LocalLightColorScheme provides light,
             content = content,
         )
     }
 }
+
+/** Le thème par défaut (miel), clair ou sombre comme le système : avant que les réglages soient lus. */
+@Composable
+fun KairosDefaultTheme(dark: Boolean, content: @Composable () -> Unit) =
+    KairosTheme(if (dark) KairosDarkColors else KairosLightColors, dark, KairosLightColors, content)

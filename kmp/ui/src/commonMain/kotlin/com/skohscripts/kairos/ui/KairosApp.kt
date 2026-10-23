@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -27,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.TeamSettings
+import com.skohscripts.kairos.core.settings.ThemeMode
 import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.LocalStartupSplash
@@ -43,8 +46,10 @@ import com.skohscripts.kairos.ui.navigation.NavigationLayout
 import com.skohscripts.kairos.ui.navigation.Secondary
 import com.skohscripts.kairos.ui.navigation.Space
 import com.skohscripts.kairos.ui.navigation.TeamDestination
+import com.skohscripts.kairos.ui.theme.KairosDefaultTheme
 import com.skohscripts.kairos.ui.theme.KairosTheme
 import com.skohscripts.kairos.ui.theme.LocalSystemColorScheme
+import com.skohscripts.kairos.ui.theme.LocalSystemDark
 import com.skohscripts.kairos.ui.theme.ThemeColors
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -70,14 +75,24 @@ fun KairosApp(
     initialTeamDestination: TeamDestination = TeamDestination.HOME,
     /** Écran secondaire ouvert d'emblée (les Réglages des captures des magasins), `null` ailleurs. */
     initialSecondary: Secondary? = null,
-    /** Couleurs du système (Android 12 et plus), `null` ailleurs (docs/spec/apparence.md). */
-    systemColorScheme: ColorScheme? = null,
+    /** Couleurs du système (Android 12 et plus), claires ou sombres, `null` ailleurs (docs/spec/apparence.md). */
+    systemColorScheme: ((dark: Boolean) -> ColorScheme)? = null,
+    /** Le système est en sombre : `null` = `isSystemInDarkTheme()` ; forcé par les tests et les captures (issue #72). */
+    systemDark: Boolean? = null,
+    /** Rappelé quand le thème affiché passe du clair au sombre ou l'inverse (barres du système Android). */
+    onDarkTheme: (dark: Boolean) -> Unit = {},
     /** Page de démarrage (docs/spec/demarrage.md) : les points d'entrée seulement, jamais les tests ni les captures. */
     splash: Boolean = false,
     openServices: suspend () -> AppServices,
 ) {
-    KairosTheme {
-        CompositionLocalProvider(LocalPlatform provides platform, LocalSystemColorScheme provides systemColorScheme) {
+    // Thème du système (docs/spec/apparence.md § Thème sombre) : celui de tout ce qui précède la lecture des réglages.
+    val systemIsDark = systemDark ?: isSystemInDarkTheme()
+    KairosDefaultTheme(systemIsDark) {
+        CompositionLocalProvider(
+            LocalPlatform provides platform,
+            LocalSystemColorScheme provides systemColorScheme?.invoke(systemIsDark),
+            LocalSystemDark provides systemIsDark,
+        ) {
             var services by remember { mutableStateOf<AppServices?>(null) }
             var failure by remember { mutableStateOf<Throwable?>(null) }
             LaunchedEffect(Unit) {
@@ -95,22 +110,27 @@ fun KairosApp(
                             // pendant le chargement.
                             val settings = ready.repository.snapshot.collectAsState().value.settings
                             val themeColor = settings.themeColor
-                            val scheme = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme) }
+                            val dark = ThemeMode.isDark(settings.themeMode, systemIsDark)
+                            val scheme = remember(themeColor, systemColorScheme, dark) { ThemeColors.schemeFor(themeColor, systemColorScheme, dark) }
+                            val light = remember(themeColor, systemColorScheme) { ThemeColors.schemeFor(themeColor, systemColorScheme, dark = false) }
+                            val darkTheme by rememberUpdatedState(onDarkTheme)
+                            LaunchedEffect(dark) { darkTheme(dark) }
                             // La langue du système est lue une fois, avant la première surcharge : `Locale.current` la
                             // reflèterait ensuite la langue choisie (docs/spec/i18n.md § Choix de la langue).
                             val system = remember(ready) { ready.systemLanguage ?: Locale.current.language }
                             val language = UiLanguage.resolve(settings.language, system)
                             // Posée pendant la composition, avant que l'interface (en dessous) lise la locale.
                             remember(language) { ready.applyLanguage(language) }
-                            CompositionLocalProvider(LocalUiLanguage provides language) {
-                                KairosTheme(scheme) { KairosShell(platform, ready, language, initialDestination, initialTeamDestination, initialSecondary) }
+                            CompositionLocalProvider(LocalUiLanguage provides language, LocalSystemColorScheme provides systemColorScheme?.invoke(dark)) {
+                                KairosTheme(scheme, dark, light) { KairosShell(platform, ready, language, initialDestination, initialTeamDestination, initialSecondary) }
                             }
                         }
                         failure != null -> Status(stringResource(Res.string.error_open_title), failure.toString())
                         else -> Status(stringResource(Res.string.loading), null, progress = true)
                     }
                 }
-                // Dans le thème miel par défaut, pas celui des réglages : même fond que les relais natifs.
+                // Dans le thème miel par défaut, clair ou sombre comme le système, pas celui des réglages : même fond que les
+                // relais natifs.
                 if (!splashDone) StartupSplash(ready = ready != null || failure != null, onFinished = { splashDone = true })
             }
         }

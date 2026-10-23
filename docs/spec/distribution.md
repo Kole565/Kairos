@@ -127,6 +127,8 @@ remplacer ; une version stable s'installe par-dessus la précédente.
   `kairos_splash_dial` centré 288 dp) ; API 31+ (`values-v31`), écran de
   démarrage système avec ce même cadran, statique. Ce ne sont que les relais
   de la page de démarrage Compose (`demarrage.md`), qui anime l'aiguille.
+  Système en sombre : `values-night/` et `values-night-v31/` (fond `#18120B`,
+  icônes des barres claires, `apparence.md` § Thème sombre).
 - Icône adaptative `mipmap-anydpi/ic_launcher.xml` (fond `#FFEEDC`, premier
   plan `ic_launcher_foreground`).
 - Release : R8 (`isMinifyEnabled`, `isShrinkResources`) ; signature par les

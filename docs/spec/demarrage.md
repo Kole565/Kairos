@@ -34,7 +34,8 @@ qui mette en scène le logo : un cadran solaire dont l'aiguille avance.
 ### Comportement attendu (utilisateur)
 
 - À chaque lancement (Android, bureau, web), l'application s'ouvre sur une
-  page plein écran au fond clair de la charte, le cadran du logo au centre,
+  page plein écran au fond de la charte (clair, ou sombre quand le système l'est, `apparence.md` § Thème sombre), le
+  cadran du logo au centre,
   **vide** (sans secteur miel).
 - L'aiguille part de midi, accélère, fait **un tour complet** du cadran en
   traînant derrière elle une ombre miel de la largeur du secteur du logo,
@@ -88,7 +89,8 @@ l'application : plantage immédiat, sans aucune information exploitable.
 ### Hors périmètre / différé
 
 - Réglage pour désactiver ou raccourcir la page de chargement.
-- Thème sombre de la page (un seul thème clair, charte).
+- Thème sombre de la page **choisi dans les Réglages** : la page suit le thème du système, lu avant la base
+  (`apparence.md` § Thème sombre).
 - Animation du relais natif lui-même (le système Android ne l'affiche que
   le temps de créer l'activité ; c'est la page Compose qui anime).
 
@@ -97,9 +99,9 @@ l'application : plantage immédiat, sans aucune information exploitable.
 ### Composant (`ui/app/StartupSplash.kt`)
 
 - `StartupSplash(ready, onFinished)` : `Box` plein écran, fond
-  `colorScheme.surface` du thème **miel par défaut** (il est composé dans le
-  `KairosTheme` extérieur de `KairosApp`, pas dans celui des réglages : le
-  fond égale `#FFF8F4`, celui des relais natifs, quelle que soit la graine
+  `colorScheme.surface` du thème **miel par défaut**, clair ou sombre comme le système (il est composé dans le
+  `KairosDefaultTheme` extérieur de `KairosApp`, pas dans celui des réglages : le
+  fond égale `#FFF8F4`, ou `#18120B` en sombre, celui des relais natifs, quelle que soit la graine
   choisie). Le fondu révèle ensuite l'application dans la couleur de
   l'utilisateur.
 - Cadran dessiné sur un `Canvas` de **184,32 dp** (viewport 40 du logo ×

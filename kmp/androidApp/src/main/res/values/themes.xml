@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Thème de fenêtre (docs/spec/distribution.md § Android) : l'interface
-         elle-même est dessinée par Compose (KairosTheme). Un seul thème clair :
+         elle-même est dessinée par Compose (KairosTheme). Thème clair ici, sombre dans values-night/ ;
          forceDarkAllowed=false refuse l'assombrissement automatique de certains
          constructeurs. Avant l'API 31, la fenêtre
          de démarrage du système est windowBackground : fond de l'app + cadran vide centré

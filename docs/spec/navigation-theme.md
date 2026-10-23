@@ -86,8 +86,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
 
 ### Hors périmètre
 
-- Thème sombre : un seul thème clair pour l'instant (charte). Le schéma
-  sombre se générerait depuis la même graine avec `make_theme.py`.
+- (Le thème sombre, longtemps hors périmètre, est livré en 3.7.0 : `apparence.md` § Thème sombre.)
 - Tiroir de navigation, rail étendu : non retenus, cinq destinations suffisent.
 
 ## 2. Solution technique

@@ -1,8 +1,9 @@
-"""Génère `ui/.../theme/KairosColors.kt` : le schéma de couleurs MD3 de Kairos.
+"""Génère `ui/.../theme/KairosColors.kt` : les schémas de couleurs MD3 de Kairos, clair et sombre.
 
 Tous les rôles viennent de l'algorithme officiel (material-color-utilities,
 portage Python `materialyoucolor`, schéma *Tonal spot*, spec 2021, contraste
-standard) depuis UNE graine, le miel `#C28417` du logo. Pour changer de
+standard) depuis UNE graine, le miel `#C28417` du logo ; le sombre (issue #72) vient
+de la même graine, du même algorithme (`isDark`). Pour changer de
 couleur : changer `SEED` et regénérer, jamais retoucher un rôle isolé
 (CLAUDE.md, docs/spec/navigation-theme.md § Thème).
 
@@ -29,20 +30,22 @@ ROLES = [
     "surfaceContainerLow", "surfaceContainerLowest", "surfaceDim",
 ]
 
-scheme = SchemeTonalSpot(Hct.from_int(SEED), False, 0.0, spec_version="2021")
 lines = [
     "// GÉNÉRÉ par kmp/tools/make_theme.py (graine #%06X, Tonal spot, spec 2021) : ne pas éditer."
     % (SEED & 0xFFFFFF),
     "package com.skohscripts.kairos.ui.theme",
     "",
+    "import androidx.compose.material3.darkColorScheme",
     "import androidx.compose.material3.lightColorScheme",
     "import androidx.compose.ui.graphics.Color",
-    "",
-    "internal val KairosLightColors = lightColorScheme(",
 ]
-for role in ROLES:
-    argb = getattr(M, role).get_argb(scheme) & 0xFFFFFFFF
-    lines.append(f"    {role} = Color(0x{argb:08X}),")
-lines += [")", ""]
+for name, builder, dark in (("KairosLightColors", "lightColorScheme", False), ("KairosDarkColors", "darkColorScheme", True)):
+    scheme = SchemeTonalSpot(Hct.from_int(SEED), dark, 0.0, spec_version="2021")
+    lines += ["", f"internal val {name} = {builder}("]
+    for role in ROLES:
+        argb = getattr(M, role).get_argb(scheme) & 0xFFFFFFFF
+        lines.append(f"    {role} = Color(0x{argb:08X}),")
+    lines.append(")")
+lines.append("")
 OUT.write_text("\n".join(lines), encoding="utf-8")
 print(f"Écrit : {OUT}")

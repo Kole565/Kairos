@@ -1,14 +1,18 @@
 package com.skohscripts.kairos.ui.theme
 
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import com.materialkolor.palettes.TonalPalette
 import com.skohscripts.kairos.core.model.Settings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 /** docs/spec/apparence.md § Critères de succès. */
 class ThemeColorsTest {
@@ -38,6 +42,29 @@ class ThemeColorsTest {
     }
 
     @Test
+    fun the_embedded_algorithm_gives_the_generated_dark_colors_for_honey() {
+        assertEquals(roles(KairosDarkColors), roles(ThemeColors.seedScheme(0xC28417, dark = true)))
+        assertSame(KairosDarkColors, ThemeColors.schemeFor(Settings.DEFAULT_THEME_COLOR, null, dark = true))
+        assertSame(KairosDarkColors, ThemeColors.schemeFor("illisible", null, dark = true))
+        // Une autre graine en sombre : même algorithme, fond sombre, rouge d'erreur sombre fixe.
+        val ocean = ThemeColors.schemeFor("#2F6FED", null, dark = true)
+        assertTrue(ocean.surface.luminance() < 0.05f)
+        assertEquals(KairosDarkColors.error, ocean.error)
+    }
+
+    @Test
+    fun the_dark_ok_color_mirrors_the_dark_error_roles() {
+        val light = KairosExtraColors()
+        val dark = KairosExtraColors.dark()
+        // Comme l'erreur : le conteneur sombre est le texte du conteneur clair, et inversement (tons 30 et 90).
+        assertEquals(KairosLightColors.onErrorContainer, KairosDarkColors.errorContainer)
+        assertEquals(light.onOkContainer, dark.okContainer)
+        assertEquals(light.okContainer, dark.onOkContainer)
+        // Ton 80 de la palette de l'« ok » (teinte 150°, chroma 36), comme `error` sombre.
+        assertEquals(TonalPalette.fromHueAndChroma(150.0, 36.0).tone(80), dark.ok.toArgb())
+    }
+
+    @Test
     fun honey_is_served_from_the_generated_scheme_and_other_seeds_are_computed() {
         assertSame(KairosLightColors, ThemeColors.schemeFor(Settings.DEFAULT_THEME_COLOR, null))
         assertSame(KairosLightColors, ThemeColors.schemeFor("#c28417", null))
@@ -51,8 +78,12 @@ class ThemeColorsTest {
     @Test
     fun system_colors_are_used_only_when_provided() {
         val system = lightColorScheme(primary = Color(0xFF006A6A))
-        assertSame(system, ThemeColors.schemeFor(Settings.SYSTEM_THEME, system))
+        val systemDark = darkColorScheme(primary = Color(0xFF4CDADA))
+        val provided = { dark: Boolean -> if (dark) systemDark else system }
+        assertSame(system, ThemeColors.schemeFor(Settings.SYSTEM_THEME, provided))
+        assertSame(systemDark, ThemeColors.schemeFor(Settings.SYSTEM_THEME, provided, dark = true))
         assertSame(KairosLightColors, ThemeColors.schemeFor(Settings.SYSTEM_THEME, null))
+        assertSame(KairosDarkColors, ThemeColors.schemeFor(Settings.SYSTEM_THEME, null, dark = true))
     }
 
     @Test

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 31+, système en sombre : écran de démarrage système sur le fond sombre (values-night/colors.xml). -->
+    <style name="Theme.Kairos" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/kairos_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowSplashScreenBackground">@color/kairos_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/kairos_splash_dial</item>
+    </style>
+</resources>
