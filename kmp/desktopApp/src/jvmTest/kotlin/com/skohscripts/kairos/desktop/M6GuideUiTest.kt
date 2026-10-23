@@ -175,9 +175,10 @@ class M6GuideUiTest {
         pressHelp()
         onNodeWithText("Discover Kairos").performClick()
         waitText("Create my first task")
-        // Sans espace Équipe : cinq chapitres, pas celui de l'équipe (six cartes).
+        // Sans espace Équipe : cinq chapitres, pas celui de l'équipe (six cartes) ; « Premiers pas » en a six aussi
+        // depuis la 3.7.0 (carte « Le guide retient et montre l'endroit »).
         waitText("First steps")
-        assertEquals(0, count("6 cards"))
+        assertEquals(1, count("6 cards"))
         onNodeWithText("Plan").performClick()
         waitText("Step 1 of 5")
         waitText("Priority, points and estimate")
@@ -197,13 +198,14 @@ class M6GuideUiTest {
         waitText("What is Kairos for?")
         // Depuis la 3.4 l'Accueil montre aussi la carte « Découvrir Kairos » dans « Nouveau dans cette version » : le bouton est le dernier.
         onAllNodesWithText("Discover Kairos").onLast().performScrollTo().performClick()
-        waitText("6 cards")
+        // Le chapitre de l'équipe (six cartes) s'ajoute à « Premiers pas » (six aussi depuis la 3.7.0).
+        waitUntil(timeoutMillis = 15_000) { count("6 cards") == 2 }
         onNodeWithText("Close").performClick()
         waitGone("6 cards")
         openSettings(SettingsCategory.ABOUT)
         waitText("Discover Kairos")
         onNodeWithText("Discover Kairos").performScrollTo().performClick()
-        waitText("6 cards")
+        waitUntil(timeoutMillis = 15_000) { count("6 cards") == 2 }
     }
 
     // --- Visite guidée ------------------------------------------------------------------------------------------------

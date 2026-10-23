@@ -51,6 +51,10 @@ class FeatureCatalogTest {
         assertEquals(added, FeatureCatalog.newIn("3.4.0-beta.2").map { it.id }.toSet())
         assertEquals(setOf("contexts", "besthours"), FeatureCatalog.newIn("3.5.0").map { it.id }.toSet())
         assertEquals(setOf("besthours_apply"), FeatureCatalog.newIn("3.6.0").map { it.id }.toSet())
+        assertEquals(
+            setOf("guide_memory", "week_move", "stats_explore", "holidays_slots", "settings_categories", "darktheme"),
+            FeatureCatalog.newIn("3.7.0").map { it.id }.toSet(),
+        )
         // Les versions qui n'ajoutent rien (ou illisibles) n'affichent rien.
         assertEquals(emptyList(), FeatureCatalog.newIn("3.3.0"))
         assertEquals(emptyList(), FeatureCatalog.newIn("garbage"))

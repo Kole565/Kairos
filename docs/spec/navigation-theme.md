@@ -144,7 +144,7 @@ aussi pouvoir comprendre ce que fait l'outil sans lire le dépôt.
   `Palette`, `Update`, `Work`, `CalendarViewWeek`, `Workspaces`, `Label`, `LightMode`, `History`, `Shield`,
   `Leaderboard`, `Bedtime`, `SettingsBackupRestore` (titres des cartes) ; guide (`visite-guidee.md`, issue #95) : `Spot`
   (étiquette « Ici » d'une section montrée) ; export des Stats (`statistiques.md`, issue #113) : `TableView` (CSV),
-  `Image` (image d'une carte).
+  `Image` (image d'une carte) ; carte « Thème sombre » du guide (3.7.0) : `DarkMode`.
   `Construction` (écran « En construction ») est retiré au
   jalon M5, plus rien n'étant en construction.
 - `KairosLogo.kt` : le cadran solaire (cadran `#FFEEDC`, anneau `#FFCC85`

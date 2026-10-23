@@ -230,10 +230,12 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                 when (category) {
                     SettingsCategory.GENERAL -> {
                         LanguageCard(values["language"].orEmpty()) { onChange("language", it) }
-                        AppearanceCard(
-                            values["themeMode"].orEmpty(), values["themeColor"].orEmpty(), errors["themeColor"],
-                            onModeChange = { onChange("themeMode", it) },
-                        ) { onChange("themeColor", it) }
+                        GuideSpot(GuideSection.SETTINGS_APPEARANCE) {
+                            AppearanceCard(
+                                values["themeMode"].orEmpty(), values["themeColor"].orEmpty(), errors["themeColor"],
+                                onModeChange = { onChange("themeMode", it) },
+                            ) { onChange("themeColor", it) }
+                        }
                         services.updates?.let { updates ->
                             UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { onChange("updateCheckEnabled", it) }
                         }

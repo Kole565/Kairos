@@ -1,0 +1,1 @@
+Kairos 3.7.0: dark theme (follows the system, switch in Settings → Appearance); statistics you can narrow (period, the Day view’s filters) and export as CSV or as an image; move a task from the Week view; “weekdays” time slots skip public holidays; settings sorted by category; the guide remembers what you read and shows the exact spot.

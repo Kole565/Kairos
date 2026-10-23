@@ -312,7 +312,7 @@ internal fun SettingsFormCards(
             // Cartes que le guide sait montrer (docs/spec/visite-guidee.md, issue #95).
             GuideSpot(GuideSection.SETTINGS_HOURS) { ScheduleCard(values, errors, onChange) }
             GuideSpot(GuideSection.SETTINGS_CONTEXTS) { ContextsCard(values, errors, onChange) }
-            SectionCard(HOLIDAYS, values, errors, onChange)
+            GuideSpot(GuideSection.SETTINGS_HOLIDAYS) { SectionCard(HOLIDAYS, values, errors, onChange) }
         }
         SettingsCategory.PLANNING -> {
             SectionCard(TYPES, values, errors, onChange)

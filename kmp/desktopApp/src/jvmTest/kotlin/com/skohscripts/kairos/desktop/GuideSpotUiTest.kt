@@ -108,6 +108,26 @@ class GuideSpotUiTest {
     }
 
     @Test
+    fun theDarkThemeCardOpensTheAppearanceCardAndMarksIt() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        // « Settings » (3.7.0) : réglages clairs, réglages par catégories, puis thème sombre.
+        showCard("Settings", 2, "Dark theme")
+        waitText("Follows the system.")
+        waitText("Here")
+    }
+
+    @Test
+    fun theHolidaysCardOpensThePublicHolidaysCardAndMarksIt() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        // « Organize » : sous-tâches, récurrence, bloqueurs, créneaux, puis fériés des créneaux « jours ouvrés » (3.7.0).
+        showCard("Organize", 4, "Weekday slots skip holidays")
+        waitText("Public holidays", substring = true)
+        waitText("Here")
+    }
+
+    @Test
     fun aMissingSectionIsSaidAndTheScreenStaysAtTheTop() = runComposeUiTest {
         val services = services(KairosSnapshot(tasks = listOf(task(1, "Get the quote"))))
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }

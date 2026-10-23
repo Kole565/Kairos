@@ -1,0 +1,1 @@
+Kairos 3.7.0 : thème sombre (suit le système, interrupteur dans Réglages → Apparence) ; statistiques filtrables (période, filtres de la vue Jour) et exportables en CSV ou en image ; déplacer une tâche depuis la vue Semaine ; les créneaux « jours ouvrés » sautent les fériés ; réglages rangés par catégories ; le guide retient ce que tu as lu et montre l’endroit précis.
