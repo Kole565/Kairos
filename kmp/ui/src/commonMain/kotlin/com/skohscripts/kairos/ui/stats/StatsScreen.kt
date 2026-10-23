@@ -1,5 +1,23 @@
 package com.skohscripts.kairos.ui.stats
 
+import com.skohscripts.kairos.ui.generated.resources.stats_period_weeks
+import com.skohscripts.kairos.ui.generated.resources.stats_period_all
+import com.skohscripts.kairos.ui.generated.resources.stats_period
+import com.skohscripts.kairos.ui.generated.resources.stats_empty_filtered
+import com.skohscripts.kairos.ui.generated.resources.stats_filtered
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.material3.SegmentedButtonDefaults
+import com.skohscripts.kairos.ui.theme.KairosSegmentedButton
+import com.skohscripts.kairos.ui.theme.KairosSegmentedRow
+import com.skohscripts.kairos.ui.Platform
+import com.skohscripts.kairos.ui.LocalPlatform
+import com.skohscripts.kairos.ui.day.FilterCard
+import com.skohscripts.kairos.core.model.Settings
+import com.skohscripts.kairos.core.stats.StatsQuery
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpot
 import com.skohscripts.kairos.ui.guide.MissingGuideSection
@@ -45,7 +63,6 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.stats.BestHours
-import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
@@ -118,14 +135,36 @@ fun StatsScreen(services: AppServices) {
     val now = services.clock.now()
     val today = now.toLocalDateTime(timeZone).date
     val language = uiLanguage()
-    val stats = remember(snapshot, today) { TaskStats.dashboard(snapshot.tasks, snapshot.workSessions, today, snapshot.settings, now, timeZone) }
+    // Filtres de l'écran (docs/spec/statistiques.md § Filtres, issue #114) : locaux, jamais enregistrés ; par défaut, la vue
+    // d'avant les filtres, à l'identique.
+    var query by remember { mutableStateOf(StatsQuery()) }
+    var filterOpen by remember { mutableStateOf(false) }
+    val input = remember(snapshot, today, query) { query.apply(snapshot.tasks, snapshot.workSessions, snapshot.settings, today, timeZone) }
+    val stats = remember(input) { query.dashboard(input, today, now, timeZone) }
     // Quand on travaille chaque type (docs/spec/planning-personnalise.md § Lot C, étape C1) : observation seule.
-    val hours = remember(snapshot, today) { BestHours.measure(snapshot.tasks, snapshot.workSessions, now, snapshot.settings, timeZone) }
+    val hours = remember(input) { query.hours(input, now, timeZone) }
+    val projects = remember(snapshot) { snapshot.tasks.map { it.projectTag }.filter { it.isNotEmpty() }.distinct().sorted() }
 
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.widthIn(max = 960.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
+            // Une base vide n'a rien à filtrer : l'état vide seul.
+            val filterable = snapshot.tasks.isNotEmpty() || snapshot.workSessions.isNotEmpty()
+            if (filterable) {
+                PeriodRow(snapshot.settings, query.weeks) { query = query.copy(weeks = it) }
+                FilterCard(
+                    query.filter, filterOpen || query.filter.active, { filterOpen = !(filterOpen || query.filter.active) }, { query = query.copy(filter = it) },
+                    projects, snapshot.settings.taskTypeList, remember { FocusRequester() }, LocalPlatform.current != Platform.ANDROID,
+                )
+                if (query.filter.active) {
+                    Text(
+                        stringResource(Res.string.stats_filtered, input.tasks.size, input.total),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             if (!stats.hasAnyData) {
-                Text(stringResource(Res.string.stats_empty), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(if (query.filter.active) Res.string.stats_empty_filtered else Res.string.stats_empty), style = MaterialTheme.typography.bodyLarge)
                 // Aucun panneau : une section demandée par le guide est absente, on le dit (issue #95).
                 MissingGuideSection(GuideSection.STATS_HOURS)
                 return@Column
@@ -441,4 +480,31 @@ internal fun BarRow(
 @Composable
 private fun Muted(text: String) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+/**
+ * Période des statistiques (issue #114) : « 4 sem. », « 8 sem. », « 12 sem. » (et la fenêtre des réglages si elle n'y est
+ * pas), « Tout ». [weeks] nul = la fenêtre des réglages, choisie d'office.
+ */
+@Composable
+private fun PeriodRow(settings: Settings, weeks: Int?, onChange: (Int?) -> Unit) {
+    val options = remember(settings.statsWindowWeeks) { StatsQuery.periodOptions(settings) }
+    val chosen = weeks ?: maxOf(1, settings.statsWindowWeeks)
+    val label = stringResource(Res.string.stats_period)
+    KairosSegmentedRow(Modifier.fillMaxWidth().semantics { contentDescription = label }) {
+        options.forEachIndexed { index, option ->
+            KairosSegmentedButton(
+                selected = chosen == option,
+                // La fenêtre des réglages redevient la vue par défaut (weeks nul) : identique à celle d'avant les filtres.
+                onClick = { onChange(if (option == maxOf(1, settings.statsWindowWeeks)) null else option) },
+                shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                label = {
+                    Text(
+                        if (option == StatsQuery.ALL) stringResource(Res.string.stats_period_all) else stringResource(Res.string.stats_period_weeks, option),
+                        maxLines = 1,
+                    )
+                },
+            )
+        }
+    }
 }

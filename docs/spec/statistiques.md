@@ -3,13 +3,13 @@
 _Rôle : un retour empirique sur la façon dont on estime, où va le temps et
 où s'accumulent les retards, pour calibrer ses estimations et le score.
 Fichiers couverts : `kmp/core/src/commonMain/.../core/stats/TaskStats.kt`
-(calcul pur), `kmp/ui/.../stats/StatsScreen.kt`. Les repères du guide des
+(calcul pur), `core/.../stats/StatsQuery.kt` (filtres, pur), `kmp/ui/.../stats/StatsScreen.kt`. Les repères du guide des
 points et les durées suggérées qui en découlent sont affichés par la vue
 Jour (`vue-jour.md`). Tests : `core/.../stats/StatsDifferentialTest.kt`
-(200 cas contre les fichiers d'or `stats.json`), `M4ScreensUiTest.statsShowWhatWasDoneAndTimed`
-et `calibratedPointsSuggestTheDurationAndFeedTheGuide`._
+(200 cas contre les fichiers d'or `stats.json`), `core/.../stats/StatsQueryTest.kt`,
+`M4ScreensUiTest.statsShowWhatWasDoneAndTimed`, `calibratedPointsSuggestTheDurationAndFeedTheGuide` et `StatsFilterUiTest`._
 
-État : **jalon M4**. Les sorties sont figées par les fichiers d'or de
+État : **jalon M4** ; filtres interactifs en 3.7.0 (issue #114). Les sorties sont figées par les fichiers d'or de
 `StatsDifferentialTest` (`stats.json`, source de vérité depuis
 `retrait-kairos2.md`).
 
@@ -23,8 +23,21 @@ où passe le temps, ni si le backlog grossit.
 
 ### Comportement attendu (utilisateur)
 
-Destination « Stats », en lecture seule. Sans aucune donnée : un état vide
-qui explique comment les chiffres se construisent. Sinon, de haut en bas :
+Destination « Stats », en lecture seule. En tête (3.7.0, issue #114) :
+
+- **Période** : boutons segmentés « 4 sem. », « 8 sem. », « 12 sem. », « Tout » ; la fenêtre des Réglages est choisie
+  d'office (si elle vaut autre chose, « 6 sem. » par exemple, elle s'ajoute aux options). « Tout » remonte à la première
+  activité (création d'une tâche, début d'une session) ; le débit hebdomadaire n'y montre que les **26 dernières
+  semaines**, pour que la liste ne s'allonge pas sans fin.
+- **« Rechercher / filtrer »** : la même carte que la vue Jour et la vue Semaine (texte, priorité, projet, type, points,
+  « Réinitialiser »). Toutes les cartes se recalculent sur les tâches retenues et leurs sessions ; une ligne dit
+  l'effectif retenu (« Filtré : 12 sur 40 tâches »). La **calibration** reste sur tout l'historique des tâches retenues :
+  la période ne la change pas (comme avant).
+- Le filtre et la période ne vivent qu'à l'écran : jamais écrits dans les réglages ni dans l'export ; quitter les Stats
+  et y revenir rend la vue par défaut, identique à celle d'avant les filtres.
+
+Sans aucune donnée : un état vide qui explique comment les chiffres se construisent (avec un filtre actif : « Rien pour
+ce filtre. Change-le ou réinitialise-le plus haut. », le filtre restant visible pour le changer). Sinon, de haut en bas :
 
 - **Quatre chiffres clés** sur la fenêtre récente (8 semaines par défaut,
   réglable dans Réglages → Statistiques, `reglages.md`) :
@@ -66,11 +79,17 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
   calibration, « n=1, peu fiable » (`M4ScreensUiTest`).
 - Aucune barre sans sa valeur écrite ; aucune information portée par la
   couleur seule.
+- Sans filtre ni changement de période, le tableau de bord est **identique** à celui d'avant (mêmes entrées que les
+  fichiers d'or) ; un filtre de type ne retient que ses tâches et leurs sessions ; « Tout » remonte à la première activité
+  et borne le débit à 26 semaines ; une session d'une tâche disparue ne compte que sans filtre (`StatsQueryTest`) ; la vue
+  par défaut passée par les filtres égale le tableau de bord sur les 200 cas des fichiers d'or
+  (`StatsDifferentialTest.dashboard_matches_golden`).
+- Choisir « 4 sem. » change le libellé des chiffres clés ; filtrer sur un type réduit l'effectif (« Filtré : 1 sur 2
+  tâches ») ; un filtre sans résultat le dit et se réinitialise ; la ligne tient à 360 dp (`StatsFilterUiTest`).
 
 ### Hors périmètre / différé
 
-- Graphiques temporels fins, export, estimation par apprentissage, filtres
-  interactifs.
+- Graphiques temporels fins, export, estimation par apprentissage ; un débit par mois pour « Tout ».
 
 ## 2. Solution technique
 
@@ -110,6 +129,18 @@ reçoit **toutes** les tâches, archivées comprises.
   Kairos, figé par les fichiers d'or), médiane d'un effectif pair = moyenne des deux
   valeurs centrales.
 
+### Filtres (`StatsQuery`, `core`, 3.7.0)
+
+- `StatsQuery(filter: DayFilter, weeks: Int?)` : `weeks` nul = fenêtre des réglages, `ALL` (0) = tout. `StatsQuery.apply`
+  rend un `StatsQuery.Input(tasks, sessions, settings, all, total)` :
+  - sans filtre actif : toutes les tâches et **toutes** les sessions (y compris celles d'une tâche disparue), inchangées ;
+  - filtre actif : `tasks.filter(filter::matches)` et les sessions de ces tâches seulement ;
+  - `settings.statsWindowWeeks` remplacé par `weeks`, ou, pour `ALL`, par le nombre de semaines du lundi de la première
+    activité (date locale de création d'une tâche retenue ou de début d'une session retenue) à aujourd'hui, au moins 1.
+- `StatsQuery.dashboard(...)` = `TaskStats.dashboard` sur cette entrée, débit borné aux `ALL_THROUGHPUT_WEEKS` (26)
+  dernières semaines pour `ALL` ; `StatsQuery.hours(...)` = `BestHours.measure` sur la même entrée. Les fichiers d'or ne
+  passent pas par `StatsQuery` : la vue par défaut leur est identique par construction (test).
+
 ### Meilleures heures (`BestHours`, `core`, 3.5)
 
 Pur : tâches, sessions, instant, fuseau et réglages en paramètres (`BestHours.measure`). Sessions de la même fenêtre que le tableau de bord
@@ -130,8 +161,12 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
 
 ### Écran (`StatsScreen`, `ui`)
 
-- Recalculé quand la base ou le jour changent ; colonne défilante de
+- Recalculé quand la base, le jour, le filtre ou la période changent ; colonne défilante de
   960 dp au plus.
+- En tête : `KairosSegmentedRow` de la période (options `periodOptions(réglages)` : 4, 8, 12, la fenêtre des réglages si
+  elle n'y est pas, triées, puis « Tout » ; libellé `stats_period_weeks` / `stats_period_all`, `contentDescription`
+  « Période »), puis `FilterCard` de la vue Jour (`ui/day/Filters.kt`), et, filtre actif, `stats_filtered` (« Filtré : n sur
+  m tâches »). État local (`remember`) : rien n'est enregistré.
 - `StatTile` : `surfaceContainerLow`, valeur en `headlineSmall` ; seuil
   franchi = contour `outline` et icône `Warning`. Dans chaque `FlowRow`, une
   tuile prend `weight(1f)` et au moins 150 dp : quatre par ligne en largeur
@@ -160,6 +195,17 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   le rendu des statistiques est inchangé.
 
 ### Décisions et pièges tracés
+
+- **Filtres : la carte de la vue Jour** (choix du propriétaire, issue #114) : les mêmes facettes partout, plutôt que deux
+  menus propres aux Stats ; la priorité et les points viennent avec.
+- **La période ne touche pas la calibration** (choix du propriétaire) : elle porte sur tout l'historique depuis le
+  jalon M4 ; le filtre, lui, la restreint (« mes estimations sur les tâches Dev »).
+- **« Tout » borne le débit à 26 semaines** : une ligne par semaine sur deux ans faisait une liste de cent lignes ; un
+  débit par mois est différé.
+- **Sessions d'une tâche disparue** : comptées sans filtre (le tableau de bord d'avant les comptait), écartées dès qu'un
+  filtre est actif (elles ne correspondent à aucune tâche retenue).
+- **`remember` et non `rememberSaveable`** : `DayFilter` n'a pas de sauvegarde d'état Android ; comme la vue Jour et la
+  vue Semaine, le filtre ne survit pas à la recréation de l'écran, et la vue par défaut revient en quittant les Stats.
 
 - **Tests différentiels en UTC, écran en fuseau local** : les fichiers d'or
   (`stats.json`) portent des horodatages UTC, lus comme tels par

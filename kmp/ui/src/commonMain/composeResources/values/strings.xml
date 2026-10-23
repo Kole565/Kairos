@@ -1351,4 +1351,10 @@
     <string name="guide_reset_body">Read chapters, the hidden “New in this version” section and the first-task walkthrough come back as on day one. Your settings and tasks are not touched.</string>
     <string name="guide_reset_action">Start over</string>
     <string name="guide_reset_done">The guide starts over.</string>
+    <!-- Filtres des statistiques (docs/spec/statistiques.md § Filtres, issue #114). -->
+    <string name="stats_period">Period</string>
+    <string name="stats_period_weeks">%1$d wk</string>
+    <string name="stats_period_all">All</string>
+    <string name="stats_filtered">Filtered: %1$d of %2$d tasks</string>
+    <string name="stats_empty_filtered">Nothing for this filter. Change it or reset it above.</string>
 </resources>

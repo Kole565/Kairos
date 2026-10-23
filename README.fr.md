@@ -199,7 +199,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   signalés), avec « Annuler ».
 - **Statistiques** : débit hebdomadaire, calibration des estimations (temps
   réel médian par palier, biais), temps par type, flux, complétude. L’effectif
-  est affiché ; un petit échantillon est marqué « peu fiable ».
+  est affiché ; un petit échantillon est marqué « peu fiable ». À resserrer par
+  période (4, 8, 12 semaines ou tout) et avec la même recherche et les mêmes
+  filtres que la vue Jour (type, projet, priorité…) ; rien n’est enregistré.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
   chrono), comparées à ton rythme habituel. Cette carte observe seulement.
