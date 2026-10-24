@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team.forecast
 
+import com.skohscripts.kairos.ui.day.Levels
 import com.skohscripts.kairos.ui.day.DateChoice
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
@@ -56,7 +57,6 @@ import com.skohscripts.kairos.ui.generated.resources.mod_field_target
 import com.skohscripts.kairos.ui.generated.resources.mod_field_task
 import com.skohscripts.kairos.ui.generated.resources.mod_invalid_dates
 import com.skohscripts.kairos.ui.generated.resources.mod_nothing_to_pick
-import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
@@ -219,7 +219,8 @@ internal fun ModificationDialog(
                     )
                 }
                 if (type == ModType.SET_PRIORITY) {
-                    ChoiceField(stringResource(Res.string.mod_field_priority), "P$priority", PRIORITY_VALUES.map { it to "P$it" }, { priority = it }, Modifier.fillMaxWidth())
+                    val priorityNames = Levels.priorityShorts()
+                    ChoiceField(stringResource(Res.string.mod_field_priority), priorityNames.getValue(priority), PRIORITY_VALUES.map { it to priorityNames.getValue(it) }, { priority = it }, Modifier.fillMaxWidth())
                 }
                 if (type == ModType.SET_DEADLINE) {
                     DateButton(stringResource(Res.string.mod_field_deadline), deadline, language, choices.today) { picking = "deadline" }
@@ -237,9 +238,11 @@ internal fun ModificationDialog(
                         keyboardOptions = numberKeys, isError = built == null, modifier = Modifier.fillMaxWidth(),
                     )
                     val none = stringResource(Res.string.mod_none)
+                    val pointsNames = Levels.pointsShorts()
+                    val priorityNames = Levels.priorityShorts()
                     ChoiceField(
-                        stringResource(Res.string.mod_field_points), points?.let { stringResource(Res.string.points_badge, it) } ?: none,
-                        listOf<Pair<Int?, String>>(null to none) + FIBONACCI_SCALE.map { it to stringResource(Res.string.points_badge, it) },
+                        stringResource(Res.string.mod_field_points), points?.let { pointsNames.getValue(it) } ?: none,
+                        listOf<Pair<Int?, String>>(null to none) + FIBONACCI_SCALE.map { it to pointsNames.getValue(it) },
                         { points = it }, Modifier.fillMaxWidth(),
                     )
                     val noCategory = stringResource(Res.string.backlog_no_category)
@@ -249,8 +252,8 @@ internal fun ModificationDialog(
                         { category = it }, Modifier.fillMaxWidth(),
                     )
                     ChoiceField(
-                        stringResource(Res.string.mod_field_priority), addPriority?.let { "P$it" } ?: none,
-                        listOf<Pair<Int?, String>>(null to none) + PRIORITY_VALUES.map { it to "P$it" },
+                        stringResource(Res.string.mod_field_priority), addPriority?.let { priorityNames.getValue(it) } ?: none,
+                        listOf<Pair<Int?, String>>(null to none) + PRIORITY_VALUES.map { it to priorityNames.getValue(it) },
                         { addPriority = it }, Modifier.fillMaxWidth(),
                     )
                 }

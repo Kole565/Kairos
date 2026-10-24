@@ -33,7 +33,7 @@ internal fun PriorityPills(selected: Int?, onSelect: (Int?) -> Unit, showMeaning
                     selected = selected == p,
                     onClick = { onSelect(if (selected == p) null else p) },
                     label = {
-                        val name = "P$p ${stringResource(Levels.priorityName(p))}"
+                        val name = Levels.priorityLabel(p)
                         Text(if (showMeaning) "$name · ${stringResource(Levels.priorityMeaning(p))}" else name)
                     },
                 )
@@ -53,7 +53,7 @@ internal fun PointsPills(selected: Int?, onSelect: (Int?) -> Unit) {
                 KairosFilterChip(
                     selected = selected == points,
                     onClick = { onSelect(if (selected == points) null else points) },
-                    label = { Text("$points ${stringResource(Levels.pointsName(points))}") },
+                    label = { Text(Levels.pointsLabel(points)) },
                 )
             }
         }

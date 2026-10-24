@@ -142,6 +142,10 @@ posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
   guide « Comment estimer les points ? » montre, pour chaque palier, le temps
   réel médian de tes propres tâches terminées et deux exemples ; l’édition
   suggère une durée d’après ton historique.
+- **Noms des niveaux** (Réglages → Planification) : appelle les priorités et
+  les points avec tes mots (« Urgent », S/M/L…). Le badge montre ton nom, la
+  fiche et le guide le montrent avec sa valeur (« M (3) ») ; P0 reste rouge et
+  Kairos calcule toujours avec les valeurs.
 - **Creux de l’après-midi (14h55)** : pendant une fenêtre réglable (13 h → 16 h
   par défaut), Kairos évite d’y placer les tâches complexes et y fait remonter
   les légères. Les échéances et le chemin critique priment toujours ; le score
@@ -355,12 +359,14 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
 | | Apparence | Thème sombre (interrupteur à deux états) | suit le système |
 | | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
+| | Mises à jour (Android, APK installé à la main) | Version installée, « Voir la dernière version » | |
 | | Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
 | Journée et horaires | Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
 | | Horaires par jour de la semaine | Comme d’habitude, personnalisé (une à quatre plages) ou jour libre | comme d’habitude |
 | | Contextes | Jusqu’à quatre, chacun avec ses types de tâche | aucun |
 | | Jours fériés | Calendrier français, dates supplémentaires | activé |
 | Planification | Types de tâches | Liste des types | |
+| | Noms des niveaux | Un nom par priorité et par palier de points (16 caractères au plus) | noms par défaut |
 | | Meilleures heures | Préférer mes heures habituelles, force, heure préférée par type | désactivé |
 | | Durées apprises | Activé, occurrences considérées, occurrences nécessaires | activé, 5, 3 |
 | | Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |

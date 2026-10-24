@@ -124,7 +124,7 @@ since, tour)`, **dans l'ordre de la visite**.
   `FirstTask` (lance l'accompagnement de `premiere-tache.md`, sans changer d'écran ; le bouton devient « Créer ma première
   tâche »).
 - **Sections** (`GuideSection`, issue #95) : `DAY_INBOX`, `DAY_AGENDA`, `DAY_NOW`, `DAY_BLOCKED`, `DAY_PARENTS`,
-  `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_HOLIDAYS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`,
+  `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_HOLIDAYS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`, `SETTINGS_LEVELS`,
   `SETTINGS_APPEARANCE`, `SETTINGS_DATA`, `STATS_HOURS` ; chacune
   connaît son écran (`screen`), sa catégorie des Réglages (`settingsCategory`) et son message d'absence (`missing`, pour
   les sections qui peuvent manquer). `AppShell.openTarget` pose la demande dans `NavState.guideSpot`
@@ -159,6 +159,8 @@ since, tour)`, **dans l'ordre de la visite**.
   `CalendarMonth`), `stats_correct` (corriger les estimations, #101 ; Stats, chapitre « Suivre », icône `EditNote`), `stats_trends`
   (évolutions des statistiques, #112 ; Stats, chapitre « Suivre », icône `ShowChart`), `reminders` (rappels, #103 ;
   section `SETTINGS_REMINDERS`, chapitre « Réglages », icône `Alarm`).
+- **Cartes de la 3.9.0** : `level_names` (noms des niveaux, #93 ; section `SETTINGS_LEVELS` de la catégorie
+  Planification, chapitre « Planifier », icône `Flag`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section

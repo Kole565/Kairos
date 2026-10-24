@@ -74,6 +74,11 @@ data class Settings(
      * défaut de [ReminderSettings] (désactivés) ; même règle que [learning].
      */
     val reminders: ReminderSettings? = null,
+    /**
+     * Noms choisis des niveaux de priorité et de points (docs/spec/planning-personnalise.md § Lot D, issue #93). `null` tant
+     * qu'aucun nom n'est choisi : même règle que [team]. Affichage seulement : le calcul et les échanges gardent les valeurs.
+     */
+    val levelNames: LevelNames? = null,
 ) {
     /** L'espace Équipe est activé (valeur enregistrée). */
     val teamModeEnabled: Boolean get() = team?.enabled == true
@@ -179,3 +184,19 @@ data class GuideSettings(
     @EncodeDefault(EncodeDefault.Mode.NEVER) val readChapters: List<String> = emptyList(),
     @EncodeDefault(EncodeDefault.Mode.NEVER) val firstTaskDone: Boolean = false,
 )
+
+/**
+ * Noms choisis des niveaux, sous-objet [Settings.levelNames] : [priority] valeur de `PRIORITY_VALUES` → nom, [points] palier
+ * de `FIBONACCI_SCALE` → nom. Un niveau sans nom est absent (il garde son nom par défaut) ; aucun n'est écrit vide.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+data class LevelNames(
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val priority: Map<Int, String> = emptyMap(),
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val points: Map<Int, String> = emptyMap(),
+) {
+    companion object {
+        /** Un badge doit tenir dans une ligne de tâche à 360 dp. */
+        const val MAX_LENGTH = 16
+    }
+}

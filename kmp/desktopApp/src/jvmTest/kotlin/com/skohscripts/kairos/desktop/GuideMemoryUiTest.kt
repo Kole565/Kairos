@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.guide.GuideChapter
+import com.skohscripts.kairos.ui.guide.FeatureCatalog
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -93,19 +95,20 @@ class GuideMemoryUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
         openHub()
-        // Ouvert puis refermé avant la fin : pas « lu ».
+        // Ouvert puis refermé avant la fin : pas « lu ». Nombre de cartes tiré du catalogue.
+        val plan = FeatureCatalog.chapter(GuideChapter.PLAN).size
         onNodeWithText("Plan").performClick()
-        waitText("Step 1 of 5")
+        waitText("Step 1 of $plan")
         onNodeWithText("Skip the tour").performClick()
         assertEquals(null, services.repository.snapshot.value.settings.guide)
         openHub()
         onNodeWithText("Plan").performClick()
-        waitText("Step 1 of 5")
-        repeat(4) { onNodeWithText("Next").performClick() }
+        waitText("Step 1 of $plan")
+        repeat(plan - 1) { onNodeWithText("Next").performClick() }
         onNodeWithText("Finish").performClick()
         waitUntil(timeoutMillis = 15_000) { services.repository.snapshot.value.settings.guide?.readChapters == listOf("PLAN") }
         openHub()
-        waitText("5 cards · read")
+        waitText("$plan cards · read")
     }
 
     @Test

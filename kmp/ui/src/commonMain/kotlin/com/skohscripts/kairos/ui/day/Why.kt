@@ -109,7 +109,7 @@ internal fun ScoreBadge(
                         Text(stringResource(Res.string.why_overdue), style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                val priority = task.priority?.let { "P$it ${stringResource(Levels.priorityName(it))}" }
+                val priority = task.priority?.let { Levels.priorityLabel(it) }
                 Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value, uiLanguage()))
                 Term(dateLabel(why), "+ ${Dates.number(why.criticality, uiLanguage())}")
                 val effort = when (why.effortSource) {

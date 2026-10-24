@@ -329,6 +329,8 @@ internal fun SettingsFormCards(
         }
         SettingsCategory.PLANNING -> {
             SectionCard(TYPES, values, errors, onChange)
+            // Les noms des niveaux sont du vocabulaire, comme les types (docs/spec/planning-personnalise.md § Lot D).
+            GuideSpot(GuideSection.SETTINGS_LEVELS) { LevelNamesCard(values, errors, onChange) }
             // Les heures préférées se donnent par type : la carte suit les types.
             GuideSpot(GuideSection.SETTINGS_BEST_HOURS) { BestHoursCard(values, errors, onChange) }
             GuideSpot(GuideSection.SETTINGS_LEARNED) { SectionCard(LEARNING, values, errors, onChange) }

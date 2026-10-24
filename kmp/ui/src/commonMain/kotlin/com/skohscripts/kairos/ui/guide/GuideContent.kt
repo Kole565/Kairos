@@ -70,6 +70,7 @@ enum class GuideSection(
     SETTINGS_HOLIDAYS(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_BEST_HOURS(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
     SETTINGS_LEARNED(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
+    SETTINGS_LEVELS(GuideScreen.SETTINGS, SettingsCategory.PLANNING),
     SETTINGS_APPEARANCE(GuideScreen.SETTINGS, SettingsCategory.GENERAL),
     SETTINGS_DATA(GuideScreen.SETTINGS, SettingsCategory.DATA),
     SETTINGS_REMINDERS(GuideScreen.SETTINGS, SettingsCategory.TRACKING),

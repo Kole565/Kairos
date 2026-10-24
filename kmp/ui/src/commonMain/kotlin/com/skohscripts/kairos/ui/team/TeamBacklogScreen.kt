@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.day.Levels
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosListBlockExtra
 import com.skohscripts.kairos.ui.theme.KairosListSectionExtra
@@ -103,7 +104,6 @@ import com.skohscripts.kairos.ui.generated.resources.deadline_badge
 import com.skohscripts.kairos.ui.generated.resources.filter_all
 import com.skohscripts.kairos.ui.generated.resources.filter_search
 import com.skohscripts.kairos.ui.generated.resources.filter_search_placeholder
-import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.generated.resources.suggest_action
 import com.skohscripts.kairos.ui.generated.resources.priority_label
 import com.skohscripts.kairos.ui.icons.KairosIcons
@@ -314,9 +314,10 @@ private fun BacklogFilters(
             )
             val all = stringResource(Res.string.filter_all)
             val none = stringResource(Res.string.backlog_no_category)
+            val priorityNames = Levels.priorityShorts()
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                 Facet(stringResource(Res.string.backlog_filter_category), category, categories + "", { it.ifEmpty { none } }, all, width = 140.dp) { onCategory(it) }
-                Facet(stringResource(Res.string.priority_label), priority, PRIORITY_VALUES, { "P$it" }, all, width = 140.dp) { onPriority(it) }
+                Facet(stringResource(Res.string.priority_label), priority, PRIORITY_VALUES, priorityNames::getValue, all, width = 140.dp) { onPriority(it) }
                 KairosFilterChip(
                     selected = withDeadline,
                     onClick = { onWithDeadline(!withDeadline) },
@@ -428,7 +429,7 @@ private fun RowKeys(card: TeamCard, why: Scheduling.WsjfBreakdown?, language: St
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
         why?.let { ScoreBadge(task, it, language) }
         task.priority?.let { PriorityBadge(it) }
-        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it)) }
+        task.fibonacciPoints?.let { Badge(Levels.pointsShort(it)) }
     }
 }
 
@@ -490,7 +491,7 @@ private fun SelectionBar(
                     KairosOutlinedButton(onClick = { priority = true }) { Text(stringResource(Res.string.backlog_bulk_priority)) }
                     DropdownMenu(expanded = priority, onDismissRequest = { priority = false }) {
                         PRIORITY_VALUES.forEach { p ->
-                            DropdownMenuItem(text = { Text("P$p") }, onClick = { priority = false; onPriority(p) })
+                            DropdownMenuItem(text = { Text(Levels.priorityShort(p)) }, onClick = { priority = false; onPriority(p) })
                         }
                         HorizontalDivider()
                         DropdownMenuItem(text = { Text(stringResource(Res.string.backlog_no_priority)) }, onClick = { priority = false; onPriority(null) })

@@ -57,7 +57,7 @@ enum class SettingsCategory(val title: StringResource, val hint: StringResource,
             // Les meilleures heures vivent sous `schedule.` mais servent à ordonner, pas à borner la journée.
             key.startsWith("schedule.bestHours.") -> PLANNING
             key in DAY_KEYS || key.startsWith("schedule.") -> DAY
-            key in PLANNING_KEYS || key.startsWith("learning.") -> PLANNING
+            key in PLANNING_KEYS || key.startsWith("learning.") || key.startsWith("levelNames.") -> PLANNING
             key in TRACKING_KEYS || key.startsWith("reminders.") -> TRACKING
             key.startsWith("team.") -> TEAM
             else -> error("Champ des Réglages sans catégorie : $key")

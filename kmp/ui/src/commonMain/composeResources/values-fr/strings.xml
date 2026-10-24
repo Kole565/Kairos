@@ -405,6 +405,14 @@
     <string name="guide_points_title">Comment estimer les points ?</string>
     <string name="guide_points_intro">Taille relative (jamais des heures) : volume × complexité × incertitude (« est-ce que je sais comment faire ? »). Compare à tes propres tâches déjà faites : « plus grosse que celle-ci, plus petite que celle-là ». En quelques secondes ; dans le doute, arrondis au-dessus.</string>
     <string name="guide_points_level">%1$d · %2$s : %3$s</string>
+    <string name="guide_points_named">%1$s (%2$d) : %3$s</string>
+    <string name="level_named_priority">%1$s (P%2$d)</string>
+    <string name="level_named_points">%1$s (%2$d)</string>
+    <string name="settings_section_levels">Noms des niveaux</string>
+    <string name="settings_section_levels_body">Tes mots à la place de P0–P2 et des points. Kairos calcule toujours avec les valeurs : seul l’affichage change. Laisse vide pour garder le nom par défaut.</string>
+    <string name="levels_priority_title">Priorités</string>
+    <string name="levels_points_title">Points</string>
+    <string name="level_name_too_long">%1$s caractères au plus.</string>
     <string name="guide_points_outro">Distinct de la durée : les points nourrissent l’ordre (l’effort divise le score), la durée sert au placement dans la journée. Une tâche peut être courte mais tordue, ou longue mais mécanique.</string>
     <string name="guide_points_yours">chez toi ≈ %1$s (médiane sur %2$d tâche(s))</string>
     <string name="guide_points_yours_unreliable">chez toi ≈ %1$s (médiane sur %2$d tâche(s), peu fiable)</string>
@@ -1385,6 +1393,8 @@
     <string name="card_correct_body">Dans les Statistiques, « Corriger les estimations… » remplace l’estimation de tâches terminées par le temps chronométré, après un aperçu où l’on décoche ce qu’on garde ; « Annuler » rend les anciennes.</string>
     <string name="card_trends_title">Voir les choses évoluer</string>
     <string name="card_trends_body">Les Statistiques montrent le temps chronométré jour par jour et le biais d’estimation semaine par semaine, chaque graphique avec son résumé écrit.</string>
+    <string name="card_level_names_title">Noms des niveaux</string>
+    <string name="card_level_names_body">Appelle les priorités et les points avec tes mots (« Urgent », S/M/L…). Le badge montre ton nom, la fiche et le guide le montrent avec sa valeur (« M (3) ») ; P0 reste rouge et Kairos calcule toujours avec les valeurs.</string>
     <string name="card_reminders_title">Des rappels avant l’heure</string>
     <string name="card_reminders_body">Dans Réglages → Chrono et statistiques, les rappels préviennent avant une tâche à heure fixe et, si tu le veux, quand le plan passe à la tâche suivante. Désactivés par défaut.</string>
     <string name="card_settings_categories_title">Des réglages rangés par catégories</string>
@@ -1442,7 +1452,7 @@
     <string name="settings_cat_day">Journée et horaires</string>
     <string name="settings_cat_day_hint">Journée de travail, horaires par jour de la semaine, contextes, jours fériés</string>
     <string name="settings_cat_planning">Planification</string>
-    <string name="settings_cat_planning_hint">Types de tâches, meilleures heures, durées apprises, garde-fous, score de priorité</string>
+    <string name="settings_cat_planning_hint">Types de tâches, noms des niveaux, meilleures heures, durées apprises, garde-fous, score de priorité</string>
     <string name="settings_cat_tracking">Chrono et statistiques</string>
     <string name="settings_cat_tracking_hint">Alertes du chrono, rappels, fenêtre des statistiques</string>
     <string name="settings_cat_team">Équipe</string>

@@ -134,6 +134,10 @@ qualify?" recalls the rule.
   "How to estimate points?" shows, for each level, the median real time of
   your own finished tasks and two examples; editing suggests a duration based
   on your history.
+- **Level names** (Settings → Planning): call the priorities and the points
+  in your own words ("Urgent", S/M/L…). The badge shows your name, the sheet
+  and the guide show it with its value ("M (3)"); P0 stays red and Kairos still
+  computes with the values.
 - **Afternoon dip (14h55)**: during an adjustable window (1 pm → 4 pm by
   default), Kairos avoids placing complex tasks there and pulls light ones up.
   Deadlines and the critical path always come first; the displayed score does
@@ -340,12 +344,14 @@ you press "Save").
 | | Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
 | | Appearance | Dark theme (two-state switch) | follows the system |
 | | Updates (desktop) | Check for new versions | on |
+| | Updates (Android, APK installed by hand) | Installed version, "See the latest version" | |
 | | Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
 | Day and hours | Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
 | | Hours by day of the week | Usual, custom (one to four windows) or day off | usual |
 | | Contexts | Up to four, each with its task types | none |
 | | Public holidays | French calendar, extra dates | on |
 | Planning | Task types | List of types | |
+| | Level names | A name for each priority and each points level (16 characters at most) | default names |
 | | Best hours | Prefer my usual hours, strength, preferred hour per type | off |
 | | Learned durations | On/off, occurrences considered, occurrences needed | on, 5, 3 |
 | | Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |

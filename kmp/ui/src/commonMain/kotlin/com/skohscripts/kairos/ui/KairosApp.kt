@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui
 
+import com.skohscripts.kairos.core.model.LevelNames
+import com.skohscripts.kairos.ui.day.LocalLevelNames
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -121,7 +123,13 @@ fun KairosApp(
                             val language = UiLanguage.resolve(settings.language, system)
                             // Posée pendant la composition, avant que l'interface (en dessous) lise la locale.
                             remember(language) { ready.applyLanguage(language) }
-                            CompositionLocalProvider(LocalUiLanguage provides language, LocalSystemColorScheme provides systemColorScheme?.invoke(dark)) {
+                            // Noms des niveaux choisis (docs/spec/planning-personnalise.md § Lot D) : affichage seulement, partout dans l'interface.
+                            val levelNames = settings.levelNames ?: LevelNames()
+                            CompositionLocalProvider(
+                                LocalUiLanguage provides language,
+                                LocalSystemColorScheme provides systemColorScheme?.invoke(dark),
+                                LocalLevelNames provides levelNames,
+                            ) {
                                 KairosTheme(scheme, dark, light) { KairosShell(platform, ready, language, initialDestination, initialTeamDestination, initialSecondary) }
                             }
                         }

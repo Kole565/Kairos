@@ -67,7 +67,6 @@ import com.skohscripts.kairos.ui.generated.resources.spent_of_estimate
 import com.skohscripts.kairos.ui.generated.resources.action_undo
 import com.skohscripts.kairos.ui.generated.resources.deadline_badge
 import com.skohscripts.kairos.ui.generated.resources.description_expand
-import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.generated.resources.tag_recurring
 import com.skohscripts.kairos.ui.generated.resources.tag_scheduled
 import com.skohscripts.kairos.ui.generated.resources.tag_stale
@@ -404,7 +403,7 @@ private fun KeyBadges(task: Task, ctx: RowContext) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
         if (task.status == TaskStatus.TODO) ctx.view.why[task.id]?.let { ScoreBadge(task, it, ctx.language, ctx.view.learned[task.id], ctx.learning, ctx.view.schedule.scheduled.firstOrNull { s -> s.task.id == task.id }?.affinity) }
         task.priority?.let { PriorityBadge(it) }
-        task.fibonacciPoints?.let { Badge(stringResource(Res.string.points_badge, it), nowrap = true) }
+        task.fibonacciPoints?.let { Badge(Levels.pointsShort(it), nowrap = true) }
     }
 }
 
@@ -496,13 +495,14 @@ internal fun Muted(text: String) {
     Text(text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
-/** Priorité : seule P0 est rouge (conteneur d'erreur), P1/P2 neutres en gras. */
+/** Priorité : seule P0 est rouge (conteneur d'erreur), P1/P2 neutres en gras ; un nom choisi remplace le code, pas la couleur. */
 @Composable
 internal fun PriorityBadge(priority: Int) {
     val scheme = MaterialTheme.colorScheme
+    val text = Levels.priorityShort(priority)
     if (priority == 0) {
-        Badge("P0", scheme.errorContainer, scheme.onErrorContainer, bold = true)
+        Badge(text, scheme.errorContainer, scheme.onErrorContainer, bold = true)
     } else {
-        Badge("P$priority", content = scheme.onSurface, bold = true)
+        Badge(text, content = scheme.onSurface, bold = true)
     }
 }
