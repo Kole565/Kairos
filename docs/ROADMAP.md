@@ -16,10 +16,16 @@ utilisateurs) ; ce document est en français comme le reste de `docs/`.
 |---|---|
 | `3.7.0` | Version préparée (`30700`, notes de version FR/EN ; tag `v3.7.0` posé par le propriétaire) : suites du guide (#94, #95), déplacer depuis la vue Semaine (#106), fériés des créneaux « jours ouvrés » par défaut (#109), export et filtres des statistiques (#113, #114), thème sombre (#72), Réglages par catégories (PR #124). |
 | `3.8.0` | Prochaine version : vue Mois, créneaux mensuels, occurrence unique, graphiques de statistiques, correction des estimations, accompagnement de la fiche Équipe. |
+| `3.9.0` | Suites déjà spécifiées ou écartées « pour l'instant » : échanges et capacité de l'Équipe (#104, #120, #121), accompagnement des récurrences et des Réglages (#98), noms des niveaux (#93), meilleures heures v2 (#105), réglages avancés (#115). Brouillon, plusieurs issues y attendent encore une décision. |
+| `4.0.0` | **Version majeure** : ce qui change le modèle de données, le format d'échange ou une décision fondatrice de `docs/spec/`, donc ne peut pas entrer dans une version mineure. Aujourd'hui : synchronisation par fichier entre appareils (#88) et ses suites (#100), estimateur appris (#99, réservé à une version majeure par `durees-apprises.md`), plusieurs équipes par base (#118). |
 | `Backlog` | Non planifié : décision ou spec à écrire d'abord, dépendance externe (signature, synchronisation) ou attente de retours. |
 
-Le contenu de `3.8.0` est un **brouillon de planification** (issues #93 à
-#121 réparties le 2026-10-19) : un milestone se déplace librement, rien n'est promis.
+Le contenu de `3.8.0`, `3.9.0` et `4.0.0` est un **brouillon de planification**
+(issues #93 à #121 réparties le 2026-10-19, `3.9.0` et `4.0.0` remplis le 2026-10-24) :
+un milestone se déplace librement, rien n'est promis. Seule la **prochaine version** doit
+être « propre » (voir ci-dessous) ; `3.9.0` et `4.0.0` sont des horizons et gardent les
+labels d'état de leurs issues, qui disent ce qu'il reste à trancher avant de les tirer
+vers la prochaine version.
 Une version n'est plus « brouillon » quand ses issues ont une spec à jour dans
 `docs/spec/` (étape 1 du workflow de `CLAUDE.md`).
 
@@ -37,7 +43,8 @@ Une version n'est plus « brouillon » quand ses issues ont une spec à jour dan
 - Un **type** (`bug` ou `enhancement`), au moins un **domaine**.
 - Un **milestone** : une version quand l'issue est planifiée, `Backlog` sinon.
 - Une issue du `Backlog` porte un **label d'état** qui dit ce qui la retient ; une issue
-  rangée dans une version n'en porte plus (`deferred` et `needs-*` sortent à la planification).
+  rangée dans **la prochaine version** n'en porte plus (`deferred` et `needs-*` sortent à la
+  planification) ; dans une version plus lointaine (`3.9.0`, `4.0.0`), elle les garde.
 - Un retour utilisateur non encore qualifié porte `feedback` (vue `Feedback` du Project).
 - Les issues closes gardent leurs labels de type et de domaine (historique cherchable).
 
