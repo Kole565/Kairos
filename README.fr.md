@@ -76,7 +76,10 @@ bon fichier pour ton système. Tous les fichiers, et leurs sommes de contrôle
 - **Android** : autoriser l’installation depuis le navigateur ou le
   gestionnaire de fichiers quand Android le demande (inutile depuis F-Droid).
 
-**Mises à jour.** Sur Android, par F-Droid ou un nouvel APK. Sur
+**Mises à jour.** Sur Android, par F-Droid ou un nouvel APK ; avec un APK
+installé à la main, Réglages → Général → Mises à jour montre ta version et « Voir
+la dernière version » ouvre la page de téléchargement (Kairos ne se connecte
+toujours pas). Sur
 le bureau, Kairos vérifie toutes les 6 heures s’il existe une nouvelle version
 et l’annonce dans un bandeau (« Télécharger » ouvre sa page) ; réglage dans
 Réglages → Général → Mises à jour. La version web est toujours la dernière.
@@ -139,6 +142,10 @@ posés, en un toucher sur des pastilles qui disent ce que vaut chaque choix
   guide « Comment estimer les points ? » montre, pour chaque palier, le temps
   réel médian de tes propres tâches terminées et deux exemples ; l’édition
   suggère une durée d’après ton historique.
+- **Noms des niveaux** (Réglages → Planification) : appelle les priorités et
+  les points avec tes mots (« Urgent », S/M/L…). Le badge montre ton nom, la
+  fiche et le guide le montrent avec sa valeur (« M (3) ») ; P0 reste rouge et
+  Kairos calcule toujours avec les valeurs.
 - **Creux de l’après-midi (14h55)** : pendant une fenêtre réglable (13 h → 16 h
   par défaut), Kairos évite d’y placer les tâches complexes et y fait remonter
   les légères. Les échéances et le chemin critique priment toujours ; le score
@@ -222,11 +229,13 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   l’on décoche celles à garder ; « Annuler » rend les anciennes estimations.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
-  chrono), comparées à ton rythme habituel. Cette carte observe seulement.
+  chrono), comparées à ton rythme habituel, et celle où tu le finis le plus vite
+  au regard de tes estimations. Cette carte observe seulement.
 - **Meilleures heures** (Réglages, désactivé par défaut) : le planning préfère,
   entre des tâches de score voisin, les heures où tu travailles d’habitude chaque
-  type (détectées avec le chrono, force Faible / Moyenne / Forte) ou l’heure
-  préférée que tu donnes à un type. Les tâches en retard et l’urgence passent
+  type, celles où tu le finis plus vite que prévu, ou les deux (détectées avec le
+  chrono, force Faible / Moyenne / Forte), ou l’heure préférée que tu donnes à un
+  type. Les tâches en retard et l’urgence passent
   toujours avant ; la vue Jour dit quand cela a joué.
 
 ### Données
@@ -235,6 +244,13 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   permission), aucun compte.
 - **Export et import** JSON (Réglages → Données) ; une sauvegarde automatique
   précède chaque import.
+- Sur le bureau, le **dossier des données** peut changer (Réglages → Données →
+  « Changer de dossier… », pour un dossier synchronisé ou chiffré) ou être fixé
+  au lancement avec `--data-dir=<dossier>` ; il sert au prochain démarrage, et
+  tes données sont copiées, jamais déplacées. Réglages → À propos →
+  **Diagnostic** : un journal local facultatif (désactivé par défaut, sans le
+  contenu de tes tâches) et « Copier le diagnostic » pour un rapport de bug.
+  La vérification des mises à jour suit le proxy du système.
 - **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
 - Interface en **français** et en **anglais** : la langue du système (français
@@ -266,6 +282,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   reste masquée pour la version une fois fermée. Réglages → À propos → « Revoir
   le guide depuis le début » fait tout revenir. « Voir l’écran » défile jusqu’à l’endroit
   dont parle la carte et le met en valeur un instant.
+- **Récurrente et Réglages pas à pas** : dans « Découvrir Kairos », « Créer ma
+  première tâche récurrente » te guide dans la vraie fiche et montre, pour
+  chaque règle, la prochaine échéance qu’elle produirait ; « Régler Kairos pas à
+  pas » passe par la journée de travail, les horaires, les contextes et les
+  meilleures heures, une carte à la fois, et n’enregistre rien avant que tu
+  appuies sur Enregistrer.
 
 ### Gestion d'équipe (facultative)
 
@@ -275,7 +297,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   Équipe activé), Kairos te guide dans la fiche d’une tâche d’équipe, champ par
   champ (titulaire et sa charge, priorité et taille, effort, échéance,
   catégorie), puis dit où la tâche est arrivée. Rien n’est écrit si tu renonces.
-- **Membres** : quotité, heures par jour, absences ; « C’est moi » fait
+- **Membres** : quotité, heures par jour (ou des heures différentes du lundi
+  au vendredi, un jour à 0 étant libre, pour une semaine de quatre jours),
+  absences ; « C’est moi » fait
   apparaître dans votre vue Jour les tâches d’équipe qui vous sont
   assignées.
 - **Backlog** d’équipe trié par le même score WSJF, catégories = types de
@@ -308,7 +332,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   intègre après un aperçu. Pour chaque membre, l’onglet montre la date du
   dernier paquet et du dernier rapport, et signale « En attente de son
   rapport ». Chacun garde la main sur ses champs ; rien n’est supprimé sans
-  qu’on le choisisse.
+  qu’on le choisisse. Chaque tâche peut porter une **note** courte dans chaque
+  sens (« Bloquée en attendant la clé d’API »), affichée avec son auteur et sa
+  date et gardée dans l’historique de la tâche. Un membre peut aussi
+  **proposer** une de ses tâches au manager : elle part avec le prochain
+  rapport (titre, description, durée, type), et le manager l’ajoute au
+  backlog, la refuse ou décide plus tard.
 - Un seul utilisateur, le manager : tout reste sur l’appareil, sans compte
   ni réseau ; les fichiers circulent comme on veut (courriel, clé USB…).
 
@@ -352,13 +381,15 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
 | | Apparence | Thème sombre (interrupteur à deux états) | suit le système |
 | | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
+| | Mises à jour (Android, APK installé à la main) | Version installée, « Voir la dernière version » | |
 | | Raccourci (bureau, version portable) | Créer, mettre à jour ou retirer le raccourci | proposé au lancement |
 | Journée et horaires | Journée de travail | Durée par défaut, marge après un créneau, début et fin | 30 min, 5 min, 9 h – 18 h |
 | | Horaires par jour de la semaine | Comme d’habitude, personnalisé (une à quatre plages) ou jour libre | comme d’habitude |
 | | Contextes | Jusqu’à quatre, chacun avec ses types de tâche | aucun |
 | | Jours fériés | Calendrier français, dates supplémentaires | activé |
 | Planification | Types de tâches | Liste des types | |
-| | Meilleures heures | Préférer mes heures habituelles, force, heure préférée par type | désactivé |
+| | Noms des niveaux | Un nom par priorité et par palier de points (16 caractères au plus) | noms par défaut |
+| | Meilleures heures | Préférer mes heures habituelles, force, mesurer par (fréquence, efficacité, les deux), heure préférée par type | désactivé, moyenne, fréquence |
 | | Durées apprises | Activé, occurrences considérées, occurrences nécessaires | activé, 5, 3 |
 | | Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
 | | Score de priorité (WSJF), avancé | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |
@@ -367,7 +398,9 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Statistiques | Fenêtre des indicateurs | 8 semaines |
 | Équipe | Équipe | Gestion d’équipe, puis ses seuils, sa charge et ses prévisions | désactivé |
 | Données | Données, réglages par défaut | Export, import, restaurer les valeurs par défaut | |
+| | Dossier des données (bureau) | Changer de dossier…, revenir au dossier par défaut (prochain démarrage) | dossier du système |
 | À propos | | Découvrir Kairos, À propos et guide, revoir le guide depuis le début | |
+| | Diagnostic (bureau) | Tenir un journal de diagnostic, copier le diagnostic | désactivé |
 
 ## Développement
 

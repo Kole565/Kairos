@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.core.team.Capacity
+import com.skohscripts.kairos.ui.generated.resources.member_summary_week
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
@@ -283,7 +285,7 @@ private fun MemberCard(member: TeamMember, absence: MemberAbsence?, today: Local
                     Text(member.role, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text(
-                    stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, uiLanguage())),
+                    memberSummary(member),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 if (absence != null) {
@@ -520,9 +522,9 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
             onSave = { valid, isSelf ->
                 scope.launch {
                     if (member == null) {
-                        repository.createMember(valid.name, valid.role, valid.availabilityPercent, valid.hoursPerDay, isSelf)
+                        repository.createMember(valid.name, valid.role, valid.availabilityPercent, valid.hoursPerDay, isSelf, valid.weekHours)
                     } else {
-                        repository.updateMember(member.id, valid.name, valid.role, valid.availabilityPercent, valid.hoursPerDay, isSelf)
+                        repository.updateMember(member.id, valid.name, valid.role, valid.availabilityPercent, valid.hoursPerDay, isSelf, valid.weekHours)
                     }
                     onDismiss()
                 }
@@ -551,5 +553,16 @@ internal fun MemberSheet(services: AppServices, memberId: Long?, load: Computed<
                 )
             },
         )
+    }
+}
+
+/** « 80 % · 7 h/j », ou avec une semaine type (issue #104) « 80 % · 4 j · 30 h/sem. ». */
+@Composable
+internal fun memberSummary(member: TeamMember): String {
+    val week = member.weekHours
+    return if (week == null) {
+        stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, uiLanguage()))
+    } else {
+        stringResource(Res.string.member_summary_week, member.availabilityPercent, Capacity.workdays(member), decimalText(week.sum(), uiLanguage()))
     }
 }

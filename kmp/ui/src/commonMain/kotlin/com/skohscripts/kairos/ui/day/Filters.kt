@@ -91,11 +91,13 @@ internal fun FilterCard(
                     modifier = Modifier.fillMaxWidth().focusRequester(searchFocus).quietShortcuts(),
                 )
                 val all = stringResource(Res.string.filter_all)
+                val priorityNames = Levels.priorityShorts()
+                val pointsNames = LocalLevelNames.current.points
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Facet(stringResource(Res.string.priority_label), filter.priority, PRIORITY_VALUES, { "P$it" }, all) { onChange(filter.copy(priority = it)) }
+                    Facet(stringResource(Res.string.priority_label), filter.priority, PRIORITY_VALUES, priorityNames::getValue, all) { onChange(filter.copy(priority = it)) }
                     Facet(stringResource(Res.string.field_project), filter.project, projects, { it }, all) { onChange(filter.copy(project = it)) }
                     Facet(stringResource(Res.string.field_type), filter.taskType, taskTypes, { it }, all) { onChange(filter.copy(taskType = it)) }
-                    Facet(stringResource(Res.string.points_label), filter.points, FIBONACCI_SCALE, { "$it" }, all) { onChange(filter.copy(points = it)) }
+                    Facet(stringResource(Res.string.points_label), filter.points, FIBONACCI_SCALE, { pointsNames[it] ?: "$it" }, all) { onChange(filter.copy(points = it)) }
                 }
                 if (filter.active) {
                     KairosTextButton(onClick = { onChange(DayFilter()) }) { Text(stringResource(Res.string.filter_reset)) }

@@ -47,6 +47,8 @@ data class TeamEvent(
  * - `time` (jalon E6) : temps passé rapporté par le membre, `fromValue` / `toValue` = total en minutes
  *   (`fromValue` nul au premier rapport). Pour tout événement de source `report`, `memberId` est le
  *   membre qui a **rapporté** (et non l'assigné actuel : une tâche réaffectée depuis garde l'auteur du travail).
+ * - `note` (3.9.0, docs/spec/equipe-echanges.md § Notes) : `toValue` = texte de la note ; source `report`, note reçue du
+ *   membre ; sinon note envoyée dans un paquet (`memberId` = destinataire).
  */
 enum class TeamEventKind(val code: String) {
     CREATED("created"),
@@ -59,6 +61,7 @@ enum class TeamEventKind(val code: String) {
     DELETED("deleted"),
     SENT("sent"),
     TIME("time"),
+    NOTE("note"),
     UNKNOWN("unknown"),
     ;
 

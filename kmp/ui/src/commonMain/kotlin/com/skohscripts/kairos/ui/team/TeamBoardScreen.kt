@@ -272,7 +272,7 @@ private fun LaneCard(
             ) {
                 Text(member.name, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 if (member.isSelf) SelfBadge()
-                Muted(stringResource(Res.string.member_summary, member.availabilityPercent, decimalText(member.hoursPerDay, uiLanguage())))
+                Muted(memberSummary(member))
                 Muted(stringResource(Res.string.board_lane_count, lane.inProgressCount))
                 if (lane.wipExceeded) WarnBadge(stringResource(Res.string.board_lane_wip, lane.inProgressCount, wipLimit))
             }

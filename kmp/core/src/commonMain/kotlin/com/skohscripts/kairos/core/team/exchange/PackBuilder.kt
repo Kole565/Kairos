@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -49,6 +50,7 @@ object PackBuilder {
                 deadline = t.deadline,
                 estimatedMinutes = t.estimatedMinutes,
                 progressPercent = t.progressPercent,
+                note = ExchangeNote.clean(t.noteOut),
             )
         }
 

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.data.db.KairosDatabase
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
@@ -38,6 +39,9 @@ object DesktopServices {
         notifier: ChronoNotifier = NoNotifier,
         /** Copie portable (docs/spec/raccourci-portable.md), `null` pour une version installée. */
         portable: PortableCopy? = null,
+        /** Dossier des données choisi et journal de diagnostic (docs/spec/bureau-avance.md) ; `null` pour l'auto-test. */
+        folder: DesktopDataFolder? = null,
+        diagnostics: FileDiagnostics? = null,
     ): AppServices = withContext(Dispatchers.IO) {
         dataDir.mkdirs()
         val url = if (inMemory) JdbcSqliteDriver.IN_MEMORY else "jdbc:sqlite:${File(dataDir, DATABASE_FILE).absolutePath}"
@@ -49,6 +53,7 @@ object DesktopServices {
             examples = { ExampleData.snapshot(clock.todayIn(TimeZone.currentSystemDefault()), clock.now(), language) },
             clock = clock,
         )
+        diagnostics?.log("db.open ${if (opened.created) "created" else "schema ${KairosDatabase.Schema.version}"} tasks=${repository.snapshot.value.tasks.size}")
         AppServices(
             repository = repository,
             files = DialogFiles,
@@ -58,10 +63,12 @@ object DesktopServices {
             notifier = notifier,
             // L'auto-test (base en mémoire) rend l'interface habituelle, sans l'accueil ni réseau.
             firstLaunch = opened.created && !inMemory,
-            updates = if (inMemory) null else DesktopUpdates(File(dataDir, "updates.json")),
+            updates = if (inMemory) null else DesktopUpdates(File(dataDir, "updates.json"), log = { diagnostics?.log(it) }),
             shortcuts = portable?.let { PortableShortcuts(it, File(dataDir, "shortcuts.json")) },
             systemLanguage = language,
             applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
+            dataFolder = folder,
+            diagnostics = diagnostics,
         )
     }
 }

@@ -65,7 +65,7 @@ class StatsCsvTest {
             listOf("kairos_stats", "summary", "throughput", "calibration", "estimation_bias", "time_by_type", "focus", "hours_by_type", "backlog", "completeness"),
             names,
         )
-        assertEquals("type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift," + (0..22 step 2).joinToString(",") { "share_" + it.toString().padStart(2, '0') }, section(text, "hours_by_type").first())
+        assertEquals("type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,efficiency_tasks,fastest_start,fastest_gain_pct," + (0..22 step 2).joinToString(",") { "share_" + it.toString().padStart(2, '0') }, section(text, "hours_by_type").first())
     }
 
     @Test

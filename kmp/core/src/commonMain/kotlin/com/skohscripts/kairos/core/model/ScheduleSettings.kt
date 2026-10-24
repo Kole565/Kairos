@@ -30,15 +30,32 @@ data class ScheduleSettings(
 )
 
 /**
- * Réglage de l'étape C2 : [enabled] (désactivé par défaut), [strength] (0 Faible, 1 Moyenne, 2 Forte : `BestHours.strengthOf`) et
- * [preferred] : l'heure préférée (0 à 23) de certains types, par nom de type, qui prime sur la détection.
+ * Réglage de l'étape C2 : [enabled] (désactivé par défaut), [strength] (0 Faible, 1 Moyenne, 2 Forte : `BestHours.strengthOf`),
+ * [preferred] : l'heure préférée (0 à 23) de certains types, par nom de type, qui prime sur la détection, et [measure] : ce que la
+ * détection mesure (v2, issue #105 : [MEASURE_FREQUENCY] par défaut, [MEASURE_EFFICIENCY] ou [MEASURE_BOTH]), jamais écrit à sa valeur
+ * par défaut pour qu'un export de la 3.6 reste identique.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class BestHoursSettings(
     val enabled: Boolean = false,
     val strength: Int = 1,
     val preferred: Map<String, Int> = emptyMap(),
-)
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val measure: String = MEASURE_FREQUENCY,
+) {
+    companion object {
+        const val MEASURE_FREQUENCY = "frequency"
+        const val MEASURE_EFFICIENCY = "efficiency"
+        const val MEASURE_BOTH = "both"
+
+        /** Une valeur inconnue (export d'une version future, saisie) mesure la fréquence, comme la v1. */
+        fun normalizeMeasure(value: String): String = when (value.trim().lowercase()) {
+            MEASURE_EFFICIENCY -> MEASURE_EFFICIENCY
+            MEASURE_BOTH -> MEASURE_BOTH
+            else -> MEASURE_FREQUENCY
+        }
+    }
+}
 
 /**
  * Horaire d'un jour de la semaine : [free] (jour libre, rien n'est planifié automatiquement) ou une journée de travail

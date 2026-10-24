@@ -16,18 +16,18 @@ utilisateurs) ; ce document est en français comme le reste de `docs/`.
 |---|---|
 | `3.7.0` | Version préparée (`30700`, notes de version FR/EN ; tag `v3.7.0` posé par le propriétaire) : suites du guide (#94, #95), déplacer depuis la vue Semaine (#106), fériés des créneaux « jours ouvrés » par défaut (#109), export et filtres des statistiques (#113, #114), thème sombre (#72), Réglages par catégories (PR #124). |
 | `3.8.0` | Version préparée (`30800`, notes de version FR/EN ; tag `v3.8.0` posé par le propriétaire) : vue Mois (#107), créneaux mensuels (#108), une seule occurrence d'un créneau (#110), évolutions des statistiques (#112), corriger les estimations (#101), rappels (#103, spec `rappels.md`), première tâche d'équipe guidée (#97). |
-| `3.9.0` | Suites déjà spécifiées ou écartées « pour l'instant » : échanges et capacité de l'Équipe (#104, #120, #121), accompagnement des récurrences et des Réglages (#98), noms des niveaux (#93), meilleures heures v2 (#105), réglages avancés (#115). Brouillon, plusieurs issues y attendent encore une décision. |
+| `3.9.0` | Version préparée (`30900`, notes de version FR/EN ; tag `v3.9.0` posé par le propriétaire) : noms des niveaux (#93), meilleures heures mesurées par l'efficacité (#105), accompagnement des récurrences et des Réglages (#98), jours et heures par membre (#104), notes dans les échanges (#120), propositions d'un membre (#121), dossier des données, diagnostic et proxy du bureau (#115, spec `bureau-avance.md`), lien « Voir la dernière version » sur Android (#143). #75 en sort (choix du propriétaire, 2026-10-24) : à ranger dans son propre milestone. |
 | `3.10.0` | Connexions externes **sans réseau ni compte** (suivi : #140) : import d'un calendrier `.ics` dans les créneaux occupés (#136, rouvre « événements de calendrier externes » d'`ordonnancement.md`), fichier lié sur le bureau et Android (#137, la moitié « écriture » de #88), créneaux lus dans les calendriers du téléphone (#138, permission `READ_CALENDAR` à trancher). Brouillon. |
 | `4.0.0` | **Version majeure** : ce qui change le modèle de données, le format d'échange ou une décision fondatrice de `docs/spec/`, donc ne peut pas entrer dans une version mineure. Aujourd'hui : synchronisation par fichier entre appareils (#88) et ses suites (#100), connexion en ligne à un calendrier (#139, rouvre « sans permission réseau »), estimateur appris (#99, réservé à une version majeure par `durees-apprises.md`), plusieurs équipes par base (#118). |
 | `Backlog` | Non planifié : décision ou spec à écrire d'abord, dépendance externe (signature, synchronisation) ou attente de retours. |
 
-Le contenu de `3.9.0`, `3.10.0` et `4.0.0` est un **brouillon de planification**
+Le contenu de `3.10.0` et `4.0.0` est un **brouillon de planification**
 (issues #93 à #121 réparties le 2026-10-19, `3.9.0` et `4.0.0` remplis le 2026-10-24,
 `3.10.0` créé le même jour pour les connexions externes) :
-un milestone se déplace librement, rien n'est promis. Seule la **prochaine version** (`3.9.0` depuis la préparation de
-la `3.8.0`, le 2026-10-24 ; ses labels d'état restent à trier par la routine `kairos-retours`) doit
-être « propre » (voir ci-dessous) ; `3.10.0` et `4.0.0` sont des horizons et gardent les
-labels d'état de leurs issues, qui disent ce qu'il reste à trancher avant de les tirer
+un milestone se déplace librement, rien n'est promis. Seule la **prochaine version** (`3.10.0` depuis la préparation de
+la `3.9.0`, le 2026-10-24 ; ses labels d'état restent à trier par la routine `kairos-retours`) doit
+être « propre » (voir ci-dessous) ; `4.0.0` est un horizon et garde les
+labels d'état de ses issues, qui disent ce qu'il reste à trancher avant de les tirer
 vers la prochaine version.
 Une version n'est plus « brouillon » quand ses issues ont une spec à jour dans
 `docs/spec/` (étape 1 du workflow de `CLAUDE.md`).
@@ -47,7 +47,7 @@ Une version n'est plus « brouillon » quand ses issues ont une spec à jour dan
 - Un **milestone** : une version quand l'issue est planifiée, `Backlog` sinon.
 - Une issue du `Backlog` porte un **label d'état** qui dit ce qui la retient ; une issue
   rangée dans **la prochaine version** n'en porte plus (`deferred` et `needs-*` sortent à la
-  planification) ; dans une version plus lointaine (`3.10.0`, `4.0.0`), elle les garde.
+  planification) ; dans une version plus lointaine (`4.0.0`), elle les garde.
 - Un retour utilisateur non encore qualifié porte `feedback` (vue `Feedback` du Project).
 - Les issues closes gardent leurs labels de type et de domaine (historique cherchable).
 
@@ -93,7 +93,7 @@ qui suit se fait en cinq minutes.
    | Vue | Type | Réglage |
    |---|---|---|
    | `Roadmap` | Board | Colonnes = `Milestone` ; filtre `-status:Done` |
-   | `Board` | Board | Colonnes = `Status` ; filtre `milestone:3.8.0,3.9.0` |
+   | `Board` | Board | Colonnes = `Status` ; filtre `milestone:3.9.0,3.10.0` |
    | `Feedback` | Table | Filtre `label:feedback status:Inbox` ; tri par date de création |
    | `Decisions` | Table | Filtre `label:needs-decision,needs-spec` ; groupé par `Milestone` |
    | `By area` | Table | Groupé par `Labels` ; filtre `-status:Done` |

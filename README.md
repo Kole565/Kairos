@@ -74,7 +74,9 @@ in the [GitHub releases](https://github.com/SKOHscripts/Kairos/releases).
 - **Android**: allow installation from the browser or the file manager when
   Android asks (not needed from F-Droid).
 
-**Updates.** On Android, through F-Droid or a new APK. On the desktop, Kairos
+**Updates.** On Android, through F-Droid or a new APK; with an APK installed
+by hand, Settings → General → Updates shows your version and "See the latest
+version" opens the download page (Kairos still never connects). On the desktop, Kairos
 checks every 6 hours for a new version and announces it in a banner
 ("Download" opens its page); setting in Settings → General → Updates. The web version is
 always the latest.
@@ -132,6 +134,10 @@ qualify?" recalls the rule.
   "How to estimate points?" shows, for each level, the median real time of
   your own finished tasks and two examples; editing suggests a duration based
   on your history.
+- **Level names** (Settings → Planning): call the priorities and the points
+  in your own words ("Urgent", S/M/L…). The badge shows your name, the sheet
+  and the guide show it with its value ("M (3)"); P0 stays red and Kairos still
+  computes with the values.
 - **Afternoon dip (14h55)**: during an adjustable window (1 pm → 4 pm by
   default), Kairos avoids placing complex tasks there and pulls light ones up.
   Deadlines and the critical path always come first; the displayed score does
@@ -215,10 +221,12 @@ order (critical path). Cycles are refused.
   the ones to keep; "Undo" brings the old estimates back.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
-  usual rhythm. This card only observes.
+  usual rhythm, and the slot where you finish it fastest compared with your
+  estimates. This card only observes.
 - **Best hours** (Settings, off by default): the plan prefers, between tasks of
-  similar score, the hours when you usually work each type (detected from the
-  timer, strength Low / Medium / High) or the preferred hour you set for a type.
+  similar score, the hours when you usually work each type, the hours when you
+  finish it faster than estimated, or both (detected from the timer, strength
+  Low / Medium / High), or the preferred hour you set for a type.
   Overdue tasks and urgency still come first; the day view says when it made the
   difference.
 
@@ -228,6 +236,12 @@ order (critical path). Cycles are refused.
   have the permission), no account.
 - JSON **export and import** (Settings → Data); an automatic backup precedes
   every import.
+- On the desktop, the **data folder** can be changed (Settings → Data →
+  "Change folder…", for a synced or encrypted folder) or set at launch with
+  `--data-dir=<folder>`; it takes effect at the next start, and your data is
+  copied, never moved. Settings → About → **Diagnostics**: an optional local log
+  (off by default, no task content) and "Copy diagnostics" for a bug report.
+  The update check follows the system proxy.
 - **Web version**: data saved in the browser and, in Edge or Chrome, **linked
   to a file** kept up to date on every change.
 - Interface in **French** and **English**: the system language (French if the
@@ -257,6 +271,11 @@ order (critical path). Cycles are refused.
   brings everything back.
   “Show me the screen” scrolls to the exact place a card talks about and
   marks it for a moment.
+- **Recurring task and Settings, step by step**: in "Discover Kairos",
+  "Create my first recurring task" walks you through the real sheet and shows,
+  for each rule, the next deadline it would produce; "Set up Kairos step by
+  step" goes through the working day, the hours, the contexts and the best
+  hours, one card at a time, and saves nothing until you press Save.
 
 ### Team management (optional)
 
@@ -266,8 +285,9 @@ order (critical path). Cycles are refused.
   walks you through the team task sheet, field by field (assignee and their
   load, priority and size, effort, deadline, category), then says where the task
   landed. Nothing is written if you give up.
-- **Members**: availability, hours per day, absences; "This is me" makes the
-  team tasks assigned to you appear in your Day view.
+- **Members**: availability, hours per day (or different hours from Monday
+  to Friday, a day at 0 being a day off, for a four-day week), absences;
+  "This is me" makes the team tasks assigned to you appear in your Day view.
 - Team **backlog** sorted by the same WSJF score, categories = task types,
   **assignment** and **reassignment** (one by one or in bulk).
 - **Tracking**: one row per member (in progress, to do, done), progress in 10 %
@@ -296,7 +316,12 @@ order (critical path). Cycles are refused.
   which the manager receives in the same place and merges after a preview. For
   each member, the tab shows the date of the last packet and the last report,
   and flags "Waiting for their report". Everyone keeps control of their own
-  fields; nothing is deleted unless you choose it.
+  fields; nothing is deleted unless you choose it. Each task can carry a short
+  **note** each way ("Blocked until the API key arrives"), shown with its
+  author and date and kept in the task's history. A member can also
+  **propose** one of their own tasks to the manager: it goes with the next
+  report (title, description, duration, type), and the manager adds it to the
+  backlog, declines it or decides later.
 - A single user, the manager: everything stays on the device, with no account
   or network; the files travel however you like (email, USB drive…).
 
@@ -338,13 +363,15 @@ you press "Save").
 | | Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
 | | Appearance | Dark theme (two-state switch) | follows the system |
 | | Updates (desktop) | Check for new versions | on |
+| | Updates (Android, APK installed by hand) | Installed version, "See the latest version" | |
 | | Shortcut (desktop, portable version) | Create, update or remove the shortcut | offered at launch |
 | Day and hours | Working day | Default duration, buffer after a slot, start and end | 30 min, 5 min, 9 am – 6 pm |
 | | Hours by day of the week | Usual, custom (one to four windows) or day off | usual |
 | | Contexts | Up to four, each with its task types | none |
 | | Public holidays | French calendar, extra dates | on |
 | Planning | Task types | List of types | |
-| | Best hours | Prefer my usual hours, strength, preferred hour per type | off |
+| | Level names | A name for each priority and each points level (16 characters at most) | default names |
+| | Best hours | Prefer my usual hours, strength, measure by (frequency, efficiency, both), preferred hour per type | off, medium, frequency |
 | | Learned durations | On/off, occurrences considered, occurrences needed | on, 5, 3 |
 | | Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
 | | Priority score (WSJF), advanced | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |
@@ -353,7 +380,9 @@ you press "Save").
 | | Statistics | Window of the indicators | 8 weeks |
 | Team | Team | Team management, then its thresholds, load and forecasts | off |
 | Data | Data, default settings | Export, import, restore the defaults | |
+| | Data folder (desktop) | Change folder…, back to the default folder (next start) | system folder |
 | About | | Discover Kairos, About & guide, see the guide again from the start | |
+| | Diagnostics (desktop) | Keep a diagnostic log, copy diagnostics | off |
 
 ## Development
 

@@ -113,6 +113,38 @@ class TeamMembersUiTest {
     private fun ComposeUiTest.save() = onAllNodesWithText("Save").onLast().performClick()
 
     @Test
+    fun aMemberCanHaveDifferentHoursEachDay() = runComposeUiTest {
+        // Semaine type (docs/spec/equipe-charge.md § Capacité, issue #104) : quatre jours, mercredi libre.
+        val services = services()
+        val repository = services.repository
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openMembers()
+        onNodeWithText("Add a member").performClick()
+        waitText("New member")
+        typeInto("Name", "Léa")
+        onNodeWithText("Different hours each day").performScrollTo().performClick()
+        waitText("Wed")
+        // Les cinq jours partent des heures par jour ; le mercredi devient libre.
+        typeInto("Wed", "")
+        typeInto("Fri", "0")
+        typeInto("Mon", "0")
+        typeInto("Tue", "0")
+        typeInto("Thu", "0")
+        save()
+        waitText("At least one working day.")
+        assertTrue(repository.snapshot.value.members.isEmpty())
+        typeInto("Mon", "8")
+        typeInto("Tue", "8")
+        typeInto("Thu", "8")
+        typeInto("Fri", "4")
+        save()
+        waitUntil(timeoutMillis = 5_000) { repository.snapshot.value.members.isNotEmpty() }
+        assertEquals(listOf(8.0, 8.0, 0.0, 8.0, 4.0), repository.snapshot.value.members.single().weekHours)
+        // La carte dit les jours et les heures de la semaine.
+        waitText("100% · 4 d · 28 h/week")
+    }
+
+    @Test
     fun anEmptyTeamExplainsMembersAndOffersTheSameButton() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }

@@ -1,5 +1,9 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.core.engine.Workdays
+import com.skohscripts.kairos.ui.guide.RecurrenceCoach
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_combined
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_efficient
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosListBlockExtra
@@ -164,6 +168,8 @@ fun DayScreen(
     onBackToToday: () -> Unit = {},
     /** L'accompagnement de la première tâche est demandé (accueil, hub « Découvrir Kairos ») ; [onFirstTaskHandled] l'acquitte. */
     firstTaskRequest: Boolean = false,
+    /** La demande est celle de la première tâche récurrente (issue #98) : les étapes de `RecurrenceCoach`. */
+    firstTaskRecurring: Boolean = false,
     onFirstTaskHandled: () -> Unit = {},
     /** « Découvrir Kairos » depuis les félicitations : le hub appartient à la coquille. */
     onDiscover: () -> Unit = {},
@@ -203,6 +209,8 @@ fun DayScreen(
     // le coach passé), puis la tâche réellement créée, ses félicitations et l'explication de sa place (-1 : aucune).
     var creating by rememberSaveable { mutableStateOf(false) }
     var coachStep by rememberSaveable { mutableIntStateOf(-1) }
+    // Accompagnement de la première tâche récurrente (issue #98) : la même fiche, d'autres étapes.
+    var coachRecurring by rememberSaveable { mutableStateOf(false) }
     var placedId by rememberSaveable { mutableStateOf<Long?>(null) }
     var congrats by rememberSaveable { mutableStateOf(false) }
     var placedStep by rememberSaveable { mutableIntStateOf(-1) }
@@ -212,6 +220,7 @@ fun DayScreen(
         if (firstTaskRequest) {
             creating = true
             coachStep = 0
+            coachRecurring = firstTaskRecurring
             onFirstTaskHandled()
         }
     }
@@ -358,7 +367,7 @@ fun DayScreen(
                 if (!inviteDismissed && snapshot.settings.guide?.firstTaskDone != true && snapshot.tasks.none { !ExampleData.isExample(it) }) {
                     block("first-task") {
                         FirstTaskInvite(
-                            onStart = { creating = true; coachStep = 0 },
+                            onStart = { creating = true; coachStep = 0; coachRecurring = false },
                             onDismiss = { inviteDismissed = true },
                         )
                     }
@@ -507,8 +516,9 @@ fun DayScreen(
             // Fermer la fiche n'écrit rien ; rouvrir recommence au titre.
             onDismiss = { creating = false; coachStep = -1 },
             onSave = { edit ->
-                // Enregistrée avec l'accompagnement actif : il est mené à son terme, l'invitation ne revient plus (issue #94).
-                val coached = coachStep >= 0
+                // Enregistrée avec l'accompagnement actif : il est mené à son terme, l'invitation ne revient plus (issue #94) ;
+                // celui de la récurrente (issue #98) n'est pas celui de la première tâche.
+                val coached = coachStep >= 0 && !coachRecurring
                 creating = false
                 coachStep = -1
                 scope.launch {
@@ -522,10 +532,15 @@ fun DayScreen(
             },
             onDelete = {},
             coach = if (coachStep >= 0) {
+                val steps = if (coachRecurring) RecurrenceCoach.STEPS else FirstTaskCoach.STEPS
                 CoachSession(
                     step = coachStep,
-                    onStep = { coachStep = it.coerceIn(0, FirstTaskCoach.STEPS.lastIndex) },
+                    onStep = { coachStep = it.coerceIn(0, steps.lastIndex) },
                     onSkip = { coachStep = -1 },
+                    steps = steps,
+                    holidays = remember(today, snapshot.settings.holidaysFr, snapshot.settings.extraHolidays) {
+                        Workdays.holidaysFor(today, snapshot.settings.holidaysFr, snapshot.settings.extraHolidays)
+                    },
                 )
             } else {
                 null
@@ -581,6 +596,8 @@ fun DayScreen(
                 // Tâche reçue d'un manager : sa marque et l'avancement déclaré par le membre (docs/spec/equipe-echanges.md).
                 // Tâche perso qui peut compter dans l'équipe (« moi » existe) : l'interrupteur « Compter dans l'équipe ».
                 countInTeam = if (TeamWork.countable(task) && TeamWork.self(snapshot) != null) !task.teamExcluded else null,
+                // Proposer la tâche au manager d'une équipe dont on reçoit des tâches (issue #121).
+                proposalTargets = remember(snapshot.tasks) { ReceivedTasks.origins(snapshot) },
                 received = ReceivedTasks.originOf(task)?.let { origin ->
                     ReceivedTaskSheet(origin, task.originRemoved, onKeep = { scope.launch { repository.detachOrigin(id) }; editingId = null }) { edit, percent ->
                         scope.launch {
@@ -748,7 +765,12 @@ private fun AgendaRow(item: Scheduling.ScheduledTask, ctx: RowContext, dipTrough
             }
             if (item.dipApplied) WarnBadge(stringResource(Res.string.note_dip, dipTroughHour), KairosIcons.Schedule)
             item.affinity?.let {
-                val res = if (it == AffinitySource.MANUAL) Res.string.note_affinity_manual else Res.string.note_affinity_detected
+                val res = when (it) {
+                    AffinitySource.MANUAL -> Res.string.note_affinity_manual
+                    AffinitySource.EFFICIENT -> Res.string.note_affinity_efficient
+                    AffinitySource.COMBINED -> Res.string.note_affinity_combined
+                    AffinitySource.DETECTED -> Res.string.note_affinity_detected
+                }
                 WarnBadge(stringResource(res, item.task.taskType.trim()), KairosIcons.Schedule)
             }
             item.conflictWith?.let { ErrorBadge(stringResource(Res.string.note_conflict, it)) }

@@ -106,10 +106,13 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   `guide` (`GuideSettings?`, 3.7.0 : `newsHidden` (version majeure.mineure), `readChapters`, `firstTaskDone` ; nul tant
   que le guide n'a rien retenu, donc absent de l'export, `visite-guidee.md` § Persistance), `reminders`
   (`ReminderSettings?`, 3.8.0 : `enabled` faux, `leadMinutes` 10 (0-120), `nextTask` faux ; nul tant qu'il vaut ses
-  défauts, donc absent de l'export, `rappels.md`) ;
+  défauts, donc absent de l'export, `rappels.md`), `levelNames` (`LevelNames?`, 3.9.0 : `priority` et `points`,
+  valeur → nom choisi (16 caractères au plus), une valeur sans nom absente ; nul tant qu'aucun nom n'est choisi, donc
+  absent de l'export ; affichage seulement, jamais dans un paquet d'échange, `planning-personnalise.md` § Lot D) ;
   `Task.seriesId` (identifiant de la première tâche d'une série récurrente, nul par défaut).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,
-  `availabilityPercent`, `hoursPerDay`, `isSelf`, `archived`, `createdAt`,
+  `availabilityPercent`, `hoursPerDay`, `weekHours` (3.9.0, colonne `week_hours` « 8,8,8,8,0 », `NULL` = aucune ; schéma 10),
+  `isSelf`, `archived`, `createdAt`,
   `updatedAt` (`equipe.md`), `lastReportAt` (dernier rapport intégré, jalon
   E6, `equipe-echanges.md`) ; `MemberAbsence` : `id`, `memberId`, `start`,
   `end` (dates locales incluses), `label`, `createdAt` ; `TeamEvent`
@@ -161,7 +164,7 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
    appliquées **dans une seule transaction**.
 3. `PRAGMA user_version` = version du schéma.
 
-`actualVersion` teste des marqueurs, du plus récent au plus ancien : table `time_block_exception` (9), colonne
+`actualVersion` teste des marqueurs, du plus récent au plus ancien : colonne `team_member.week_hours` (10), table `time_block_exception` (9), colonne
 `task.series_id` (8), `task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
 `task.progress_percent` (4), table `member_absence` (3), `task.space` (2),
 sinon 1. Chaque nouveau fichier `.sqm` ajoute son marqueur à
@@ -179,7 +182,8 @@ Schéma 5 : `4.sqm` (jalon E5) ajoute `team_scenario`. Schéma 6 : `5.sqm`
 Schéma 7 : `6.sqm` ajoute `task.team_excluded` (0 par défaut, en fin de
 table, `equipe-moi.md`). Schéma 8 : `7.sqm` ajoute `task.series_id` (nulle, en fin de
 table, sans rétro-remplissage, `durees-apprises.md`). Schéma 9 : `8.sqm` (3.8.0) ajoute la table
-`time_block_exception`, vide (`recurrence.md`, `BlockExceptionMigrationTest`).
+`time_block_exception`, vide (`recurrence.md`, `BlockExceptionMigrationTest`). Schéma 10 : `9.sqm` (3.9.0) ajoute
+`team_member.week_hours` (nulle, en fin de table, `equipe-charge.md` § Capacité, `WeekHoursMigrationTest`).
 Les
 schémas de référence de chaque version
 (`data/src/commonMain/sqldelight/databases/<n>.db`, générés par

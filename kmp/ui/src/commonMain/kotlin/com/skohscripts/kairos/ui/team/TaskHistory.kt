@@ -1,5 +1,10 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.core.team.TeamEventSource
+import com.skohscripts.kairos.ui.generated.resources.event_note_sent
+import com.skohscripts.kairos.ui.generated.resources.event_note_received
+import com.skohscripts.kairos.ui.day.Levels
+import com.skohscripts.kairos.ui.day.LocalLevelNames
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -93,6 +98,12 @@ internal fun eventSentence(event: TeamEvent, context: AssignContext, today: Loca
         TeamEventKind.DELETED -> stringResource(Res.string.event_deleted)
         TeamEventKind.SENT -> stringResource(Res.string.event_sent)
         TeamEventKind.TIME -> stringResource(Res.string.event_time, event.toValue?.toIntOrNull() ?: 0)
+        // Notes d'échange (docs/spec/equipe-echanges.md § Notes) : reçue du membre qui rapporte, ou envoyée dans un paquet.
+        TeamEventKind.NOTE -> if (event.source == TeamEventSource.REPORT) {
+            stringResource(Res.string.event_note_received, context.name(event.memberId).orEmpty(), event.toValue.orEmpty())
+        } else {
+            stringResource(Res.string.event_note_sent, event.toValue.orEmpty())
+        }
         TeamEventKind.UNKNOWN -> stringResource(Res.string.event_unknown)
         TeamEventKind.ASSIGNED -> {
             val to = context.name(event.toValue?.toLongOrNull())
@@ -110,11 +121,14 @@ internal fun eventSentence(event: TeamEvent, context: AssignContext, today: Loca
             val to = TeamEvents.parseQualified(event.toValue)
             // Le champ vient du `toValue` (écrit avec le même préfixe des deux côtés) ; préfixe inconnu : « Modification ».
             val field = (to ?: from)?.first
+            val priorityNames = Levels.priorityShorts()
+            val pointsNames = LocalLevelNames.current.points
             fun value(pair: Pair<QualifiedField, String>?): String {
                 val raw = pair?.second.orEmpty()
                 if (raw.isEmpty()) return none
                 return when (field) {
-                    QualifiedField.PRIORITY -> "P$raw"
+                    QualifiedField.PRIORITY -> raw.toIntOrNull()?.let { priorityNames[it] } ?: "P$raw"
+                    QualifiedField.POINTS -> raw.toIntOrNull()?.let { pointsNames[it] } ?: raw
                     QualifiedField.DEADLINE -> runCatching { LocalDate.parse(raw) }.getOrNull()?.let { dateSpan(it, it, today, language).first } ?: raw
                     else -> raw
                 }

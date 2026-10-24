@@ -2,7 +2,10 @@ package com.skohscripts.kairos.core.settings
 
 import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.DaySchedule
+import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
 import com.skohscripts.kairos.core.model.LearningSettings
+import com.skohscripts.kairos.core.model.LevelNames
+import com.skohscripts.kairos.core.model.PRIORITY_VALUES
 import com.skohscripts.kairos.core.model.ReminderSettings
 import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
@@ -300,6 +303,8 @@ object SettingsForm {
             "schedule.bestHours.preferred", FieldKind.TEXT, validate = ::preferredError,
             get = { encodePreferred(it.preferred.mapValues { (_, hour) -> hour.toString() }) },
         ) { b, v -> b.copy(preferred = parsePreferred(v).mapValues { (_, hour) -> hour.toInt() }) },
+        // Ce que mesure la détection (v2, issue #105) : normalisé à l'écriture, jamais refusé.
+        bestHours("schedule.bestHours.measure", FieldKind.TEXT, get = { it.measure }) { b, v -> b.copy(measure = BestHoursSettings.normalizeMeasure(v)) },
     )
 
     /**
@@ -342,6 +347,33 @@ object SettingsForm {
         reminders("reminders.leadMinutes", FieldKind.INT, 0.0, ReminderSettings.MAX_LEAD.toDouble(), get = { it.leadMinutes.toString() }) { r, v -> r.copy(leadMinutes = v.toInt()) },
         reminders("reminders.nextTask", FieldKind.BOOL, get = { it.nextTask.toString() }) { r, v -> r.copy(nextTask = v == "true") },
     )
+
+    /** Clé du champ du nom de la priorité [p] (`levelNames.p0`). */
+    fun priorityNameKey(p: Int): String = "levelNames.p$p"
+
+    /** Clé du champ du nom du palier [points] (`levelNames.pts3`). */
+    fun pointsNameKey(points: Int): String = "levelNames.pts$points"
+
+    /**
+     * Nom d'un niveau (docs/spec/planning-personnalise.md § Lot D) : lu sur [LevelNames] (vide si `levelNames` est nul),
+     * écrit nettoyé, vide = absent ; même règle que [learning] : sans aucun nom, `levelNames` **reste nul** (ou y revient).
+     */
+    private fun levelName(key: String, get: (LevelNames) -> String?, change: (LevelNames, String?) -> LevelNames) =
+        SettingField(
+            key, FieldKind.TEXT,
+            read = { get(it.levelNames ?: LevelNames()).orEmpty() },
+            write = { s, v ->
+                val next = change(s.levelNames ?: LevelNames(), v.trim().ifEmpty { null })
+                s.copy(levelNames = next.takeIf { it != LevelNames() })
+            },
+            validate = { if (it.length > LevelNames.MAX_LENGTH) FieldError(FieldErrorKind.TOO_LARGE, LevelNames.MAX_LENGTH.toString()) else null },
+        )
+
+    private fun Map<Int, String>.with(level: Int, name: String?): Map<Int, String> = if (name == null) this - level else this + (level to name)
+
+    private val LEVEL_NAME_FIELDS: List<SettingField> =
+        PRIORITY_VALUES.map { p -> levelName(priorityNameKey(p), { it.priority[p] }) { l, v -> l.copy(priority = l.priority.with(p, v)) } } +
+            FIBONACCI_SCALE.map { pts -> levelName(pointsNameKey(pts), { it.points[pts] }) { l, v -> l.copy(points = l.points.with(pts, v)) } }
 
     const val SCHEDULE_DEFAULT = "default"
     const val SCHEDULE_CUSTOM = "custom"
@@ -400,7 +432,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + BEST_HOURS_FIELDS + LEARNING_FIELDS + REMINDER_FIELDS
+    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + BEST_HOURS_FIELDS + LEARNING_FIELDS + REMINDER_FIELDS + LEVEL_NAME_FIELDS
 
     private val byKey = FIELDS.associateBy { it.key }
 
@@ -434,6 +466,7 @@ object SettingsForm {
         errors += scheduleErrors(result)
         // On ne peut pas exiger plus d'occurrences que l'historique n'en retient : l'erreur est sur « minimum d'occurrences ».
         result.learning?.let { if (it.minSamples > it.history) errors["learning.minSamples"] = FieldError(FieldErrorKind.TOO_LARGE, it.history.toString()) }
+        errors += levelNameErrors(result)
         if (errors.isNotEmpty()) return SettingsValidation(null, errors, null)
         result = dropEmptyContexts(result)
         val general = when {
@@ -484,6 +517,22 @@ object SettingsForm {
                 if (context != null && names.none { it == context.lowercase() }) errors[prefix + "ctx"] = FieldError(FieldErrorKind.UNKNOWN_CONTEXT, context)
             }
         }
+        return errors
+    }
+
+    /** Deux niveaux d'une même échelle ne portent pas le même nom (casse ignorée) : `DUPLICATE` sur le second. */
+    private fun levelNameErrors(result: Settings): Map<String, FieldError> {
+        val names = result.levelNames ?: return emptyMap()
+        val errors = LinkedHashMap<String, FieldError>()
+        fun check(levels: List<Int>, chosen: Map<Int, String>, key: (Int) -> String) {
+            val seen = mutableSetOf<String>()
+            for (level in levels) {
+                val name = chosen[level] ?: continue
+                if (!seen.add(name.lowercase())) errors[key(level)] = FieldError(FieldErrorKind.DUPLICATE, name)
+            }
+        }
+        check(PRIORITY_VALUES, names.priority, ::priorityNameKey)
+        check(FIBONACCI_SCALE, names.points, ::pointsNameKey)
         return errors
     }
 

@@ -31,6 +31,10 @@ object MemberForm {
         val role: String = "",
         val availabilityPercent: String = MAX_AVAILABILITY.toString(),
         val hoursPerDay: String = "",
+        /** « Heures différentes selon le jour » (issue #104) : la semaine type [weekHours] remplace les heures par jour. */
+        val weekly: Boolean = false,
+        /** Heures du lundi au vendredi ; vide = 0, jour libre. */
+        val weekHours: List<String> = List(TeamMember.WEEK_DAYS) { "" },
     )
 
     /** Valeurs validées, prêtes pour le dépôt. */
@@ -39,7 +43,12 @@ object MemberForm {
         val role: String,
         val availabilityPercent: Int,
         val hoursPerDay: Double,
+        /** Semaine type ; `null` = heures par jour chaque jour ouvré. */
+        val weekHours: List<Double>? = null,
     )
+
+    /** Clé du champ des heures du jour [day] de la semaine type (0 = lundi). */
+    fun weekKey(day: Int): String = "weekHours.$day"
 
     /** [valid] est `null` s'il y a la moindre erreur (jamais d'état partiel). */
     data class Result(val valid: Valid?, val errors: Map<String, FieldError>)
@@ -60,7 +69,14 @@ object MemberForm {
         role = member.role,
         availabilityPercent = member.availabilityPercent.toString(),
         hoursPerDay = formatHours(member.hoursPerDay),
+        weekly = member.weekHours != null,
+        weekHours = member.weekHours?.map(::formatHours) ?: List(TeamMember.WEEK_DAYS) { "" },
     )
+
+    /** Activer la semaine type : des jours encore tous vides partent des heures par jour, chaque jour. */
+    fun withWeekly(input: Input, weekly: Boolean): Input =
+        if (weekly && input.weekHours.all { it.isBlank() }) input.copy(weekly = true, weekHours = List(TeamMember.WEEK_DAYS) { input.hoursPerDay })
+        else input.copy(weekly = weekly)
 
     /** « 7 » plutôt que « 7.0 », « 7.5 » sinon. */
     fun formatHours(hours: Double): String = SettingsForm.formatDecimal(hours)
@@ -94,7 +110,11 @@ object MemberForm {
 
         var hours = 0.0
         val hoursText = input.hoursPerDay.trim()
-        if (hoursText.isEmpty()) {
+        if (input.weekly) {
+            // Champ masqué par la semaine type : sa valeur valide est gardée, sinon la journée la plus longue (bornée) la remplace.
+            hours = SettingsForm.parseDecimal(hoursText)?.takeIf { it in MIN_HOURS..MAX_HOURS }
+                ?: (input.weekHours.mapNotNull { SettingsForm.parseDecimal(it.trim()) }.maxOrNull() ?: 0.0).coerceIn(MIN_HOURS, MAX_HOURS)
+        } else if (hoursText.isEmpty()) {
             errors[HOURS] = FieldError(FieldErrorKind.REQUIRED)
         } else {
             val parsed = SettingsForm.parseDecimal(hoursText)
@@ -106,8 +126,27 @@ object MemberForm {
             }
         }
 
+        // Semaine type (issue #104) : 0 à 24 par jour, vide = jour libre, au moins un jour travaillé.
+        var week: List<Double>? = null
+        if (input.weekly) {
+            val days = input.weekHours.take(TeamMember.WEEK_DAYS).mapIndexed { day, text ->
+                val t = text.trim()
+                val parsed = if (t.isEmpty()) 0.0 else SettingsForm.parseDecimal(t)
+                when {
+                    parsed == null -> { errors[weekKey(day)] = FieldError(FieldErrorKind.NOT_NUMBER); 0.0 }
+                    parsed < 0.0 -> { errors[weekKey(day)] = FieldError(FieldErrorKind.TOO_SMALL, "0"); 0.0 }
+                    parsed > MAX_HOURS -> { errors[weekKey(day)] = FieldError(FieldErrorKind.TOO_LARGE, formatHours(MAX_HOURS)); 0.0 }
+                    else -> parsed
+                }
+            }
+            if (days.size == TeamMember.WEEK_DAYS && days.none { it > 0.0 } && (0 until TeamMember.WEEK_DAYS).none { weekKey(it) in errors }) {
+                errors[weekKey(0)] = FieldError(FieldErrorKind.REQUIRED)
+            }
+            week = days
+        }
+
         if (errors.isNotEmpty()) return Result(null, errors)
-        return Result(Valid(name, input.role.trim(), availability, hours), emptyMap())
+        return Result(Valid(name, input.role.trim(), availability, hours, week), emptyMap())
     }
 
     /** Une absence est valide si sa fin ne précède pas son début (les deux jours sont inclus). */

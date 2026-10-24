@@ -8,10 +8,12 @@ réseau, état), `kmp/ui/.../app/Updates.kt` (`UpdateService`,
 `UpdateStatus`, `UpdateWatcher`, `UpdateBanner`), la carte Mises à jour de
 `settings/SettingsScreen.kt`, le module `java.net.http` du runtime embarqué
 (`desktopApp/build.gradle.kts`). Tests : `UpdateCheckTest`,
-`DesktopUpdatesTest`, `M5ScreensUiTest.anAvailableVersionShowsABannerUntilLater`._
+`DesktopUpdatesTest`, `M5ScreensUiTest.anAvailableVersionShowsABannerUntilLater`. Android (3.9.0, issue #143) :
+`core/updates/InstallSource.kt` (pur), `androidApp/.../AndroidServices.kt` (installateur), carte « Mises à jour »
+d'Android dans `settings/SettingsScreen.kt` ; tests `InstallSourceTest`, `DownloadPageUiTest`._
 
 État : **jalon M5**, plan § 6.2. Alerte de nouvelle version, sans
-installation en un clic.
+installation en un clic. Android : lien vers la page de téléchargement, 3.9.0 (issue #143).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -36,8 +38,14 @@ savoir.
   3.0.1 est disponible (…) », « Vérification impossible le … (hors
   ligne ?). ») et « Vérifier maintenant », qui marche même réglage coupé.
 - Une vérification qui échoue ne gêne jamais l'application.
-- Android : jamais (aucune permission réseau ; les mises à jour passent par
-  le magasin ou l'APK). Web : sans objet (la page est toujours la dernière).
+- Android : **aucune vérification** (aucune permission réseau ; les mises à jour passent par le magasin ou l'APK).
+  Pour un APK **installé à la main** (3.9.0, issue #143), Réglages → Général montre une carte « Mises à jour » :
+  « Version installée : 3.9.0 », l'aide « Kairos n'utilise pas Internet sur Android : la page de téléchargement
+  dit quelle est la dernière version. » et « Voir la dernière version », qui ouvre la page de téléchargement dans le
+  navigateur (`https://skohscripts.github.io/Kairos/`, `…/Kairos/en/` si l'interface est en anglais). Installé par
+  un magasin (F-Droid et ses clients, Play, un gestionnaire de mises à jour…), la carte n'apparaît pas : le magasin
+  s'occupe des mises à jour. La catégorie Général dit alors « Langue, apparence, mises à jour ».
+- Web : sans objet (la page est toujours la dernière).
 
 ### Critères de succès
 
@@ -48,6 +56,11 @@ savoir.
   « Vérifier maintenant » passe outre ; 404 = à jour, autre code ou exception
   = échec ; « Plus tard » survit à la relance (`DesktopUpdatesTest`).
 - Bandeau affiché, puis masqué par « Plus tard » (`M5ScreensUiTest`).
+- Android : à la main = installateur absent ou installateur de paquets du système (`com.google.android.packageinstaller`,
+  `com.android.packageinstaller`, `com.android.shell` pour `adb`) ; tout autre installateur = un magasin
+  (`InstallSourceTest`). La carte montre la version et ouvre la page de la langue de l'interface ; sans lien
+  (magasin), rien (`DownloadPageUiTest`). L'APK de release garde `POST_NOTIFICATIONS` et `RECEIVE_BOOT_COMPLETED`
+  seulement (`aapt2 dump permissions`).
 
 ### Hors périmètre / différé
 
@@ -55,6 +68,8 @@ savoir.
   (plan § 6.2) : l'installeur du système remplace l'application.
 - Notification système d'une nouvelle version : le bandeau suffit.
 - Source ou jeton configurables : Kairos est publié sur GitHub seulement.
+- Vérification automatique sur Android : il faudrait la permission `INTERNET` (issue #144, 4.0.0, rouvre « sans
+  permission réseau »).
 
 ## 2. Solution technique
 
@@ -66,8 +81,8 @@ savoir.
   jamais vérifié, 6 heures passées, ou horloge revenue en arrière.
 - `DesktopUpdates(fichier, horloge, version, fetch)` : `check(force)` sous
   verrou ; GET (`java.net.http`, 10 s, en-têtes `Accept:
-  application/vnd.github+json` et `User-Agent: Kairos/<version>`, proxy de
-  la JVM) ; 200 → disponible ou à jour, 404 → à jour, sinon → échec ; état
+  application/vnd.github+json` et `User-Agent: Kairos/<version>`, proxy du
+  système : `java.net.useSystemProxies`, `bureau-avance.md`) ; 200 → disponible ou à jour, 404 → à jour, sinon → échec ; état
   écrit dans `updates.json` du dossier de données (`lastCheck`, `failed`,
   `latest`, `url`, `dismissed`) et relu au lancement. Pas créé pour
   l'auto-test (base en mémoire, aucun réseau).
@@ -77,7 +92,21 @@ savoir.
   `surfaceContainerHigh` et icône `Download`, ouverture par
   `LocalUriHandler`.
 
+- Android (3.9.0) : `InstallSource.installedByHand(installateur)` (`core/updates`, pur) ; `UpdateCheck.downloadPage(anglais)`
+  rend l'adresse de la page. `AndroidServices` lit l'installateur (`PackageManager.getInstallSourceInfo(...)
+  .installingPackageName` dès l'API 30, `getInstallerPackageName` avant ; aucune permission) et, à la main seulement,
+  pose `AppServices.downloadPage = true`. `SettingsScreen` : `DownloadPageCard` dans Général quand `updates` est nul
+  et `downloadPage` vrai ; « Voir la dernière version » ouvre la page par `LocalUriHandler` (intention `ACTION_VIEW`,
+  comme le lien de don) ; l'indice de la catégorie suit (`settings_cat_general_hint_updates`).
+
 ### Décisions et pièges tracés
+
+- **Android : un lien, pas une vérification** (2026-10-24, issue #143, choix du propriétaire) : garder « sans
+  permission réseau » (`connexions-externes.md`) ; la page de téléchargement (GitHub Pages) plutôt que la page des
+  releases : elle choisit le bon fichier et dit la version. La vérification réseau, facultative et désactivée par
+  défaut (étiquette F-Droid « Tracking » sinon), est l'issue #144 (4.0.0).
+- **« À la main » défini par l'installateur du système** plutôt que par une liste de magasins : un magasin inconnu
+  cache la carte (sans dommage), alors qu'une liste de magasins à tenir l'aurait montrée à tort dans F-Droid.
 
 - **Page de la version plutôt que la page de téléchargement** : la page
   GitHub Pages complète arrive au jalon M6 ; `html_url` est toujours valide.

@@ -1,10 +1,18 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
+import com.skohscripts.kairos.core.model.PRIORITY_VALUES
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.skohscripts.kairos.core.model.LevelNames
 import com.skohscripts.kairos.core.model.MissingQualification
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.missing_both
 import com.skohscripts.kairos.ui.generated.resources.missing_points
 import com.skohscripts.kairos.ui.generated.resources.missing_priority
+import com.skohscripts.kairos.ui.generated.resources.level_named_points
+import com.skohscripts.kairos.ui.generated.resources.level_named_priority
+import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.generated.resources.points_13_name
 import com.skohscripts.kairos.ui.generated.resources.points_1_name
 import com.skohscripts.kairos.ui.generated.resources.points_21_name
@@ -33,6 +41,13 @@ import com.skohscripts.kairos.ui.generated.resources.priority_1_name
 import com.skohscripts.kairos.ui.generated.resources.priority_2_meaning
 import com.skohscripts.kairos.ui.generated.resources.priority_2_name
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+
+/**
+ * Noms choisis des niveaux (docs/spec/planning-personnalise.md § Lot D), posés par `KairosApp` depuis les réglages ;
+ * vide par défaut. Affichage seulement : la couleur et le calcul suivent toujours la valeur.
+ */
+val LocalLevelNames = staticCompositionLocalOf { LevelNames() }
 
 /**
  * Sens des priorités et des points, affiché partout où on les choisit
@@ -40,6 +55,32 @@ import org.jetbrains.compose.resources.StringResource
  * repères repris des versions précédentes).
  */
 internal object Levels {
+    /** Priorité là où le code est seul (badge, filtre) : le nom choisi, sinon « P0 ». */
+    @Composable
+    fun priorityShort(p: Int): String = LocalLevelNames.current.priority[p] ?: "P$p"
+
+    /** Priorité suivie de son sens (pastille, « Pourquoi ? », aide) : « Urgent (P0) » si un nom est choisi, sinon « P0 Critique ». */
+    @Composable
+    fun priorityLabel(p: Int): String =
+        LocalLevelNames.current.priority[p]?.let { stringResource(Res.string.level_named_priority, it, p) } ?: "P$p ${stringResource(priorityName(p))}"
+
+    /** [priorityShort] de chaque priorité, pour les listes dont l'affichage n'est pas composable. */
+    @Composable
+    fun priorityShorts(): Map<Int, String> = PRIORITY_VALUES.associateWith { priorityShort(it) }
+
+    /** [pointsShort] de chaque palier, même usage que [priorityShorts]. */
+    @Composable
+    fun pointsShorts(): Map<Int, String> = FIBONACCI_SCALE.associateWith { pointsShort(it) }
+
+    /** Points là où le palier est seul (badge, filtre) : le nom choisi, sinon « 3 pts ». */
+    @Composable
+    fun pointsShort(points: Int): String = LocalLevelNames.current.points[points] ?: stringResource(Res.string.points_badge, points)
+
+    /** Palier suivi de son sens (pastille) : « M (3) » si un nom est choisi, sinon « 3 modéré ». */
+    @Composable
+    fun pointsLabel(points: Int): String =
+        LocalLevelNames.current.points[points]?.let { stringResource(Res.string.level_named_points, it, points) } ?: "$points ${stringResource(pointsName(points))}"
+
     fun priorityName(p: Int): StringResource = when (p) {
         0 -> Res.string.priority_0_name
         1 -> Res.string.priority_1_name

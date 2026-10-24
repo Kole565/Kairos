@@ -184,13 +184,14 @@ class M6GuideUiTest {
         val sameCount = FeatureCatalog.chapters(teamEnabled = false).count { FeatureCatalog.chapter(it).size == firstSteps }
         assertEquals(sameCount, count("$firstSteps cards"))
         onNodeWithText("Plan").performClick()
-        waitText("Step 1 of 5")
+        val plan = FeatureCatalog.chapter(GuideChapter.PLAN).size
+        waitText("Step 1 of $plan")
         waitText("Priority, points and estimate")
-        repeat(4) { onNodeWithText("Next").performClick() }
-        waitText("Step 5 of 5")
+        repeat(plan - 1) { onNodeWithText("Next").performClick() }
+        waitText("Step $plan of $plan")
         // La dernière carte du chapitre (horaires par jour) ouvre les Réglages, sur sa carte (issue #95).
         onNodeWithText("Show me the screen").performClick()
-        waitGone("Step 5 of 5")
+        waitGone("Step $plan of $plan")
         waitText("Hours by day of the week")
     }
 

@@ -174,11 +174,13 @@ fun AppShell(
     val linkFailure = stringResource(Res.string.link_unavailable)
     // Hors des branches de mise en page : un redimensionnement ne rouvre pas l'accueil.
     // L'accompagnement de la première tâche (docs/spec/premiere-tache.md) se passe sur la vue Jour de l'espace Perso : on y va, puis on le demande.
-    val startFirstTask: () -> Unit = {
+    val startTask: (Boolean) -> Unit = { recurring ->
         if (space == Space.TEAM) onSpaceChange(Space.PERSONAL)
         onNavigate(Destination.DAY)
+        nav.firstTaskRecurring = recurring
         nav.firstTaskRequest = true
     }
+    val startFirstTask: () -> Unit = { startTask(false) }
     CompositionLocalProvider(LocalMessages provides showMessage) {
         WelcomeDialog(services, onStartGuide = { guide = GuideKind.PERSONAL }, onFirstTask = startFirstTask)
     }
@@ -345,6 +347,13 @@ fun AppShell(
                 if (!team) onSpaceChange(Space.TEAM)
                 onNavigateTeam(TeamDestination.BACKLOG)
                 teamCoachStep = 0
+            },
+            // Première tâche récurrente et visite des Réglages (docs/spec/premiere-tache.md, issue #98).
+            onFirstRecurring = { discover = false; startTask(true) },
+            onSettingsTour = {
+                discover = false
+                onOpenSettings()
+                nav.settings.tourStep = 0
             },
         )
     }

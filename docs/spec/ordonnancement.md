@@ -214,8 +214,11 @@ type, tous deux indexés par le nom du type en minuscules.
   vaut alors faux. Le remplissage des fenêtres de deep work et le tri affiché (`sortKey`, score, rang) ignorent l'affinité.
 - Décision : **l'affinité est un ajustement doux**, borné à une division par 1,5 au plus : elle départage des tâches de score voisin mais ne fait
   jamais passer une tâche d'une priorité plus faible devant une plus haute (rapport de valeurs de priorité 4 par défaut). Écarté : un classement
-  par heure (rigide, contraire au « score d'abord ») ; une mesure d'efficacité estimé ÷ réel par tranche (v2, voir l'anti-boucle de
-  `planning-personnalise.md`).
+  par heure (rigide, contraire au « score d'abord »).
+- **v2 (3.9.0, issue #105)** : les gains détectés peuvent venir de la fréquence (v1, par défaut), de l'**efficacité** (estimé ÷ réel par tranche)
+  ou de leur moyenne, selon `BestHoursSettings.measure` ; le moteur n'en sait rien, il reçoit des gains. `Affinity.source` rend alors
+  `DETECTED`, `EFFICIENT` ou `COMBINED` (`MANUAL` pour une heure préférée), que la note et « Pourquoi ? » formulent. Détail :
+  `planning-personnalise.md` § Lot C v2.
 
 ### Décisions et pièges tracés
 

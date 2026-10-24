@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
@@ -75,6 +76,9 @@ internal fun TaskRow.toModel() = Task(
     reportedMinutes = reported_minutes?.toInt(),
     teamExcluded = team_excluded != 0L,
     seriesId = series_id,
+    noteOut = note_out,
+    noteIn = ExchangeNote.decode(note_in),
+    proposedTo = proposed_to,
 )
 
 internal fun EventRow.toModel() = TeamEvent(
@@ -106,6 +110,7 @@ internal fun MemberRow.toModel() = TeamMember(
     createdAt = created_at.instant(),
     updatedAt = updated_at.instant(),
     lastReportAt = last_report_at?.instant(),
+    weekHours = TeamMember.decodeWeekHours(week_hours),
 )
 
 internal fun AbsenceRow.toModel() = MemberAbsence(

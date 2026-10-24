@@ -8,6 +8,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlSchema
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
+import com.skohscripts.kairos.core.updates.InstallSource
 import com.skohscripts.kairos.data.KairosRepository
 import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.data.db.KairosDatabase
@@ -53,9 +54,22 @@ object AndroidServices {
             notifier = notifier,
             firstLaunch = opened.created,
             systemLanguage = language,
+            // APK installé à la main : le lien vers la page de téléchargement (docs/spec/mises-a-jour.md § Android).
+            downloadPage = InstallSource.installedByHand(installerOf(context)),
             applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
         )
     }
+
+    /** Paquet qui a installé Kairos (`null` : inconnu, ou ouvert à la main sur un ancien Android) ; aucune permission. */
+    @Suppress("DEPRECATION")
+    private fun installerOf(context: Context): String? = runCatching {
+        val pm = context.packageManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            pm.getInstallSourceInfo(context.packageName).installingPackageName
+        } else {
+            pm.getInstallerPackageName(context.packageName)
+        }
+    }.getOrNull()
 
     /**
      * Schéma factice pour le pilote Android : la création et les migrations

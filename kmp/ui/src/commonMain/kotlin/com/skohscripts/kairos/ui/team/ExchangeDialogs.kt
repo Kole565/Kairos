@@ -1,5 +1,29 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_reject
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_add
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_later
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_title
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposals_handled
+import com.skohscripts.kairos.ui.generated.resources.exchange_proposals
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import com.skohscripts.kairos.ui.theme.KairosSegmentedButton
+import com.skohscripts.kairos.ui.theme.KairosSegmentedRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedCard
+import com.skohscripts.kairos.core.team.exchange.ReportProposal
+import com.skohscripts.kairos.core.team.exchange.ProposalState
+import com.skohscripts.kairos.core.team.exchange.ProposalDecision
+import androidx.compose.runtime.mutableStateMapOf
+import com.skohscripts.kairos.ui.generated.resources.exchange_change_note_removed
+import com.skohscripts.kairos.ui.generated.resources.exchange_change_note
+import com.skohscripts.kairos.ui.generated.resources.exchange_field_note
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_line
+import com.skohscripts.kairos.ui.generated.resources.exchange_pack_notes
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -135,7 +159,10 @@ sealed interface ExchangePreview {
     class Pack(val text: String, val plan: PackMergePlan) : ExchangePreview
 
     /** Rapport reçu (côté manager) ; [titles] : titre des tâches d'équipe par `teamUid`, pour nommer la mère d'une sous-tâche. */
-    class Report(val text: String, val plan: ReportMergePlan, val titles: Map<String, String>) : ExchangePreview
+    class Report(val text: String, val plan: ReportMergePlan, val titles: Map<String, String>) : ExchangePreview {
+        /** Décisions du manager sur les propositions du membre (issue #121) : absentes = « Plus tard ». */
+        val decisions = mutableStateMapOf<String, ProposalDecision>()
+    }
 
     /** Le plan est accepté : « Recevoir » / « Intégrer » est proposé. Un fichier refusé n'a que « Fermer ». */
     val accepted: Boolean
@@ -173,6 +200,7 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
             is ExchangePreview.Pack -> {
                 val result = services.repository.receivePack(preview.text)
                 val plan = result.plan
+                services.diagnostics?.log("exchange pack ${if (result.applied) "applied" else "refused"}")
                 messages(
                     if (result.applied) getString(Res.string.exchange_pack_done, plan.created.size, plan.visibleUpdates.size, plan.removed.size)
                     else getString(Res.string.exchange_pack_not_applied),
@@ -180,8 +208,9 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
                 return result.applied
             }
             is ExchangePreview.Report -> {
-                val result = services.repository.integrateReport(preview.text)
+                val result = services.repository.integrateReport(preview.text, preview.decisions.toMap())
                 val plan = result.plan
+                services.diagnostics?.log("exchange report ${if (result.applied) "applied" else "refused"}")
                 messages(
                     if (result.applied) getString(Res.string.exchange_report_done_summary, plan.member?.name.orEmpty(), plan.updates.size, plan.newSubtasks.size)
                     else getString(Res.string.exchange_report_not_applied),
@@ -190,6 +219,7 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
             }
         }
     } catch (e: ImportException) {
+        services.diagnostics?.log("exchange ${e.reason.name.lowercase()}")
         messages(importErrorMessage(e))
         return false
     }
@@ -218,7 +248,7 @@ fun ExchangePreviewCard(preview: ExchangePreview, onConfirm: () -> Unit, onDismi
         }
         is ExchangePreview.Report -> {
             title = reportTitle(preview.plan)
-            body = { ReportBody(preview.plan, preview.titles) }
+            body = { ReportBody(preview.plan, preview.titles, preview.decisions) }
         }
     }
     Surface(
@@ -364,6 +394,12 @@ private fun PackBody(plan: PackMergePlan) {
             }
         }
     }
+    // Notes du manager (docs/spec/equipe-echanges.md § Notes) : lues avant de recevoir.
+    if (plan.notes.isNotEmpty()) {
+        Section(stringResource(Res.string.exchange_pack_notes)) {
+            plan.notes.forEach { (title, text) -> Line(stringResource(Res.string.exchange_note_line, title, text)) }
+        }
+    }
     Text(stringResource(Res.string.exchange_pack_backup), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
@@ -384,6 +420,7 @@ private fun fieldLabel(field: PackField): String = stringResource(
         PackField.CATEGORY -> Res.string.exchange_field_category
         PackField.DEADLINE -> Res.string.exchange_field_deadline
         PackField.ESTIMATE -> Res.string.exchange_field_estimate
+        PackField.NOTE -> Res.string.exchange_field_note
     },
 )
 
@@ -394,7 +431,7 @@ private fun reportTitle(plan: ReportMergePlan): String =
     if (plan.accepted) stringResource(Res.string.exchange_report_title, plan.member?.name.orEmpty()) else stringResource(Res.string.exchange_report_refused_title)
 
 @Composable
-private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>) {
+private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>, decisions: MutableMap<String, ProposalDecision>) {
     val language = uiLanguage()
     val zone = TimeZone.currentSystemDefault()
     when (plan.refusal) {
@@ -416,7 +453,7 @@ private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     if (plan.memberArchived) Flag(stringResource(Res.string.exchange_report_member_archived), flagged = true, style = MaterialTheme.typography.bodyMedium)
-    if (plan.updates.isEmpty() && plan.newSubtasks.isEmpty()) {
+    if (plan.updates.isEmpty() && plan.newSubtasks.isEmpty() && plan.proposals.isEmpty()) {
         Text(stringResource(Res.string.exchange_report_nothing), style = MaterialTheme.typography.bodyMedium)
     }
 
@@ -434,6 +471,15 @@ private fun ReportBody(plan: ReportMergePlan, titles: Map<String, String>) {
             }
         }
     }
+    // Propositions du membre (docs/spec/equipe-echanges.md § Propositions) : à décider une par une, rien n'est créé sans choix.
+    val fresh = plan.proposals.filter { it.state == ProposalState.NEW }
+    if (fresh.isNotEmpty()) {
+        Section(stringResource(Res.string.exchange_proposals, fresh.size)) {
+            fresh.forEach { ProposalCard(it.proposal, decisions) }
+        }
+    }
+    val handled = plan.proposals.size - fresh.size
+    if (handled > 0) Text(stringResource(Res.string.exchange_proposals_handled, handled), style = MaterialTheme.typography.bodyMedium)
     if (plan.unchanged.isNotEmpty()) Text(stringResource(Res.string.exchange_report_unchanged, plan.unchanged.size), style = MaterialTheme.typography.bodyMedium)
     if (plan.ignored.isNotEmpty()) {
         Section(stringResource(Res.string.exchange_report_ignored, plan.ignored.size)) {
@@ -471,6 +517,7 @@ private fun changeText(change: ReportChange, language: String): String {
             change.to?.let { dayText(it, language) } ?: none,
         )
         is ReportChange.Spent -> stringResource(Res.string.exchange_change_spent, change.from?.let { duration(it) } ?: none, duration(change.to))
+        is ReportChange.Note -> change.to?.let { stringResource(Res.string.exchange_change_note, it) } ?: stringResource(Res.string.exchange_change_note_removed)
     }
 }
 
@@ -509,5 +556,56 @@ private fun Line(text: String, detail: String = "") {
     Column {
         Text(text, style = MaterialTheme.typography.bodyMedium)
         if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * Une proposition du membre (issue #121) : titre modifiable, ce qu'elle apporte (durée, type, description), et le choix « Plus
+ * tard » (par défaut, rien n'est créé), « Ajouter » (au backlog, avec ce titre) ou « Refuser ».
+ */
+@Composable
+private fun ProposalCard(proposal: ReportProposal, decisions: MutableMap<String, ProposalDecision>) {
+    var title by remember(proposal.uid) { mutableStateOf(proposal.title) }
+    val decision = decisions[proposal.uid]
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                title,
+                { v ->
+                    title = v
+                    if (decisions[proposal.uid] is ProposalDecision.Add) decisions[proposal.uid] = ProposalDecision.Add(v)
+                },
+                label = { Text(stringResource(Res.string.exchange_proposal_title)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            val details = listOfNotNull(proposal.estimatedMinutes?.let { duration(it) }, proposal.taskType.ifEmpty { null })
+            if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+            if (proposal.description.isNotBlank()) {
+                Text(proposal.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 4)
+            }
+            val choices = listOf(Res.string.exchange_proposal_later, Res.string.exchange_proposal_add, Res.string.exchange_proposal_reject)
+            val selected = when (decision) {
+                is ProposalDecision.Add -> 1
+                ProposalDecision.Reject -> 2
+                null -> 0
+            }
+            KairosSegmentedRow(Modifier.fillMaxWidth()) {
+                choices.forEachIndexed { index, label ->
+                    KairosSegmentedButton(
+                        selected = selected == index,
+                        onClick = {
+                            when (index) {
+                                1 -> decisions[proposal.uid] = ProposalDecision.Add(title)
+                                2 -> decisions[proposal.uid] = ProposalDecision.Reject
+                                else -> decisions.remove(proposal.uid)
+                            }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, choices.size),
+                        label = { Text(stringResource(label), maxLines = 1) },
+                    )
+                }
+            }
+        }
     }
 }

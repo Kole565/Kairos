@@ -1,10 +1,13 @@
 package com.skohscripts.kairos.core.stats
 
 import com.skohscripts.kairos.core.engine.Affinity
+import com.skohscripts.kairos.core.engine.AffinitySource
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.minutesBetween
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.Task
+import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.WorkSession
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -15,6 +18,8 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.time.Instant
 
 /**
@@ -28,6 +33,9 @@ import kotlin.time.Instant
  * [MIN_SESSION_MINUTES] minutes (démarrage-arrêt accidentel) sont ignorées ; les plus récentes pèsent plus que les plus anciennes de la
  * fenêtre (de 1 à 1/2). La part du type par tranche est comparée à celle de **toutes** les tâches (« lift ») : « je travaille à 10 h »
  * ne doit pas passer pour « les documents, c'est à 10 h ».
+ *
+ * v2 (issue #105) : l'**efficacité** par tranche, estimé ÷ réel des tâches terminées comparé à celui de tout le type, que placer une
+ * tâche à une heure ne renforce pas (y travailler plus souvent n'y fait pas finir plus vite).
  */
 object BestHours {
     /** Largeur d'une tranche en heures, et leur nombre dans la journée. */
@@ -48,7 +56,9 @@ object BestHours {
      * Le profil d'un type ([type] vide : « sans type »). [share] : part du temps pondéré du type par tranche (somme 1) ; [lift] : cette part
      * divisée par la part de toutes les tâches dans la même tranche (> 1 : le type y est sur-représenté). [peak] : l'indice de la tranche au
      * plus fort lift parmi celles qui portent assez du temps du type, ou `null` quand le type se répartit sans pointe. [sessions] et
-     * [minutes] : les effectifs retenus.
+     * [minutes] : les effectifs retenus. [efficiency] (v2) : par tranche, l'efficacité relative (> 1 : on y finit plus vite que
+     * d'habitude pour ce type), `null` sans assez de tâches ; [efficiencyTasks] : les tâches terminées et estimées comptées ; [fastest] :
+     * la tranche la plus efficace si elle l'est nettement ([EFFICIENCY_NOTABLE]).
      */
     data class Profile(
         val type: String,
@@ -58,12 +68,32 @@ object BestHours {
         val lift: List<Double>,
         val peak: Int?,
         val reliable: Boolean,
-    )
+        val efficiency: List<Double?> = List(BUCKETS) { null },
+        val efficiencyTasks: Int = 0,
+        val fastest: Int? = null,
+    ) {
+        /** Le type a assez de tâches terminées et estimées pour mesurer son efficacité. */
+        val efficiencyReliable: Boolean get() = efficiencyTasks >= MIN_EFFICIENCY_TASKS
+    }
 
     /** Les profils, du type le plus chronométré au moins chronométré, et la répartition [global] de tout le temps retenu. */
     data class Result(val profiles: List<Profile>, val global: List<Double>, val sessions: Int) {
         val hasData: Boolean get() = profiles.isNotEmpty()
     }
+
+    /** Efficacité (v2) : tâches terminées et estimées nécessaires pour un type, tâches-équivalents pour une tranche. */
+    const val MIN_EFFICIENCY_TASKS = 5
+    const val MIN_BUCKET_TASKS = 3.0
+
+    /** Une tranche n'est « la plus efficace » que si l'on y finit au moins 10 % plus vite que d'habitude. */
+    const val EFFICIENCY_NOTABLE = 1.1
+
+    /** Efficacité relative à laquelle le gain du planning est plein (50 % plus vite). */
+    const val EFFICIENCY_FULL_GAIN = 1.5
+
+    /** Bornes du rapport estimé ÷ réel d'une tâche : un chrono oublié ou une estimation fantaisiste ne pèse pas des centaines de fois. */
+    private const val RATIO_MIN = 0.25
+    private const val RATIO_MAX = 4.0
 
     /** Les trois forces du réglage (0 Faible, 1 Moyenne, 2 Forte) : le diviseur de l'effort est `1 + force × gain`, gain ∈ [0, 1]. */
     private val STRENGTHS = doubleArrayOf(0.15, 0.3, 0.5)
@@ -81,15 +111,33 @@ object BestHours {
      */
     fun affinity(settings: Settings, result: Result): Affinity? {
         val best = settings.schedule?.bestHours?.takeIf { it.enabled } ?: return null
-        val detected = HashMap<String, List<Double>>()
+        val frequency = HashMap<String, List<Double>>()
+        val efficiency = HashMap<String, List<Double>>()
         for (p in result.profiles) {
-            if (!p.reliable || p.type.isEmpty()) continue
-            detected[p.type.lowercase()] = List(BUCKETS) { b -> if (p.share[b] >= AFFINITY_MIN_SHARE) (p.lift[b] - 1.0).coerceIn(0.0, 1.0) else 0.0 }
+            if (p.type.isEmpty()) continue
+            if (p.reliable) {
+                frequency[p.type.lowercase()] = List(BUCKETS) { b -> if (p.share[b] >= AFFINITY_MIN_SHARE) (p.lift[b] - 1.0).coerceIn(0.0, 1.0) else 0.0 }
+            }
+            if (p.efficiencyReliable) efficiency[p.type.lowercase()] = List(BUCKETS) { b -> efficiencyGain(p.efficiency[b]) }
+        }
+        val (detected, source) = when (BestHoursSettings.normalizeMeasure(best.measure)) {
+            BestHoursSettings.MEASURE_EFFICIENCY -> efficiency to AffinitySource.EFFICIENT
+            // Les deux, à parts égales : une efficacité encore inconnue (gains nuls) ne rend pas la fréquence muette.
+            BestHoursSettings.MEASURE_BOTH -> (frequency.keys + efficiency.keys).associateWith { type ->
+                val f = frequency[type]
+                val e = efficiency[type]
+                List(BUCKETS) { b -> ((f?.get(b) ?: 0.0) + (e?.get(b) ?: 0.0)) / 2 }
+            } to AffinitySource.COMBINED
+            else -> frequency to AffinitySource.DETECTED
         }
         val preferred = HashMap<String, Int>()
         for ((type, hour) in best.preferred) if (hour in 0..23 && type.isNotBlank()) preferred[type.trim().lowercase()] = hour
-        return Affinity(strengthOf(best.strength), detected, preferred, BUCKET_HOURS)
+        return Affinity(strengthOf(best.strength), detected, preferred, BUCKET_HOURS, source)
     }
+
+    /** Gain d'une efficacité relative : `(relative − 1)` ramené à [0, 1], plein à [EFFICIENCY_FULL_GAIN] ; 0 sans valeur. */
+    fun efficiencyGain(relative: Double?): Double =
+        if (relative == null) 0.0 else ((relative - 1.0) / (EFFICIENCY_FULL_GAIN - 1.0)).coerceIn(0.0, 1.0)
 
     /** Début de la tranche [bucket], en heures (0, 2, 4…). */
     fun startHour(bucket: Int): Int = bucket * BUCKET_HOURS
@@ -110,6 +158,8 @@ object BestHours {
         val weighted = LinkedHashMap<String, DoubleArray>()
         val sessionCount = LinkedHashMap<String, Int>()
         val minutesCount = LinkedHashMap<String, Int>()
+        // Minutes retenues de chaque tâche par tranche, sans pondération récente : l'efficacité les répartit (v2).
+        val taskBuckets = HashMap<Long, DoubleArray>()
         for (s in TimeTracking.sessionsInRange(sessions, windowStart, today, timeZone)) {
             val minutes = TimeTracking.sessionMinutes(s, now)
             if (minutes < MIN_SESSION_MINUTES) continue
@@ -119,7 +169,10 @@ object BestHours {
             val weight = 1.0 - 0.5 * minOf(1.0, start.date.daysUntil(today).toDouble() / windowDays)
             val type = typeById[s.taskId] ?: ""
             val bins = weighted.getOrPut(type) { DoubleArray(BUCKETS) }
-            splitIntoBuckets(start, end).forEachIndexed { bucket, m -> bins[bucket] += m * weight }
+            val split = splitIntoBuckets(start, end)
+            split.forEachIndexed { bucket, m -> bins[bucket] += m * weight }
+            val own = taskBuckets.getOrPut(s.taskId) { DoubleArray(BUCKETS) }
+            split.forEachIndexed { bucket, m -> own[bucket] += m }
             sessionCount[type] = (sessionCount[type] ?: 0) + 1
             minutesCount[type] = (minutesCount[type] ?: 0) + minutes
         }
@@ -130,6 +183,7 @@ object BestHours {
         val globalSum = globalTotals.sum()
         val global = globalTotals.map { it / globalSum }
 
+        val efficiency = efficiencyByType(tasks, sessions, taskBuckets, windowStart, now, timeZone)
         val profiles = weighted.map { (type, bins) ->
             val sum = bins.sum()
             val share = bins.map { it / sum }
@@ -137,9 +191,66 @@ object BestHours {
             val peak = share.indices.filter { share[it] >= PEAK_MIN_SHARE }.maxByOrNull { lift[it] }
             val sessionsKept = sessionCount.getValue(type)
             val minutesKept = minutesCount.getValue(type)
-            Profile(type, sessionsKept, minutesKept, share, lift, peak, reliable = sessionsKept >= MIN_RELIABLE_SESSIONS && minutesKept >= MIN_RELIABLE_MINUTES)
+            val eff = efficiency[type]
+            Profile(
+                type, sessionsKept, minutesKept, share, lift, peak,
+                reliable = sessionsKept >= MIN_RELIABLE_SESSIONS && minutesKept >= MIN_RELIABLE_MINUTES,
+                efficiency = eff?.relative ?: List(BUCKETS) { null },
+                efficiencyTasks = eff?.tasks ?: 0,
+                fastest = eff?.relative?.let { r -> r.indices.filter { (r[it] ?: 0.0) >= EFFICIENCY_NOTABLE }.maxByOrNull { r[it]!! } },
+            )
         }.sortedWith(compareByDescending<Profile> { it.minutes }.thenBy { it.type })
         return Result(profiles, global, sessionCount.values.sum())
+    }
+
+    private class TypeEfficiency(val tasks: Int, val relative: List<Double?>)
+
+    /**
+     * Efficacité par type (v2) : pour chaque tâche terminée dans la fenêtre, estimée et chronométrée, `ln(estimé ÷ réel)` (rapport borné
+     * à [RATIO_MIN], [RATIO_MAX]) réparti entre les tranches selon la part de ses minutes retenues ([taskBuckets]). Par tranche, la
+     * moyenne pondérée comparée à la moyenne du type (rapport de moyennes géométriques) : le biais d'estimation du type s'annule. Une
+     * tranche sans [MIN_BUCKET_TASKS] tâches-équivalents, ou un type sans [MIN_EFFICIENCY_TASKS] tâches, n'a pas de valeur.
+     */
+    private fun efficiencyByType(
+        tasks: List<Task>,
+        sessions: List<WorkSession>,
+        taskBuckets: Map<Long, DoubleArray>,
+        windowStart: LocalDate,
+        now: Instant,
+        timeZone: TimeZone,
+    ): Map<String, TypeEfficiency> {
+        val spent = TimeTracking.spentMinutesByTask(sessions, now, tasks)
+        val weights = HashMap<String, DoubleArray>()
+        val logs = HashMap<String, DoubleArray>()
+        val counts = HashMap<String, Int>()
+        val totals = HashMap<String, Double>()
+        for (t in tasks) {
+            if (t.status != TaskStatus.DONE || t.updatedAt.toLocalDateTime(timeZone).date < windowStart) continue
+            val estimate = t.estimatedMinutes ?: 0
+            val real = spent[t.id] ?: 0
+            val bins = taskBuckets[t.id] ?: continue
+            val sum = bins.sum()
+            if (estimate <= 0 || real <= 0 || sum <= 0) continue
+            val log = ln((estimate.toDouble() / real).coerceIn(RATIO_MIN, RATIO_MAX))
+            val type = t.taskType.trim()
+            val w = weights.getOrPut(type) { DoubleArray(BUCKETS) }
+            val l = logs.getOrPut(type) { DoubleArray(BUCKETS) }
+            bins.forEachIndexed { b, m ->
+                w[b] += m / sum
+                l[b] += m / sum * log
+            }
+            counts[type] = (counts[type] ?: 0) + 1
+            totals[type] = (totals[type] ?: 0.0) + log
+        }
+        return counts.mapValues { (type, count) ->
+            val mean = totals.getValue(type) / count
+            val w = weights.getValue(type)
+            val l = logs.getValue(type)
+            val relative = List(BUCKETS) { b ->
+                if (count >= MIN_EFFICIENCY_TASKS && w[b] >= MIN_BUCKET_TASKS) exp(l[b] / w[b] - mean) else null
+            }
+            TypeEfficiency(count, relative)
+        }
     }
 
     /** Les minutes de la session [start]..[end] (heure locale) réparties entre les tranches qu'elle traverse. */

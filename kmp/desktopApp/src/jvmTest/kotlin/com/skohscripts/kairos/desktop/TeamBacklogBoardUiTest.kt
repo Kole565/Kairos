@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasSetTextAction
 import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -217,6 +219,27 @@ class TeamBacklogBoardUiTest {
         onNodeWithText("No").performClick()
         waitTask(repository, taskId) { it.assigneeId == crew.alex }
         assertNull(repository.snapshot.value.tasks.single { it.id == taskId }.startedOn)
+    }
+
+    @Test
+    fun theSheetShowsTheMembersNoteAndSavesTheNoteToSend() = runComposeUiTest {
+        // Notes des échanges (docs/spec/equipe-echanges.md § Notes, issue #120).
+        val crew = Crew()
+        var taskId = 0L
+        val services = services {
+            crew(it, crew)
+            taskId = ready(it, "Refactor billing")
+            it.assign(listOf(taskId), crew.alex)
+        }
+        val repository = services.repository
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        openBoard()
+        waitText("Refactor billing")
+        onNodeWithText("Refactor billing").performClick()
+        waitText("Note for the member")
+        onNode(hasSetTextAction() and hasText("Note for the member")).performScrollTo().performTextInput("Start with the invoices.")
+        onNodeWithText("Save").performClick()
+        waitTask(repository, taskId) { it.noteOut == "Start with the invoices." }
     }
 
     @Test

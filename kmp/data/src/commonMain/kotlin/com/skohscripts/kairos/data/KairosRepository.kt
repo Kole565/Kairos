@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.team.exchange.ProposalState
+import com.skohscripts.kairos.core.team.exchange.ProposalDecision
+import com.skohscripts.kairos.core.model.ExchangeNote
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.skohscripts.kairos.core.KairosBuild
@@ -21,6 +24,7 @@ import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TeamSettings
+import com.skohscripts.kairos.core.team.TeamMember
 import com.skohscripts.kairos.core.team.MemberForm
 import com.skohscripts.kairos.core.team.QualifiedField
 import com.skohscripts.kairos.core.team.TeamEventKind
@@ -310,7 +314,9 @@ class KairosRepository(
                     manualTimeSpentMinutes = edit.manualTimeSpentMinutes?.takeIf { it >= 0 },
                     // « Compter dans l'équipe » ne concerne qu'une tâche perso (docs/spec/equipe-moi.md).
                     teamExcluded = edit.teamExcluded?.takeIf { task.space == TaskSpace.PERSONAL } ?: task.teamExcluded,
-            )
+                    // Note à envoyer (docs/spec/equipe-echanges.md § Notes) : nettoyée, bornée ; `null` = inchangée.
+                    noteOut = edit.noteOut?.let { ExchangeNote.clean(it).orEmpty() } ?: task.noteOut,
+            ).let { t -> edit.proposal?.let { proposed(t, it.to) } ?: t }
             // Série « le N du mois » enregistrée sans échéance : la tâche EST l'occurrence de ce mois. Sans cela, l'affichage
             // suivant en créait une seconde, de même titre, et l'originale restait « sans créneau » (recurrence.md).
             val seriesDay = updated.recurrenceDayOfMonth
@@ -610,17 +616,17 @@ class KairosRepository(
      * ramenées dans leurs bornes (1-100, 1-24) : la validation de saisie est
      * celle de `MemberForm`, ceci n'est qu'un garde-fou. L'`uid` (identité des
      * échanges) est tiré ici : `core` reste sans hasard. [isSelf] retire « C'est
-     * moi » aux autres membres dans la même transaction.
+     * moi » aux autres membres dans la même transaction. [weekHours] : semaine type (issue #104), écartée si elle est mal formée.
      */
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun createMember(name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean): Long? {
+    suspend fun createMember(name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean, weekHours: List<Double>? = null): Long? {
         val clean = name.trim()
         if (clean.isEmpty() || !hoursPerDay.isFinite()) return null
         var id: Long? = null
         write {
             queries.insertTeamMember(
                 Uuid.random().toString(), clean, role.trim(), boundedAvailability(availabilityPercent), boundedHours(hoursPerDay),
-                if (isSelf) 1L else 0L, now(), now(),
+                if (isSelf) 1L else 0L, now(), now(), TeamMember.encodeWeekHours(weekHours?.takeIf { TeamMember.isValidWeek(it) }),
             )
             id = queries.lastInsertedId().awaitAsOneOrNull()
             if (isSelf) id?.let { queries.clearSelfExcept(now(), it) }
@@ -634,7 +640,7 @@ class KairosRepository(
      * moi » aux autres, dans la même transaction ; un membre archivé n'est jamais
      * « moi ».
      */
-    suspend fun updateMember(id: Long, name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean): Boolean {
+    suspend fun updateMember(id: Long, name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean, weekHours: List<Double>? = null): Boolean {
         val clean = name.trim()
         if (clean.isEmpty() || !hoursPerDay.isFinite()) return false
         var done = false
@@ -643,7 +649,7 @@ class KairosRepository(
             val self = isSelf && !member.archived
             queries.updateTeamMember(
                 clean, role.trim(), boundedAvailability(availabilityPercent), boundedHours(hoursPerDay),
-                if (self) 1L else 0L, now(), id,
+                if (self) 1L else 0L, now(), TeamMember.encodeWeekHours(weekHours?.takeIf { TeamMember.isValidWeek(it) }), id,
             )
             if (self) queries.clearSelfExcept(now(), id)
             done = true
@@ -778,8 +784,15 @@ class KairosRepository(
     suspend fun recordPackSent(prepared: PreparedPack) {
         if (prepared.taskUids.isEmpty()) return
         write {
+            val events = state.value.teamEvents
             state.value.tasks.filter { it.space == TaskSpace.TEAM && it.teamUid in prepared.taskUids }.sortedBy { it.id }
-                .forEach { journal(it, TeamEventKind.SENT, null, prepared.packId, TeamEventSource.MANUAL, memberId = prepared.memberId) }
+                .forEach { t ->
+                    journal(t, TeamEventKind.SENT, null, prepared.packId, TeamEventSource.MANUAL, memberId = prepared.memberId)
+                    // La note envoyée (docs/spec/equipe-echanges.md § Notes), une fois : renvoyer la même note ne la répète pas.
+                    val note = ExchangeNote.clean(t.noteOut) ?: return@forEach
+                    val last = events.lastOrNull { it.taskId == t.id && it.kind == TeamEventKind.NOTE && it.source != TeamEventSource.REPORT }
+                    if (last?.toValue != note) journal(t, TeamEventKind.NOTE, null, note, TeamEventSource.MANUAL, memberId = prepared.memberId)
+                }
         }
     }
 
@@ -921,7 +934,7 @@ class KairosRepository(
      * récurrente, comme [toggleDone]. Les nouvelles sous-tâches deviennent des tâches d'équipe du même assigné que leur
      * mère. Pose enfin `lastReportAt` du membre. @throws ImportException si le texte n'est pas un rapport lisible.
      */
-    suspend fun integrateReport(text: String): ReportIntegration {
+    suspend fun integrateReport(text: String, decisions: Map<String, ProposalDecision> = emptyMap()): ReportIntegration {
         val report = TeamExchangeCodec.decodeReport(text)
         var planned: ReportMergePlan? = null
         write {
@@ -942,11 +955,49 @@ class KairosRepository(
                 idByUid[n.uid] = id
                 if (done) journal(task.copy(id = id), TeamEventKind.DONE, null, DONE_PROGRESS.toString(), TeamEventSource.REPORT, memberId = member.id)
             }
+            applyProposals(plan, decisions, member.id)
             queries.setMemberLastReport(plan.reportedAt.store(), member.id)
         }
         val plan = checkNotNull(planned)
         return ReportIntegration(plan, applied = plan.accepted)
     }
+
+    /**
+     * Décisions du manager sur les propositions `NEW` du rapport (docs/spec/equipe-echanges.md § Propositions) : « Ajouter »
+     * crée la tâche d'équipe au backlog avec l'identité de la proposition (événement `created`, source `report`) ; « Refuser »
+     * retient l'identité dans `TeamSettings.rejectedProposals`. Sans décision, rien.
+     */
+    private suspend fun applyProposals(plan: ReportMergePlan, decisions: Map<String, ProposalDecision>, reporterId: Long) {
+        val rejected = ArrayList<String>()
+        for (planned in plan.proposals.filter { it.state == ProposalState.NEW }) {
+            val p = planned.proposal
+            when (val decision = decisions[p.uid]) {
+                is ProposalDecision.Add -> {
+                    val task = newTask(decision.title.trim().ifEmpty { p.title }, null).copy(
+                        space = TaskSpace.TEAM, teamUid = p.uid, description = p.description,
+                        estimatedMinutes = p.estimatedMinutes, taskType = p.taskType,
+                    )
+                    insertNew(task, TeamEventSource.REPORT, actor = reporterId)
+                }
+                ProposalDecision.Reject -> rejected += p.uid
+                null -> Unit
+            }
+        }
+        if (rejected.isEmpty()) return
+        val settings = state.value.settings
+        val team = settings.team ?: return
+        queries.writeSettings(json.encodeToString(Settings.serializer(), settings.copy(team = team.copy(rejectedProposals = (team.rejectedProposals + rejected).distinct()))))
+    }
+
+    /**
+     * Côté membre : la proposition de [task] au manager de l'équipe [originKey] (`null` : retirée), docs/spec/equipe-echanges.md
+     * § Propositions. Seulement une tâche personnelle, sans origine ni mère ; une identité (`teamUid`) lui est posée si elle n'en a
+     * pas : celle de la proposition, que le paquet suivant rattachera.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    private fun proposed(task: Task, originKey: String?): Task =
+        if (task.space != TaskSpace.PERSONAL || task.origin != null || task.parentId != null) task
+        else task.copy(proposedTo = originKey, teamUid = task.teamUid ?: originKey?.let { Uuid.random().toString() })
 
     /** Écrit une mise à jour de rapport et ses événements (source `report`, auteur = membre qui rapporte). */
     private suspend fun applyReportUpdate(u: ReportTaskUpdate, reporterId: Long) {
@@ -963,6 +1014,8 @@ class KairosRepository(
                     journal(after, TeamEventKind.PROGRESS, (change.from ?: 0).toString(), (change.to ?: 0).toString(), src, memberId = reporterId)
                 }
                 is ReportChange.Spent -> journal(after, TeamEventKind.TIME, change.from?.toString(), change.to.toString(), src, memberId = reporterId)
+                // Une note reçue entre au journal ; une note retirée par le membre, non (rien à lire).
+                is ReportChange.Note -> change.to?.let { journal(after, TeamEventKind.NOTE, null, it, src, memberId = reporterId) }
                 is ReportChange.Status -> Unit
             }
         }
@@ -1143,7 +1196,7 @@ class KairosRepository(
                             else -> {
                                 queries.updateTeamMember(
                                     member.name, member.role, mod.percent.toLong(), member.hoursPerDay,
-                                    if (member.isSelf) 1L else 0L, now(), member.id,
+                                    if (member.isSelf) 1L else 0L, now(), TeamMember.encodeWeekHours(member.weekHours), member.id,
                                 )
                                 members = members.map { if (it.id == member.id) it.copy(availabilityPercent = mod.percent) else it }
                                 applied += mod
@@ -1252,14 +1305,14 @@ class KairosRepository(
                 t.createdAt.store(), t.updatedAt.store(), t.space.code.toLong(), t.assigneeId,
                 t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
                 t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
-                t.seriesId,
+                t.seriesId, t.noteOut, t.noteIn?.encode(), t.proposedTo,
             )
         }
         for (m in snapshot.members) {
             queries.insertTeamMemberWithId(
                 m.id, m.uid, m.name, m.role, m.availabilityPercent.toLong(), m.hoursPerDay,
                 if (m.isSelf) 1L else 0L, if (m.archived) 1L else 0L, m.createdAt.store(), m.updatedAt.store(),
-                m.lastReportAt?.store(),
+                m.lastReportAt?.store(), TeamMember.encodeWeekHours(m.weekHours),
             )
         }
         for (a in snapshot.absences) {
@@ -1318,7 +1371,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             now(), now(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
             t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
-            t.seriesId,
+            t.seriesId, t.noteOut, t.noteIn?.encode(), t.proposedTo,
         )
         val id = queries.lastInsertedId().awaitAsOneOrNull()
         if (t.space == TaskSpace.TEAM && id != null) {
@@ -1347,7 +1400,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             if (touch) now() else t.updatedAt.store(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(),
             t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
-            if (t.teamExcluded) 1L else 0L, t.seriesId, t.id,
+            if (t.teamExcluded) 1L else 0L, t.seriesId, t.noteOut, t.noteIn?.encode(), t.proposedTo, t.id,
         )
     }
 
@@ -1508,7 +1561,17 @@ data class TaskEdit(
      * `null` = inchangé. Sans effet sur une tâche d'équipe.
      */
     val teamExcluded: Boolean? = null,
+    /**
+     * Note à envoyer avec le prochain paquet (tâche d'équipe) ou rapport (tâche reçue), docs/spec/equipe-echanges.md § Notes ;
+     * `null` = inchangée.
+     */
+    val noteOut: String? = null,
+    /** Proposition au manager d'une équipe d'origine (docs/spec/equipe-echanges.md § Propositions) ; `null` = inchangée. */
+    val proposal: ProposalChange? = null,
 )
+
+/** Nouvelle cible d'une proposition : [to] = `TeamOrigin.key` de l'équipe, `null` pour la retirer. */
+data class ProposalChange(val to: String?)
 
 /**
  * Modification d'une sous-tâche existante : nouveau [title], [done] (l'état voulu), ou [delete] (suppression

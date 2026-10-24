@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -48,6 +49,9 @@ sealed interface ReportChange {
 
     /** Total de temps rapporté, en minutes ([from] `null` : premier rapport). */
     data class Spent(val from: Int?, val to: Int) : ReportChange
+
+    /** Note du membre (docs/spec/equipe-echanges.md § Notes) : [to] `null`, le rapport n'en porte plus. */
+    data class Note(val from: String?, val to: String?) : ReportChange
 }
 
 /**
@@ -76,6 +80,29 @@ data class NewTeamSubtask(
     val assigneeId: Long?,
 )
 
+/** État d'une proposition chez le manager (docs/spec/equipe-echanges.md § Propositions). */
+enum class ProposalState {
+    /** À décider : « Plus tard », « Ajouter au backlog » ou « Refuser ». */
+    NEW,
+
+    /** Une tâche d'équipe porte déjà son identité : ajoutée par un rapport précédent. */
+    IN_TEAM,
+
+    /** Refusée par le manager (`TeamSettings.rejectedProposals`). */
+    REJECTED,
+}
+
+/** Proposition d'un rapport et son état. */
+data class PlannedProposal(val proposal: ReportProposal, val state: ProposalState)
+
+/** Décision du manager sur une proposition `NEW`. */
+sealed interface ProposalDecision {
+    /** Ajouter au backlog, avec ce titre (celui de la proposition s'il est vide). */
+    data class Add(val title: String) : ProposalDecision
+
+    data object Reject : ProposalDecision
+}
+
 /** Ligne ignorée : [uid], [title] (sous-tâches seulement) et la raison. */
 data class IgnoredReportLine(val uid: String, val title: String?, val reason: IgnoredReason)
 
@@ -97,6 +124,8 @@ data class ReportMergePlan(
     val unchanged: List<Task> = emptyList(),
     val newSubtasks: List<NewTeamSubtask> = emptyList(),
     val ignored: List<IgnoredReportLine> = emptyList(),
+    /** Propositions du membre, dans l'ordre du rapport (issue #121). */
+    val proposals: List<PlannedProposal> = emptyList(),
 ) {
     val accepted: Boolean get() = refusal == null
 
@@ -144,6 +173,7 @@ object ReportMerge {
                 continue
             }
             val update = apply(task, member, line.status, line.doneOn ?: reportDay, line.startedOn, line.progressPercent, line.spentMinutes)
+                .withNote(task, member, line.note, report.reportedAt)
             if (update == null) unchanged += task else updates += update
         }
 
@@ -182,7 +212,35 @@ object ReportMerge {
             unchanged = unchanged,
             newSubtasks = created,
             ignored = ignored,
+            proposals = proposalsOf(snapshot, report, seen),
         )
+    }
+
+    /** Les propositions du rapport (une par identité, hors celles qui sont déjà des lignes du rapport) et leur état. */
+    private fun proposalsOf(snapshot: KairosSnapshot, report: TeamReport, seen: Set<String>): List<PlannedProposal> {
+        val teamUids = snapshot.tasks.filter { it.space == TaskSpace.TEAM }.mapNotNullTo(HashSet()) { it.teamUid }
+        val rejected = snapshot.settings.team?.rejectedProposals.orEmpty().toSet()
+        return report.proposals.filter { it.uid !in seen && it.title.isNotBlank() }.distinctBy { it.uid }.map { p ->
+            val state = when (p.uid) {
+                in teamUids -> ProposalState.IN_TEAM
+                in rejected -> ProposalState.REJECTED
+                else -> ProposalState.NEW
+            }
+            PlannedProposal(p, state)
+        }
+    }
+
+    /**
+     * La note du membre (docs/spec/equipe-echanges.md § Notes) ajoutée à la mise à jour : `noteIn` = (texte, date du rapport, nom du
+     * membre) quand le texte change, effacée si le rapport n'en porte plus ; une note inchangée garde sa date.
+     */
+    private fun ReportTaskUpdate?.withNote(task: Task, member: TeamMember, note: String?, at: Instant): ReportTaskUpdate? {
+        val text = ExchangeNote.clean(note)
+        if (text == task.noteIn?.text) return this
+        val change = ReportChange.Note(task.noteIn?.text, text)
+        val noteIn = text?.let { ExchangeNote(it, at, member.name) }
+        return this?.copy(after = after.copy(noteIn = noteIn), changes = changes + change)
+            ?: ReportTaskUpdate(task, task.copy(noteIn = noteIn), listOf(change), formerHolder = task.assigneeId != member.id)
     }
 
     /**

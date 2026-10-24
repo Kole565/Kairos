@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -12,7 +13,8 @@ import kotlin.time.Instant
 /**
  * Construit le rapport d'avancement d'un membre pour un manager (docs/spec/equipe-echanges.md § Formats). Pur :
  * l'instant et le fuseau sont des paramètres. **Rien d'autre que les tâches reçues de ce manager n'en sort**
- * (ni tâche personnelle, ni description, ni note, ni créneau, ni session).
+ * (ni tâche personnelle, ni description, ni créneau, ni session), hormis les tâches que le membre a lui-même proposées
+ * ([proposals]) et sa note sur chaque tâche reçue (docs/spec/equipe-echanges.md § Notes et § Propositions).
  */
 object ReportBuilder {
     /** Tâches reçues de [originKey] qui entrent dans le rapport : reçues de cette équipe, **non retirées**, ni archivées. */
@@ -45,6 +47,16 @@ object ReportBuilder {
         return found.sortedBy { it.id }
     }
 
+    /**
+     * Tâches proposées à [originKey] (docs/spec/equipe-echanges.md § Propositions) : personnelles, à faire, sans origine ni mère,
+     * avec une identité (`teamUid`, posée par le dépôt au moment de proposer), dans l'ordre des identifiants.
+     */
+    fun proposals(snapshot: KairosSnapshot, originKey: String): List<ReportProposal> =
+        snapshot.tasks.filter {
+            it.proposedTo == originKey && it.origin == null && it.parentId == null && it.space == TaskSpace.PERSONAL &&
+                it.status == TaskStatus.TODO && it.teamUid != null
+        }.sortedBy { it.id }.map { ReportProposal(it.teamUid!!, it.title, it.description, it.estimatedMinutes, it.taskType) }
+
     /** Nouvelles sous-tâches sans identité stable : le dépôt leur en pose une avant de construire le rapport. */
     fun subtasksNeedingUid(snapshot: KairosSnapshot, originKey: String): List<Task> =
         newSubtasks(snapshot, originKey).filter { it.teamUid == null }
@@ -76,6 +88,7 @@ object ReportBuilder {
                 startedOn = t.startedOn ?: firstSession[t.id] ?: today.takeIf { !done && (progress ?: 0) > 0 },
                 progressPercent = progress,
                 spentMinutes = spent[t.id] ?: 0,
+                note = ExchangeNote.clean(t.noteOut),
             )
         }
 
@@ -91,6 +104,7 @@ object ReportBuilder {
             member = PackMember(origin.memberUid, origin.memberName),
             tasks = reported,
             newSubtasks = subtasks,
+            proposals = proposals(snapshot, originKey),
         )
     }
 }

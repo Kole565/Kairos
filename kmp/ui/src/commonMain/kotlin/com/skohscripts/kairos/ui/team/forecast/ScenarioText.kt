@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team.forecast
 
+import com.skohscripts.kairos.ui.day.Levels
 import androidx.compose.runtime.Composable
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -38,7 +39,6 @@ import com.skohscripts.kairos.ui.generated.resources.mod_type_set_availability
 import com.skohscripts.kairos.ui.generated.resources.mod_type_set_deadline
 import com.skohscripts.kairos.ui.generated.resources.mod_type_set_focus
 import com.skohscripts.kairos.ui.generated.resources.mod_type_set_priority
-import com.skohscripts.kairos.ui.generated.resources.points_badge
 import com.skohscripts.kairos.ui.team.categoryName
 import com.skohscripts.kairos.ui.team.dateSpan
 import com.skohscripts.kairos.ui.team.decimalText
@@ -118,14 +118,14 @@ internal fun modificationText(mod: ScenarioModification, names: ScenarioNames, t
         }
     is ScenarioModification.AddTasks -> {
         val details = listOfNotNull(
-            mod.points?.let { stringResource(Res.string.points_badge, it) },
+            mod.points?.let { Levels.pointsShort(it) },
             mod.category.takeIf { it.isNotEmpty() }?.let { categoryName(it) },
-            mod.priority?.let { "P$it" },
+            mod.priority?.let { Levels.priorityShort(it) },
         )
         val suffix = if (details.isEmpty()) "" else details.joinToString(", ", prefix = " (", postfix = ")")
         if (mod.count == 1) stringResource(Res.string.mod_add_tasks_one, suffix) else stringResource(Res.string.mod_add_tasks_many, mod.count, suffix)
     }
-    is ScenarioModification.SetPriority -> stringResource(Res.string.mod_set_priority, names.task(mod.taskUid), "P${mod.priority}")
+    is ScenarioModification.SetPriority -> stringResource(Res.string.mod_set_priority, names.task(mod.taskUid), Levels.priorityShort(mod.priority))
     is ScenarioModification.SetDeadline ->
         if (mod.date == null) {
             stringResource(Res.string.mod_clear_deadline, names.task(mod.taskUid))

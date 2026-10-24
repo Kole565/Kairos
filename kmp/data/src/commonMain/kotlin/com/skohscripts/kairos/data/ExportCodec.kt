@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
@@ -115,6 +116,7 @@ object ExportCodec {
         }
         for (d in s.dependencies) require(d.taskId in ids && d.blockerId in ids && d.taskId != d.blockerId) { "dépendance" }
         for (b in s.timeBlocks) require(b.end >= b.start) { "créneau" }
+        for (m in s.members) require(m.weekHours?.let(TeamMember::isValidWeek) ?: true) { "semaine type" }
         unique(s.blockExceptions.map { it.id }, "exceptions de créneau")
         require(s.blockExceptions.map { it.blockId to it.date }.toSet().size == s.blockExceptions.size) { "exceptions de créneau en double" }
         val blockIds = s.timeBlocks.mapTo(HashSet()) { it.id }
@@ -254,6 +256,11 @@ private data class TaskJson(
     val teamExcluded: Boolean? = null,
     // Série d'une tâche récurrente (docs/spec/durees-apprises.md) : nul, donc omis, pour toute tâche d'avant la 3.4.
     val seriesId: Long? = null,
+    // Notes des échanges d'équipe (3.9.0, docs/spec/equipe-echanges.md § Notes) : omises quand vides.
+    val noteOut: String? = null,
+    val noteIn: ExchangeNoteJson? = null,
+    // Proposition au manager (3.9.0, docs/spec/equipe-echanges.md § Propositions) : omise quand nulle.
+    val proposedTo: String? = null,
 ) {
     fun toModel() = Task(
         id = id,
@@ -286,6 +293,9 @@ private data class TaskJson(
         reportedMinutes = reportedMinutes,
         teamExcluded = teamExcluded == true,
         seriesId = seriesId,
+        noteOut = ExchangeNote.clean(noteOut).orEmpty(),
+        noteIn = noteIn?.toModel(),
+        proposedTo = proposedTo,
     )
 
     companion object {
@@ -296,8 +306,18 @@ private data class TaskJson(
             t.manualTimeSpentMinutes, t.createdAt.toString(), t.updatedAt.toString(),
             encodeSpace(t.space), t.assigneeId, t.progressPercent, t.startedOn?.toString(), t.teamUid,
             t.origin, if (t.originRemoved) true else null, t.reportedMinutes, if (t.teamExcluded) true else null,
-            t.seriesId,
+            t.seriesId, t.noteOut.ifEmpty { null }, t.noteIn?.let(ExchangeNoteJson::from), t.proposedTo,
         )
+    }
+}
+
+/** Note reçue d'un échange d'équipe (docs/spec/equipe-echanges.md § Notes) : texte borné à la lecture. */
+@Serializable
+private data class ExchangeNoteJson(val text: String, val at: String, val from: String = "") {
+    fun toModel() = ExchangeNote(text.take(ExchangeNote.MAX_LENGTH), Instant.parse(at), from)
+
+    companion object {
+        fun from(n: ExchangeNote) = ExchangeNoteJson(n.text, n.at.toString(), n.from)
     }
 }
 
@@ -383,16 +403,18 @@ private data class MemberJson(
     val updatedAt: String,
     // Jalon E6 : nul donc omis tant qu'aucun rapport n'a été intégré.
     val lastReportAt: String? = null,
+    // 3.9.0 (issue #104) : nulle donc omise sans semaine type ; un export d'avant ne change pas.
+    val weekHours: List<Double>? = null,
 ) {
     fun toModel() = TeamMember(
         id, uid, name, role, availabilityPercent, hoursPerDay, isSelf, archived,
-        Instant.parse(createdAt), Instant.parse(updatedAt), lastReportAt?.let(Instant::parse),
+        Instant.parse(createdAt), Instant.parse(updatedAt), lastReportAt?.let(Instant::parse), weekHours,
     )
 
     companion object {
         fun from(m: TeamMember) = MemberJson(
             m.id, m.uid, m.name, m.role, m.availabilityPercent, m.hoursPerDay, m.isSelf, m.archived,
-            m.createdAt.toString(), m.updatedAt.toString(), m.lastReportAt?.toString(),
+            m.createdAt.toString(), m.updatedAt.toString(), m.lastReportAt?.toString(), m.weekHours,
         )
     }
 }

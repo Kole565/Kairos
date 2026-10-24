@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import kotlin.test.assertTrue
 import com.skohscripts.kairos.core.AppVersion
 import com.skohscripts.kairos.ui.app.UpdateStatus
 import kotlinx.coroutines.runBlocking
@@ -71,5 +72,16 @@ class DesktopUpdatesTest {
         u.check(force = true)
         u.dismiss("3.0.1")
         assertEquals("3.0.1", updates().dismissed.value)
+    }
+
+    @Test
+    fun theCheckIsLoggedWithItsCodeAndWhetherAProxyApplies() = runBlocking<Unit> {
+        // Proxy du système et journal de diagnostic (docs/spec/bureau-avance.md, issue #115).
+        val lines = mutableListOf<String>()
+        DesktopUpdates(file, clock, installed, log = { lines += it }) { 404 to "" }.check(force = true)
+        // Le proxy dépend de la machine qui lance le test : seule la forme est vérifiée.
+        assertTrue(lines.single().matches(Regex("update ok 404 proxy=(yes|no)")), lines.toString())
+        DesktopUpdates.useSystemProxies()
+        assertEquals("true", System.getProperty("java.net.useSystemProxies"))
     }
 }

@@ -13,7 +13,7 @@ décrit en détail dans `vue-jour.md` (§ Dates, déplacer, blocage), `vue-semai
 `recurrence.md` et `reglages.md`, où ses décisions sont tracées. **Lot B1 (fenêtre par jour
 de la semaine) : implémenté en 3.4.0** (voir « Lot B1 (implémenté) »). **B2 (plusieurs plages et
 contextes) : implémenté en 3.5.0** (voir « Lot B2 (implémenté) »). **Lot C : étape C1 (observer) implémentée en 3.5.0, étape C2 (appliquer) implémentée en 3.6.0** (voir « Lot C », ci-dessous). Tous
-les lots sont implémentés. Les **échelles libres** de priorité et de points ne sont **ni spécifiées ni implémentées** : elles sont écartées (voir « Hors périmètre / différé » et « Décisions et pièges tracés »), seuls des libellés personnalisés des niveaux restant envisageables.
+les lots sont implémentés. Les **échelles libres** de priorité et de points ne sont **ni spécifiées ni implémentées** : elles sont écartées (voir « Hors périmètre / différé » et « Décisions et pièges tracés »), seuls des **noms personnalisés des niveaux** (lot D, issue #93, implémenté en 3.9.0) étant retenus : ils changent l'affichage, jamais le calcul.
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -34,6 +34,9 @@ pour qui ne vérifie jamais les réglages.** Les échelles de priorité et de ta
 personnalisables (4e demande de l'issue) sont écartées pour l'instant.
 
 ### Comportement attendu (utilisateur)
+
+_Lot D, noms des niveaux (issue #93) : voir la sous-section dédiée en fin de
+besoin métier._
 
 **Lot A : ergonomie et réglages** (aucun effet sur les valeurs par défaut)
 
@@ -99,7 +102,51 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
     habituellement travaillé. Une **préférence manuelle** par type (« vers
     12 h ») prime sur la détection. « Pourquoi à cette place ? » le mentionne.
 
-### Critères de succès
+### Meilleures heures v2 : l'efficacité (besoin, issue #105)
+
+La v1 mesure **quand** on travaille un type, pas **comment**. Qui fait ses
+documents à 10 h seulement parce que Kairos les y place paraît « meilleur à
+10 h » : la mesure confirme la suggestion (boucle d'auto-renforcement). Les
+vraies meilleures heures sont celles où le travail se fait le plus vite au
+regard de son estimation.
+
+- La carte Statistiques « Quand tu travailles chaque type » dit aussi, par
+  type, **à quelle heure il se termine le plus vite** par rapport à
+  l'estimation (« 30 % plus vite que d'habitude »), ou qu'il n'y a pas encore
+  assez de tâches terminées et estimées pour le dire.
+- Le réglage « Meilleures heures » choisit sur quoi s'appuyer : **la
+  fréquence** (v1, par défaut), **l'efficacité**, ou **les deux**. Sans y
+  toucher, rien ne change. La mention de la vue Jour et « Pourquoi ? » disent
+  laquelle a joué.
+- Une heure suggérée artificiellement ne se renforce plus d'elle-même en mode
+  efficacité : y travailler plus souvent ne la rend pas plus « efficace ».
+- Aucune donnée nouvelle : estimations, tâches terminées et sessions du chrono
+  suffisent.
+
+### Lot D : noms des niveaux (besoin)
+
+Certains pensent dans leur propre vocabulaire (« Urgent / Bientôt / Un jour »,
+tailles S/M/L) et trouvent P0–P2 et les points de Fibonacci rébarbatifs. Ils
+veulent lire leurs mots dans la vue Jour, la fiche d'une tâche et le guide,
+pendant que Kairos continue de calculer sur l'échelle fixe.
+
+- Réglages → Planification → carte **« Noms des niveaux »** : un champ par
+  priorité (P0, P1, P2) et par palier de points (1, 2, 3, 5, 8, 13, 21). Le
+  libellé de chaque champ dit le nom par défaut ; laissé vide, le niveau garde
+  son nom par défaut (FR/EN). 16 caractères au plus ; deux niveaux d'une même
+  échelle ne peuvent pas porter le même nom.
+- Un nom choisi **remplace le code** là où le code est seul (badge d'une
+  tâche, filtres, journal et scénarios de l'espace Équipe) : « Urgent » au lieu
+  de « P0 », « M » au lieu de « 3 pts ». Là où le code est suivi de son nom
+  (pastilles de qualification, « Pourquoi à cette place ? », aide de la boîte
+  de réception, guide des points), il s'écrit **nom puis valeur** : « Urgent
+  (P0) », « M (3) », pour qu'on retrouve toujours la valeur qui compte.
+- Le **rouge reste au niveau 0**, quel que soit son nom (charte : rouge
+  seulement pour P0).
+- Le score, le tri, les statistiques, les exports de données et les échanges
+  d'équipe utilisent toujours les valeurs ; seul le texte affiché change. Les
+  noms ne sont jamais dans un paquet d'échange : chacun voit ses propres mots.
+
 
 - Par défaut rien ne change : `DifferentialTest` (480 cas) et
   `TeamIsolationTest.soloExportIsByteIdentical` passent sans modification ;
@@ -114,6 +161,15 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
 - Ergonomie : les deux bugs ont chacun leur test (`DayViewTest`), l'analyse de
   dates souples a ses cas (`DatesTest`), « Restaurer » ne modifie pas `team`
   (`SettingsFormTest`).
+- Meilleures heures v2 : efficacité déterministe sur une base fixée, seuils
+  de fiabilité, biais d'estimation du type neutralisé, heure suggérée
+  artificiellement sans gain d'efficacité (`BestHoursEfficiencyTest`) ; sans
+  `measure`, le réglage et l'export sont identiques (`SettingsFormTest`).
+- Noms des niveaux (lot D) : sans nom choisi, `levelNames` reste nul et rien
+  ne change (`LevelNamesTest`, `SettingsFormTest`) ; un nom choisi remplace le
+  code dans les badges et les filtres, s'écrit « nom (valeur) » dans les
+  pastilles, « Pourquoi ? » et le guide des points (`LevelNamesUiTest`) ; le
+  badge du niveau 0 reste rouge ; aucun nom n'entre dans un paquet d'échange.
 - Interface : `--self-test` et captures des magasins regardés (360 dp sans
   débordement, cibles de 48 dp, textes FR/EN, conforme MD3).
 
@@ -121,9 +177,10 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
 
 - **Échelles libres** de priorité et de points (suggestion 2 de l'issue) :
   trop risquées (`FIBONACCI_SCALE` sur 11 sites, `PRIORITY_VALUES` sur 15,
-  27 libellés par langue, calibrage, échanges d'équipe, exports). Seuls des
-  **libellés personnalisés** des niveaux (jamais le calcul) seraient peu
-  coûteux ; réévalués après retours.
+  27 libellés par langue, calibrage, échanges d'équipe, exports). Seuls les
+  **noms** des niveaux existants sont personnalisables (lot D) : ni ajouter ni
+  retirer un niveau, ni changer une valeur.
+- Noms des niveaux partagés avec l'équipe : ils restent sur l'appareil (voir lot D).
 - Glisser-déposer (décision d'accessibilité déjà consignée).
 - Apprentissage entre appareils ou d'équipe, prédiction de durée (voir
   `durees-apprises.md`), notifications (les rappels d'une tâche à heure fixe et de la tâche suivante sont arrivés en
@@ -268,7 +325,95 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   mesure le confirme (auto-renforcement). Parades : poids borné, ajustement
   doux, exclusion des tâches en retard ; en v2, mesure d'**efficacité**
   (estimé ÷ réel par tranche) plutôt que la seule fréquence. La v1 reste la
-  fréquence relative au global.
+  fréquence relative au global, et la mesure par défaut.
+
+### Lot C v2 : efficacité (implémenté en 3.9.0, issue #105)
+
+- **Mesure** (`BestHours.measure`, même fenêtre et mêmes sessions que la v1) :
+  pour chaque tâche **terminée** dans la fenêtre, avec une **estimation** et du
+  temps chronométré, rapport `r = estimé ÷ réel` (réel = tout son temps
+  chronométré, comme le calibrage), borné à [1/4, 4] (une session oubliée ne
+  doit pas peser des centaines de fois). Ses minutes retenues (sessions d'au
+  moins 5 min de la fenêtre) sont réparties entre les tranches de 2 h : la
+  tâche pèse `w_b` = part de ses minutes dans la tranche `b` (somme 1).
+- **Efficacité relative** d'une tranche = moyenne géométrique pondérée de `r`
+  dans la tranche ÷ moyenne géométrique de `r` sur toutes les tâches du type.
+  Diviser par celle du type **neutralise son biais d'estimation** (un type
+  toujours sous-estimé n'est pas « lent partout ») : on compare le type à
+  lui-même. Moyenne géométrique : 2× plus vite et 2× plus lent se compensent.
+- **Fiabilité** : un type a un profil d'efficacité s'il compte au moins
+  **5 tâches** (`MIN_EFFICIENCY_TASKS`) ; une tranche n'a de valeur que si elle
+  porte au moins **3 tâches-équivalents** (`Σ w_b ≥ MIN_BUCKET_TASKS`), sinon
+  `null`. **Tranche la plus efficace** (`fastest`) : la plus haute efficacité
+  relative, si elle atteint 1,1 (10 % plus vite, `EFFICIENCY_NOTABLE`).
+- **Anti-boucle** : placer plus de tâches à une heure en augmente l'effectif,
+  pas la vitesse ; un type travaillé à une seule heure a une efficacité
+  relative de 1 partout où il a des données, donc aucun gain. Seule une heure
+  où l'on finit **plus vite que d'habitude** gagne.
+- **Gain** (`BestHours.affinity`) : efficacité = `(relative − 1) × 2` borné à
+  [0, 1] (plein à 50 % plus vite, `EFFICIENCY_FULL_GAIN`), 0 sans valeur
+  fiable ; fréquence = v1 inchangée ; **les deux** = moyenne des deux gains
+  (une donnée d'efficacité encore absente ne rend pas la fréquence muette).
+  L'heure préférée prime toujours.
+- **Réglage** : `BestHoursSettings.measure` (`frequency` par défaut,
+  `efficiency`, `both`), jamais écrit à sa valeur par défaut
+  (`@EncodeDefault(NEVER)` : l'export d'une installation v1 ne change pas) ;
+  champ `schedule.bestHours.measure`, normalisé à l'écriture (valeur inconnue
+  = fréquence), jamais refusé. `BestHoursCard` : « Mesurer par » en trois
+  boutons segmentés (Fréquence, Efficacité, Les deux) sous la force.
+- **Mention** : `AffinitySource.EFFICIENT` (efficacité) et `COMBINED` (les
+  deux) à côté de `DETECTED` (fréquence) et `MANUAL` ; notes
+  `note_affinity_efficient` / `_combined`, phrases `why_affinity_efficient` /
+  `_combined`.
+- **Statistiques** : chaque profil porte `efficiency` (relative par tranche,
+  `null` si peu fiable), `efficiencyTasks` et `fastest` ; la carte ajoute une
+  ligne sous la pointe (`stats_hours_fastest`, `stats_hours_even`,
+  `stats_hours_few_tasks`) ; le CSV `hours_by_type` ajoute `efficiency_tasks`,
+  `fastest_start`, `fastest_gain_pct` (`statistiques.md`).
+- **Décisions** : *estimé ÷ réel* plutôt que la part des tâches finies en une
+  session (écartée : dépend du découpage des sessions et du chrono oublié,
+  pas de la vitesse) ; *comparé au type* plutôt qu'au global (écarté :
+  confondrait « ce type est sous-estimé » et « cette heure est lente ») ;
+  *fréquence par défaut* : l'efficacité exige des estimations, que beaucoup
+  n'ont pas.
+
+### Lot D : noms des niveaux (implémenté en 3.9.0, issue #93)
+
+- **Donnée** : `Settings.levelNames: LevelNames?` (`core/model/Settings.kt`),
+  nul tant qu'aucun nom n'est choisi (principe « nul par défaut »).
+  `LevelNames.priority` et `LevelNames.points` : valeur → nom, une valeur sans
+  nom est absente, jamais écrites vides (`@EncodeDefault(NEVER)`).
+  `LevelNames.MAX_LENGTH` = 16.
+- **Formulaire** (`SettingsForm`) : champs texte `levelNames.p0`…`p2` et
+  `levelNames.pts1`…`pts21` ; nom nettoyé (espaces retirés), vide = absent ;
+  le sous-objet redevient nul quand il ne porte plus aucun nom. Erreurs :
+  `TOO_LARGE` (borne 16, message « 16 caractères au plus » propre à la
+  carte, comme le nom d'un membre) au-delà de 16 caractères, `DUPLICATE` sur le second de
+  deux niveaux d'une même échelle au même nom (sans tenir compte de la casse).
+  Catégorie Planification (`SettingsCategory.of`) ; « Restaurer les valeurs
+  par défaut » les vide.
+- **Affichage** (`ui/day/Levels.kt`) : `LocalLevelNames` (posé par
+  `KairosApp` depuis les réglages) ; `priorityShort`/`pointsShort` (nom choisi,
+  sinon « P0 » ou « 3 pts ») pour les badges et les filtres,
+  `priorityLabel`/`pointsLabel` (« nom (P0) », « nom (3) », sinon « P0
+  Critique », « 3 trivial ») pour les pastilles, « Pourquoi ? », l'aide de la
+  boîte de réception ; ligne du guide des points `guide_points_named`
+  (« M (3) : … »). Carte `LevelNamesCard` (`ui/settings/LevelNamesCard.kt`).
+- **Décisions** :
+  - *Partout dans l'interface de l'utilisateur*, espace Équipe compris
+    (backlog, tableau, journal, scénarios) : ce sont ses mots, sur son appareil
+    ; écarté : l'espace Perso seulement, qui aurait montré deux vocabulaires
+    pour la même tâche. Les paquets d'échange, l'export JSON et le CSV des
+    statistiques restent numériques.
+  - *Les statistiques gardent les valeurs* (calibrage par palier, débit en
+    points) : elles mesurent l'échelle elle-même, un nom n'y ajoute rien.
+  - *Le terme « Effort » de « Pourquoi ? » reste numérique* (« Effort 3 pts »,
+    « ÷ 3 ») : il explique le calcul, qui se fait sur la valeur.
+  - *Les percentiles des prévisions (P50, P85)* ne sont pas des priorités :
+    inchangés.
+  - *16 caractères* : un badge doit tenir dans une ligne de tâche à 360 dp.
+  - *Pas de nom pour « sans priorité » ni « sans points »* : ce n'est pas un
+    niveau.
 
 ### Feuille de route
 
@@ -276,6 +421,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   `durees-apprises.md`, `visite-guidee.md` et `premiere-tache.md`).
 - **3.5.0** : B2 (livré) + C1 (livré).
 - **3.6.0** : C2 (livré). Échelles libres réévaluées après retours.
+- **3.9.0** : C v2, efficacité (issue #105, livré) ; D, noms des niveaux (issue #93, livré).
 
 ### Décisions et pièges tracés
 
@@ -291,9 +437,10 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   préférence manuelle reste le recours.
 - **Observer avant d'appliquer** : C1 prouve que la mesure est lisible avant
   qu'elle n'influence quoi que ce soit.
-- **Échelles libres écartées** (voir Hors périmètre).
+- **Échelles libres écartées** (voir Hors périmètre) ; seuls les noms des
+  niveaux sont personnalisables (lot D).
 
 ### Impacts sur les specs existantes
 
-Aucun en attente : les lots A, B1, B2 et les étapes C1 et C2 sont reportés dans `vue-jour`, `vue-semaine`, `recurrence`, `reglages`, `ordonnancement`,
+Aucun en attente : les lots A, B1, B2, D et les étapes C1 et C2 sont reportés dans `vue-jour`, `vue-semaine`, `recurrence`, `reglages`, `ordonnancement`,
 `statistiques` et `modele-donnees`.

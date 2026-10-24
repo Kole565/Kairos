@@ -47,7 +47,13 @@ CREATE TABLE task (
     team_excluded INTEGER NOT NULL DEFAULT 0,
     -- Série d'une tâche récurrente (docs/spec/durees-apprises.md) : identifiant de la première tâche de la série, NULL pour une
     -- tâche d'avant la 3.4 ou sans occurrence suivante. Même ordre que 7.sqm.
-    series_id INTEGER
+    series_id INTEGER,
+    -- Notes des échanges d'équipe (docs/spec/equipe-echanges.md § Notes) : la note à envoyer, la dernière reçue
+    -- (« instant␟auteur␟texte », NULL = aucune). Même ordre que 9.sqm.
+    note_out TEXT NOT NULL DEFAULT '',
+    note_in TEXT,
+    -- Tâche proposée au manager d'une équipe d'origine (docs/spec/equipe-echanges.md § Propositions) : sa clé ; NULL = non.
+    proposed_to TEXT
 );
 CREATE INDEX task_status ON task(status);
 CREATE INDEX task_parent ON task(parent_id);
@@ -124,7 +130,9 @@ CREATE TABLE team_member (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     -- Date du dernier rapport d'avancement intégré pour ce membre (jalon E6) ; NULL = aucun.
-    last_report_at TEXT
+    last_report_at TEXT,
+    -- Semaine type (3.9.0) : heures du lundi au vendredi, « 8,8,8,8,0 » ; NULL = heures par jour chaque jour ouvré.
+    week_hours TEXT
 );
 
 -- Absences des membres (jalon E2) : plages de dates incluses, début et fin au format ISO.
@@ -182,11 +190,11 @@ INSERT INTO task (title, description, priority, deadline, project_tag, status, e
     pinned_start, parent_id, recurrence, scheduled_date, recurrence_day_of_month,
     recurrence_day_of_week, recurrence_period, task_type, fibonacci_points,
     manual_time_spent_minutes, created_at, updated_at, space, assignee_id, progress_percent, started_on, team_uid,
-    origin, origin_removed, reported_minutes, team_excluded, series_id)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    origin, origin_removed, reported_minutes, team_excluded, series_id, note_out, note_in, proposed_to)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTaskWithId:
-INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO task VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 lastInsertedId:
 SELECT last_insert_rowid();
@@ -197,7 +205,7 @@ UPDATE task SET title = ?, description = ?, priority = ?, deadline = ?, project_
     recurrence_day_of_month = ?, recurrence_day_of_week = ?, recurrence_period = ?, task_type = ?,
     fibonacci_points = ?, manual_time_spent_minutes = ?, updated_at = ?, space = ?, assignee_id = ?,
     progress_percent = ?, started_on = ?, team_uid = ?, origin = ?, origin_removed = ?, reported_minutes = ?,
-    team_excluded = ?, series_id = ?
+    team_excluded = ?, series_id = ?, note_out = ?, note_in = ?, proposed_to = ?
 WHERE id = ?;
 
 deleteTask:
@@ -311,14 +319,14 @@ allTeamMembers:
 SELECT * FROM team_member ORDER BY id;
 
 insertTeamMemberWithId:
-INSERT INTO team_member VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO team_member VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTeamMember:
-INSERT INTO team_member (uid, name, role, availability_percent, hours_per_day, is_self, archived, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?);
+INSERT INTO team_member (uid, name, role, availability_percent, hours_per_day, is_self, archived, created_at, updated_at, week_hours)
+VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?);
 
 updateTeamMember:
-UPDATE team_member SET name = ?, role = ?, availability_percent = ?, hours_per_day = ?, is_self = ?, updated_at = ?
+UPDATE team_member SET name = ?, role = ?, availability_percent = ?, hours_per_day = ?, is_self = ?, updated_at = ?, week_hours = ?
 WHERE id = ?;
 
 -- Rapport d'avancement intégré (jalon E6) : ne touche pas updated_at (la fiche du membre n'a pas changé).

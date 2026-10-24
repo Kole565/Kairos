@@ -1,5 +1,14 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.guide.coachHighlight
+import com.skohscripts.kairos.ui.guide.SettingsTourPanel
+import com.skohscripts.kairos.ui.guide.SettingsTourEffect
+import com.skohscripts.kairos.ui.guide.SettingsTour
+import com.skohscripts.kairos.ui.generated.resources.update_see_latest
+import com.skohscripts.kairos.ui.generated.resources.update_android_help
+import com.skohscripts.kairos.core.settings.UiLanguage
+import com.skohscripts.kairos.core.updates.UpdateCheck
+import androidx.compose.ui.platform.LocalUriHandler
 import com.skohscripts.kairos.ui.generated.resources.action_revert
 import com.skohscripts.kairos.ui.generated.resources.guide_reset_done
 import com.skohscripts.kairos.ui.generated.resources.guide_reset_action
@@ -239,12 +248,15 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                         services.updates?.let { updates ->
                             UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { onChange("updateCheckEnabled", it) }
                         }
+                        if (services.updates == null && services.downloadPage) DownloadPageCard()
                         services.shortcuts?.let { ShortcutCard(it) }
                     }
                     SettingsCategory.DAY, SettingsCategory.PLANNING, SettingsCategory.TRACKING -> SettingsFormCards(category, values, errors, onChange)
                     SettingsCategory.TEAM -> TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services, onChange = onChange)
                     SettingsCategory.DATA -> {
                         GuideSpot(GuideSection.SETTINGS_DATA) { DataCard(services) }
+                        // Bureau : dossier des données choisi (docs/spec/bureau-avance.md).
+                        services.dataFolder?.let { DataFolderCard(it) }
                         RestoreDefaultsCard {
                             // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
                             values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->
@@ -260,6 +272,8 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                         SettingsLinkCard(KairosIcons.PlayArrow, Res.string.settings_discover_entry, Res.string.settings_discover_entry_hint, onDiscover)
                         SettingsLinkCard(KairosIcons.Info, Res.string.settings_about_entry, Res.string.settings_about_entry_hint, onOpenAbout)
                         GuideResetCard(services, current.guide)
+                        // Bureau : journal de diagnostic (docs/spec/bureau-avance.md).
+                        services.diagnostics?.let { DiagnosticsCard(it) }
                     }
                 }
             }
@@ -272,7 +286,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
             val twoPane = maxWidth >= SETTINGS_TWO_PANE_MIN
             SideEffect { nav.singlePane = !twoPane }
             val shown = nav.category ?: SettingsCategory.GENERAL.takeIf { twoPane }
-            val generalHint = if (services.updates != null) Res.string.settings_cat_general_hint_updates else SettingsCategory.GENERAL.hint
+            val generalHint = if (services.updates != null || services.downloadPage) Res.string.settings_cat_general_hint_updates else SettingsCategory.GENERAL.hint
             val list: @Composable () -> Unit = {
                 SettingsCategoryList(selected = shown.takeIf { twoPane }, twoPane = twoPane, flagged = flagged, generalHint = generalHint) { nav.category = it }
             }
@@ -299,7 +313,13 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                 }
             }
         }
-        SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null; restored = false }, onSave = ::save)
+        // Visite des Réglages (issue #98) : son panneau au-dessus de la barre, qu'il cerne à la dernière étape.
+        SettingsTourEffect(nav)
+        SettingsTourPanel(nav)
+        val tourOnSave = nav.tourStep?.let { SettingsTour.STEPS.getOrNull(it)?.step?.save } == true
+        Box(Modifier.coachHighlight(tourOnSave, coaching = nav.tourStep != null)) {
+            SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null; restored = false }, onSave = ::save)
+        }
     }
 
     confirmHide?.let { settings ->
@@ -450,6 +470,24 @@ private fun UpdatesCard(updates: UpdateService, enabled: String, onEnabled: (Str
     }
 }
 
+/**
+ * Mises à jour d'un APK installé à la main (docs/spec/mises-a-jour.md § Android, issue #143) : la version installée et
+ * « Voir la dernière version », qui ouvre la page de téléchargement dans le navigateur. Aucun appel réseau, aucune permission.
+ */
+@Composable
+private fun DownloadPageCard() {
+    val uriHandler = LocalUriHandler.current
+    val english = !UiLanguage.isFrench(uiLanguage())
+    SettingsCard(spacing = KairosSpacing.m) {
+        SettingsCardHeader(KairosIcons.Update, stringResource(Res.string.settings_section_updates), stringResource(Res.string.update_android_help))
+        Text(stringResource(Res.string.update_installed, KairosBuild.VERSION_NAME), style = MaterialTheme.typography.bodyMedium)
+        KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(UpdateCheck.downloadPage(english)) } }, contentPadding = KairosButtonIconPadding) {
+            Icon(KairosIcons.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(stringResource(Res.string.update_see_latest), modifier = Modifier.padding(start = 6.dp))
+        }
+    }
+}
+
 /** Règle inter-champs violée : bandeau en conteneur d'erreur (un vrai échec, charte), avec icône. */
 @Composable
 private fun GeneralErrorBanner(error: GeneralError) {
@@ -528,8 +566,8 @@ private fun DataCard(services: AppServices) {
                 scope.launch {
                     val text = ExportCodec.encode(services.repository.snapshot.value, KairosBuild.VERSION_NAME, services.clock.now())
                     val saved = runCatching { services.files.saveText("kairos-export-${fileStamp(services)}.json", text) }
-                    saved.onSuccess { if (it) messages(getString(Res.string.export_done)) }
-                        .onFailure { messages(getString(Res.string.file_error)) }
+                    saved.onSuccess { if (it) { services.diagnostics?.log("export ok"); messages(getString(Res.string.export_done)) } }
+                        .onFailure { services.diagnostics?.log("export failed"); messages(getString(Res.string.file_error)) }
                 }
             }, contentPadding = KairosButtonIconPadding) {
                 Icon(KairosIcons.Download, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -547,6 +585,7 @@ private fun DataCard(services: AppServices) {
                             is ImportedFile.Exchange -> exchange = file.preview
                         }
                     } catch (e: ImportException) {
+                        services.diagnostics?.log("import ${e.reason.name.lowercase()}")
                         messages(importErrorMessage(e))
                     }
                 }

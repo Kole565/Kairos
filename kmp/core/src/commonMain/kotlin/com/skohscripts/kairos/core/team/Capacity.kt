@@ -47,8 +47,19 @@ object Capacity {
     fun nominalDayHours(member: TeamMember, settings: Settings): Double =
         member.hoursPerDay * member.availabilityPercent / 100.0 * focus(settings)
 
-    /** Capacité d'une semaine nominale de cinq jours ouvrés, sans férié ni absence. */
-    fun weeklyHours(member: TeamMember, settings: Settings): Double = nominalDayHours(member, settings) * WORKDAYS_PER_WEEK
+    /**
+     * Heures prévues de [member] le [day], avant quotité et focus (issue #104) : celles de sa semaine type pour ce jour de la semaine
+     * (0 un jour libre), sinon ses heures par jour. Le week-end n'est jamais travaillé (`dailyHours` l'écarte).
+     */
+    fun baseHours(member: TeamMember, day: LocalDate): Double =
+        member.weekHours?.getOrNull(Workdays.weekday(day)) ?: member.hoursPerDay
+
+    /** Capacité d'une semaine nominale, sans férié ni absence : la semaine type, sinon cinq jours ouvrés. */
+    fun weeklyHours(member: TeamMember, settings: Settings): Double =
+        member.weekHours?.let { it.sum() * member.availabilityPercent / 100.0 * focus(settings) } ?: (nominalDayHours(member, settings) * WORKDAYS_PER_WEEK)
+
+    /** Jours travaillés d'une semaine nominale : ceux de la semaine type à plus de 0 h, sinon cinq. */
+    fun workdays(member: TeamMember): Int = member.weekHours?.count { it > 0.0 } ?: WORKDAYS_PER_WEEK
 
     /** [day] est couvert par une absence de [member] (plage incluse). */
     fun isAbsent(member: TeamMember, day: LocalDate, absences: List<MemberAbsence>): Boolean =
@@ -56,7 +67,7 @@ object Capacity {
 
     /**
      * Heures de [member] le [day] : 0 hors jour ouvré (week-end ou [holidays]) et
-     * un jour d'absence ; sinon `max(0, heures par jour × quotité − busyHours) ×
+     * un jour d'absence ; sinon `max(0, heures du jour ([baseHours]) × quotité − busyHours) ×
      * focus`, multiplié par [todayFraction] (1 sauf pour « moi » aujourd'hui, voir
      * [todayFraction]). [busyHours] : créneaux occupés du jour, pour « moi » seulement
      * (`TeamWork.busyHours`, docs/spec/equipe-moi.md) ; le focus s'applique après eux.
@@ -71,7 +82,7 @@ object Capacity {
         busyHours: Double = 0.0,
     ): Double {
         if (!Workdays.isWorkday(day, holidays) || isAbsent(member, day, absences)) return 0.0
-        val available = member.hoursPerDay * member.availabilityPercent / 100.0
+        val available = baseHours(member, day) * member.availabilityPercent / 100.0
         val free = if (busyHours > 0.0) (available - busyHours).coerceAtLeast(0.0) else available
         return free * focus(settings) * todayFraction.coerceIn(0.0, 1.0)
     }

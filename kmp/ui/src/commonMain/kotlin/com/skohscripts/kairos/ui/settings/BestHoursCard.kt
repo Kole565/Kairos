@@ -1,5 +1,11 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.generated.resources.besthours_measure_help
+import com.skohscripts.kairos.ui.generated.resources.besthours_measure_frequency
+import com.skohscripts.kairos.ui.generated.resources.besthours_measure_efficiency
+import com.skohscripts.kairos.ui.generated.resources.besthours_measure_both
+import com.skohscripts.kairos.ui.generated.resources.besthours_measure
+import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,12 +47,20 @@ import org.jetbrains.compose.resources.stringResource
 private const val ENABLED = "schedule.bestHours.enabled"
 private const val STRENGTH = "schedule.bestHours.strength"
 private const val PREFERRED = "schedule.bestHours.preferred"
+private const val MEASURE = "schedule.bestHours.measure"
+
+/** Ce que mesure la détection (v2, issue #105), dans l'ordre des boutons : valeur enregistrée et libellé. */
+private val MEASURES: List<Pair<String, StringResource>> = listOf(
+    BestHoursSettings.MEASURE_FREQUENCY to Res.string.besthours_measure_frequency,
+    BestHoursSettings.MEASURE_EFFICIENCY to Res.string.besthours_measure_efficiency,
+    BestHoursSettings.MEASURE_BOTH to Res.string.besthours_measure_both,
+)
 
 private val LEVELS: List<StringResource> = listOf(Res.string.besthours_strength_0, Res.string.besthours_strength_1, Res.string.besthours_strength_2)
 
 /**
  * Meilleures heures (docs/spec/planning-personnalise.md § Lot C, étape C2) : un interrupteur (désactivé par défaut), la force en
- * trois niveaux (Faible, Moyenne, Forte) et, par type de tâche, une heure préférée facultative qui prime sur la détection. Liée aux
+ * trois niveaux (Faible, Moyenne, Forte), ce que mesure la détection (v2 : Fréquence, Efficacité, Les deux) et, par type de tâche, une heure préférée facultative qui prime sur la détection. Liée aux
  * champs `schedule.bestHours.*` ; la liste des heures est un seul champ texte `type=heure,…` (`SettingsForm.parsePreferred`) dont un
  * type sans heure est absent. Un type qui n'est plus dans « Types de tâche » garde son heure, signalé « type inconnu » : jamais perdu
  * en silence.
@@ -72,6 +86,22 @@ internal fun BestHoursCard(values: Map<String, String>, errors: Map<String, Fiel
                     )
                 }
             }
+        }
+        val measure = BestHoursSettings.normalizeMeasure(values[MEASURE].orEmpty())
+        val measureLabel = stringResource(Res.string.besthours_measure)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(measureLabel, style = MaterialTheme.typography.labelLarge)
+            KairosSegmentedRow(Modifier.fillMaxWidth().semantics { contentDescription = measureLabel }) {
+                MEASURES.forEachIndexed { index, (value, text) ->
+                    KairosSegmentedButton(
+                        selected = measure == value,
+                        onClick = { onChange(MEASURE, value) },
+                        shape = SegmentedButtonDefaults.itemShape(index, MEASURES.size),
+                        label = { Text(stringResource(text), maxLines = 1) },
+                    )
+                }
+            }
+            Text(stringResource(Res.string.besthours_measure_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         val hours = SettingsForm.parsePreferred(values[PREFERRED].orEmpty())
         val known = values["taskTypes"].orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }

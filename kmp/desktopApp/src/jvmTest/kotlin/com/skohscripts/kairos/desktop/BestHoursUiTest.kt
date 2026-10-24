@@ -72,6 +72,23 @@ class BestHoursUiTest {
         waitText(this, "Stands out at 10:00–12:00: 100% of its time")
         // Cinq sessions et cinq heures : fiable.
         waitText(this, "n=5 · 5 h")
+        // Une tâche sans estimation : pas d'efficacité (v2, issue #105).
+        waitText(this, "Efficiency: not enough finished, estimated tasks yet (0 of 5)")
+    }
+
+    @Test
+    fun theCardSaysWhenATypeFinishesFastest() = runComposeUiTest {
+        // Six tâches à 9 h au temps prévu, six à 14 h en 40 min pour 60 prévues.
+        val start = Instant.parse("2026-10-01T08:00:00Z")
+        val tasks = (1L..12L).map { done(it, "Dev").copy(estimatedMinutes = 60) }
+        val sessions = (1L..12L).map { id ->
+            val day = 2 + (id % 6).toInt()
+            val (from, to) = if (id <= 6) "09:00" to "10:00" else "14:00" to "14:40"
+            WorkSession(id, id, Instant.parse("2026-10-%02dT%s:00Z".format(day, from)), Instant.parse("2026-10-%02dT%s:00Z".format(day, to)), start)
+        }
+        val services = services(KairosSnapshot(tasks = tasks, workSessions = sessions))
+        setContent { KairosApp(Platform.DESKTOP, Destination.STATS, TeamDestination.BOARD) { services } }
+        waitText(this, "Fastest at 14:00–16:00: 22% quicker than usual (12 estimated tasks)")
     }
 
     @Test

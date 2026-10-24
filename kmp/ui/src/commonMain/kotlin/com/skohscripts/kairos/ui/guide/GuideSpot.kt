@@ -48,6 +48,9 @@ class GuideSpotState {
     var pending by mutableStateOf<GuideSection?>(null)
     var shown by mutableStateOf<GuideSection?>(null)
 
+    /** Section cernée tant qu'une étape de visite dure (visite des Réglages, issue #98), sans la limite de [SPOT_MILLIS]. */
+    var held by mutableStateOf<GuideSection?>(null)
+
     /** Met [section] en valeur [SPOT_MILLIS], puis l'efface si rien ne l'a remplacée entre-temps. */
     suspend fun show(section: GuideSection) {
         shown = section
@@ -65,7 +68,8 @@ val LocalGuideSpot = compositionLocalOf { GuideSpotState() }
  */
 @Composable
 fun GuideMark(section: GuideSection, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val marked = LocalGuideSpot.current.shown == section
+    val spot = LocalGuideSpot.current
+    val marked = spot.shown == section || spot.held == section
     val scheme = MaterialTheme.colorScheme
     Box(
         if (marked) modifier.border(BorderStroke(2.dp, scheme.primary), MaterialTheme.shapes.medium) else modifier,

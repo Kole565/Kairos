@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.guide_points_named
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosTextButton
 import com.skohscripts.kairos.ui.app.expandedState
@@ -60,7 +61,7 @@ internal fun InboxHelp(refs: Map<Int, TaskStats.FiboReference>) {
         Small(stringResource(Res.string.inbox_help_why))
         Small(stringResource(Res.string.inbox_help_priority))
         PRIORITY_VALUES.forEach { p ->
-            Small("P$p ${stringResource(Levels.priorityName(p))} · ${stringResource(Levels.priorityMeaning(p))}")
+            Small("${Levels.priorityLabel(p)} · ${stringResource(Levels.priorityMeaning(p))}")
         }
         PointsGuideBody(refs)
     }
@@ -87,8 +88,12 @@ private fun PointsGuideBody(refs: Map<Int, TaskStats.FiboReference>) {
     Small(stringResource(Res.string.guide_points_intro))
     FIBONACCI_SCALE.forEach { points ->
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            // Nom choisi : « M (3) : … », la valeur toujours lisible (docs/spec/planning-personnalise.md § Lot D).
+            val named = LocalLevelNames.current.points[points]
+            val meaning = stringResource(Levels.pointsMeaning(points))
             Text(
-                stringResource(Res.string.guide_points_level, points, stringResource(Levels.pointsName(points)), stringResource(Levels.pointsMeaning(points))),
+                named?.let { stringResource(Res.string.guide_points_named, it, points, meaning) }
+                    ?: stringResource(Res.string.guide_points_level, points, stringResource(Levels.pointsName(points)), meaning),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
             )

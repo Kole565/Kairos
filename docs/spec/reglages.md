@@ -42,10 +42,14 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
      début)), **Contextes** (`ContextsCard` : jusqu'à quatre, nom unique et types de tâche en pastilles, un type
      n'est que dans un contexte ; un type sorti de « Types de tâche » reste, signalé « type inconnu »),
      **Jours fériés** (français, dates supplémentaires).
-  3. **Planification** : **Types de tâches**, **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md` :
+  3. **Planification** : **Types de tâches**, **Noms des niveaux** (3.9.0, lot D de `planning-personnalise.md` :
+     un champ par priorité `levelNames.p0`…`p2` et par palier de points `levelNames.pts1`…`pts21`, libellé = nom par
+     défaut, vide = nom par défaut, 16 caractères au plus, nom unique dans son échelle ; `LevelNamesCard` ;
+     `Settings.levelNames` reste nul tant qu'aucun nom n'est choisi), **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md` :
      interrupteur `schedule.bestHours.enabled` désactivé par défaut, force `schedule.bestHours.strength` en trois
      niveaux Faible / Moyenne / Forte (0 à 2, Moyenne par défaut), et une heure préférée facultative (0 à 23) par
-     type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…` ; `BestHoursCard`, qui
+     type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…`, et (3.9.0, v2) « Mesurer par »
+     `schedule.bestHours.measure` (Fréquence par défaut, Efficacité, Les deux ; boutons segmentés, valeur inconnue = fréquence) ; `BestHoursCard`, qui
      n'affiche la force et les heures que si l'interrupteur est actif ; une heure hors des bornes est refusée sur
      ce champ ; `schedule` reste nul tant que les trois valent leur défaut), **Durées apprises** (3.4,
      `durees-apprises.md` : interrupteur `learning.enabled`, occurrences considérées `learning.history` ≥ 3,
@@ -147,8 +151,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 - Thème sombre (`navigation-theme.md`, `apparence.md` : décision rouverte pour `3.7.0`, issue #72).
 - Recherche parmi les réglages : sept catégories se parcourent d'un coup d'œil ; à rouvrir si elles grossissent.
-- Réglage du chemin de la base, d'un proxy ou du niveau de journalisation (voir
-  l'en-tête).
+- Proxy saisi dans Kairos : écarté, le bureau suit le proxy du système ; le dossier des données et le journal de
+  diagnostic du bureau sont dans `bureau-avance.md` (3.9.0, issue #115), hors du formulaire (propres à l'appareil).
 
 ## 2. Solution technique
 
@@ -195,7 +199,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   `DATA`, `ABOUT`, dans l'ordre de la liste), chacune avec son titre, son résumé et son icône (`Tune`, `Schedule`,
   `Sort`, `Timer`, `Groups`, `Database`, `Info`). `SettingsCategory.of(clé)` range chaque champ de `SettingsForm` :
   `language`, `themeColor`, `updateCheckEnabled` → Général ; journée de travail, `schedule.dN.*`, `schedule.cN.*`
-  (contextes), `holidaysFr`, `extraHolidays` → Journée et horaires ; `taskTypes`, `schedule.bestHours.*`,
+  (contextes), `holidaysFr`, `extraHolidays` → Journée et horaires ; `taskTypes`, `levelNames.*`, `schedule.bestHours.*`,
   `learning.*`, garde-fous, score, creux → Planification ; chrono, `reminders.*` et `statsWindowWeeks` → Chrono et statistiques ;
   `team.*` → Équipe. Une clé inconnue lève une erreur (aucune ne tombe en silence hors de l'écran) ;
   `SettingsCategory.of(GeneralError)` : `WORKDAY_ORDER` → Journée et horaires, `DIP_ORDER` → Planification.

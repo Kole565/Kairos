@@ -20,7 +20,11 @@ import kotlin.system.exitProcess
 
 /** Point d'entrée de l'application de bureau (docs/spec/distribution.md § Bureau). */
 fun main(args: Array<String>) {
-    val dataDir = DataDirectory.resolve()
+    // Avant toute connexion : le sélecteur de proxy lit cette option une seule fois (docs/spec/bureau-avance.md § Proxy).
+    DesktopUpdates.useSystemProxies()
+    val env = System.getenv()
+    val resolved = DataDirectory.resolveAll(args.toList(), env)
+    val dataDir = resolved.dir
     CrashLog.install(dataDir)
 
     if (args.any { it == "--self-test" || it.startsWith("--self-test=") }) {
@@ -33,6 +37,10 @@ fun main(args: Array<String>) {
 
     // Instance déjà ouverte : elle est ramenée au premier plan, celle-ci s'arrête.
     val instance = SingleInstance.acquire(dataDir) ?: exitProcess(0)
+    // Dossier choisi et journal de diagnostic (docs/spec/bureau-avance.md) : le journal note la source du dossier, jamais son chemin.
+    val folder = DesktopDataFolder(resolved, DataDirectory.kairosRoot(env, System.getProperty("os.name"), System.getProperty("user.home")))
+    val diagnostics = FileDiagnostics(dataDir, resolved.source)
+    diagnostics.log("start ${com.skohscripts.kairos.core.KairosBuild.VERSION_NAME} ${System.getProperty("os.name")} java=${System.getProperty("java.version")} folder=${resolved.source.name.lowercase()}")
     val preview = System.getProperty("kairos.preview") == "true"
     val appName = if (preview) "Kairos Preview" else "Kairos"
     val portable = PortableCopy.detect(appName = appName)
@@ -70,7 +78,9 @@ fun main(args: Array<String>) {
                     awtWindow.requestFocus()
                 }
             }
-            KairosApp(Platform.DESKTOP, splash = true) { DesktopServices.open(dataDir, notifier = notifier, portable = portable) }
+            KairosApp(Platform.DESKTOP, splash = true) {
+                DesktopServices.open(dataDir, notifier = notifier, portable = portable, folder = folder, diagnostics = diagnostics)
+            }
         }
     }
 }

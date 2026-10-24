@@ -58,11 +58,11 @@ sessions,total_minutes,avg_session_minutes
 10,620,62
 
 hours_by_type
-type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,share_00,share_02,share_04,share_06,share_08,share_10,share_12,share_14,share_16,share_18,share_20,share_22
-Dev,7,480,true,10:00,31.7,1.31,0.0,0.0,0.0,0.0,25.9,31.7,0.0,22.9,19.5,0.0,0.0,0.0
-"Réunion, équipe",1,60,false,14:00,100.0,3.65,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
-,1,55,false,08:00,100.0,3.43,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
-'=Admin,1,25,false,16:00,100.0,5.20,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
+type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,efficiency_tasks,fastest_start,fastest_gain_pct,share_00,share_02,share_04,share_06,share_08,share_10,share_12,share_14,share_16,share_18,share_20,share_22
+Dev,7,480,true,10:00,31.7,1.31,3,,,0.0,0.0,0.0,0.0,25.9,31.7,0.0,22.9,19.5,0.0,0.0,0.0
+"Réunion, équipe",1,60,false,14:00,100.0,3.65,1,,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0
+,1,55,false,08:00,100.0,3.43,1,,,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+'=Admin,1,25,false,16:00,100.0,5.20,0,,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0
 
 backlog
 metric,value

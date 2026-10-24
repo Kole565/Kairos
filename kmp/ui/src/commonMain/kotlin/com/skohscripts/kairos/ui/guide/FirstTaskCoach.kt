@@ -1,5 +1,28 @@
 package com.skohscripts.kairos.ui.guide
 
+import com.skohscripts.kairos.ui.generated.resources.task_rec_monthly
+import com.skohscripts.kairos.ui.generated.resources.task_rec_weekly
+import com.skohscripts.kairos.ui.generated.resources.task_rec_weekdays
+import com.skohscripts.kairos.ui.generated.resources.task_rec_daily
+import com.skohscripts.kairos.ui.generated.resources.rec_preview_row_chosen
+import com.skohscripts.kairos.ui.generated.resources.rec_preview_row
+import com.skohscripts.kairos.ui.generated.resources.rec_preview_on_day
+import com.skohscripts.kairos.ui.generated.resources.rec_preview_title
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_save_body
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_save_title
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_size_body
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_size_title
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_rule_body
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_rule_title
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_date_body
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_date_title
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_title_body
+import com.skohscripts.kairos.ui.generated.resources.rec_coach_title_title
+import kotlinx.datetime.LocalDate
+import com.skohscripts.kairos.ui.day.Dates
+import com.skohscripts.kairos.core.model.TaskRecurrence
+import com.skohscripts.kairos.core.engine.Recurrence
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -92,6 +115,8 @@ internal class CoachStep(
     val body: StringResource,
     val fields: Set<EditField> = emptySet(),
     val save: Boolean = false,
+    /** L'étape montre, sous son texte, la prochaine échéance de chaque règle de récurrence ([RecurrencePreview], issue #98). */
+    val preview: Boolean = false,
 ) {
     /** Cette étape explique un champ des options avancées : la fiche les ouvre. */
     val opensAdvanced: Boolean get() = fields.any { it.advanced }
@@ -146,6 +171,47 @@ internal object TeamTaskCoach {
 }
 
 /**
+ * Les étapes du coach de la première tâche **récurrente** (docs/spec/premiere-tache.md § Première tâche récurrente, issue #98) : la
+ * même fiche, de ce qui revient à l'enregistrement, l'étape de la règle montrant la prochaine échéance de chaque règle.
+ */
+internal object RecurrenceCoach {
+    val STEPS: List<CoachStep> = listOf(
+        CoachStep({ KairosIcons.Edit }, Res.string.rec_coach_title_title, Res.string.rec_coach_title_body, setOf(EditField.TITLE)),
+        CoachStep({ KairosIcons.DateRange }, Res.string.rec_coach_date_title, Res.string.rec_coach_date_body, setOf(EditField.DEADLINE, EditField.SCHEDULED)),
+        CoachStep({ KairosIcons.Repeat }, Res.string.rec_coach_rule_title, Res.string.rec_coach_rule_body, setOf(EditField.RECURRENCE), preview = true),
+        CoachStep({ KairosIcons.Balance }, Res.string.rec_coach_size_title, Res.string.rec_coach_size_body, setOf(EditField.PRIORITY, EditField.POINTS, EditField.MINUTES)),
+        CoachStep({ KairosIcons.Check }, Res.string.rec_coach_save_title, Res.string.rec_coach_save_body, save = true),
+    )
+}
+
+/**
+ * Prochaine échéance de chaque règle à partir de [base] (`Recurrence.preview`), la règle [chosen] en gras et marquée « (ta règle) » :
+ * c'est la comparaison qui explique la différence entre les règles. [dayOfMonth] : le N de « le N du mois » s'il est saisi.
+ */
+@Composable
+internal fun RecurrencePreview(base: LocalDate, chosen: TaskRecurrence, dayOfMonth: Int?, holidays: Set<LocalDate>, language: String) {
+    val preview = remember(base, dayOfMonth, holidays) { Recurrence.preview(base, dayOfMonth, holidays) }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(stringResource(Res.string.rec_preview_title, Dates.long(base, language)), style = MaterialTheme.typography.labelMedium)
+        preview.forEach { (rule, next) ->
+            val name = when (rule) {
+                TaskRecurrence.DAILY -> stringResource(Res.string.task_rec_daily)
+                TaskRecurrence.WEEKDAYS -> stringResource(Res.string.task_rec_weekdays)
+                TaskRecurrence.WEEKLY -> stringResource(Res.string.task_rec_weekly)
+                TaskRecurrence.MONTHLY -> stringResource(Res.string.task_rec_monthly)
+                else -> stringResource(Res.string.rec_preview_on_day, dayOfMonth ?: base.day)
+            }
+            val mine = rule == chosen
+            Text(
+                stringResource(if (mine) Res.string.rec_preview_row_chosen else Res.string.rec_preview_row, name, Dates.long(next, language)),
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = if (mine) FontWeight.Bold else FontWeight.Normal,
+            )
+        }
+    }
+}
+
+/**
  * L'accompagnement en cours dans la fiche : l'étape courante [step] (conservée par l'appelant, `rememberSaveable`), le moyen de la
  * changer et de l'abandonner. Fermer le coach n'écrit rien.
  */
@@ -155,6 +221,8 @@ internal class CoachSession(
     val onSkip: () -> Unit,
     /** Les étapes : celles de la première tâche, ou celles de la première tâche d'équipe ([TeamTaskCoach.STEPS], issue #97). */
     val steps: List<CoachStep> = FirstTaskCoach.STEPS,
+    /** Fériés des réglages, pour l'aperçu des règles de récurrence ([CoachStep.preview]). */
+    val holidays: Set<LocalDate> = emptySet(),
 ) {
     val current: CoachStep get() = steps[step.coerceIn(0, steps.lastIndex)]
     fun highlights(field: EditField): Boolean = field in current.fields
@@ -174,6 +242,8 @@ internal fun CoachPanel(
     onNext: () -> Unit,
     onSkip: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Ce que l'étape montre sous son texte (l'aperçu des règles de récurrence) ; `null` : rien. */
+    extra: (@Composable () -> Unit)? = null,
 ) {
     val last = index >= total - 1
     OutlinedCard(modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }) {
@@ -188,6 +258,7 @@ internal fun CoachPanel(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(stringResource(step.body), style = MaterialTheme.typography.bodyMedium)
+            extra?.invoke()
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
                 KairosTextButton(onClick = onSkip) { Text(stringResource(if (last) Res.string.guide_finish else Res.string.coach_skip)) }
                 if (onPrevious != null) KairosTextButton(onClick = onPrevious) { Text(stringResource(Res.string.guide_previous)) }

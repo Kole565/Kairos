@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.why_affinity_combined
+import com.skohscripts.kairos.ui.generated.resources.why_affinity_efficient
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,7 +111,7 @@ internal fun ScoreBadge(
                         Text(stringResource(Res.string.why_overdue), style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                val priority = task.priority?.let { "P$it ${stringResource(Levels.priorityName(it))}" }
+                val priority = task.priority?.let { Levels.priorityLabel(it) }
                 Term(priority?.let { stringResource(Res.string.why_priority, it) } ?: stringResource(Res.string.why_priority_none), Dates.number(why.value, uiLanguage()))
                 Term(dateLabel(why), "+ ${Dates.number(why.criticality, uiLanguage())}")
                 val effort = when (why.effortSource) {
@@ -131,7 +133,12 @@ internal fun ScoreBadge(
                 }
                 // Meilleures heures (étape C2) : l'heure du type a fait préférer cette tâche sur ce créneau.
                 affinity?.let {
-                    val res = if (it == AffinitySource.MANUAL) Res.string.why_affinity_manual else Res.string.why_affinity_detected
+                    val res = when (it) {
+                        AffinitySource.MANUAL -> Res.string.why_affinity_manual
+                        AffinitySource.EFFICIENT -> Res.string.why_affinity_efficient
+                        AffinitySource.COMBINED -> Res.string.why_affinity_combined
+                        AffinitySource.DETECTED -> Res.string.why_affinity_detected
+                    }
                     Text(stringResource(res, task.taskType.trim()), style = MaterialTheme.typography.bodySmall)
                 }
                 Text(stringResource(Res.string.why_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

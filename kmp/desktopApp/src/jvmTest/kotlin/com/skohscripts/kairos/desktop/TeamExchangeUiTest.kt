@@ -516,6 +516,32 @@ class TeamExchangeUiTest {
     }
 
     @Test
+    fun aPersonalTaskCanBeProposedToTheManager() = runComposeUiTest {
+        // Tâches proposées par un membre (docs/spec/equipe-echanges.md § Propositions, issue #121).
+        val manager = manager()
+        val member = memberWith(pack(manager))
+        var mine = 0L
+        runBlocking {
+            // Les tâches reçues sont faites : seule la tâche personnelle reste dans la journée.
+            member.snapshot.value.tasks.filter { it.origin != null }.forEach { member.toggleDone(it.id) }
+            mine = member.createTask("Fix the CSV import")!!
+            member.setPriority(mine, 1)
+            member.setPoints(mine, 2)
+        }
+        val services = services(member)
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        waitText("Fix the CSV import", substring = true)
+        onAllNodesWithContentDescription("Edit").onFirst().performClick()
+        waitText("Edit task")
+        onNodeWithText("Propose to Corentin (Équipe Plateforme)").performScrollTo().performClick()
+        onNodeWithText("Save").performClick()
+        waitUntil(timeoutMillis = 5_000) { services.repository.snapshot.value.tasks.single { it.id == mine }.proposedTo != null }
+        val task = services.repository.snapshot.value.tasks.single { it.id == mine }
+        assertEquals(services.repository.origins().single().key, task.proposedTo)
+        assertTrue(task.teamUid != null)
+    }
+
+    @Test
     fun keepingARemovedTaskAsPersonalDropsTheMark() = runComposeUiTest {
         val manager = manager()
         val member = memberWith(pack(manager))
