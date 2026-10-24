@@ -344,6 +344,15 @@
     <string name="stats_throughput_hint">Tasks done per week (summed Fibonacci points = velocity).</string>
     <string name="stats_throughput_row">%1$d · %2$d pts</string>
     <string name="stats_calibration_title">Estimation calibration</string>
+    <string name="stats_correct_open">Correct the estimates…</string>
+    <string name="stats_correct_title">Correct the estimates</string>
+    <string name="stats_correct_intro">Replaces the estimate of finished tasks with the time really spent (timer and time entered). Untick the ones to keep as they are. Calibration will take it into account; learned durations, which start from the real time, do not change.</string>
+    <string name="stats_correct_row">%1$s → %2$s</string>
+    <string name="stats_correct_no_estimate">no estimate</string>
+    <string name="stats_correct_apply">Apply (%1$d)</string>
+    <string name="stats_correct_all">Tick all</string>
+    <string name="stats_correct_none">Untick all</string>
+    <string name="stats_correct_done">Estimates corrected: %1$d</string>
     <string name="stats_calibration_hint">Median real time per points level: if two levels meet, the scale does not discriminate and needs recalibrating.</string>
     <string name="stats_calibration_empty">No finished task has both points and timed work. Set points and start the timer to feed this figure.</string>
     <string name="stats_unreliable">n=%1$d, not reliable</string>
@@ -1324,6 +1333,8 @@
     <string name="card_slots_month_body">A time slot can come back every month, on the 15th or on the 3rd Tuesday. On a recurring slot, “Only this one” skips that day or changes its hours, without touching the rest of the series.</string>
     <string name="card_month_title">The month at a glance</string>
     <string name="card_month_body">In the Week view, “Month” shows every day of the month: planned tasks, deadlines, overloaded days, public holidays and days off. Tap a day to open it.</string>
+    <string name="card_correct_title">Correct your estimates</string>
+    <string name="card_correct_body">In Statistics, “Correct the estimates…” replaces the estimate of finished tasks with the timed duration, after a preview where you untick what to keep; “Undo” brings the old ones back.</string>
     <string name="card_settings_categories_title">Settings sorted by category</string>
     <string name="card_settings_categories_body">General, Day and hours, Planning, Timer and statistics…: each category has its icon and summary; on a wide screen, the list and the category sit side by side.</string>
     <string name="card_darktheme_title">Dark theme</string>

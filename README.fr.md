@@ -209,6 +209,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   « Exporter… » enregistre ce que l’écran montre : les tableaux dans un fichier
   CSV (prêt pour un tableur), ou une carte en image PNG avec sa date, sa période
   et son filtre.
+- **Corriger les estimations** (Statistiques) : remplace l’estimation de tâches
+  terminées et chronométrées par le temps réellement passé, après un aperçu où
+  l’on décoche celles à garder ; « Annuler » rend les anciennes estimations.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
   chrono), comparées à ton rythme habituel. Cette carte observe seulement.

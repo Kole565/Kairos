@@ -12,6 +12,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_title
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_body
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_month_body
+import com.skohscripts.kairos.ui.generated.resources.card_correct_body
+import com.skohscripts.kairos.ui.generated.resources.card_correct_title
 import com.skohscripts.kairos.ui.generated.resources.card_month_title
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_title
 import com.skohscripts.kairos.ui.generated.resources.card_settings_categories_title
@@ -137,6 +139,7 @@ object FeatureCatalog {
         FeatureCard("month", GuideChapter.FOLLOW, { KairosIcons.CalendarMonth }, Res.string.card_month_title, Res.string.card_month_body, GuideTarget.Personal(Destination.WEEK), since = "3.8.0"),
         FeatureCard("week_move", GuideChapter.FOLLOW, { KairosIcons.SwapHoriz }, Res.string.card_week_move_title, Res.string.card_week_move_body, GuideTarget.Personal(Destination.WEEK), since = "3.7.0"),
         FeatureCard("stats", GuideChapter.FOLLOW, { KairosIcons.BarChart }, Res.string.guide_you_stats_title, Res.string.guide_you_stats_body, GuideTarget.Personal(Destination.STATS), tour = true),
+        FeatureCard("stats_correct", GuideChapter.FOLLOW, { KairosIcons.EditNote }, Res.string.card_correct_title, Res.string.card_correct_body, GuideTarget.Personal(Destination.STATS), since = "3.8.0"),
         FeatureCard("stats_explore", GuideChapter.FOLLOW, { KairosIcons.Download }, Res.string.card_stats_explore_title, Res.string.card_stats_explore_body, GuideTarget.Personal(Destination.STATS), since = "3.7.0"),
         // --- Organiser
         FeatureCard("subtasks", GuideChapter.ORGANIZE, { KairosIcons.Layers }, Res.string.card_subtasks_title, Res.string.card_subtasks_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_PARENTS)),
@@ -217,6 +220,7 @@ object FeatureCatalog {
         "Week" to "week",
         "Month" to "month",
         "Statistics" to "stats",
+        "Correct the estimates" to "stats_correct",
         "When you work on each type" to "besthours",
         "Best hours" to "besthours_apply",
         "Web version" to "data",

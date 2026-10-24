@@ -243,6 +243,24 @@ class KairosRepository(
     }
 
     /**
+     * « Corriger les estimations… » (docs/spec/statistiques.md, issue #101) : pose en une transaction l'estimation de chaque
+     * tâche de [values] (identifiant → minutes, `null` = sans estimation ; ≤ 0 → sans). Seules des tâches **faites** de
+     * l'espace Perso, non reçues d'un manager, sont touchées ; un autre identifiant est ignoré. `updatedAt` n'est **pas**
+     * touché : il date la fin d'une tâche faite (vue Semaine, statistiques), qui ne doit pas sauter à aujourd'hui. Sert
+     * aussi à l'annulation (les valeurs d'avant). Rend le nombre de tâches écrites.
+     */
+    suspend fun setEstimates(values: Map<Long, Int?>): Int {
+        val targets = state.value.tasks.filter {
+            it.id in values && it.status == TaskStatus.DONE && it.space == TaskSpace.PERSONAL && it.origin == null
+        }
+        if (targets.isEmpty()) return 0
+        write {
+            for (t in targets) updateRow(t.copy(estimatedMinutes = values[t.id]?.takeIf { it > 0 }), touch = false)
+        }
+        return targets.size
+    }
+
+    /**
      * Occurrences du mois de [today] des séries « le N du mois »
      * (`ensure_calendar_occurrences`). N'écrit rien s'il n'y a rien à créer :
      * appelé à chaque affichage de la vue Jour.

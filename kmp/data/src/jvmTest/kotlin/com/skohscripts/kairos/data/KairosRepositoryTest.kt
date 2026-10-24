@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.Task
+import com.skohscripts.kairos.core.model.TaskSpace
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.skohscripts.kairos.core.ExampleData
 import com.skohscripts.kairos.core.model.GuideSettings
@@ -477,6 +479,32 @@ class KairosRepositoryTest {
         assertEquals(repo.snapshot.value.timeBlocks, copy.snapshot.value.timeBlocks)
         repo.deleteBlock(review)
         assertEquals(listOf(standUp), repo.snapshot.value.blockExceptions.map { it.blockId })
+    }
+
+    @Test
+    fun correctingEstimatesWritesFinishedPersonalTasksOnlyAndKeepsTheirCompletionDate() = runTest {
+        // Issue #101 : action explicite, annulable ; `updatedAt` (date de fin) ne bouge pas.
+        val repo = empty()
+        val done = Instant.parse("2026-09-20T10:00:00Z")
+        repo.replaceAll(
+            KairosSnapshot(
+                tasks = listOf(
+                    Task(1, "Faite", estimatedMinutes = 30, status = TaskStatus.DONE, createdAt = done, updatedAt = done),
+                    Task(2, "À faire", estimatedMinutes = 30, createdAt = done, updatedAt = done),
+                    Task(3, "Équipe", estimatedMinutes = 30, status = TaskStatus.DONE, space = TaskSpace.TEAM, createdAt = done, updatedAt = done),
+                ),
+            ),
+        )
+        assertEquals(1, repo.setEstimates(mapOf(1L to 45, 2L to 45, 3L to 45, 99L to 45)))
+        val tasks = repo.snapshot.value.tasks.associateBy { it.id }
+        assertEquals(45, tasks.getValue(1).estimatedMinutes)
+        assertEquals(done, tasks.getValue(1).updatedAt)
+        assertEquals(30, tasks.getValue(2).estimatedMinutes)
+        assertEquals(30, tasks.getValue(3).estimatedMinutes)
+        // Annulation : les valeurs d'avant, « sans estimation » compris.
+        assertEquals(1, repo.setEstimates(mapOf(1L to null)))
+        assertNull(repo.snapshot.value.tasks.single { it.id == 1L }.estimatedMinutes)
+        assertEquals(0, repo.setEstimates(emptyMap()))
     }
 
     @Test

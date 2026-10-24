@@ -100,7 +100,9 @@ sans la réaliser.
 - **Le modèle d'apprentissage automatique** (version majeure à venir) : voir
   « Évolution ».
 - Apprentissage entre appareils ou entre membres d'une équipe.
-- Modifier rétroactivement l'estimation des tâches terminées.
+- Modifier rétroactivement l'estimation des tâches terminées **de façon automatique** : l'action explicite « Corriger
+  les estimations… » des statistiques (3.8.0, issue #101, `statistiques.md`) le fait à la demande, après aperçu ; elle
+  ne change rien à la durée apprise, calculée sur le temps réel et non sur l'estimation.
 
 ## 2. Solution technique
 

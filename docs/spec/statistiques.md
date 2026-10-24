@@ -10,9 +10,13 @@ Jour (`vue-jour.md`). Tests : `core/.../stats/StatsDifferentialTest.kt`
 (200 cas contre les fichiers d'or `stats.json`), `core/.../stats/StatsQueryTest.kt`,
 `M4ScreensUiTest.statsShowWhatWasDoneAndTimed`, `calibratedPointsSuggestTheDurationAndFeedTheGuide`, `StatsFilterUiTest`,
 `core/.../stats/StatsCsvTest.kt` (commun), `core/.../stats/StatsCsvGoldenTest.kt` (fichier d'or `stats-export.csv`) et
-`StatsExportUiTest`._
+`StatsExportUiTest`. Correction des estimations (3.8.0) : `core/.../stats/EstimateCorrection.kt`,
+`ui/.../stats/EstimateCorrectionDialog.kt`, `KairosRepository.setEstimates` ; tests `EstimateCorrectionTest`,
+`KairosRepositoryTest.correctingEstimatesWritesFinishedPersonalTasksOnlyAndKeepsTheirCompletionDate`,
+`EstimateCorrectionUiTest`._
 
-État : **jalon M4** ; filtres interactifs (issue #114) et export CSV et image (issue #113) en 3.7.0. Les sorties sont figées par les fichiers d'or de
+État : **jalon M4** ; filtres interactifs (issue #114) et export CSV et image (issue #113) en 3.7.0 ; « Corriger les
+estimations… » (issue #101) en 3.8.0. Les sorties sont figées par les fichiers d'or de
 `StatsDifferentialTest` (`stats.json`, source de vérité depuis
 `retrait-kairos2.md`).
 
@@ -87,6 +91,20 @@ ce filtre. Change-le ou réinitialise-le plus haut. », le filtre restant visibl
 Honnêteté statistique : chaque agrégat montre son effectif ; sous 3, il est
 marqué « peu fiable » (icône d'alerte), mais reste affiché.
 
+**Corriger les estimations** (3.8.0, issue #101). L'écran est en lecture seule, sauf cette action explicite. Pour
+nettoyer son historique avant de se fier à la calibration (une tâche terminée avec une estimation irréaliste, ou sans
+estimation), le bouton « Corriger les estimations… », sous la carte de calibration, n'apparaît que s'il y a quelque
+chose à corriger : des tâches **terminées**, de l'espace Perso (ni tâche d'équipe, ni tâche reçue d'un manager),
+**chronométrées** (au moins une minute de chrono), dont l'estimation n'est pas déjà le temps réel (chrono plus temps
+saisi, celui de la calibration). Toutes les tâches terminées, quelles que soient la période et les filtres de l'écran.
+- Un aperçu « Corriger les estimations » explique l'action (« Remplace l'estimation de tâches terminées par le temps
+  réellement passé (chrono et temps saisi). Décoche celles à garder telles quelles. La calibration en tiendra compte ;
+  les durées apprises, qui partent du temps réel, ne changent pas. »), puis liste les tâches, les plus récemment
+  terminées d'abord, chacune cochée avec « 30 min → 45 min » ou « sans estimation → 20 min » ; « Tout cocher »,
+  « Tout décocher ». Rien n'est écrit avant « Appliquer (N) » ; « Annuler » ferme sans rien changer.
+- Appliquer écrit les estimations cochées, sans changer la date de fin des tâches ; le message « Estimations
+  corrigées : N » propose « Annuler », qui rend à chacune son estimation d'avant (« sans » compris).
+
 ### Critères de succès
 
 - Sorties identiques aux fichiers d'or (tableau de bord, repères du guide,
@@ -103,6 +121,12 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
   (`StatsDifferentialTest.dashboard_matches_golden`).
 - Choisir « 4 sem. » change le libellé des chiffres clés ; filtrer sur un type réduit l'effectif (« Filtré : 1 sur 2
   tâches ») ; un filtre sans résultat le dit et se réinitialise ; la ligne tient à 360 dp (`StatsFilterUiTest`).
+- Correction des estimations : seules les tâches faites, Perso, non reçues, chronométrées et dont l'estimation diffère ;
+  temps réel = chrono plus temps saisi ; les plus récentes d'abord (`EstimateCorrectionTest`) ; le dépôt n'écrit que ces
+  tâches, garde leur `updatedAt`, annule avec les valeurs d'avant
+  (`KairosRepositoryTest.correctingEstimatesWritesFinishedPersonalTasksOnlyAndKeepsTheirCompletionDate`) ; aperçu,
+  décocher, « Apply (1) », « Undo » (`EstimateCorrectionUiTest.previewUntickApplyAndUndo`). L'export d'une base où l'on
+  ne s'en sert pas ne change pas (rien n'est écrit).
 - Le CSV d'un instantané fixé est identique, octet pour octet, au fichier d'or `stats-export.csv`
   (`StatsCsvGoldenTest`) ; un texte qui contient une virgule, un guillemet ou un saut de ligne est entre guillemets, un
   texte qui commence par `=`, `+`, `-` ou `@` est neutralisé, les nombres ont un point décimal quelle que soit la langue
@@ -115,6 +139,7 @@ marqué « peu fiable » (icône d'alerte), mais reste affiché.
 ### Hors périmètre / différé
 
 - Graphiques temporels fins, estimation par apprentissage ; un débit par mois pour « Tout ».
+- Corriger les estimations des tâches d'équipe ou d'une période choisie seulement.
 - Image de l'écran entier, PDF, export des prévisions de l'espace Équipe (`equipe-simulation.md`).
 
 ## 2. Solution technique
@@ -269,6 +294,20 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   `stackedWhenNarrow`, et partage son tracé (`BarTrack`). Sans ces options,
   le rendu des statistiques est inchangé.
 
+### Corriger les estimations (`EstimateCorrection`, `core` ; `EstimateCorrectionDialog`, `ui` ; 3.8.0)
+
+- `EstimateCorrection.candidates(snapshot, maintenant)` : tâches `DONE`, `PERSONAL`, `origin == null`, dont les sessions
+  (`TimeTracking.spentMinutesByTask(sessions)`) font au moins une minute, temps réel =
+  `spentMinutesByTask(sessions, maintenant, tâches)` (sessions + `manualTimeSpentMinutes`), estimation différente ;
+  `Candidate(task, oldMinutes, realMinutes)`, triés `updatedAt` décroissant puis titre. Lu sur la vue Perso.
+- `StatsScreen` : `KairosOutlinedButton` (icône `EditNote`) **sous** la carte `CALIBRATION` (pas dedans : l'image
+  exportée d'une carte n'a pas de bouton), si la liste n'est pas vide ; `EstimateCorrectionDialog` (`AlertDialog`,
+  lignes `toggleable` de 48 dp, `Checkbox`, liste défilante de 360 dp au plus) ; `applyCorrections` appelle
+  `KairosRepository.setEstimates(id → réel)` puis le message à annulation (`LocalUndoMessages`, `stats_correct_done`,
+  `action_revert`), qui rappelle `setEstimates(id → ancienne)`.
+- `KairosRepository.setEstimates(valeurs)` : une transaction ; ne touche que les tâches faites, Perso, non reçues ;
+  `≤ 0` → `null` ; `updateRow(…, touch = false)`.
+
 ### Décisions et pièges tracés
 
 - **Filtres : la carte de la vue Jour** (choix du propriétaire, issue #114) : les mêmes facettes partout, plutôt que deux
@@ -308,6 +347,17 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   échéances tenues : un chiffre
   statistique n'est pas une erreur ; le rouge reste aux lignes de tâches
   en retard.
+- **Corriger sans toucher `updatedAt`** (issue #101) : la vue Semaine et les statistiques datent la fin d'une tâche faite
+  par sa dernière modification ; une correction l'aurait fait « terminer » aujourd'hui. Écarté : une colonne « terminée
+  le » (une migration pour une action rare).
+- **Explicite, prévisualisée, annulable** : la règle « dérivée, jamais écrite » de `durees-apprises.md` vaut pour Kairos,
+  pas pour l'utilisateur ; ici c'est lui qui le demande, tâche par tâche. Écarté : un réglage qui le ferait à chaque
+  complétion (la règle d'or serait rompue en silence).
+- **Chronométrée seulement** (l'issue le demande) : une tâche sans chrono n'a pas de temps « mesuré » ; un temps saisi
+  seul reste une estimation après coup. Le temps saisi s'ajoute pourtant au chrono dans la valeur écrite : c'est le
+  temps réel que la calibration compare.
+- **Toutes les tâches terminées, pas la période de l'écran** : la calibration porte sur tout l'historique ; nettoyer une
+  partie seulement laisserait les autres fausser le biais.
 - **Pas de bibliothèque de graphiques** : des `Box` suffisent (dépendances
   libres et minimales, `architecture.md`).
 - **Guide et durées suggérées sur tout l'historique**, archivées comprises :

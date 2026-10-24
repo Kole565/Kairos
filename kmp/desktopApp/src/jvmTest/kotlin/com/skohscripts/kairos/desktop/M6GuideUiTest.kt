@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.guide.FeatureCatalog
+import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.settings.SettingsCategory
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -175,10 +177,12 @@ class M6GuideUiTest {
         pressHelp()
         onNodeWithText("Discover Kairos").performClick()
         waitText("Create my first task")
-        // Sans espace Équipe : cinq chapitres, pas celui de l'équipe (six cartes) ; « Premiers pas » en a six aussi
-        // depuis la 3.7.0 (carte « Le guide retient et montre l'endroit »).
+        // Sans espace Équipe : cinq chapitres, pas celui de l'équipe. Comptes tirés du catalogue : une carte ajoutée à une
+        // version ne casse pas ce test.
         waitText("First steps")
-        assertEquals(1, count("6 cards"))
+        val firstSteps = FeatureCatalog.chapter(GuideChapter.FIRST_STEPS).size
+        val sameCount = FeatureCatalog.chapters(teamEnabled = false).count { FeatureCatalog.chapter(it).size == firstSteps }
+        assertEquals(sameCount, count("$firstSteps cards"))
         onNodeWithText("Plan").performClick()
         waitText("Step 1 of 5")
         waitText("Priority, points and estimate")
@@ -198,14 +202,16 @@ class M6GuideUiTest {
         waitText("What is Kairos for?")
         // Depuis la 3.4 l'Accueil montre aussi la carte « Découvrir Kairos » dans « Nouveau dans cette version » : le bouton est le dernier.
         onAllNodesWithText("Discover Kairos").onLast().performScrollTo().performClick()
-        // Le chapitre de l'équipe (six cartes) s'ajoute à « Premiers pas » (six aussi depuis la 3.7.0).
-        waitUntil(timeoutMillis = 15_000) { count("6 cards") == 2 }
+        // Le chapitre de l'équipe s'ajoute : un chapitre de plus avec son nombre de cartes (tiré du catalogue).
+        val team = FeatureCatalog.chapter(GuideChapter.TEAM).size
+        val withTeam = FeatureCatalog.chapters(teamEnabled = true).count { FeatureCatalog.chapter(it).size == team }
+        waitUntil(timeoutMillis = 15_000) { count("$team cards") == withTeam }
         onNodeWithText("Close").performClick()
-        waitGone("6 cards")
+        waitGone("$team cards")
         openSettings(SettingsCategory.ABOUT)
         waitText("Discover Kairos")
         onNodeWithText("Discover Kairos").performScrollTo().performClick()
-        waitUntil(timeoutMillis = 15_000) { count("6 cards") == 2 }
+        waitUntil(timeoutMillis = 15_000) { count("$team cards") == withTeam }
     }
 
     // --- Visite guidée ------------------------------------------------------------------------------------------------

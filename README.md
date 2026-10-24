@@ -202,6 +202,9 @@ order (critical path). Cycles are refused.
   view (type, project, priority…); nothing is saved. "Export…" saves what the
   screen shows: the tables as one CSV file (ready for a spreadsheet), or one card
   as a PNG image with its date, period and filter.
+- **Correct the estimates** (Statistics): replaces the estimate of finished,
+  timed tasks with the time really spent, after a preview where you untick
+  the ones to keep; "Undo" brings the old estimates back.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
   usual rhythm. This card only observes.
