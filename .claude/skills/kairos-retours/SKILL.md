@@ -106,8 +106,14 @@ Critères d'un paquet (une version) :
   créneaux récurrents), pour une version qui se raconte en une phrase ;
 - **dépendances** : une issue n'est jamais dans une version antérieure à
   celle dont elle dépend ;
-- **maturité** : une version ne contient aucune issue `needs-decision` ou
-  `needs-spec` ; elles vont en `Backlog` (règle du ROADMAP) ;
+- **maturité** : la **prochaine version** ne contient aucune issue `needs-*`
+  ou `deferred` (règle du ROADMAP) ; les versions plus lointaines (`3.9.0`,
+  `4.0.0`) les gardent, leurs labels disent ce qu'il reste à trancher ; ce
+  qui ne rentre dans aucun paquet va en `Backlog` ;
+- **version majeure** (`4.0.0`, puis la suivante) : seulement ce qui change le
+  modèle de données, le format d'échange ou une décision fondatrice des specs
+  (synchronisation, estimateur appris, plusieurs équipes) ; jamais une
+  fonctionnalité qui tient dans une version mineure ;
 - **taille** : à peu près l'ordre de grandeur des versions existantes
   (`3.7.0` : petites et bien cadrées ; `3.8.0` : plus ambitieuses) ; au plus
   un `L` par version.
