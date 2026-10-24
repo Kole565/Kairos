@@ -137,7 +137,10 @@ carte « Maintenant » la même durée, « Pourquoi à cette place ? » la prove
 fiche propose une puce « Utiliser 45 min (tes 5 dernières) » sous le champ des minutes quand il est vide : elle le remplit sur
 action seulement. Dialogue de
 créneau : mêmes champs que la capture de créneau, « Supprimer » qui dit
-« toutes ses occurrences » pour un récurrent.
+« toutes ses occurrences » pour un récurrent. Pour un récurrent (3.8.0, issue #110), le dialogue s'ouvre sur
+« Seulement celle-ci » (titre et heures du jour affiché, « Sauter ce jour », « Rétablir ») ou « Toutes les
+occurrences » (le formulaire complet) ; la liste des créneaux du jour montre l'occurrence du jour, une occurrence
+sautée barrée avec « sauté ce jour », une modifiée avec « modifié ce jour » (`recurrence.md` § Une seule occurrence).
 
 **Première tâche** (3.4, `premiere-tache.md`) : tant que l'utilisateur n'a aucune tâche à lui (les exemples ne comptent pas), une carte
 d'invitation ouvre la fiche en **création** (identifiant 0, sans « Supprimer », titre requis) accompagnée d'un panneau qui explique

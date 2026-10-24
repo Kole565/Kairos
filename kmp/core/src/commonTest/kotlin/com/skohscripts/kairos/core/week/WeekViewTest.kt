@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.core.week
 
+import kotlinx.datetime.LocalTime
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.day.DayFilter
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.DaySchedule
@@ -100,5 +102,29 @@ class WeekViewTest {
         )
         val week = WeekView.build(snapshot, LocalDate(2026, 11, 11), t0, TimeZone.UTC)
         assertEquals(listOf(1, 1, 0, 1, 0, 0, 0), week.days.map { it.blocks.size })
+    }
+
+    @Test
+    fun a_skipped_or_changed_occurrence_is_reflected_in_the_week() {
+        val standUp = TimeBlock(1, "Stand-up", LocalDateTime(2026, 11, 2, 9, 30), LocalDateTime(2026, 11, 2, 9, 45), recurrence = BlockRecurrence.WEEKDAYS, createdAt = t0)
+        val snapshot = KairosSnapshot(
+            timeBlocks = listOf(standUp),
+            blockExceptions = listOf(
+                BlockException(1, 1, LocalDate(2026, 11, 17), skipped = true, createdAt = t0),
+                BlockException(2, 1, LocalDate(2026, 11, 18), start = LocalTime(10, 0), end = LocalTime(10, 30), createdAt = t0),
+            ),
+        )
+        val week = WeekView.build(snapshot, LocalDate(2026, 11, 16), t0, TimeZone.UTC)
+        assertEquals(listOf(1, 0, 1, 1, 1, 0, 0), week.days.map { it.blocks.size })
+        assertEquals(LocalDateTime(2026, 11, 18, 10, 0), week.days[2].blocks.single().start)
+    }
+
+    @Test
+    fun a_monthly_slot_appears_once_in_its_week() {
+        // « 3e mardi » posé le 20 octobre 2026 : en novembre, le mardi 17.
+        val review = TimeBlock(1, "Revue", LocalDateTime(2026, 10, 20, 14, 0), LocalDateTime(2026, 10, 20, 15, 0), recurrence = BlockRecurrence.MONTHLY_WEEKDAY, createdAt = t0)
+        val snapshot = KairosSnapshot(timeBlocks = listOf(review))
+        assertEquals(listOf(0, 1, 0, 0, 0, 0, 0), WeekView.build(snapshot, LocalDate(2026, 11, 16), t0, TimeZone.UTC).days.map { it.blocks.size })
+        assertEquals(List(7) { 0 }, WeekView.build(snapshot, LocalDate(2026, 11, 9), t0, TimeZone.UTC).days.map { it.blocks.size })
     }
 }

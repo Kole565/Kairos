@@ -24,6 +24,8 @@ import com.skohscripts.kairos.ui.generated.resources.discover_chapter_count
 import com.skohscripts.kairos.ui.generated.resources.discover_close
 import com.skohscripts.kairos.ui.generated.resources.discover_first_task
 import com.skohscripts.kairos.ui.generated.resources.discover_first_task_hint
+import com.skohscripts.kairos.ui.generated.resources.discover_first_team_task
+import com.skohscripts.kairos.ui.generated.resources.discover_first_team_task_hint
 import com.skohscripts.kairos.ui.generated.resources.discover_title
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -42,6 +44,8 @@ fun DiscoverDialog(
     onDismiss: () -> Unit,
     /** Chapitres parcourus jusqu'au bout (docs/spec/visite-guidee.md § Persistance, issue #94). */
     read: Set<GuideChapter> = emptySet(),
+    /** « Créer ma première tâche d'équipe » (issue #97), sous le chapitre de l'équipe, seulement s'il est proposé. */
+    onFirstTeamTask: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -57,6 +61,9 @@ fun DiscoverDialog(
                     val done = chapter in read
                     Entry(chapter.icon(), stringResource(chapter.title), if (done) stringResource(Res.string.discover_chapter_read, count) else count, done) {
                         onChapter(chapter)
+                    }
+                    if (chapter == GuideChapter.TEAM) {
+                        Entry(KairosIcons.Add, stringResource(Res.string.discover_first_team_task), stringResource(Res.string.discover_first_team_task_hint), onClick = onFirstTeamTask)
                     }
                 }
             }

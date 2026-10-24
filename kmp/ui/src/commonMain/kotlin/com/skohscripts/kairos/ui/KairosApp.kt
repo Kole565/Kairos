@@ -181,6 +181,7 @@ private fun KairosShell(
             chosenSpace = Space.PERSONAL
             nav.day = null
             nav.week = null
+            nav.month = null
             destination = Destination.WORK
             secondary = null
             secondaryParent = null
@@ -210,6 +211,7 @@ private fun KairosShell(
                         // La navigation principale ramène à aujourd'hui et à la semaine courante.
                         nav.day = null
                         nav.week = null
+                        nav.month = null
                         destination = it
                         secondary = null
                         secondaryParent = null
@@ -225,6 +227,7 @@ private fun KairosShell(
                         // Changer d'espace ouvre l'écran de travail de l'autre espace (Jour ou Suivi), pas son Accueil.
                         nav.day = null
                         nav.week = null
+                        nav.month = null
                         destination = Destination.WORK
                         teamDestination = TeamDestination.START
                         secondary = null

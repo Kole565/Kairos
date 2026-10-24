@@ -1,5 +1,13 @@
 package com.skohscripts.kairos.ui.stats
 
+import com.skohscripts.kairos.core.stats.StatsTrends
+import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
+import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
+import com.skohscripts.kairos.ui.generated.resources.action_revert
+import com.skohscripts.kairos.ui.generated.resources.stats_correct_done
+import com.skohscripts.kairos.ui.generated.resources.stats_correct_open
+import com.skohscripts.kairos.ui.app.LocalUndoMessages
+import com.skohscripts.kairos.core.stats.EstimateCorrection
 import com.skohscripts.kairos.ui.generated.resources.stats_period_weeks
 import com.skohscripts.kairos.ui.generated.resources.stats_period_all
 import com.skohscripts.kairos.ui.generated.resources.stats_period
@@ -102,11 +110,18 @@ fun StatsScreen(services: AppServices) {
     val stats = remember(input) { query.dashboard(input, today, now, timeZone) }
     // Quand on travaille chaque type (docs/spec/planning-personnalise.md § Lot C, étape C1) : observation seule.
     val hours = remember(input) { query.hours(input, now, timeZone) }
+    // Évolutions (issue #112) : même entrée, même fenêtre.
+    val trends = remember(input) { StatsTrends.compute(input.tasks, input.sessions, today, input.settings.statsWindowWeeks, now, timeZone) }
     val projects = remember(snapshot) { snapshot.tasks.map { it.projectTag }.filter { it.isNotEmpty() }.distinct().sorted() }
     // Export (issue #113) : ce que l'écran montre, rien n'est écrit dans la base. [capture] = carte en cours de rendu hors écran.
     val scope = rememberCoroutineScope()
     val messages = LocalMessages.current
     var capture by remember { mutableStateOf<StatsCard?>(null) }
+    // « Corriger les estimations… » (issue #101) : toutes les tâches terminées chronométrées, indépendamment de la période et
+    // des filtres de l'écran ; l'aperçu dit lesquelles.
+    val undo = LocalUndoMessages.current
+    val corrections = remember(snapshot) { EstimateCorrection.candidates(snapshot, now) }
+    var correcting by remember { mutableStateOf(false) }
     val caption = listOfNotNull(
         stringResource(Res.string.app_name),
         Dates.long(today, language),
@@ -114,6 +129,12 @@ fun StatsScreen(services: AppServices) {
         if (query.filter.active) stringResource(Res.string.stats_filtered, input.tasks.size, input.total) else null,
     ).joinToString(" · ")
 
+    if (correcting) {
+        EstimateCorrectionDialog(corrections, onDismiss = { correcting = false }) { chosen ->
+            correcting = false
+            applyCorrections(services, chosen, scope, undo)
+        }
+    }
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         capture?.let { card ->
             OffscreenCapture(
@@ -125,7 +146,7 @@ fun StatsScreen(services: AppServices) {
                             .onFailure { messages(getString(Res.string.file_error)) }
                     }
                 },
-            ) { StatsCardImage({ StatsCardView(card, stats, hours, language) }, caption) }
+            ) { StatsCardImage({ StatsCardView(card, stats, hours, trends, language) }, caption) }
         }
         Column(Modifier.widthIn(max = 960.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
             // Une base vide n'a rien à filtrer : l'état vide seul.
@@ -168,10 +189,36 @@ fun StatsScreen(services: AppServices) {
             StatsCard.entries.forEach { card ->
                 if (card == StatsCard.HOURS) {
                     // Panneau que la carte « Quand tu travailles chaque type » fait voir (docs/spec/visite-guidee.md, issue #95).
-                    GuideSpot(GuideSection.STATS_HOURS) { StatsCardView(card, stats, hours, language) }
+                    GuideSpot(GuideSection.STATS_HOURS) { StatsCardView(card, stats, hours, trends, language) }
                 } else {
-                    StatsCardView(card, stats, hours, language)
+                    StatsCardView(card, stats, hours, trends, language)
                 }
+                // Sous la carte, pas dedans : l'image exportée d'une carte ne montre pas de bouton.
+                if (card == StatsCard.CALIBRATION && corrections.isNotEmpty()) {
+                    KairosOutlinedButton(onClick = { correcting = true }, contentPadding = KairosButtonIconPadding) {
+                        Icon(KairosIcons.EditNote, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Text(stringResource(Res.string.stats_correct_open), modifier = Modifier.padding(start = 6.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Applique la correction (issue #101) et propose de la défaire : les estimations d'avant reviennent, « sans » compris.
+ */
+private fun applyCorrections(
+    services: AppServices,
+    chosen: List<EstimateCorrection.Candidate>,
+    scope: kotlinx.coroutines.CoroutineScope,
+    undo: (String, String, () -> Unit) -> Unit,
+) {
+    scope.launch {
+        val count = services.repository.setEstimates(chosen.associate { it.task.id to it.realMinutes })
+        if (count > 0) {
+            undo(getString(Res.string.stats_correct_done, count), getString(Res.string.action_revert)) {
+                scope.launch { services.repository.setEstimates(chosen.associate { it.task.id to it.oldMinutes }) }
             }
         }
     }

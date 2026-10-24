@@ -187,6 +187,11 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   suggérée. Un bandeau dans l’application, et une notification système :
   Android (notification permanente avec chronomètre, même application
   fermée), zone de notification du bureau, notification du navigateur.
+- **Rappels** (Réglages, désactivés par défaut) : une notification quelques
+  minutes avant une tâche à heure fixe et, si tu le veux, quand le plan passe à
+  la tâche suivante. Sur Android même Kairos fermé (quelques minutes de retard
+  possibles téléphone en veille, aucune permission de plus) ; sur le bureau et
+  le web tant que Kairos est ouvert.
 
 ### Vues
 
@@ -197,6 +202,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 - **Semaine** : sept jours (échéances, tâches programmées, tâches faites, créneaux), temps réel de
   la semaine par type ; toucher une tâche la déplace vers un autre jour (fériés et jours libres
   signalés), avec « Annuler ».
+- **Mois** : la bascule « Mois » de la vue Semaine montre le mois entier, une
+  case par jour avec le nombre de tâches prévues, un drapeau pour les échéances,
+  un avertissement pour les journées trop chargées et une icône pour les fériés et
+  jours libres, et la même information en listes dessous ; toucher un jour l’ouvre.
 - **Statistiques** : débit hebdomadaire, calibration des estimations (temps
   réel médian par palier, biais), temps par type, flux, complétude. L’effectif
   est affiché ; un petit échantillon est marqué « peu fiable ». À resserrer par
@@ -205,6 +214,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   « Exporter… » enregistre ce que l’écran montre : les tableaux dans un fichier
   CSV (prêt pour un tableur), ou une carte en image PNG avec sa date, sa période
   et son filtre.
+- **Évolutions** (Statistiques) : le temps chronométré jour par jour (semaine
+  par semaine au-delà de 8 semaines) et le biais d’estimation semaine par
+  semaine, chaque graphique avec son résumé écrit et son effectif.
+- **Corriger les estimations** (Statistiques) : remplace l’estimation de tâches
+  terminées et chronométrées par le temps réellement passé, après un aperçu où
+  l’on décoche celles à garder ; « Annuler » rend les anciennes estimations.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
   chrono), comparées à ton rythme habituel. Cette carte observe seulement.
@@ -256,6 +271,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 - À activer dans **Réglages → Équipe** ; désactivée, rien ne change dans
   Kairos. Activée, un sélecteur **Perso | Équipe** apparaît en haut.
+- **Première tâche d’équipe guidée** : depuis « Découvrir Kairos » (espace
+  Équipe activé), Kairos te guide dans la fiche d’une tâche d’équipe, champ par
+  champ (titulaire et sa charge, priorité et taille, effort, échéance,
+  catégorie), puis dit où la tâche est arrivée. Rien n’est écrit si tu renonces.
 - **Membres** : quotité, heures par jour, absences ; « C’est moi » fait
   apparaître dans votre vue Jour les tâches d’équipe qui vous sont
   assignées.

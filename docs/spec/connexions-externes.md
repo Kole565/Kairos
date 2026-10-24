@@ -32,7 +32,7 @@ planning pose du travail ou du deep work par-dessus une réunion. Il faut
 que Kairos connaisse ces événements **sans** qu'on lui confie un compte et
 **sans** que l'application Android demande l'accès au réseau.
 
-Kairos 2 avait un connecteur TimeTree (réseau). Il a été retiré le
+L'ancienne version Python avait un connecteur TimeTree (réseau). Il a été retiré le
 2026-09-28 (`docs/plan-v3-kotlin.md` § 2.2), et `ordonnancement.md` classait
 depuis les « événements de calendrier externes » hors périmètre. Cette spec
 **rouvre cette ligne**, pour des événements qui arrivent par un fichier ou

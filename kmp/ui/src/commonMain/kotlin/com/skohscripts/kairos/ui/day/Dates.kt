@@ -52,6 +52,22 @@ internal object Dates {
         return "${FR_DAYS[dow]} $day ${FR_LONG[month]} ${date.year}"
     }
 
+    /** Mois et année : « novembre 2026 », « November 2026 ». */
+    fun monthYear(date: LocalDate, language: String): String =
+        if (english(language)) "${EN_LONG[date.month.ordinal]} ${date.year}" else "${FR_LONG[date.month.ordinal]} ${date.year}"
+
+    /** Abréviation du jour de la semaine (lundi = 0) pour un en-tête de grille : « lun. », « Mon ». */
+    fun weekdayAbbrev(weekday: Int, language: String): String =
+        if (english(language)) EN_DAYS[weekday].take(3) else "${FR_DAYS[weekday].take(3)}."
+
+    /** Nom du jour de la semaine : « mardi », « Tuesday ». */
+    fun weekdayName(date: LocalDate, language: String): String =
+        if (english(language)) EN_DAYS[date.dayOfWeek.ordinal] else FR_DAYS[date.dayOfWeek.ordinal]
+
+    /** Jour du mois seul : « 1er », « 15 » ; « 1 », « 15 ». */
+    fun dayOfMonth(date: LocalDate, language: String): String =
+        if (!english(language) && date.day == 1) "1er" else date.day.toString()
+
     /** « mar. 30/09 » ; « Tue 9/30 ». */
     fun dayShort(date: LocalDate, language: String): String {
         val dow = date.dayOfWeek.ordinal

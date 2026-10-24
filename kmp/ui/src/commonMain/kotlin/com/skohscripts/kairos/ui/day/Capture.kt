@@ -39,7 +39,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.skohscripts.kairos.core.model.TimeBlock
+import com.skohscripts.kairos.core.day.EditableBlock
 import com.skohscripts.kairos.data.BlockEdit
 import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.capture_add
@@ -75,12 +75,12 @@ internal class CaptureState {
 internal fun Capture(
     state: CaptureState,
     day: LocalDate,
-    blocks: List<TimeBlock>,
+    blocks: List<EditableBlock>,
     language: String,
     showShortcuts: Boolean,
     onAddTask: (String) -> Unit,
     onAddBlock: (BlockEdit) -> Unit,
-    onEditBlock: (TimeBlock) -> Unit,
+    onEditBlock: (EditableBlock) -> Unit,
     /** Volet « Tâche » seul, sans choix « Créneau / deep work » : la capture du Backlog d'équipe (les créneaux sont personnels). */
     taskOnly: Boolean = false,
 ) {

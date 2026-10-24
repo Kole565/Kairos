@@ -13,7 +13,8 @@ class FirstTaskCoachTest {
     @Test
     fun everyFieldOfTheSheetHasExactlyOneStep() {
         val covered = steps.flatMap { it.fields }
-        assertEquals(EditField.entries.toSet(), covered.toSet())
+        // Les champs de la fiche personnelle ; « Assigné à » n'existe que dans la fiche d'une tâche d'équipe (TeamTaskCoachTest).
+        assertEquals(EditField.personal.toSet(), covered.toSet())
         assertEquals(covered.size, covered.toSet().size, "un champ expliqué à deux étapes")
     }
 

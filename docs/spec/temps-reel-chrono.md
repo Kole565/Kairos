@@ -83,8 +83,9 @@ l'application est en arrière-plan : Kairos les confie au système.
 
 - Temps de la **semaine** par type : calculé ici (`TimeTracking`), affiché
   par la vue Semaine (`vue-semaine.md`).
-- Mode focus plein écran, notification vers un autre appareil, rappels
-  hors d'un chrono en cours.
+- Mode focus plein écran, notification vers un autre appareil. Les rappels hors d'un chrono en cours (tâche à heure fixe,
+  tâche suivante) ont leur spec, `rappels.md` (3.8.0) : ils réutilisent le notificateur, les bandeaux et, sur Android, les
+  alarmes inexactes et `ChronoReceiver` (`ACTION_REMINDER`).
 - Alarmes exactes (voir Décisions).
 
 ## 2. Solution technique

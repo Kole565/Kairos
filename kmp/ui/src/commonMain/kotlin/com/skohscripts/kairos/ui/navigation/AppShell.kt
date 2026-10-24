@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.navigation
 
+import com.skohscripts.kairos.ui.reminders.ReminderWatcher
+import com.skohscripts.kairos.ui.team.TeamTaskCreateDialog
+import com.skohscripts.kairos.ui.team.TeamTaskCreatedDialog
 import androidx.compose.runtime.collectAsState
 import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -99,6 +102,7 @@ import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.title_day_other
 import com.skohscripts.kairos.ui.generated.resources.title_week_of
+import com.skohscripts.kairos.ui.generated.resources.title_month_of
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -146,11 +150,16 @@ fun AppShell(
     // Hub « Découvrir Kairos » et chapitre en cours de lecture (docs/spec/visite-guidee.md) : états de la coquille, rien n'est mémorisé.
     var discover by rememberSaveable { mutableStateOf(false) }
     var chapter by rememberSaveable { mutableStateOf<GuideChapter?>(null) }
+    // Première tâche d'équipe accompagnée (issue #97) : étape du coach (`null` = fiche fermée, -1 = coach passé) et tâche créée.
+    var teamCoachStep by rememberSaveable { mutableStateOf<Int?>(null) }
+    var teamCreated by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val snackbar = remember { SnackbarHostState() }
     // Veille du chrono pour toute l'application : les alertes jouent quel que soit l'écran.
     val alerts = remember { mutableStateListOf<String>() }
     ChronoWatcher(services, alerts)
+    // Rappels des tâches à heure fixe et de la tâche suivante (docs/spec/rappels.md) : mêmes bandeaux.
+    ReminderWatcher(services, alerts)
     UpdateWatcher(services)
     val scope = rememberCoroutineScope()
     // Ce que le guide a retenu (docs/spec/visite-guidee.md § Persistance, issue #94).
@@ -231,6 +240,7 @@ fun AppShell(
         // Sans rail (fenêtre étroite), date courte : « Semaine · du lundi 5 octobre 2026 » tenait sur trois lignes à 380 dp.
         destination == Destination.DAY && day != null && day != today ->
             stringResource(Res.string.title_day_other, if (layout == NavigationLayout.RAIL) Dates.long(day, language) else Dates.dayShort(day, language))
+        destination == Destination.WEEK && nav.monthMode -> stringResource(Res.string.title_month_of, Dates.monthYear(nav.month ?: today, language))
         destination == Destination.WEEK -> TaskStats.monday(nav.week ?: today).let { monday ->
             stringResource(Res.string.title_week_of, if (layout == NavigationLayout.RAIL) Dates.long(monday, language) else Dates.short(monday, language))
         }
@@ -329,7 +339,25 @@ fun AppShell(
             onChapter = { discover = false; chapter = it },
             onDismiss = { discover = false },
             read = memory?.readChapters.orEmpty().mapNotNull { name -> GuideChapter.entries.firstOrNull { it.name == name } }.toSet(),
+            // La fiche s'ouvre dans l'espace Équipe, sur le Backlog où la tâche arrivera.
+            onFirstTeamTask = {
+                discover = false
+                if (!team) onSpaceChange(Space.TEAM)
+                onNavigateTeam(TeamDestination.BACKLOG)
+                teamCoachStep = 0
+            },
         )
+    }
+    teamCoachStep?.let { step ->
+        TeamTaskCreateDialog(
+            services, step,
+            onStep = { teamCoachStep = it },
+            onDismiss = { teamCoachStep = null },
+            onCreated = { id -> teamCoachStep = null; teamCreated = id },
+        )
+    }
+    teamCreated?.let { id ->
+        TeamTaskCreatedDialog(services, id, onOpen = { teamCreated = null; onNavigateTeam(it) }, onDismiss = { teamCreated = null })
     }
     chapter?.let { picked ->
         GuideDialog(

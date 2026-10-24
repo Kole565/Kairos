@@ -58,7 +58,7 @@ enum class SettingsCategory(val title: StringResource, val hint: StringResource,
             key.startsWith("schedule.bestHours.") -> PLANNING
             key in DAY_KEYS || key.startsWith("schedule.") -> DAY
             key in PLANNING_KEYS || key.startsWith("learning.") -> PLANNING
-            key in TRACKING_KEYS -> TRACKING
+            key in TRACKING_KEYS || key.startsWith("reminders.") -> TRACKING
             key.startsWith("team.") -> TEAM
             else -> error("Champ des Réglages sans catégorie : $key")
         }

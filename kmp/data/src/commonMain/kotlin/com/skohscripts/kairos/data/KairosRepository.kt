@@ -6,6 +6,7 @@ import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.core.engine.Dependencies
 import com.skohscripts.kairos.core.engine.Recurrence
 import com.skohscripts.kairos.core.engine.Workdays
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
@@ -242,6 +243,24 @@ class KairosRepository(
     }
 
     /**
+     * « Corriger les estimations… » (docs/spec/statistiques.md, issue #101) : pose en une transaction l'estimation de chaque
+     * tâche de [values] (identifiant → minutes, `null` = sans estimation ; ≤ 0 → sans). Seules des tâches **faites** de
+     * l'espace Perso, non reçues d'un manager, sont touchées ; un autre identifiant est ignoré. `updatedAt` n'est **pas**
+     * touché : il date la fin d'une tâche faite (vue Semaine, statistiques), qui ne doit pas sauter à aujourd'hui. Sert
+     * aussi à l'annulation (les valeurs d'avant). Rend le nombre de tâches écrites.
+     */
+    suspend fun setEstimates(values: Map<Long, Int?>): Int {
+        val targets = state.value.tasks.filter {
+            it.id in values && it.status == TaskStatus.DONE && it.space == TaskSpace.PERSONAL && it.origin == null
+        }
+        if (targets.isEmpty()) return 0
+        write {
+            for (t in targets) updateRow(t.copy(estimatedMinutes = values[t.id]?.takeIf { it > 0 }), touch = false)
+        }
+        return targets.size
+    }
+
+    /**
      * Occurrences du mois de [today] des séries « le N du mois »
      * (`ensure_calendar_occurrences`). N'écrit rien s'il n'y a rien à créer :
      * appelé à chaque affichage de la vue Jour.
@@ -377,14 +396,65 @@ class KairosRepository(
         return true
     }
 
-    /** Pour un récurrent, modifie le modèle, donc toutes ses occurrences. */
+    /**
+     * Pour un récurrent, modifie le modèle, donc toutes ses occurrences (« Toutes les occurrences ») ; ses exceptions
+     * restent, sauf s'il devient ponctuel (il n'a plus d'occurrence à remplacer).
+     */
     suspend fun updateBlock(blockId: Long, edit: BlockEdit): Boolean {
         if (edit.end <= edit.start || state.value.timeBlocks.none { it.id == blockId }) return false
-        write { queries.updateTimeBlock(edit.title.trim(), edit.start.toString(), edit.end.toString(), edit.kind.code, edit.recurrence.code, blockId) }
+        write {
+            queries.updateTimeBlock(edit.title.trim(), edit.start.toString(), edit.end.toString(), edit.kind.code, edit.recurrence.code, blockId)
+            if (edit.recurrence == BlockRecurrence.NONE) queries.deleteExceptionsOfBlock(blockId)
+        }
         return true
     }
 
-    suspend fun deleteBlock(blockId: Long) = write { queries.deleteTimeBlock(blockId) }
+    /** Supprime le créneau ; pour un récurrent, toute la série et ses exceptions. */
+    suspend fun deleteBlock(blockId: Long) = write {
+        queries.deleteTimeBlock(blockId)
+        queries.deleteExceptionsOfBlock(blockId)
+    }
+
+    /**
+     * « Seulement celle-ci… » → « Sauter ce jour » (issue #110) : l'occurrence du [date] du modèle [blockId] disparaît,
+     * la série ne change pas. Refusé (`false`) pour un créneau inconnu, ponctuel, ou sans occurrence ce jour-là.
+     */
+    suspend fun skipOccurrence(blockId: Long, date: LocalDate): Boolean {
+        if (!hasOccurrence(blockId, date)) return false
+        write { queries.upsertBlockException(blockId, date.toString(), 1L, null, null, null, now()) }
+        return true
+    }
+
+    /**
+     * « Seulement celle-ci… » → titre et heures de ce jour seulement (issue #110). Titre nettoyé ; vide ou égal à celui
+     * du modèle → celui du modèle (`NULL`). Refusé (`false`) si la fin n'est pas après le début, ou comme [skipOccurrence].
+     */
+    suspend fun overrideOccurrence(blockId: Long, date: LocalDate, title: String, start: LocalTime, end: LocalTime): Boolean {
+        if (end <= start || !hasOccurrence(blockId, date)) return false
+        val template = state.value.timeBlocks.first { it.id == blockId }
+        val cleaned = title.trim().takeIf { it.isNotEmpty() && it != template.title }
+        write { queries.upsertBlockException(blockId, date.toString(), 0L, cleaned, start.hm(), end.hm(), now()) }
+        return true
+    }
+
+    /** Rétablit l'occurrence du [date] telle que la série la donne (exception retirée, sautée ou remplacée). */
+    suspend fun restoreOccurrence(blockId: Long, date: LocalDate) = write { queries.deleteBlockException(blockId, date.toString()) }
+
+    /** Remet une exception telle qu'elle était (annulation d'un « Sauter ce jour ») ; `null` = aucune. */
+    suspend fun putOccurrenceException(blockId: Long, date: LocalDate, exception: BlockException?) = write {
+        queries.deleteBlockException(blockId, date.toString())
+        if (exception != null) {
+            queries.upsertBlockException(
+                blockId, date.toString(), if (exception.skipped) 1L else 0L, exception.title,
+                exception.start?.hm(), exception.end?.hm(), exception.createdAt.store(),
+            )
+        }
+    }
+
+    private fun hasOccurrence(blockId: Long, date: LocalDate): Boolean {
+        val template = state.value.timeBlocks.firstOrNull { it.id == blockId } ?: return false
+        return Recurrence.occursOn(template, date, Workdays.holidaysFor(date, state.value.settings.holidaysFr, state.value.settings.extraHolidays))
+    }
 
     /**
      * Suppression définitive : les dépendances où la
@@ -1171,6 +1241,7 @@ class KairosRepository(
         queries.deleteAllMemberAbsences()
         queries.deleteAllTeamEvents()
         queries.deleteAllTeamScenarios()
+        queries.deleteAllBlockExceptions()
         queries.deleteSettings()
         for (t in snapshot.tasks) {
             queries.insertTaskWithId(
@@ -1203,6 +1274,12 @@ class KairosRepository(
         for (b in snapshot.timeBlocks) {
             queries.insertTimeBlockWithId(
                 b.id, b.title, b.start.toString(), b.end.toString(), b.kind.code, b.recurrence.code, b.createdAt.store(),
+            )
+        }
+        for (x in snapshot.blockExceptions) {
+            queries.insertBlockExceptionWithId(
+                x.id, x.blockId, x.date.toString(), if (x.skipped) 1L else 0L, x.title, x.start?.hm(), x.end?.hm(),
+                x.createdAt.store(),
             )
         }
         for (d in snapshot.dependencies) queries.insertDependencyWithId(d.id, d.taskId, d.blockerId, d.createdAt.store())
@@ -1349,6 +1426,7 @@ class KairosRepository(
     private suspend fun readAll(): KairosSnapshot = KairosSnapshot(
         tasks = queries.allTasks().awaitAsList().map { it.toModel() },
         timeBlocks = queries.allTimeBlocks().awaitAsList().map { it.toModel() },
+        blockExceptions = queries.allBlockExceptions().awaitAsList().map { it.toModel() },
         dependencies = queries.allDependencies().awaitAsList().map { it.toModel() },
         workSessions = queries.allWorkSessions().awaitAsList().map { it.toModel() },
         notes = queries.allNotes().awaitAsList().map { it.toModel() },

@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.core.day
 
+import kotlinx.datetime.LocalTime
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
@@ -224,5 +226,27 @@ class DayViewTest {
         // Sans le calendrier français, le mercredi redevient un jour ouvré.
         val noFrench = snapshot.copy(settings = Settings(holidaysFr = false))
         assertEquals(listOf(7L), DayView.build(noFrench, LocalDate(2026, 11, 11), null, paris).dayBlocks.map { it.id })
+    }
+
+    @Test
+    fun one_occurrence_skipped_or_changed_shows_in_the_day_and_stays_editable() {
+        // Déjeuner quotidien ; le mardi 29 septembre est sauté, le mercredi 30 décalé à 13 h-13 h 30 (issue #110).
+        val lunch = TimeBlock(1, "Déjeuner", LocalDateTime(2026, 9, 1, 12, 0), LocalDateTime(2026, 9, 1, 13, 0), recurrence = BlockRecurrence.DAILY, createdAt = t0)
+        val exceptions = listOf(
+            BlockException(1, 1, day, skipped = true, createdAt = t0),
+            BlockException(2, 1, LocalDate(2026, 9, 30), title = "Déjeuner client", start = LocalTime(13, 0), end = LocalTime(13, 30), createdAt = t0),
+        )
+        val snapshot = KairosSnapshot(timeBlocks = listOf(lunch), blockExceptions = exceptions)
+        val skipped = build(snapshot)
+        assertEquals(emptyList(), skipped.dayBlocks)
+        assertTrue(skipped.timeline.none { it.title == "Déjeuner" })
+        // Toujours listé, sauté : on peut le rétablir.
+        assertEquals(listOf(true), skipped.editableBlocks.map { it.skipped })
+        val changed = DayView.build(snapshot, LocalDate(2026, 9, 30), null, paris)
+        assertEquals(listOf(LocalDateTime(2026, 9, 30, 13, 0)), changed.dayBlocks.map { it.start })
+        assertEquals("Déjeuner client", changed.editableBlocks.single().occurrence.title)
+        assertEquals("Déjeuner", changed.editableBlocks.single().template.title)
+        // Le jeudi, rien ne change.
+        assertEquals(listOf(LocalDateTime(2026, 10, 1, 12, 0)), DayView.build(snapshot, LocalDate(2026, 10, 1), null, paris).dayBlocks.map { it.start })
     }
 }

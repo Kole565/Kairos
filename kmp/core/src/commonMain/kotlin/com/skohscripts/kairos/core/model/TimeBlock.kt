@@ -1,6 +1,8 @@
 package com.skohscripts.kairos.core.model
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlin.time.Instant
 
 /**
@@ -28,17 +30,39 @@ enum class BlockKind(val code: String) {
     }
 }
 
+/**
+ * Règle d'un créneau récurrent. Les deux mensuelles (3.8.0, issue #108) tirent tout de la date d'origine :
+ * [MONTHLY_DAY] le même jour du mois, [MONTHLY_WEEKDAY] le même rang du même jour de la semaine (« 3e mardi »).
+ */
 enum class BlockRecurrence(val code: String) {
     NONE(""),
     DAILY("daily"),
     WEEKDAYS("weekdays"),
     WEEKLY("weekly"),
+    MONTHLY_DAY("monthly_day"),
+    MONTHLY_WEEKDAY("monthly_weekday"),
     ;
 
     companion object {
         fun fromCode(code: String): BlockRecurrence = entries.firstOrNull { it.code == code } ?: NONE
     }
 }
+
+/**
+ * Exception d'**une** occurrence d'un créneau récurrent (3.8.0, issue #110) : le jour [date] du modèle [blockId] est
+ * sauté ([skipped]) ou remplacé (titre et heures de ce jour-là ; `null` = ceux du modèle). Les occurrences restent
+ * calculées : seule l'exception est stockée, au plus une par (modèle, jour).
+ */
+data class BlockException(
+    val id: Long,
+    val blockId: Long,
+    val date: LocalDate,
+    val skipped: Boolean = false,
+    val title: String? = null,
+    val start: LocalTime? = null,
+    val end: LocalTime? = null,
+    val createdAt: Instant,
+)
 
 /** Arête « [taskId] est bloquée par [blockerId] ». */
 data class TaskDependency(

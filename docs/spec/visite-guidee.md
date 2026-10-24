@@ -154,12 +154,20 @@ since, tour)`, **dans l'ordre de la visite**.
   `stats_explore` (filtres et export des statistiques, #113 et #114 ; Stats), `holidays_slots` (fériés des créneaux
   « jours ouvrés », #109 ; section `SETTINGS_HOLIDAYS`), `settings_categories` (Réglages par catégories, PR #124 ;
   Réglages), `darktheme` (thème sombre, #72 ; section `SETTINGS_APPEARANCE`, icône `DarkMode`).
+- **Cartes de la 3.8.0** (une par nouveauté) : `slots_month` (créneaux mensuels et une seule occurrence, #108 et #110 ;
+  vue Jour, chapitre « Organiser »), `month` (vue Mois, #107 ; destination Semaine, chapitre « Suivre », icône
+  `CalendarMonth`), `stats_correct` (corriger les estimations, #101 ; Stats, chapitre « Suivre », icône `EditNote`), `stats_trends`
+  (évolutions des statistiques, #112 ; Stats, chapitre « Suivre », icône `ShowChart`), `reminders` (rappels, #103 ;
+  section `SETTINGS_REMINDERS`, chapitre « Réglages », icône `Alarm`).
+- **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
+  (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section
   « Features » de `README.md` à une carte ; `FeatureCatalogTest.readmeFeaturesAreCovered` lit le README et compare.
 - **`GuideDialog`** accepte n'importe quelle sélection (`GuideDialog(steps, key, …)`, `GuideDialog(kind, …)` en est la
   forme courte) et garde la mesure du plus long titre et du plus long texte.
 - **Hub « Découvrir Kairos »** (`DiscoverDialog`) : « Créer ma première tâche » puis un chapitre par ligne avec son nombre
-  de cartes ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
+  de cartes (3.8.0 : sous le chapitre de l'équipe, quand il est proposé, « Créer ma première tâche d'équipe »,
+  `premiere-tache.md` § Première tâche d'équipe) ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
   l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos » de la catégorie « À propos », `reglages.md`) ; états `discover` et `chapter` de
   `AppShell` (`rememberSaveable`, rien n'est mémorisé au-delà).
 - **« Nouveau dans cette version »** : `HomeScreen(version = KairosBuild.VERSION_NAME)` affiche, sous le bloc teinté, les

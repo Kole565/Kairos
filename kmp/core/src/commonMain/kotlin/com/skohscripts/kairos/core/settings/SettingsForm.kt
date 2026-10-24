@@ -3,6 +3,7 @@ package com.skohscripts.kairos.core.settings
 import com.skohscripts.kairos.core.model.BestHoursSettings
 import com.skohscripts.kairos.core.model.DaySchedule
 import com.skohscripts.kairos.core.model.LearningSettings
+import com.skohscripts.kairos.core.model.ReminderSettings
 import com.skohscripts.kairos.core.model.ScheduleSettings
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.model.WorkContext
@@ -322,6 +323,26 @@ object SettingsForm {
         learning("learning.minSamples", FieldKind.INT, 2.0, get = { it.minSamples.toString() }) { l, v -> l.copy(minSamples = v.toInt()) },
     )
 
+    /**
+     * Réglage des rappels (docs/spec/rappels.md) : lu sur [ReminderSettings] (défauts si `reminders` est nul), écrit par
+     * [change] ; même règle que [learning] : aux valeurs par défaut, `reminders` **reste nul** (ou y revient).
+     */
+    private fun reminders(key: String, kind: FieldKind, min: Double? = null, max: Double? = null, get: (ReminderSettings) -> String, change: (ReminderSettings, String) -> ReminderSettings) =
+        SettingField(
+            key, kind, min, max,
+            read = { get(it.reminders ?: ReminderSettings()) },
+            write = { s, v ->
+                val next = change(s.reminders ?: ReminderSettings(), v.trim())
+                s.copy(reminders = next.takeIf { it != ReminderSettings() })
+            },
+        )
+
+    private val REMINDER_FIELDS: List<SettingField> = listOf(
+        reminders("reminders.enabled", FieldKind.BOOL, get = { it.enabled.toString() }) { r, v -> r.copy(enabled = v == "true") },
+        reminders("reminders.leadMinutes", FieldKind.INT, 0.0, ReminderSettings.MAX_LEAD.toDouble(), get = { it.leadMinutes.toString() }) { r, v -> r.copy(leadMinutes = v.toInt()) },
+        reminders("reminders.nextTask", FieldKind.BOOL, get = { it.nextTask.toString() }) { r, v -> r.copy(nextTask = v == "true") },
+    )
+
     const val SCHEDULE_DEFAULT = "default"
     const val SCHEDULE_CUSTOM = "custom"
     const val SCHEDULE_FREE = "free"
@@ -379,7 +400,7 @@ object SettingsForm {
         teamInt("team.historyWeeks", 1, 104, { it.historyWeeks }) { t, v -> t.copy(historyWeeks = v) },
         teamInt("team.minSamples", 3, get = { it.minSamples }) { t, v -> t.copy(minSamples = v) },
         teamInt("team.deadlineRiskPercent", 1, 99, { it.deadlineRiskPercent }) { t, v -> t.copy(deadlineRiskPercent = v) },
-    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + BEST_HOURS_FIELDS + LEARNING_FIELDS
+    ) + (0..6).flatMap(::scheduleFields) + (1..MAX_CONTEXTS).flatMap(::contextFields) + BEST_HOURS_FIELDS + LEARNING_FIELDS + REMINDER_FIELDS
 
     private val byKey = FIELDS.associateBy { it.key }
 

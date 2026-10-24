@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team
 
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
@@ -250,5 +251,17 @@ class TeamWorkTest {
         assertEquals(2.0, TeamWork.busyHours(s, monday), 1e-9)
         assertEquals(0.0, TeamWork.busyHours(s, day(1)), 1e-9)
         assertEquals(2.0, TeamWork.busyHours(s, day(2)), 1e-9)
+    }
+
+    @Test
+    fun aSkippedMeetingFreesMyCapacityThatDayOnly() {
+        // Réunion hebdomadaire de 2 h ; l'occurrence de ce lundi est sautée (issue #110), celle de la semaine suivante reste.
+        val weekly = block(day(-7), 10, 12, BlockRecurrence.WEEKLY)
+        val s = snapshot(emptyList(), listOf(me)).copy(
+            timeBlocks = listOf(weekly),
+            blockExceptions = listOf(BlockException(1, weekly.id, monday, skipped = true, createdAt = stamp)),
+        )
+        assertEquals(0.0, TeamWork.busyHours(s, monday), 1e-9)
+        assertEquals(2.0, TeamWork.busyHours(s, day(7)), 1e-9)
     }
 }

@@ -22,9 +22,11 @@ dans `docs/spec-v3/`, est le seul.
 | [`ordonnancement.md`](ordonnancement.md) | Moteur : score WSJF, placement dans la journée, creux, deep work, jours ouvrés et fériés, ancienneté ; tests sur fichiers d'or figés. | M2 |
 | [`dependances.md`](dependances.md) | Blocage, cycles, urgence héritée (chemin critique), bloqueurs dans l'édition. | M2 |
 | [`recurrence.md`](recurrence.md) | Tâches récurrentes (à la complétion, « le N du mois »), créneaux récurrents, « Décaler ». | M2 |
+| [`rappels.md`](rappels.md) | Rappels (désactivés par défaut) : avant une tâche à heure fixe, à la tâche suivante du plan ; notifications Android (alarmes inexactes), bureau et web tant que Kairos est ouvert. | 3.8.0 (#103) |
 | [`temps-reel-chrono.md`](temps-reel-chrono.md) | Chrono (une session à la fois), temps passé et temps du jour, trois alertes, notifications Android (permanente, alarmes, redémarrage), bureau (plateau) et web. | M3 |
 | [`notes-capture.md`](notes-capture.md) | Notes : capture libre, conversion en tâche (titre et description), modification, archivage, suppression. | M4 |
 | [`vue-semaine.md`](vue-semaine.md) | Vue Semaine : sept jours (échéances, fait, créneaux), temps réel de la semaine, navigation vers un autre jour. | M4 |
+| [`vue-mois.md`](vue-mois.md) | Vue Mois (bascule de la destination Semaine) : grille du mois, tâches prévues, échéances, surcharge, fériés et jours libres, listes, ouverture d'un jour. | 3.8.0 (#107) |
 | [`statistiques.md`](statistiques.md) | Statistiques : chiffres clés, débit, calibration et biais, temps par type, meilleures heures par type (3.5), flux, complétude ; repères du guide des points ; tests sur fichiers d'or figés. | M4 |
 | [`reglages.md`](reglages.md) | Écran Réglages : catégories (liste puis sous-écrans, deux volets dès 840 dp), sections, champs, bornes, validation par champ et entre champs, un seul « Enregistrer ». | M5, catégories 2026-10-22 |
 | [`accueil.md`](accueil.md) | Accueil au premier lancement (présentation, exemples) ; bouton « ? » et aide de l'écran, page Accueil (raison d'être, fonctionnalités), visite guidée. | M5, E6 |

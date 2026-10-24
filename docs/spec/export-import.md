@@ -108,6 +108,14 @@ JSON UTF-8 indenté :
 - **Série d'une tâche récurrente** (3.4, `durees-apprises.md`) : `seriesId` n'est écrit que s'il est non nul, **sans changer la
   version du format** (un champ de plus que les anciens lecteurs ignorent) ; une tâche sans série s'exporte comme avant
   (`LearnedDurationsRepositoryTest.theSeriesSurvivesAnExportAndIsAbsentWhenThereIsNone`). Même règle pour `settings.learning`.
+- **Créneaux** (3.8.0) : `recurrence` peut valoir `monthly_day` ou `monthly_weekday` (`recurrence.md`) ; une version
+  antérieure lit un code inconnu comme `""` (le créneau devient ponctuel à sa date d'origine). `blockExceptions`
+  (`[ { "id", "blockId", "date": "2026-09-29", "skipped": true, "title", "start": "12:30", "end": "13:30", "createdAt" } ]`,
+  `skipped` écrit seulement s'il est vrai, titre et heures seulement s'ils remplacent) n'est écrit **que s'il y en a**,
+  sans changer la version du format ni compter comme donnée d'équipe : l'export d'une base qui n'en a jamais posé
+  ne change pas (`KairosRepositoryTest.deletingASeriesDeletesItsExceptionsAndExportsRoundTripThem`) ; une version
+  antérieure l'ignore. À l'import : identifiants uniques, une exception par `(blockId, date)`, `blockId` d'un créneau
+  du fichier, fin après début quand les deux sont là, sinon « illisible ».
 - **Version 2** (espace Équipe, `equipe.md` § Export) : `members` (membres
   d'équipe), `absences` (ajouté au jalon E2), `teamEvents` (journal, jalon
   E3), `teamScenarios` (jalon E5) — un lecteur 2 plus ancien ignore les champs qu'il ne connaît pas —

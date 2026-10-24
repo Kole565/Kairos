@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
 import com.skohscripts.kairos.core.model.PRIORITY_VALUES
@@ -26,6 +27,7 @@ import com.skohscripts.kairos.core.team.forecast.ScenarioCodec
 import com.skohscripts.kairos.core.team.forecast.TeamScenario
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -113,6 +115,14 @@ object ExportCodec {
         }
         for (d in s.dependencies) require(d.taskId in ids && d.blockerId in ids && d.taskId != d.blockerId) { "dépendance" }
         for (b in s.timeBlocks) require(b.end >= b.start) { "créneau" }
+        unique(s.blockExceptions.map { it.id }, "exceptions de créneau")
+        require(s.blockExceptions.map { it.blockId to it.date }.toSet().size == s.blockExceptions.size) { "exceptions de créneau en double" }
+        val blockIds = s.timeBlocks.mapTo(HashSet()) { it.id }
+        for (x in s.blockExceptions) {
+            require(x.blockId in blockIds) { "exception de créneau" }
+            val (start, end) = x.start to x.end
+            require(start == null || end == null || end > start) { "exception de créneau" }
+        }
     }
 }
 
@@ -153,6 +163,9 @@ private data class ExportFile(
     val teamEvents: List<TeamEventJson>? = null,
     // Scénarios « Et si… ? » (jalon E5) : même règle, nul donc omis en version 1.
     val teamScenarios: List<ScenarioJson>? = null,
+    // Exceptions d'occurrences de créneaux (3.8.0, issue #110) : nul tant qu'il n'y en a aucune, donc omis, et l'export
+    // d'une base qui n'en a jamais posé reste celui d'avant. Ce n'est pas une donnée d'équipe : sans effet sur formatVersion.
+    val blockExceptions: List<BlockExceptionJson>? = null,
 ) {
     fun toSnapshot() = KairosSnapshot(
         tasks = tasks.map { it.toModel() },
@@ -169,6 +182,7 @@ private data class ExportFile(
         absences = absences.orEmpty().map { it.toModel() },
         teamEvents = teamEvents.orEmpty().map { it.toModel() },
         teamScenarios = teamScenarios.orEmpty().map { it.toModel() },
+        blockExceptions = blockExceptions.orEmpty().map { it.toModel() },
     )
 
     companion object {
@@ -193,6 +207,7 @@ private data class ExportFile(
                 absences = if (team) s.absences.map { AbsenceJson.from(it) } else null,
                 teamEvents = if (team) s.teamEvents.map { TeamEventJson.from(it) } else null,
                 teamScenarios = if (team) s.teamScenarios.map { ScenarioJson.from(it) } else null,
+                blockExceptions = s.blockExceptions.takeIf { it.isNotEmpty() }?.map { BlockExceptionJson.from(it) },
             )
         }
     }
@@ -304,6 +319,30 @@ private data class BlockJson(
     companion object {
         fun from(b: TimeBlock) = BlockJson(
             b.id, b.title, b.start.toString(), b.end.toString(), b.kind.code, b.recurrence.code, b.createdAt.toString(),
+        )
+    }
+}
+
+/** Exception d'occurrence : `skipped` n'est écrit que s'il est vrai, titre et heures (« 09:30 ») seulement s'ils remplacent. */
+@Serializable
+private data class BlockExceptionJson(
+    val id: Long,
+    val blockId: Long,
+    val date: String,
+    val skipped: Boolean? = null,
+    val title: String? = null,
+    val start: String? = null,
+    val end: String? = null,
+    val createdAt: String,
+) {
+    fun toModel() = BlockException(
+        id, blockId, LocalDate.parse(date), skipped == true, title, start?.let(LocalTime::parse), end?.let(LocalTime::parse),
+        Instant.parse(createdAt),
+    )
+
+    companion object {
+        fun from(x: BlockException) = BlockExceptionJson(
+            x.id, x.blockId, x.date.toString(), if (x.skipped) true else null, x.title, x.start?.hm(), x.end?.hm(), x.createdAt.toString(),
         )
     }
 }

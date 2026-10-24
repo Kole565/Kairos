@@ -57,6 +57,8 @@ un autre jour.
   cartes de largeur égale (160 dp au moins) qui remplissent chaque ligne et
   passent à la ligne, sans défilement horizontal ni moitié de ligne vide.
 - Quitter la destination et y revenir ramène à la semaine courante.
+- En tête, la bascule « Semaine » / « Mois » (3.8.0) : la vue Mois est l'autre mode de cette destination
+  (`vue-mois.md`).
 
 ### Critères de succès
 
@@ -80,7 +82,7 @@ un autre jour.
 ### Hors périmètre / différé
 
 - Glisser une tâche d'un jour à l'autre (le menu suffit et reste le seul chemin accessible), indicateur de charge par
-  jour, vue mois.
+  jour (la vue Mois l'a, `vue-mois.md`).
 
 ## 2. Solution technique
 

@@ -26,6 +26,8 @@ import com.skohscripts.kairos.ui.notes.NotesScreen
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.month.MonthScreen
+import com.skohscripts.kairos.ui.team.TeamTaskCreateDialog
 import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpotState
@@ -150,7 +152,17 @@ object SelfTest {
                         com.skohscripts.kairos.core.model.WorkSession(id++, task.id, start, start.plus(kotlin.time.Duration.parse("1h")), start)
                     }
                 }
-                s.repository.replaceAll(snap.copy(workSessions = sessions))
+                // Les trois tâches chronométrées sont terminées à une semaine d'écart : le biais par semaine (issue #112) et
+                // « Corriger les estimations… » (issue #101) ont de quoi se montrer.
+                val estimates = listOf(240, 180, 240)
+                val finished = types.mapIndexed { i, t ->
+                    t.copy(
+                        status = com.skohscripts.kairos.core.model.TaskStatus.DONE,
+                        estimatedMinutes = estimates[i],
+                        updatedAt = base.minus(kotlin.time.Duration.parse("${7 * i}d")),
+                    )
+                }.associateBy { it.id }
+                s.repository.replaceAll(snap.copy(workSessions = sessions, tasks = snap.tasks.map { finished[it.id] ?: it }))
             }
         }
         val hoursStats: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.STATS) { hoursServices } }
@@ -274,6 +286,7 @@ object SelfTest {
         val teamSettings = settingsIn(team, SettingsCategory.TEAM)
         val notes: @Composable () -> Unit = { KairosTheme { Surface { NotesScreen(services) {} } } }
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
+        val month: @Composable () -> Unit = { KairosTheme { Surface { MonthScreen(services, NavState().apply { monthMode = true }) {} } } }
         val stats: @Composable () -> Unit = { KairosTheme { Surface { StatsScreen(timed) } } }
         // Thème sombre (docs/spec/apparence.md § Thème sombre, issue #72) : système en sombre, rien de réglé.
         fun dark(s: AppServices, destination: Destination = Destination.DAY, secondary: Secondary? = null, team: TeamDestination = TeamDestination.HOME): @Composable () -> Unit =
@@ -320,6 +333,8 @@ object SelfTest {
             Shot("notes", 900, 1000, notes),
             Shot("week", 1200, 1000, week),
             Shot("week-narrow", 420, 2400, week),
+            Shot("month", 1200, 1100, month),
+            Shot("month-narrow", 360, 1600, month),
             Shot("stats", 1200, 1600, stats),
             Shot("stats-hours", 1200, 2600, hoursStats),
             Shot("stats-hours-narrow", 360, 4200, hoursStats),
@@ -371,6 +386,9 @@ object SelfTest {
             Shot("team-absence-narrow", 360, 900, absenceEditor(compact = true)),
             // Jalon E3 : Backlog, Suivi (colonnes puis sections empilées), sélection multiple, fiche d'une tâche avec historique.
             Shot("team-backlog", 1200, 1300, atWidth(1200.dp) { TeamBacklogScreen(board) }),
+            // Première tâche d'équipe accompagnée (issue #97), à l'étape « Qui la porte ».
+            Shot("team-first-task-coach", 900, 1000, overScrim { TeamTaskCreateDialog(board, 1, {}, {}, {}) }),
+            Shot("team-first-task-coach-narrow", 360, 900, overScrim { TeamTaskCreateDialog(board, 1, {}, {}, {}) }),
             Shot("team-backlog-narrow", 360, 2000, atWidth(360.dp) { TeamBacklogScreen(board) }),
             Shot("team-backlog-selection", 1200, 900, atWidth(1200.dp) { TeamBacklogScreen(selectionServices, initialSelection = setOf(seeded.ids.getValue("vat"), seeded.ids.getValue("demo"))) }),
             Shot("team-board", 1200, 1700, atWidth(1200.dp) { TeamBoardScreen(board) }),

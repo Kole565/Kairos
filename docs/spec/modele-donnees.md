@@ -77,7 +77,10 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
     une tâche archivée n'est ni affichée ni basculée.
 - `TimeBlock` : `id`, `title`, `start`, `end` (locales), `kind`
   (`BlockKind` : `busy`, `deepwork`), `recurrence` (`BlockRecurrence` : `""`,
-  `daily`, `weekdays`, `weekly`), `createdAt`.
+  `daily`, `weekdays`, `weekly`, et depuis la 3.8.0 `monthly_day`, `monthly_weekday`, `recurrence.md`), `createdAt`.
+- `BlockException` (3.8.0, `recurrence.md` § Une seule occurrence) : `id`, `blockId` (le modèle), `date`, `skipped`
+  (faux par défaut), `title`, `start`, `end` (heures locales `LocalTime`, `null` = celles du modèle), `createdAt` ; au
+  plus une par `(blockId, date)`.
 - `TaskDependency` (`taskId` bloquée par `blockerId`), `WorkSession`
   (`endedAt = null` : en cours), `Note` (`status` `open` / `archived`,
   `convertedTaskId`).
@@ -101,7 +104,9 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   `preferred` type → heure 0 à 23, vide ; nul tant qu'il vaut ses défauts, donc absent de l'export ; hors bornes à l'import, l'export est refusé comme corrompu, `SettingsForm.validate`)), `learning` (`LearningSettings?` : `enabled` vrai,
   `history` 5, `minSamples` 3 ; nul = valeurs par défaut, non écrit dans l'export tant qu'il est nul, `durees-apprises.md`),
   `guide` (`GuideSettings?`, 3.7.0 : `newsHidden` (version majeure.mineure), `readChapters`, `firstTaskDone` ; nul tant
-  que le guide n'a rien retenu, donc absent de l'export, `visite-guidee.md` § Persistance) ;
+  que le guide n'a rien retenu, donc absent de l'export, `visite-guidee.md` § Persistance), `reminders`
+  (`ReminderSettings?`, 3.8.0 : `enabled` faux, `leadMinutes` 10 (0-120), `nextTask` faux ; nul tant qu'il vaut ses
+  défauts, donc absent de l'export, `rappels.md`) ;
   `Task.seriesId` (identifiant de la première tâche d'une série récurrente, nul par défaut).
 - `TeamMember` (`core/team/`) : `id`, `uid`, `name`, `role`,
   `availabilityPercent`, `hoursPerDay`, `isSelf`, `archived`, `createdAt`,
@@ -110,7 +115,7 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   `end` (dates locales incluses), `label`, `createdAt` ; `TeamEvent`
   (journal des tâches d'équipe, `equipe-backlog-suivi.md` § Journal).
 - `KairosSnapshot` : toutes les tables (membres, absences et journal
-  compris) et les
+  compris, exceptions de créneaux `blockExceptions` depuis la 3.8.0) et les
   réglages. C'est la forme commune de l'export, de l'import, des exemples et
   de la sauvegarde web.
 
@@ -126,7 +131,8 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
 
 ### Stockage (`data`, SQLDelight)
 
-- `Kairos.sq` : tables `task`, `time_block`, `task_dependency` (unique
+- `Kairos.sq` : tables `task`, `time_block`, `time_block_exception` (3.8.0, unique `(block_id, date)`, heures en
+  `TEXT` « 09:30 »), `task_dependency` (unique
   `(task_id, blocker_id)`), `work_session`, `note`, `settings` (une ligne
   `id = 1`, JSON des réglages), `team_member`, `member_absence` (index
   `member_id`), `team_event` (index `task_id`, `member_id`) (`equipe.md`). Clés
@@ -155,7 +161,7 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
    appliquées **dans une seule transaction**.
 3. `PRAGMA user_version` = version du schéma.
 
-`actualVersion` teste des marqueurs, du plus récent au plus ancien : colonne
+`actualVersion` teste des marqueurs, du plus récent au plus ancien : table `time_block_exception` (9), colonne
 `task.series_id` (8), `task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
 `task.progress_percent` (4), table `member_absence` (3), `task.space` (2),
 sinon 1. Chaque nouveau fichier `.sqm` ajoute son marqueur à
@@ -172,7 +178,8 @@ Schéma 5 : `4.sqm` (jalon E5) ajoute `team_scenario`. Schéma 6 : `5.sqm`
 `task.reported_minutes` et `team_member.last_report_at` (en fin de table).
 Schéma 7 : `6.sqm` ajoute `task.team_excluded` (0 par défaut, en fin de
 table, `equipe-moi.md`). Schéma 8 : `7.sqm` ajoute `task.series_id` (nulle, en fin de
-table, sans rétro-remplissage, `durees-apprises.md`).
+table, sans rétro-remplissage, `durees-apprises.md`). Schéma 9 : `8.sqm` (3.8.0) ajoute la table
+`time_block_exception`, vide (`recurrence.md`, `BlockExceptionMigrationTest`).
 Les
 schémas de référence de chaque version
 (`data/src/commonMain/sqldelight/databases/<n>.db`, générés par
@@ -225,7 +232,9 @@ de SQLDelight.
   - `createBlock`, `updateBlock`, `deleteBlock` (`BlockEdit` : titre
     nettoyé, début, fin, nature, récurrence) : refusés (`false`) si la fin
     n'est pas après le début ; un récurrent modifié ou supprimé l'est pour
-    toutes ses occurrences (seul le modèle est stocké).
+    toutes ses occurrences (seul le modèle est stocké) ; supprimer emporte ses exceptions, le rendre ponctuel aussi.
+  - Une seule occurrence (3.8.0) : `skipOccurrence`, `overrideOccurrence`, `restoreOccurrence`,
+    `putOccurrenceException` (`recurrence.md` § Solution technique).
   - `deleteTask` : supprime la tâche et les dépendances où elle figure ; ses
     sous-tâches et sessions restent (comportement propre de Kairos).
   - Notes : `createNote`, `editNote`, `convertNote`, `archiveNote`,

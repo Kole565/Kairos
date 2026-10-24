@@ -55,6 +55,9 @@ import com.skohscripts.kairos.ui.generated.resources.progress_started_on
 import com.skohscripts.kairos.ui.generated.resources.sheet_tab_details
 import com.skohscripts.kairos.ui.generated.resources.sheet_tab_history
 import com.skohscripts.kairos.ui.icons.KairosIcons
+import com.skohscripts.kairos.ui.day.EditField
+import com.skohscripts.kairos.ui.guide.CoachSession
+import com.skohscripts.kairos.ui.guide.coachField
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -151,6 +154,8 @@ internal fun TeamTaskFields(
     onPickAssignee: (Long?) -> Unit,
     progress: Float,
     onProgress: (Float) -> Unit,
+    /** Coach de la première tâche d'équipe (issue #97) : « Assigné à » porte la balise `edit-field-ASSIGNEE` et sa mise en évidence. */
+    coach: CoachSession? = null,
 ) {
     val unassigned = stringResource(Res.string.assign_unassigned)
     val shown = sheet.assign.name(assignee) ?: unassigned
@@ -160,7 +165,7 @@ internal fun TeamTaskFields(
         OutlinedTextField(shown, {}, readOnly = true, label = { Text(label) }, singleLine = true, modifier = Modifier.fillMaxWidth())
     } else {
         var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = Modifier.coachField(EditField.ASSIGNEE, coach)) {
             OutlinedTextField(
                 value = shown,
                 onValueChange = {},
@@ -179,7 +184,8 @@ internal fun TeamTaskFields(
         }
     }
     sheet.effort?.let { EffortLine(it) }
-    if (!sheet.editable || !open || assignee == null) return
+    // Création (identifiant 0) : ni avancement ni « Commencer » ; la tâche n'existe pas encore.
+    if (!sheet.editable || !open || assignee == null || task.id == 0L) return
 
     // Avancement : seulement pour le titulaire actuel, l'avancement appartient à la tâche assignée.
     ProgressField(progress, onProgress)

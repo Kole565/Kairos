@@ -41,6 +41,28 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.skohscripts.kairos.core.day.EditableBlock
+import com.skohscripts.kairos.core.engine.Recurrence
+import com.skohscripts.kairos.ui.theme.KairosSegmentedButton
+import com.skohscripts.kairos.ui.theme.KairosSegmentedRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.ui.text.style.TextDecoration
+import com.skohscripts.kairos.ui.generated.resources.block_badge_changed
+import com.skohscripts.kairos.ui.generated.resources.block_badge_monthly
+import com.skohscripts.kairos.ui.generated.resources.block_badge_skipped
+import com.skohscripts.kairos.ui.generated.resources.block_occurrence_hint
+import com.skohscripts.kairos.ui.generated.resources.block_occurrence_skipped
+import com.skohscripts.kairos.ui.generated.resources.block_rank_1
+import com.skohscripts.kairos.ui.generated.resources.block_rank_2
+import com.skohscripts.kairos.ui.generated.resources.block_rank_3
+import com.skohscripts.kairos.ui.generated.resources.block_rank_4
+import com.skohscripts.kairos.ui.generated.resources.block_rank_last
+import com.skohscripts.kairos.ui.generated.resources.block_rec_monthly_day
+import com.skohscripts.kairos.ui.generated.resources.block_rec_monthly_weekday
+import com.skohscripts.kairos.ui.generated.resources.block_restore
+import com.skohscripts.kairos.ui.generated.resources.block_scope_all
+import com.skohscripts.kairos.ui.generated.resources.block_scope_one
+import com.skohscripts.kairos.ui.generated.resources.block_skip
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.TimeBlock
@@ -146,7 +168,7 @@ internal fun BlockFields(state: BlockFormState) {
         if (state.orderError) Text(stringResource(Res.string.block_invalid), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), itemVerticalAlignment = Alignment.CenterVertically) {
             LabeledCheckbox(state.deepwork, { state.deepwork = it }, stringResource(Res.string.block_deepwork))
-            BlockRecurrenceField(state.recurrence) { state.recurrence = it }
+            BlockRecurrenceField(state.recurrence, state.parsedDay ?: state.initialDay) { state.recurrence = it }
         }
     }
 }
@@ -180,20 +202,42 @@ private fun TimeField(value: String, onChange: (String) -> Unit, label: StringRe
     )
 }
 
-private fun recurrenceLabel(r: BlockRecurrence) = when (r) {
-    BlockRecurrence.NONE -> Res.string.block_rec_none
-    BlockRecurrence.DAILY -> Res.string.block_rec_daily
-    BlockRecurrence.WEEKDAYS -> Res.string.block_rec_weekdays
-    BlockRecurrence.WEEKLY -> Res.string.block_rec_weekly
+/**
+ * Libellé d'une règle pour un créneau qui commence le [day] : les mensuelles disent le jour qu'elles reprennent
+ * (« mensuelle (le 15) », « mensuelle (3e mardi) », issue #108), tiré de la date saisie.
+ */
+@Composable
+private fun recurrenceText(r: BlockRecurrence, day: LocalDate): String {
+    val language = uiLanguage()
+    return when (r) {
+        BlockRecurrence.NONE -> stringResource(Res.string.block_rec_none)
+        BlockRecurrence.DAILY -> stringResource(Res.string.block_rec_daily)
+        BlockRecurrence.WEEKDAYS -> stringResource(Res.string.block_rec_weekdays)
+        BlockRecurrence.WEEKLY -> stringResource(Res.string.block_rec_weekly)
+        BlockRecurrence.MONTHLY_DAY -> stringResource(Res.string.block_rec_monthly_day, Dates.dayOfMonth(day, language))
+        BlockRecurrence.MONTHLY_WEEKDAY -> stringResource(
+            Res.string.block_rec_monthly_weekday,
+            stringResource(rankLabel(Recurrence.weekdayRank(day))),
+            Dates.weekdayName(day, language),
+        )
+    }
+}
+
+private fun rankLabel(rank: Int) = when (rank) {
+    1 -> Res.string.block_rank_1
+    2 -> Res.string.block_rank_2
+    3 -> Res.string.block_rank_3
+    4 -> Res.string.block_rank_4
+    else -> Res.string.block_rank_last
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BlockRecurrenceField(value: BlockRecurrence, onChange: (BlockRecurrence) -> Unit) {
+private fun BlockRecurrenceField(value: BlockRecurrence, day: LocalDate, onChange: (BlockRecurrence) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
         OutlinedTextField(
-            value = stringResource(recurrenceLabel(value)),
+            value = recurrenceText(value, day),
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(Res.string.block_recurrence)) },
@@ -202,31 +246,41 @@ private fun BlockRecurrenceField(value: BlockRecurrence, onChange: (BlockRecurre
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             BlockRecurrence.entries.forEach { r ->
-                DropdownMenuItem(text = { Text(stringResource(recurrenceLabel(r))) }, onClick = { onChange(r); expanded = false })
+                DropdownMenuItem(text = { Text(recurrenceText(r, day)) }, onClick = { onChange(r); expanded = false })
             }
         }
     }
 }
 
-/** Liste des créneaux stockés du jour, chacun modifiable (un récurrent : son modèle). */
+/**
+ * Liste des créneaux stockés du jour, chacun modifiable : un ponctuel, ou l'occurrence du jour d'un récurrent (heures
+ * de l'occurrence, exception comprise ; une occurrence sautée reste listée, barrée, pour pouvoir la rétablir).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun DayBlockList(blocks: List<TimeBlock>, language: String, onEdit: (TimeBlock) -> Unit) {
+internal fun DayBlockList(blocks: List<EditableBlock>, language: String, onEdit: (EditableBlock) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Muted(stringResource(if (blocks.isEmpty()) Res.string.blocks_none else Res.string.blocks_today))
-        blocks.forEach { b ->
+        blocks.forEach { eb ->
+            val b = eb.occurrence
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FlowRow(
                     Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     itemVerticalAlignment = Alignment.CenterVertically,
                 ) {
+                    val decoration = if (eb.skipped) TextDecoration.LineThrough else null
                     Text(
                         "${Dates.time(b.start, language)}–${Dates.time(b.end, language)}",
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (eb.skipped) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+                        textDecoration = decoration,
                     )
-                    Text(b.title.ifEmpty { stringResource(Res.string.block_untitled) }, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        b.title.ifEmpty { stringResource(Res.string.block_untitled) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        textDecoration = decoration,
+                    )
                     if (b.kind == BlockKind.DEEPWORK) {
                         Badge(
                             stringResource(Res.string.tag_deepwork),
@@ -235,24 +289,55 @@ internal fun DayBlockList(blocks: List<TimeBlock>, language: String, onEdit: (Ti
                             icon = KairosIcons.Layers,
                         )
                     }
-                    when (b.recurrence) {
-                        BlockRecurrence.DAILY -> Res.string.block_badge_daily
-                        BlockRecurrence.WEEKDAYS -> Res.string.block_badge_weekdays
-                        BlockRecurrence.WEEKLY -> Res.string.block_badge_weekly
-                        BlockRecurrence.NONE -> null
-                    }?.let { Badge(stringResource(it), icon = KairosIcons.Repeat) }
+                    recurrenceBadge(b.recurrence)?.let { Badge(stringResource(it), icon = KairosIcons.Repeat) }
+                    // L'exception du jour se lit en texte, pas seulement au trait barré (issue #110).
+                    when {
+                        eb.skipped -> Badge(stringResource(Res.string.block_badge_skipped))
+                        eb.exception != null -> Badge(stringResource(Res.string.block_badge_changed))
+                    }
                 }
-                KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { onEdit(b) })
+                KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { onEdit(eb) })
             }
         }
     }
 }
 
-/** Dialogue de modification d'un créneau ; supprimer un récurrent le dit (toutes ses occurrences). */
+private fun recurrenceBadge(r: BlockRecurrence) = when (r) {
+    BlockRecurrence.DAILY -> Res.string.block_badge_daily
+    BlockRecurrence.WEEKDAYS -> Res.string.block_badge_weekdays
+    BlockRecurrence.WEEKLY -> Res.string.block_badge_weekly
+    BlockRecurrence.MONTHLY_DAY, BlockRecurrence.MONTHLY_WEEKDAY -> Res.string.block_badge_monthly
+    BlockRecurrence.NONE -> null
+}
+
+/** Ce que « Seulement celle-ci » peut faire de l'occurrence du jour (issue #110). */
+internal class OccurrenceActions(
+    val onSkip: () -> Unit,
+    val onOverride: (title: String, start: LocalTime, end: LocalTime) -> Unit,
+    val onRestore: () -> Unit,
+)
+
+/**
+ * Dialogue de modification d'un créneau ; supprimer un récurrent le dit (toutes ses occurrences). Pour un récurrent,
+ * un choix en tête : « Seulement celle-ci » (titre et heures du [day], « Sauter ce jour », « Rétablir ») ou « Toutes
+ * les occurrences » (le modèle, comme avant).
+ */
 @Composable
-internal fun BlockDialog(block: TimeBlock, onDismiss: () -> Unit, onSave: (BlockEdit) -> Unit, onDelete: () -> Unit) {
-    val state = remember(block.id) { BlockFormState.of(block) }
+internal fun BlockDialog(
+    block: EditableBlock,
+    day: LocalDate,
+    onDismiss: () -> Unit,
+    onSave: (BlockEdit) -> Unit,
+    onDelete: () -> Unit,
+    occurrence: OccurrenceActions,
+) {
+    val template = block.template
+    val recurring = template.recurrence != BlockRecurrence.NONE
+    val state = remember(block.id) { BlockFormState.of(template) }
+    val one = remember(block.id, day) { BlockFormState.of(block.occurrence) }
+    var onlyThis by remember(block.id) { mutableStateOf(recurring) }
     var confirmDelete by remember { mutableStateOf(false) }
+    val language = uiLanguage()
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             shape = MaterialTheme.shapes.extraLarge,
@@ -263,28 +348,42 @@ internal fun BlockDialog(block: TimeBlock, onDismiss: () -> Unit, onSave: (Block
         ) {
             Column(Modifier.verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(stringResource(Res.string.block_edit_title), style = MaterialTheme.typography.headlineSmall)
-                BlockFields(state)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    KairosTextButton(onClick = { confirmDelete = true }) {
-                        Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
+                if (recurring) {
+                    KairosSegmentedRow(Modifier.fillMaxWidth()) {
+                        KairosSegmentedButton(selected = onlyThis, onClick = { onlyThis = true }, shape = SegmentedButtonDefaults.itemShape(0, 2)) {
+                            Text(stringResource(Res.string.block_scope_one))
+                        }
+                        KairosSegmentedButton(selected = !onlyThis, onClick = { onlyThis = false }, shape = SegmentedButtonDefaults.itemShape(1, 2)) {
+                            Text(stringResource(Res.string.block_scope_all))
+                        }
                     }
-                    Spacer(Modifier.weight(1f))
-                    KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
-                    val edit = state.edit()
-                    KairosButton(enabled = edit != null, onClick = { edit?.let(onSave) }) { Text(stringResource(Res.string.action_save)) }
+                }
+                if (recurring && onlyThis) {
+                    OccurrenceFields(block, one, day, language, occurrence, onDismiss)
+                } else {
+                    BlockFields(state)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        KairosTextButton(onClick = { confirmDelete = true }) {
+                            Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error)
+                        }
+                        Spacer(Modifier.weight(1f))
+                        KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
+                        val edit = state.edit()
+                        KairosButton(enabled = edit != null, onClick = { edit?.let(onSave) }) { Text(stringResource(Res.string.action_save)) }
+                    }
                 }
             }
         }
     }
     if (confirmDelete) {
-        val name = block.title.ifEmpty { stringResource(Res.string.block_untitled) }
+        val name = template.title.ifEmpty { stringResource(Res.string.block_untitled) }
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text(stringResource(Res.string.block_delete_title)) },
             text = {
                 Text(
                     stringResource(
-                        if (block.recurrence == BlockRecurrence.NONE) Res.string.block_delete_body else Res.string.block_delete_recurring_body,
+                        if (template.recurrence == BlockRecurrence.NONE) Res.string.block_delete_body else Res.string.block_delete_recurring_body,
                         name,
                     ),
                 )
@@ -292,5 +391,62 @@ internal fun BlockDialog(block: TimeBlock, onDismiss: () -> Unit, onSave: (Block
             confirmButton = { KairosTextButton(onClick = onDelete) { Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error) } },
             dismissButton = { KairosTextButton(onClick = { confirmDelete = false }) { Text(stringResource(Res.string.action_cancel)) } },
         )
+    }
+}
+
+/** « Seulement celle-ci » : titre et heures du jour, ou, pour une occurrence sautée, « Rétablir ». */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun OccurrenceFields(
+    block: EditableBlock,
+    form: BlockFormState,
+    day: LocalDate,
+    language: String,
+    actions: OccurrenceActions,
+    onDismiss: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (block.skipped) {
+            Text(stringResource(Res.string.block_occurrence_skipped), style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Text(
+                stringResource(Res.string.block_occurrence_hint, Dates.long(day, language)),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedTextField(
+                form.title,
+                { form.title = it },
+                label = { Text(stringResource(Res.string.field_title)) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().quietShortcuts(),
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TimeField(form.start, { form.start = it }, Res.string.block_start, form.orderError)
+                TimeField(form.end, { form.end = it }, Res.string.block_end, form.orderError)
+            }
+            if (form.orderError) Text(stringResource(Res.string.block_invalid), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+        }
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            itemVerticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            if (block.exception != null) {
+                KairosTextButton(onClick = actions.onRestore) { Text(stringResource(Res.string.block_restore)) }
+            }
+            if (!block.skipped) {
+                KairosTextButton(onClick = actions.onSkip) { Text(stringResource(Res.string.block_skip)) }
+            }
+            KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
+            if (!block.skipped) {
+                val start = form.parsedStart
+                val end = form.parsedEnd
+                val valid = start != null && end != null && end > start
+                KairosButton(enabled = valid, onClick = { if (valid) actions.onOverride(form.title, start!!, end!!) }) {
+                    Text(stringResource(Res.string.action_save))
+                }
+            }
+        }
     }
 }

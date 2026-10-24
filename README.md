@@ -161,8 +161,13 @@ order (critical path). Cycles are refused.
 ### Slots and deep work
 
 - **Busy slots** (meetings, lunch…), one-off or recurring (daily, weekdays,
-  weekly), editable and deletable; a "weekdays" slot skips public holidays,
+  weekly, monthly), editable and deletable; a "weekdays" slot skips public holidays,
   like a "weekdays" task.
+- **Monthly slots, one day apart**: a slot can repeat every month, on a day
+  ("the 15th", moved back to the previous working day like a monthly task) or
+  on a weekday ("the 3rd Tuesday", "the last Friday"). On any recurring slot,
+  "Only this one" skips that day or changes its title and hours for that day
+  only; "Restore" brings the series back.
 - **Deep work**: a slot reserved for a single task, the most urgent one; the
   others work around it.
 - **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a
@@ -177,6 +182,11 @@ order (critical path). Cycles are refused.
   break. A banner in the app, and a system notification: Android (ongoing
   notification with a stopwatch, even with the app closed), the desktop
   notification area, the browser notification.
+- **Reminders** (Settings, off by default): a notification a few minutes
+  before a fixed-time task and, if you want, when the plan moves on to the
+  next task. On Android even with Kairos closed (possibly a few minutes late
+  while the phone sleeps, no extra permission); on desktop and the web while
+  Kairos is open.
 
 ### Views
 
@@ -186,6 +196,10 @@ order (critical path). Cycles are refused.
 - **Week**: seven days (deadlines, scheduled tasks, finished tasks, slots), the
   week's real time by type; tap a task to move it to another day (public
   holidays and days off are flagged), with "Undo".
+- **Month**: the "Month" switch of the Week view shows the whole month, one
+  box per day with the number of planned tasks, a flag for deadlines, a warning
+  for overloaded days and an icon for public holidays and days off, with the same
+  information as lists below; tap a day to open it.
 - **Statistics**: weekly throughput, estimation calibration (median real time
   per level, bias), time by type, flow, completeness. The sample size is
   shown; a small sample is marked "not reliable". Narrow it down by period
@@ -193,6 +207,12 @@ order (critical path). Cycles are refused.
   view (type, project, priority…); nothing is saved. "Export…" saves what the
   screen shows: the tables as one CSV file (ready for a spreadsheet), or one card
   as a PNG image with its date, period and filter.
+- **Trends** (Statistics): tracked time day by day (week by week beyond 8
+  weeks) and the estimation bias week by week, each chart with its written
+  summary and sample size.
+- **Correct the estimates** (Statistics): replaces the estimate of finished,
+  timed tasks with the time really spent, after a preview where you untick
+  the ones to keep; "Undo" brings the old estimates back.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
   usual rhythm. This card only observes.
@@ -242,6 +262,10 @@ order (critical path). Cycles are refused.
 
 - Turn it on in **Settings → Team**; when off, nothing changes in Kairos. When
   on, a **Personal | Team** selector appears at the top.
+- **Guided first team task**: from "Discover Kairos" (team space on), Kairos
+  walks you through the team task sheet, field by field (assignee and their
+  load, priority and size, effort, deadline, category), then says where the task
+  landed. Nothing is written if you give up.
 - **Members**: availability, hours per day, absences; "This is me" makes the
   team tasks assigned to you appear in your Day view.
 - Team **backlog** sorted by the same WSJF score, categories = task types,

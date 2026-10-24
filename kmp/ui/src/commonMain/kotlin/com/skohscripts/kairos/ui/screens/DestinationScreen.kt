@@ -13,6 +13,7 @@ import com.skohscripts.kairos.ui.team.TeamBoardScreen
 import com.skohscripts.kairos.ui.team.TeamMembersScreen
 import com.skohscripts.kairos.ui.team.forecast.ForecastScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.month.MonthScreen
 import kotlinx.datetime.LocalDate
 
 /**
@@ -36,7 +37,7 @@ fun DestinationScreen(
             services, nav.day, onBackToToday = { onOpenDay(null) },
             firstTaskRequest = nav.firstTaskRequest, onFirstTaskHandled = { nav.firstTaskRequest = false }, onDiscover = onDiscover,
         )
-        Destination.WEEK -> WeekScreen(services, nav, onOpenDay)
+        Destination.WEEK -> if (nav.monthMode) MonthScreen(services, nav, onOpenDay) else WeekScreen(services, nav, onOpenDay)
         Destination.STATS -> StatsScreen(services)
     }
 }

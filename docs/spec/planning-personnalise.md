@@ -126,7 +126,8 @@ personnalisables (4e demande de l'issue) sont écartées pour l'instant.
   coûteux ; réévalués après retours.
 - Glisser-déposer (décision d'accessibilité déjà consignée).
 - Apprentissage entre appareils ou d'équipe, prédiction de durée (voir
-  `durees-apprises.md`), notifications.
+  `durees-apprises.md`), notifications (les rappels d'une tâche à heure fixe et de la tâche suivante sont arrivés en
+  3.8.0, `rappels.md`).
 - Capacité d'équipe par plage (voir « Décisions »).
 
 ## 2. Solution technique
