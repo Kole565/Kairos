@@ -1393,6 +1393,8 @@
     <string name="card_correct_body">Dans les Statistiques, « Corriger les estimations… » remplace l’estimation de tâches terminées par le temps chronométré, après un aperçu où l’on décoche ce qu’on garde ; « Annuler » rend les anciennes.</string>
     <string name="card_trends_title">Voir les choses évoluer</string>
     <string name="card_trends_body">Les Statistiques montrent le temps chronométré jour par jour et le biais d’estimation semaine par semaine, chaque graphique avec son résumé écrit.</string>
+    <string name="card_besthours_eff_title">Tes heures les plus efficaces</string>
+    <string name="card_besthours_eff_body">Les Statistiques disent à quelle heure tu finis chaque type le plus vite au regard de tes estimations. Réglages → Meilleures heures peut s’en servir : Mesurer par Efficacité, ou Les deux.</string>
     <string name="card_level_names_title">Noms des niveaux</string>
     <string name="card_level_names_body">Appelle les priorités et les points avec tes mots (« Urgent », S/M/L…). Le badge montre ton nom, la fiche et le guide le montrent avec sa valeur (« M (3) ») ; P0 reste rouge et Kairos calcule toujours avec les valeurs.</string>
     <string name="card_reminders_title">Des rappels avant l’heure</string>
@@ -1424,6 +1426,9 @@
     <string name="stats_hours_slot">%1$s–%2$s</string>
     <string name="stats_hours_peak">Se distingue à %1$s : %2$d % de son temps (×%3$s ton rythme habituel)</string>
     <string name="stats_hours_spread">Réparti dans la journée, sans plage marquée</string>
+    <string name="stats_hours_fastest">Plus rapide à %1$s : %2$d % plus vite que d’habitude (%3$d tâches estimées)</string>
+    <string name="stats_hours_even">Aussi rapide à toute heure (%1$d tâches estimées)</string>
+    <string name="stats_hours_few_tasks">Efficacité : pas encore assez de tâches terminées et estimées (%1$d sur %2$d)</string>
     <string name="stats_hours_top">Plus grandes parts : %1$s</string>
     <string name="stats_hours_share">%1$s %2$d %</string>
     <string name="card_besthours_title">Quand tu travailles chaque type</string>
@@ -1432,6 +1437,11 @@
     <string name="besthours_settings_body">Kairos peut préférer, entre des tâches de score voisin, les heures où tu travailles d’habitude chaque type de tâche (mesurées avec le chrono, voir Statistiques). Désactivé par défaut ; les tâches en retard et l’urgence passent toujours avant.</string>
     <string name="besthours_enable">Préférer mes heures habituelles</string>
     <string name="besthours_strength">Force</string>
+    <string name="besthours_measure">Mesurer par</string>
+    <string name="besthours_measure_frequency">Fréquence</string>
+    <string name="besthours_measure_efficiency">Efficacité</string>
+    <string name="besthours_measure_both">Les deux</string>
+    <string name="besthours_measure_help">Fréquence : les heures où tu travailles ce type. Efficacité : celles où tu le finis plus vite que prévu (il faut des estimations).</string>
     <string name="besthours_strength_0">Faible</string>
     <string name="besthours_strength_1">Moyenne</string>
     <string name="besthours_strength_2">Forte</string>
@@ -1443,6 +1453,10 @@
     <string name="note_affinity_manual">heure préférée pour « %1$s »</string>
     <string name="why_affinity_detected">Placée ici car tu travailles d’habitude les tâches « %1$s » vers cette heure (voir Statistiques). Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
     <string name="why_affinity_manual">Placée ici car tu as réglé une heure préférée pour « %1$s ». Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
+    <string name="note_affinity_efficient">ton heure la plus efficace pour « %1$s »</string>
+    <string name="note_affinity_combined">ton heure habituelle et efficace pour « %1$s »</string>
+    <string name="why_affinity_efficient">Placée ici car tu finis d’habitude les tâches « %1$s » plus vite que prévu vers cette heure (voir Statistiques). Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
+    <string name="why_affinity_combined">Placée ici car tu travailles souvent les tâches « %1$s » vers cette heure et les y finis plus vite que prévu (voir Statistiques). Une simple préférence : l’urgence et les tâches en retard passent d’abord.</string>
     <string name="card_besthours_apply_title">Planifier autour de tes meilleures heures</string>
     <string name="card_besthours_apply_body">Dans les Réglages, active « Préférer mes heures habituelles » : entre des tâches de score voisin, Kairos choisit celle dont tu travailles d’habitude le type à cette heure, ou à l’heure que tu lui as donnée. Les tâches en retard et l’urgence passent toujours avant.</string>
     <!-- Réglages rangés par catégories (docs/spec/reglages.md). -->

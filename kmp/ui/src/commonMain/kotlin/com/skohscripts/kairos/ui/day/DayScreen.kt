@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_combined
+import com.skohscripts.kairos.ui.generated.resources.note_affinity_efficient
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosListBlockExtra
@@ -748,7 +750,12 @@ private fun AgendaRow(item: Scheduling.ScheduledTask, ctx: RowContext, dipTrough
             }
             if (item.dipApplied) WarnBadge(stringResource(Res.string.note_dip, dipTroughHour), KairosIcons.Schedule)
             item.affinity?.let {
-                val res = if (it == AffinitySource.MANUAL) Res.string.note_affinity_manual else Res.string.note_affinity_detected
+                val res = when (it) {
+                    AffinitySource.MANUAL -> Res.string.note_affinity_manual
+                    AffinitySource.EFFICIENT -> Res.string.note_affinity_efficient
+                    AffinitySource.COMBINED -> Res.string.note_affinity_combined
+                    AffinitySource.DETECTED -> Res.string.note_affinity_detected
+                }
                 WarnBadge(stringResource(res, item.task.taskType.trim()), KairosIcons.Schedule)
             }
             item.conflictWith?.let { ErrorBadge(stringResource(Res.string.note_conflict, it)) }

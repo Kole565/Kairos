@@ -3,8 +3,11 @@ package com.skohscripts.kairos.core.engine
 import kotlinx.datetime.LocalTime
 import kotlin.math.abs
 
-/** D'où vient l'affinité qui a fait préférer un créneau : une [MANUAL] heure préférée du type, ou l'heure [DETECTED]e par le chrono. */
-enum class AffinitySource { DETECTED, MANUAL }
+/**
+ * D'où vient l'affinité qui a fait préférer un créneau : une [MANUAL] heure préférée du type, ou la détection sur le chrono : l'heure
+ * habituelle ([DETECTED], fréquence), l'heure où l'on finit le plus vite ([EFFICIENT], efficacité) ou les deux ([COMBINED]).
+ */
+enum class AffinitySource { DETECTED, MANUAL, EFFICIENT, COMBINED }
 
 /**
  * Affinité d'un type de tâche pour une heure (docs/spec/planning-personnalise.md § Lot C, étape C2). Pur : la mesure (`BestHours.affinity`)
@@ -18,6 +21,8 @@ class Affinity(
     private val detected: Map<String, List<Double>>,
     private val preferred: Map<String, Int>,
     private val bucketHours: Int,
+    /** La source des gains [detected] : ce que mesure le réglage (fréquence par défaut). */
+    private val detectedSource: AffinitySource = AffinitySource.DETECTED,
 ) {
     /** Vrai si l'affinité ne peut rien changer : force nulle, ou aucun type connu. */
     val isEmpty: Boolean get() = strength <= 0 || (detected.isEmpty() && preferred.isEmpty())
@@ -38,7 +43,7 @@ class Affinity(
     fun factor(taskType: String, time: LocalTime): Double = 1.0 + maxOf(0.0, strength) * boost(taskType, time)
 
     /** La source de l'affinité de [taskType] : l'heure préférée si le type en a une, sinon la détection. */
-    fun source(taskType: String): AffinitySource = if (key(taskType) in preferred) AffinitySource.MANUAL else AffinitySource.DETECTED
+    fun source(taskType: String): AffinitySource = if (key(taskType) in preferred) AffinitySource.MANUAL else detectedSource
 
     companion object {
         /** Une heure préférée « vers 12 h » : le gain décroît linéairement jusqu'à 0 à ± ce nombre d'heures. */

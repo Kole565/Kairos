@@ -241,7 +241,7 @@ objets que l'écran (`StatsQuery.Input`, `TaskStats.Dashboard`, `BestHours.Resul
 | `estimation_bias` | `ratio,real_minutes,estimated_minutes,tasks,reliable` | une, ou aucune sans biais ; ratio à deux décimales |
 | `time_by_type` | `type,minutes,pct` | une par type |
 | `focus` | `sessions,total_minutes,avg_session_minutes` | une |
-| `hours_by_type` | `type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,share_00` … `share_22` | une par profil ; parts en % à une décimale, lift à deux décimales, pointe vide sans pointe |
+| `hours_by_type` | `type,sessions,minutes,reliable,peak_start,peak_share_pct,peak_lift,efficiency_tasks,fastest_start,fastest_gain_pct,share_00` … `share_22` | une par profil ; parts en % à une décimale, lift à deux décimales, pointe vide sans pointe ; efficacité (3.9.0) : tâches estimées comptées, tranche la plus efficace et son gain en % à une décimale, vides sans elle |
 | `backlog` | `metric,value` | `open`, `median_age_days`, `overdue`, `stale` |
 | `completeness` | `field,with,total,pct` | `points`, `estimate`, `type` |
 
@@ -281,7 +281,14 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   **fiable** et non vide, le gain de chaque tranche est `lift − 1` borné à [0, 1] si elle porte au moins 10 % du temps du type (`AFFINITY_MIN_SHARE`), sinon 0 ; les
   heures préférées des réglages l'accompagnent et priment. `BestHours.strengthOf(niveau)` = 0,15 / 0,30 / 0,50. La carte Statistiques reste une observation : elle n'est pas
   filtrée par le réglage. Voir `ordonnancement.md` § Meilleures heures au créneau.
-- Tri par temps réel décroissant, puis par nom. Tests : `BestHoursTest` (déterministe sur une base de sessions fixée), `BestHoursUiTest`.
+- **Efficacité (3.9.0, v2, issue #105)** : `Profile.efficiency` (efficacité relative par tranche, `null` sans 3 tâches-équivalents ou sans
+  5 tâches terminées et estimées pour le type), `efficiencyTasks`, `efficiencyReliable`, `fastest` (tranche la plus efficace si ≥ 1,1).
+  Tâches terminées dans la fenêtre, `estimé ÷ réel` borné à [1/4, 4], réparti selon leurs minutes retenues par tranche (sans pondération
+  récente), moyenne géométrique de la tranche ÷ celle du type. Carte : une ligne sous la pointe, « Plus rapide à 14 h–16 h : 22 % plus vite
+  que d'habitude (12 tâches estimées) », « Aussi rapide à toute heure » ou « pas encore assez de tâches terminées et estimées (n sur 5) ».
+  Gains du planning : `BestHours.efficiencyGain`. Détail et décisions : `planning-personnalise.md` § Lot C v2.
+- Tri par temps réel décroissant, puis par nom. Tests : `BestHoursTest` (déterministe sur une base de sessions fixée),
+  `BestHoursEfficiencyTest`, `BestHoursUiTest`.
 
 ### Écran (`StatsScreen`, `ui`)
 

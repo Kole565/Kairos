@@ -229,11 +229,13 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   l’on décoche celles à garder ; « Annuler » rend les anciennes estimations.
 - **Quand tu travailles chaque type** (Statistiques) : pour chaque type de
   tâche, les tranches de 2 h où tu travailles vraiment (d’après tes sessions de
-  chrono), comparées à ton rythme habituel. Cette carte observe seulement.
+  chrono), comparées à ton rythme habituel, et celle où tu le finis le plus vite
+  au regard de tes estimations. Cette carte observe seulement.
 - **Meilleures heures** (Réglages, désactivé par défaut) : le planning préfère,
   entre des tâches de score voisin, les heures où tu travailles d’habitude chaque
-  type (détectées avec le chrono, force Faible / Moyenne / Forte) ou l’heure
-  préférée que tu donnes à un type. Les tâches en retard et l’urgence passent
+  type, celles où tu le finis plus vite que prévu, ou les deux (détectées avec le
+  chrono, force Faible / Moyenne / Forte), ou l’heure préférée que tu donnes à un
+  type. Les tâches en retard et l’urgence passent
   toujours avant ; la vue Jour dit quand cela a joué.
 
 ### Données
@@ -367,7 +369,7 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Jours fériés | Calendrier français, dates supplémentaires | activé |
 | Planification | Types de tâches | Liste des types | |
 | | Noms des niveaux | Un nom par priorité et par palier de points (16 caractères au plus) | noms par défaut |
-| | Meilleures heures | Préférer mes heures habituelles, force, heure préférée par type | désactivé |
+| | Meilleures heures | Préférer mes heures habituelles, force, mesurer par (fréquence, efficacité, les deux), heure préférée par type | désactivé, moyenne, fréquence |
 | | Durées apprises | Activé, occurrences considérées, occurrences nécessaires | activé, 5, 3 |
 | | Garde-fous | Seuils « traîne » (en retard, sans date), surcharge P0 | 7 j, 14 j, 5 |
 | | Score de priorité (WSJF), avancé | Base de valeur, horizon et poids de l’urgence, points par défaut | 4, 14 j, 8, 3 |

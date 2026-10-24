@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.stats
 
+import com.skohscripts.kairos.ui.generated.resources.stats_hours_few_tasks
+import com.skohscripts.kairos.ui.generated.resources.stats_hours_even
+import com.skohscripts.kairos.ui.generated.resources.stats_hours_fastest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -224,6 +227,19 @@ private fun HoursProfile(profile: BestHours.Profile, name: String, language: Str
                 stringResource(Res.string.stats_hours_spread)
             },
             style = MaterialTheme.typography.bodyMedium,
+        )
+        // Efficacité (v2, issue #105) : où le type se termine le plus vite au regard de son estimation.
+        val fastest = profile.fastest
+        Text(
+            when {
+                !profile.efficiencyReliable -> stringResource(Res.string.stats_hours_few_tasks, profile.efficiencyTasks, BestHours.MIN_EFFICIENCY_TASKS)
+                fastest != null -> stringResource(
+                    Res.string.stats_hours_fastest, slot(fastest), round((profile.efficiency[fastest]!! - 1) * 100).toInt(), profile.efficiencyTasks,
+                )
+                else -> stringResource(Res.string.stats_hours_even, profile.efficiencyTasks)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(
             Modifier.fillMaxWidth().height(36.dp).clearAndSetSemantics { },

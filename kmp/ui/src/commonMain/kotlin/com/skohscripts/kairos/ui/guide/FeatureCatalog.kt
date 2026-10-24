@@ -15,6 +15,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_correct_body
 import com.skohscripts.kairos.ui.generated.resources.card_trends_body
 import com.skohscripts.kairos.ui.generated.resources.card_reminders_body
+import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_body
+import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_title
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_body
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_title
 import com.skohscripts.kairos.ui.generated.resources.card_reminders_title
@@ -142,6 +144,7 @@ object FeatureCatalog {
         FeatureCard("time", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.guide_you_time_title, Res.string.guide_you_time_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_NOW), tour = true),
         FeatureCard("learned", GuideChapter.FOLLOW, { KairosIcons.TrendingUp }, Res.string.card_learned_title, Res.string.card_learned_body, GuideTarget.Settings(GuideSection.SETTINGS_LEARNED), since = "3.4.0"),
         FeatureCard("besthours", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.card_besthours_title, Res.string.card_besthours_body, GuideTarget.Personal(Destination.STATS, GuideSection.STATS_HOURS), since = "3.5.0"),
+        FeatureCard("besthours_efficiency", GuideChapter.FOLLOW, { KairosIcons.Timer }, Res.string.card_besthours_eff_title, Res.string.card_besthours_eff_body, GuideTarget.Personal(Destination.STATS, GuideSection.STATS_HOURS), since = "3.9.0"),
         FeatureCard("week", GuideChapter.FOLLOW, { KairosIcons.DateRange }, Res.string.card_week_title, Res.string.card_week_body, GuideTarget.Personal(Destination.WEEK)),
         FeatureCard("month", GuideChapter.FOLLOW, { KairosIcons.CalendarMonth }, Res.string.card_month_title, Res.string.card_month_body, GuideTarget.Personal(Destination.WEEK), since = "3.8.0"),
         FeatureCard("week_move", GuideChapter.FOLLOW, { KairosIcons.SwapHoriz }, Res.string.card_week_move_title, Res.string.card_week_move_body, GuideTarget.Personal(Destination.WEEK), since = "3.7.0"),

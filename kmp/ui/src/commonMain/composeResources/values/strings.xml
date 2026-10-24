@@ -1391,6 +1391,8 @@
     <string name="card_correct_body">In Statistics, “Correct the estimates…” replaces the estimate of finished tasks with the timed duration, after a preview where you untick what to keep; “Undo” brings the old ones back.</string>
     <string name="card_trends_title">See how things evolve</string>
     <string name="card_trends_body">Statistics show the tracked time day by day and the estimation bias week by week, each chart with its written summary.</string>
+    <string name="card_besthours_eff_title">Your most efficient hours</string>
+    <string name="card_besthours_eff_body">Statistics tell at which hour you finish each type fastest compared with your estimates. Settings → Best hours can use it: Measure by Efficiency, or Both.</string>
     <string name="card_level_names_title">Level names</string>
     <string name="card_level_names_body">Call the priorities and the points in your own words (“Urgent”, S/M/L…). The badge shows your name, the sheet and the guide show it with its value (“M (3)”); P0 stays red and Kairos still computes with the values.</string>
     <string name="card_reminders_title">Reminders before it is time</string>
@@ -1422,6 +1424,9 @@
     <string name="stats_hours_slot">%1$s–%2$s</string>
     <string name="stats_hours_peak">Stands out at %1$s: %2$d% of its time (×%3$s your usual rhythm)</string>
     <string name="stats_hours_spread">Spread through the day, no clear slot</string>
+    <string name="stats_hours_fastest">Fastest at %1$s: %2$d% quicker than usual (%3$d estimated tasks)</string>
+    <string name="stats_hours_even">As quick at any hour (%1$d estimated tasks)</string>
+    <string name="stats_hours_few_tasks">Efficiency: not enough finished, estimated tasks yet (%1$d of %2$d)</string>
     <string name="stats_hours_top">Largest shares: %1$s</string>
     <string name="stats_hours_share">%1$s %2$d%</string>
     <string name="card_besthours_title">When you work on each type</string>
@@ -1430,6 +1435,11 @@
     <string name="besthours_settings_body">Kairos can prefer, between tasks of similar score, the hours when you usually work each task type (measured from your timer, see Statistics). Off by default; overdue tasks and urgency always come first.</string>
     <string name="besthours_enable">Prefer my usual hours</string>
     <string name="besthours_strength">Strength</string>
+    <string name="besthours_measure">Measure by</string>
+    <string name="besthours_measure_frequency">Frequency</string>
+    <string name="besthours_measure_efficiency">Efficiency</string>
+    <string name="besthours_measure_both">Both</string>
+    <string name="besthours_measure_help">Frequency: the hours when you work this type. Efficiency: those when you finish it faster than estimated (needs estimates).</string>
     <string name="besthours_strength_0">Low</string>
     <string name="besthours_strength_1">Medium</string>
     <string name="besthours_strength_2">High</string>
@@ -1441,6 +1451,10 @@
     <string name="note_affinity_manual">preferred hour for “%1$s”</string>
     <string name="why_affinity_detected">Placed here because you usually work “%1$s” tasks around this time (see Statistics). A soft preference only: urgency and overdue tasks come first.</string>
     <string name="why_affinity_manual">Placed here because you set a preferred hour for “%1$s”. A soft preference only: urgency and overdue tasks come first.</string>
+    <string name="note_affinity_efficient">your most efficient hour for “%1$s”</string>
+    <string name="note_affinity_combined">your usual, efficient hour for “%1$s”</string>
+    <string name="why_affinity_efficient">Placed here because you usually finish “%1$s” tasks faster than estimated around this time (see Statistics). A soft preference only: urgency and overdue tasks come first.</string>
+    <string name="why_affinity_combined">Placed here because you often work “%1$s” tasks around this time and finish them faster than estimated (see Statistics). A soft preference only: urgency and overdue tasks come first.</string>
     <string name="card_besthours_apply_title">Plan around your best hours</string>
     <string name="card_besthours_apply_body">In Settings, turn on “Prefer my usual hours”: between tasks of similar score, Kairos picks the one whose type you usually work at that time, or at the hour you set for it. Overdue tasks and urgency still come first.</string>
     <!-- Réglages rangés par catégories (docs/spec/reglages.md). -->

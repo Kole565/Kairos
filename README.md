@@ -221,10 +221,12 @@ order (critical path). Cycles are refused.
   the ones to keep; "Undo" brings the old estimates back.
 - **When you work on each type** (Statistics): for each task type, the 2-hour
   slots where you really work (from your timer sessions), compared with your
-  usual rhythm. This card only observes.
+  usual rhythm, and the slot where you finish it fastest compared with your
+  estimates. This card only observes.
 - **Best hours** (Settings, off by default): the plan prefers, between tasks of
-  similar score, the hours when you usually work each type (detected from the
-  timer, strength Low / Medium / High) or the preferred hour you set for a type.
+  similar score, the hours when you usually work each type, the hours when you
+  finish it faster than estimated, or both (detected from the timer, strength
+  Low / Medium / High), or the preferred hour you set for a type.
   Overdue tasks and urgency still come first; the day view says when it made the
   difference.
 
@@ -352,7 +354,7 @@ you press "Save").
 | | Public holidays | French calendar, extra dates | on |
 | Planning | Task types | List of types | |
 | | Level names | A name for each priority and each points level (16 characters at most) | default names |
-| | Best hours | Prefer my usual hours, strength, preferred hour per type | off |
+| | Best hours | Prefer my usual hours, strength, measure by (frequency, efficiency, both), preferred hour per type | off, medium, frequency |
 | | Learned durations | On/off, occurrences considered, occurrences needed | on, 5, 3 |
 | | Safeguards | "Lingering" thresholds (overdue, undated), P0 overload | 7 d, 14 d, 5 |
 | | Priority score (WSJF), advanced | Value base, urgency horizon and weight, default points | 4, 14 d, 8, 3 |

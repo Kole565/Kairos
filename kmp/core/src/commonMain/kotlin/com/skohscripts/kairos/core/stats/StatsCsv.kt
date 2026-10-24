@@ -87,7 +87,8 @@ object StatsCsv {
         )
         val slots = (0 until BestHours.BUCKETS).map { "share_" + BestHours.startHour(it).toString().padStart(2, '0') }
         section(
-            "hours_by_type", listOf("type", "sessions", "minutes", "reliable", "peak_start", "peak_share_pct", "peak_lift") + slots,
+            "hours_by_type",
+            listOf("type", "sessions", "minutes", "reliable", "peak_start", "peak_share_pct", "peak_lift", "efficiency_tasks", "fastest_start", "fastest_gain_pct") + slots,
             hours.profiles.map { p ->
                 val peak = p.peak
                 listOf(
@@ -95,6 +96,9 @@ object StatsCsv {
                     peak?.let { BestHours.startHour(it).toString().padStart(2, '0') + ":00" }.orEmpty(),
                     peak?.let { decimal(p.share[it] * 100, 1) }.orEmpty(),
                     peak?.let { decimal(p.lift[it], 2) }.orEmpty(),
+                    p.efficiencyTasks.toString(),
+                    p.fastest?.let { BestHours.startHour(it).toString().padStart(2, '0') + ":00" }.orEmpty(),
+                    p.fastest?.let { decimal((p.efficiency[it]!! - 1) * 100, 1) }.orEmpty(),
                 ) + p.share.map { decimal(it * 100, 1) }
             },
         )

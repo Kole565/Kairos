@@ -160,7 +160,8 @@ since, tour)`, **dans l'ordre de la visite**.
   (évolutions des statistiques, #112 ; Stats, chapitre « Suivre », icône `ShowChart`), `reminders` (rappels, #103 ;
   section `SETTINGS_REMINDERS`, chapitre « Réglages », icône `Alarm`).
 - **Cartes de la 3.9.0** : `level_names` (noms des niveaux, #93 ; section `SETTINGS_LEVELS` de la catégorie
-  Planification, chapitre « Planifier », icône `Flag`).
+  Planification, chapitre « Planifier », icône `Flag`), `besthours_efficiency` (meilleures heures v2, #105 ; section
+  `STATS_HOURS`, chapitre « Suivre », icône `Timer`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section

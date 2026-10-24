@@ -48,7 +48,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
      `Settings.levelNames` reste nul tant qu'aucun nom n'est choisi), **Meilleures heures** (3.6, étape C2 de `planning-personnalise.md` :
      interrupteur `schedule.bestHours.enabled` désactivé par défaut, force `schedule.bestHours.strength` en trois
      niveaux Faible / Moyenne / Forte (0 à 2, Moyenne par défaut), et une heure préférée facultative (0 à 23) par
-     type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…` ; `BestHoursCard`, qui
+     type de tâche dans `schedule.bestHours.preferred`, un seul champ texte `type=heure,…`, et (3.9.0, v2) « Mesurer par »
+     `schedule.bestHours.measure` (Fréquence par défaut, Efficacité, Les deux ; boutons segmentés, valeur inconnue = fréquence) ; `BestHoursCard`, qui
      n'affiche la force et les heures que si l'interrupteur est actif ; une heure hors des bornes est refusée sur
      ce champ ; `schedule` reste nul tant que les trois valent leur défaut), **Durées apprises** (3.4,
      `durees-apprises.md` : interrupteur `learning.enabled`, occurrences considérées `learning.history` ≥ 3,

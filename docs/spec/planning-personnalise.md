@@ -102,6 +102,27 @@ besoin métier._
     habituellement travaillé. Une **préférence manuelle** par type (« vers
     12 h ») prime sur la détection. « Pourquoi à cette place ? » le mentionne.
 
+### Meilleures heures v2 : l'efficacité (besoin, issue #105)
+
+La v1 mesure **quand** on travaille un type, pas **comment**. Qui fait ses
+documents à 10 h seulement parce que Kairos les y place paraît « meilleur à
+10 h » : la mesure confirme la suggestion (boucle d'auto-renforcement). Les
+vraies meilleures heures sont celles où le travail se fait le plus vite au
+regard de son estimation.
+
+- La carte Statistiques « Quand tu travailles chaque type » dit aussi, par
+  type, **à quelle heure il se termine le plus vite** par rapport à
+  l'estimation (« 30 % plus vite que d'habitude »), ou qu'il n'y a pas encore
+  assez de tâches terminées et estimées pour le dire.
+- Le réglage « Meilleures heures » choisit sur quoi s'appuyer : **la
+  fréquence** (v1, par défaut), **l'efficacité**, ou **les deux**. Sans y
+  toucher, rien ne change. La mention de la vue Jour et « Pourquoi ? » disent
+  laquelle a joué.
+- Une heure suggérée artificiellement ne se renforce plus d'elle-même en mode
+  efficacité : y travailler plus souvent ne la rend pas plus « efficace ».
+- Aucune donnée nouvelle : estimations, tâches terminées et sessions du chrono
+  suffisent.
+
 ### Lot D : noms des niveaux (besoin)
 
 Certains pensent dans leur propre vocabulaire (« Urgent / Bientôt / Un jour »,
@@ -140,6 +161,10 @@ pendant que Kairos continue de calculer sur l'échelle fixe.
 - Ergonomie : les deux bugs ont chacun leur test (`DayViewTest`), l'analyse de
   dates souples a ses cas (`DatesTest`), « Restaurer » ne modifie pas `team`
   (`SettingsFormTest`).
+- Meilleures heures v2 : efficacité déterministe sur une base fixée, seuils
+  de fiabilité, biais d'estimation du type neutralisé, heure suggérée
+  artificiellement sans gain d'efficacité (`BestHoursEfficiencyTest`) ; sans
+  `measure`, le réglage et l'export sont identiques (`SettingsFormTest`).
 - Noms des niveaux (lot D) : sans nom choisi, `levelNames` reste nul et rien
   ne change (`LevelNamesTest`, `SettingsFormTest`) ; un nom choisi remplace le
   code dans les badges et les filtres, s'écrit « nom (valeur) » dans les
@@ -300,7 +325,57 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   mesure le confirme (auto-renforcement). Parades : poids borné, ajustement
   doux, exclusion des tâches en retard ; en v2, mesure d'**efficacité**
   (estimé ÷ réel par tranche) plutôt que la seule fréquence. La v1 reste la
-  fréquence relative au global.
+  fréquence relative au global, et la mesure par défaut.
+
+### Lot C v2 : efficacité (implémenté en 3.9.0, issue #105)
+
+- **Mesure** (`BestHours.measure`, même fenêtre et mêmes sessions que la v1) :
+  pour chaque tâche **terminée** dans la fenêtre, avec une **estimation** et du
+  temps chronométré, rapport `r = estimé ÷ réel` (réel = tout son temps
+  chronométré, comme le calibrage), borné à [1/4, 4] (une session oubliée ne
+  doit pas peser des centaines de fois). Ses minutes retenues (sessions d'au
+  moins 5 min de la fenêtre) sont réparties entre les tranches de 2 h : la
+  tâche pèse `w_b` = part de ses minutes dans la tranche `b` (somme 1).
+- **Efficacité relative** d'une tranche = moyenne géométrique pondérée de `r`
+  dans la tranche ÷ moyenne géométrique de `r` sur toutes les tâches du type.
+  Diviser par celle du type **neutralise son biais d'estimation** (un type
+  toujours sous-estimé n'est pas « lent partout ») : on compare le type à
+  lui-même. Moyenne géométrique : 2× plus vite et 2× plus lent se compensent.
+- **Fiabilité** : un type a un profil d'efficacité s'il compte au moins
+  **5 tâches** (`MIN_EFFICIENCY_TASKS`) ; une tranche n'a de valeur que si elle
+  porte au moins **3 tâches-équivalents** (`Σ w_b ≥ MIN_BUCKET_TASKS`), sinon
+  `null`. **Tranche la plus efficace** (`fastest`) : la plus haute efficacité
+  relative, si elle atteint 1,1 (10 % plus vite, `EFFICIENCY_NOTABLE`).
+- **Anti-boucle** : placer plus de tâches à une heure en augmente l'effectif,
+  pas la vitesse ; un type travaillé à une seule heure a une efficacité
+  relative de 1 partout où il a des données, donc aucun gain. Seule une heure
+  où l'on finit **plus vite que d'habitude** gagne.
+- **Gain** (`BestHours.affinity`) : efficacité = `(relative − 1) × 2` borné à
+  [0, 1] (plein à 50 % plus vite, `EFFICIENCY_FULL_GAIN`), 0 sans valeur
+  fiable ; fréquence = v1 inchangée ; **les deux** = moyenne des deux gains
+  (une donnée d'efficacité encore absente ne rend pas la fréquence muette).
+  L'heure préférée prime toujours.
+- **Réglage** : `BestHoursSettings.measure` (`frequency` par défaut,
+  `efficiency`, `both`), jamais écrit à sa valeur par défaut
+  (`@EncodeDefault(NEVER)` : l'export d'une installation v1 ne change pas) ;
+  champ `schedule.bestHours.measure`, normalisé à l'écriture (valeur inconnue
+  = fréquence), jamais refusé. `BestHoursCard` : « Mesurer par » en trois
+  boutons segmentés (Fréquence, Efficacité, Les deux) sous la force.
+- **Mention** : `AffinitySource.EFFICIENT` (efficacité) et `COMBINED` (les
+  deux) à côté de `DETECTED` (fréquence) et `MANUAL` ; notes
+  `note_affinity_efficient` / `_combined`, phrases `why_affinity_efficient` /
+  `_combined`.
+- **Statistiques** : chaque profil porte `efficiency` (relative par tranche,
+  `null` si peu fiable), `efficiencyTasks` et `fastest` ; la carte ajoute une
+  ligne sous la pointe (`stats_hours_fastest`, `stats_hours_even`,
+  `stats_hours_few_tasks`) ; le CSV `hours_by_type` ajoute `efficiency_tasks`,
+  `fastest_start`, `fastest_gain_pct` (`statistiques.md`).
+- **Décisions** : *estimé ÷ réel* plutôt que la part des tâches finies en une
+  session (écartée : dépend du découpage des sessions et du chrono oublié,
+  pas de la vitesse) ; *comparé au type* plutôt qu'au global (écarté :
+  confondrait « ce type est sous-estimé » et « cette heure est lente ») ;
+  *fréquence par défaut* : l'efficacité exige des estimations, que beaucoup
+  n'ont pas.
 
 ### Lot D : noms des niveaux (implémenté en 3.9.0, issue #93)
 
@@ -346,7 +421,7 @@ unique ⇒ mêmes sorties, export et fichier d'or inchangés
   `durees-apprises.md`, `visite-guidee.md` et `premiere-tache.md`).
 - **3.5.0** : B2 (livré) + C1 (livré).
 - **3.6.0** : C2 (livré). Échelles libres réévaluées après retours.
-- **3.9.0** : D, noms des niveaux (issue #93, livré).
+- **3.9.0** : C v2, efficacité (issue #105, livré) ; D, noms des niveaux (issue #93, livré).
 
 ### Décisions et pièges tracés
 

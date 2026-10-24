@@ -303,6 +303,8 @@ object SettingsForm {
             "schedule.bestHours.preferred", FieldKind.TEXT, validate = ::preferredError,
             get = { encodePreferred(it.preferred.mapValues { (_, hour) -> hour.toString() }) },
         ) { b, v -> b.copy(preferred = parsePreferred(v).mapValues { (_, hour) -> hour.toInt() }) },
+        // Ce que mesure la détection (v2, issue #105) : normalisé à l'écriture, jamais refusé.
+        bestHours("schedule.bestHours.measure", FieldKind.TEXT, get = { it.measure }) { b, v -> b.copy(measure = BestHoursSettings.normalizeMeasure(v)) },
     )
 
     /**
