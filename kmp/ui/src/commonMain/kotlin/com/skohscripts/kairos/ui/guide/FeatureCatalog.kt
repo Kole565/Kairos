@@ -10,6 +10,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_stats_explore_title
 import com.skohscripts.kairos.ui.generated.resources.card_stats_explore_body
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_title
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_body
+import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
+import com.skohscripts.kairos.ui.generated.resources.card_slots_month_title
 import com.skohscripts.kairos.ui.generated.resources.card_settings_categories_title
 import com.skohscripts.kairos.ui.generated.resources.card_settings_categories_body
 import com.skohscripts.kairos.ui.generated.resources.card_darktheme_title
@@ -139,6 +141,7 @@ object FeatureCatalog {
         FeatureCard("dependencies", GuideChapter.ORGANIZE, { KairosIcons.Block }, Res.string.card_dependencies_title, Res.string.card_dependencies_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_BLOCKED)),
         FeatureCard("slots", GuideChapter.ORGANIZE, { KairosIcons.PushPin }, Res.string.card_slots_title, Res.string.card_slots_body, GuideTarget.Personal(Destination.DAY)),
         FeatureCard("holidays_slots", GuideChapter.ORGANIZE, { KairosIcons.EventBusy }, Res.string.card_holidays_slots_title, Res.string.card_holidays_slots_body, GuideTarget.Settings(GuideSection.SETTINGS_HOLIDAYS), since = "3.7.0"),
+        FeatureCard("slots_month", GuideChapter.ORGANIZE, { KairosIcons.Repeat }, Res.string.card_slots_month_title, Res.string.card_slots_month_body, GuideTarget.Personal(Destination.DAY), since = "3.8.0"),
         // --- Équipe
         FeatureCard("team_members", GuideChapter.TEAM, { KairosIcons.Groups }, Res.string.guide_team_members_title, Res.string.guide_team_members_body, GuideTarget.Team(TeamDestination.MEMBERS)),
         FeatureCard("team_backlog", GuideChapter.TEAM, { KairosIcons.Stacks }, Res.string.guide_team_backlog_title, Res.string.guide_team_backlog_body, GuideTarget.Team(TeamDestination.BACKLOG)),
@@ -202,6 +205,7 @@ object FeatureCatalog {
         "Learned durations" to "learned",
         "Working days and holidays" to "hours",
         "Busy slots" to "slots",
+        "Monthly slots, one day apart" to "slots_month",
         "Deep work" to "slots",
         "Timeline" to "do",
         "Timer per task" to "time",

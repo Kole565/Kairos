@@ -161,8 +161,13 @@ order (critical path). Cycles are refused.
 ### Slots and deep work
 
 - **Busy slots** (meetings, lunch…), one-off or recurring (daily, weekdays,
-  weekly), editable and deletable; a "weekdays" slot skips public holidays,
+  weekly, monthly), editable and deletable; a "weekdays" slot skips public holidays,
   like a "weekdays" task.
+- **Monthly slots, one day apart**: a slot can repeat every month, on a day
+  ("the 15th", moved back to the previous working day like a monthly task) or
+  on a weekday ("the 3rd Tuesday", "the last Friday"). On any recurring slot,
+  "Only this one" skips that day or changes its title and hours for that day
+  only; "Restore" brings the series back.
 - **Deep work**: a slot reserved for a single task, the most urgent one; the
   others work around it.
 - **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a

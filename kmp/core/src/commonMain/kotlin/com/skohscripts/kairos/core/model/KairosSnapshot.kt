@@ -27,4 +27,6 @@ data class KairosSnapshot(
     val teamEvents: List<TeamEvent> = emptyList(),
     /** Scénarios « Et si… ? » de l'espace Équipe (jalon E5) ; toujours vide tant que l'espace n'a jamais servi. */
     val teamScenarios: List<TeamScenario> = emptyList(),
+    /** Exceptions d'occurrences de créneaux récurrents (3.8.0, issue #110) ; vide tant qu'aucune n'a été posée. */
+    val blockExceptions: List<BlockException> = emptyList(),
 )

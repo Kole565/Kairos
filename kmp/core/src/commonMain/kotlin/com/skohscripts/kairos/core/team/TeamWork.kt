@@ -148,7 +148,7 @@ object TeamWork {
         val oneOff = busy.filter { it.recurrence == BlockRecurrence.NONE && it.start < end && it.end > start }
         // Un créneau « jours ouvrés » n'occupe pas un férié (docs/spec/recurrence.md, issue #109).
         val holidays = Workdays.holidaysFor(day, settings.holidaysFr, settings.extraHolidays)
-        val recurring = Recurrence.expandRecurringBlocks(busy.filter { it.recurrence != BlockRecurrence.NONE }, day, day, holidays)
+        val recurring = Recurrence.expandRecurringBlocks(busy.filter { it.recurrence != BlockRecurrence.NONE }, day, day, holidays, snapshot.blockExceptions)
         return Scheduling.busyMinutesInWindow(oneOff + recurring, start, end) / 60.0
     }
 

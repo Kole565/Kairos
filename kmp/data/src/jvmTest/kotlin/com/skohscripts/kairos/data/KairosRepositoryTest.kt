@@ -419,6 +419,67 @@ class KairosRepositoryTest {
     }
 
     @Test
+    fun oneOccurrenceIsSkippedChangedOrRestoredWithoutTouchingTheSeries() = runTest {
+        // Issue #110 : déjeuner quotidien depuis le lundi 28 septembre.
+        val repo = empty()
+        val start = LocalDateTime(2026, 9, 28, 12, 0)
+        assertTrue(repo.createBlock(BlockEdit("Déjeuner", start, LocalDateTime(2026, 9, 28, 13, 0), recurrence = BlockRecurrence.DAILY)))
+        val id = repo.snapshot.value.timeBlocks.single().id
+        val tuesday = LocalDate(2026, 9, 29)
+        assertTrue(repo.skipOccurrence(id, tuesday))
+        assertTrue(repo.overrideOccurrence(id, LocalDate(2026, 9, 30), "  Déjeuner  ", LocalTime(13, 0), LocalTime(13, 30)))
+        val exceptions = repo.snapshot.value.blockExceptions
+        assertEquals(listOf(true, false), exceptions.map { it.skipped })
+        // Titre égal à celui du modèle : rien n'est remplacé, seules les heures.
+        assertNull(exceptions[1].title)
+        assertEquals(LocalTime(13, 0), exceptions[1].start)
+        // Le modèle n'a pas bougé.
+        assertEquals(start, repo.snapshot.value.timeBlocks.single().start)
+        // Refusés : fin avant début, jour d'avant l'origine, créneau inconnu.
+        assertTrue(!repo.overrideOccurrence(id, tuesday, "", LocalTime(14, 0), LocalTime(13, 0)))
+        assertTrue(!repo.skipOccurrence(id, LocalDate(2026, 9, 27)))
+        assertTrue(!repo.skipOccurrence(999, tuesday))
+        // Une seule exception par jour : remplacer le saut par des heures.
+        assertTrue(repo.overrideOccurrence(id, tuesday, "Client", LocalTime(12, 30), LocalTime(14, 0)))
+        assertEquals(2, repo.snapshot.value.blockExceptions.size)
+        assertEquals("Client", repo.snapshot.value.blockExceptions.single { it.date == tuesday }.title)
+        // Rétablir, puis remettre l'exception d'avant (annulation).
+        val before = repo.snapshot.value.blockExceptions.single { it.date == tuesday }
+        repo.restoreOccurrence(id, tuesday)
+        assertEquals(1, repo.snapshot.value.blockExceptions.size)
+        repo.putOccurrenceException(id, tuesday, before)
+        assertEquals("Client", repo.snapshot.value.blockExceptions.single { it.date == tuesday }.title)
+        // Toute la série modifiée : les exceptions restent ; devenue ponctuelle, elles partent.
+        assertTrue(repo.updateBlock(id, BlockEdit("Repas", start, LocalDateTime(2026, 9, 28, 13, 0), recurrence = BlockRecurrence.WEEKDAYS)))
+        assertEquals(2, repo.snapshot.value.blockExceptions.size)
+        assertTrue(repo.updateBlock(id, BlockEdit("Repas", start, LocalDateTime(2026, 9, 28, 13, 0))))
+        assertTrue(repo.snapshot.value.blockExceptions.isEmpty())
+    }
+
+    @Test
+    fun deletingASeriesDeletesItsExceptionsAndExportsRoundTripThem() = runTest {
+        val repo = empty()
+        val start = LocalDateTime(2026, 9, 28, 9, 30)
+        repo.createBlock(BlockEdit("Revue", start, LocalDateTime(2026, 9, 28, 10, 0), recurrence = BlockRecurrence.MONTHLY_WEEKDAY))
+        repo.createBlock(BlockEdit("Stand-up", start, LocalDateTime(2026, 9, 28, 9, 45), recurrence = BlockRecurrence.MONTHLY_DAY))
+        // Sans exception, l'export n'en dit rien : celui d'une base qui n'en a jamais posé ne change pas.
+        val plain = ExportCodec.encode(repo.snapshot.value, "3.8.0", now)
+        assertTrue("blockExceptions" !in plain)
+        val (review, standUp) = repo.snapshot.value.timeBlocks.map { it.id }
+        // 4e lundi d'octobre 2026 : le 26 ; le 28 octobre pour « le 28 du mois ».
+        assertTrue(repo.skipOccurrence(review, LocalDate(2026, 10, 26)))
+        assertTrue(repo.overrideOccurrence(standUp, LocalDate(2026, 10, 28), "Stand-up long", LocalTime(9, 30), LocalTime(10, 30)))
+        val text = ExportCodec.encode(repo.snapshot.value, "3.8.0", now)
+        assertTrue("\"monthly_weekday\"" in text && "\"monthly_day\"" in text)
+        val copy = empty()
+        copy.replaceAll(ExportCodec.decode(text))
+        assertEquals(repo.snapshot.value.blockExceptions, copy.snapshot.value.blockExceptions)
+        assertEquals(repo.snapshot.value.timeBlocks, copy.snapshot.value.timeBlocks)
+        repo.deleteBlock(review)
+        assertEquals(listOf(standUp), repo.snapshot.value.blockExceptions.map { it.blockId })
+    }
+
+    @Test
     fun onlyOneTimerRunsAtATime() = runTest {
         val repo = empty()
         val a = repo.createTask("A")!!

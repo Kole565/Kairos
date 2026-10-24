@@ -47,6 +47,7 @@ import com.skohscripts.kairos.ui.app.LocalMessages
 import com.skohscripts.kairos.ui.app.LocalUndoMessages
 import com.skohscripts.kairos.ui.generated.resources.blocked_feedback
 import com.skohscripts.kairos.ui.generated.resources.action_revert
+import com.skohscripts.kairos.ui.generated.resources.block_skipped_message
 import com.skohscripts.kairos.ui.generated.resources.task_moved
 import org.jetbrains.compose.resources.getString
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -86,7 +87,7 @@ import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.LearningSettings
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
-import com.skohscripts.kairos.core.model.TimeBlock
+import com.skohscripts.kairos.core.day.EditableBlock
 import com.skohscripts.kairos.ui.LocalPlatform
 import com.skohscripts.kairos.ui.Platform
 import com.skohscripts.kairos.ui.app.AppServices
@@ -196,7 +197,7 @@ fun DayScreen(
     LaunchedEffect(today, snapshot.tasks) { repository.ensureCalendarOccurrences(today) }
 
     var editingId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var editingBlock by remember { mutableStateOf<TimeBlock?>(null) }
+    var editingBlock by remember { mutableStateOf<EditableBlock?>(null) }
     var filterOpen by rememberSaveable { mutableStateOf(false) }
     // Accompagnement de la première tâche (docs/spec/premiere-tache.md) : la fiche de création (l'étape du coach, -1 une fois
     // le coach passé), puis la tâche réellement créée, ses félicitations et l'explication de sa place (-1 : aucune).
@@ -595,9 +596,27 @@ fun DayScreen(
     editingBlock?.let { block ->
         BlockDialog(
             block,
+            day,
             onDismiss = { editingBlock = null },
             onSave = { edit -> scope.launch { repository.updateBlock(block.id, edit) }; editingBlock = null },
             onDelete = { scope.launch { repository.deleteBlock(block.id) }; editingBlock = null },
+            occurrence = OccurrenceActions(
+                // « Sauter ce jour » se défait depuis le message (issue #110) : l'exception d'avant revient.
+                onSkip = {
+                    val before = block.exception
+                    val name = block.occurrence.title.ifEmpty { block.template.title }
+                    scope.launch {
+                        if (repository.skipOccurrence(block.id, day)) {
+                            undo(getString(Res.string.block_skipped_message, name, Dates.short(day, language, today)), getString(Res.string.action_revert)) {
+                                scope.launch { repository.putOccurrenceException(block.id, day, before) }
+                            }
+                        }
+                    }
+                    editingBlock = null
+                },
+                onOverride = { title, start, end -> scope.launch { repository.overrideOccurrence(block.id, day, title, start, end) }; editingBlock = null },
+                onRestore = { scope.launch { repository.restoreOccurrence(block.id, day) }; editingBlock = null },
+            ),
         )
     }
 }

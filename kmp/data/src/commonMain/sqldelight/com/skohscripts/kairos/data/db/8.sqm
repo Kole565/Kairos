@@ -1,0 +1,13 @@
+-- Schéma 8 -> 9 (3.8.0, une seule occurrence d'un créneau récurrent, docs/spec/recurrence.md) : additive.
+-- La table naît vide : une base migrée se comporte exactement comme avant, et son export ne change pas.
+CREATE TABLE time_block_exception (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    block_id INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    skipped INTEGER NOT NULL DEFAULT 0,
+    title TEXT,
+    start TEXT,
+    end TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (block_id, date)
+);

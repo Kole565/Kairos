@@ -57,7 +57,7 @@ data class WeekView(
             val templates = snapshot.timeBlocks.filter { it.recurrence != BlockRecurrence.NONE }
             // Fériés des réglages : un créneau « jours ouvrés » les saute (docs/spec/recurrence.md, issue #109).
             val holidays = Workdays.holidaysFor(monday, snapshot.settings.holidaysFr, snapshot.settings.extraHolidays)
-            val occurrences = Recurrence.expandRecurringBlocks(templates, monday, sunday, holidays)
+            val occurrences = Recurrence.expandRecurringBlocks(templates, monday, sunday, holidays, snapshot.blockExceptions)
             val oneOff = snapshot.timeBlocks.filter { it.recurrence == BlockRecurrence.NONE }
             val days = (0..6).map { i ->
                 val day = monday.plus(DatePeriod(days = i))

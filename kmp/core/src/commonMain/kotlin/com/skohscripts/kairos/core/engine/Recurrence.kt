@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.engine
 
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
@@ -180,34 +181,87 @@ object Recurrence {
      * Occurrences des créneaux récurrents sur `[rangeStart, rangeEnd]` : le
      * créneau stocké est le modèle (date d'origine, heures), jamais avant son
      * origine. Les occurrences gardent l'identifiant du modèle. [holidays] : `weekdays` saute aussi les fériés, comme
-     * une tâche « jours ouvrés » (issue #109) ; vide par défaut, les fichiers d'or n'en ont pas.
+     * une tâche « jours ouvrés » (issue #109), et « le N du mois » recule au jour ouvré précédent ; vide par défaut, les
+     * fichiers d'or n'en ont pas. [exceptions] (issue #110) : une occurrence sautée disparaît, une occurrence remplacée
+     * prend le titre et les heures de son exception ; vide par défaut.
      */
     fun expandRecurringBlocks(
         templates: List<TimeBlock>,
         rangeStart: LocalDate,
         rangeEnd: LocalDate,
         holidays: Set<LocalDate> = emptySet(),
+        exceptions: List<BlockException> = emptyList(),
     ): List<TimeBlock> {
+        val byDay = if (exceptions.isEmpty()) emptyMap() else exceptions.associateBy { it.blockId to it.date }
         val out = mutableListOf<TimeBlock>()
         for (tpl in templates) {
             if (tpl.recurrence == BlockRecurrence.NONE) continue
-            val origin = tpl.start.date
-            val durationMinutes = minutesBetween(tpl.start, tpl.end)
-            var day = maxOf(rangeStart, origin)
+            var day = maxOf(rangeStart, tpl.start.date)
             while (day <= rangeEnd) {
-                val recurs = when (tpl.recurrence) {
-                    BlockRecurrence.DAILY -> true
-                    BlockRecurrence.WEEKDAYS -> Workdays.isWorkday(day, holidays)
-                    BlockRecurrence.WEEKLY -> Workdays.weekday(day) == Workdays.weekday(origin)
-                    BlockRecurrence.NONE -> false
-                }
-                if (recurs) {
-                    val start = day.atTime(tpl.start.time)
-                    out += tpl.copy(start = start, end = start.plusMinutes(durationMinutes))
+                if (occursOn(tpl, day, holidays)) {
+                    val exception = byDay[tpl.id to day]
+                    if (exception?.skipped != true) out += occurrence(tpl, day, exception)
                 }
                 day = day.plus(DatePeriod(days = 1))
             }
         }
         return out
     }
+
+    /**
+     * L'occurrence du modèle [tpl] le jour [day] (qui doit en être un jour), avec l'exception [exception] appliquée s'il
+     * y en a une et qu'elle n'est pas « sautée » : son titre et ses heures remplacent ceux du modèle, champ par champ.
+     */
+    fun occurrence(tpl: TimeBlock, day: LocalDate, exception: BlockException? = null): TimeBlock {
+        val start = day.atTime(exception?.start ?: tpl.start.time)
+        val end = exception?.end?.let { day.atTime(it) } ?: start.plusMinutes(minutesBetween(tpl.start, tpl.end))
+        return tpl.copy(title = exception?.title ?: tpl.title, start = start, end = end)
+    }
+
+    /** Le modèle [tpl] a-t-il une occurrence le jour [day] ? Jamais avant son origine ; toujours faux pour un ponctuel. */
+    fun occursOn(tpl: TimeBlock, day: LocalDate, holidays: Set<LocalDate> = emptySet()): Boolean {
+        val origin = tpl.start.date
+        if (day < origin) return false
+        return when (tpl.recurrence) {
+            BlockRecurrence.NONE -> false
+            BlockRecurrence.DAILY -> true
+            BlockRecurrence.WEEKDAYS -> Workdays.isWorkday(day, holidays)
+            BlockRecurrence.WEEKLY -> Workdays.weekday(day) == Workdays.weekday(origin)
+            BlockRecurrence.MONTHLY_DAY -> {
+                // Reculer au jour ouvré précédent peut faire passer l'occurrence d'un mois dans le mois d'avant
+                // (le 1er tombe un samedi → le 30) : le mois du jour et le suivant sont candidats.
+                val next = if (day.month.ordinal == 11) LocalDate(day.year + 1, 1, 1) else LocalDate(day.year, day.month.ordinal + 2, 1)
+                monthlyDayOccurrence(origin, day, holidays) == day || monthlyDayOccurrence(origin, next, holidays) == day
+            }
+            BlockRecurrence.MONTHLY_WEEKDAY -> Workdays.weekday(day) == Workdays.weekday(origin) && hasRank(day, weekdayRank(origin))
+        }
+    }
+
+    /**
+     * Occurrence « le N du mois » d'un créneau d'origine [origin], dans le mois de [inMonth] : le jour N de l'origine
+     * (borné à la fin du mois) reculé au jour ouvré précédent, comme les tâches « le N du mois ». Le mois de l'origine
+     * a pour occurrence l'origine elle-même, même un week-end : le créneau est posé là où l'utilisateur l'a mis.
+     */
+    fun monthlyDayOccurrence(origin: LocalDate, inMonth: LocalDate, holidays: Set<LocalDate> = emptySet()): LocalDate {
+        if (inMonth.year == origin.year && inMonth.month == origin.month) return origin
+        val month = inMonth.month.ordinal + 1
+        val target = LocalDate(inMonth.year, month, minOf(origin.day, daysInMonth(inMonth.year, month)))
+        return Workdays.onOrBeforeBusinessDay(target, holidays)
+    }
+
+    /**
+     * Rang du jour [day] parmi les mêmes jours de la semaine de son mois : 1 à 4, ou [LAST_RANK] pour un jour des sept
+     * derniers du mois qui serait le 5e (« 5e mardi » n'existe pas tous les mois : il devient « dernier mardi »).
+     */
+    fun weekdayRank(day: LocalDate): Int {
+        val rank = (day.day - 1) / 7 + 1
+        return if (rank >= LAST_RANK) LAST_RANK else rank
+    }
+
+    /** [day] est-il le [rank]-ième de ses jours de la semaine dans son mois ([LAST_RANK] : le dernier, 4e ou 5e) ? */
+    fun hasRank(day: LocalDate, rank: Int): Boolean =
+        if (rank == LAST_RANK) day.day + 7 > daysInMonth(day.year, day.month.ordinal + 1) else (day.day - 1) / 7 + 1 == rank
+
+    /** Rang « dernier » de [weekdayRank]. */
+    const val LAST_RANK = 5
 }

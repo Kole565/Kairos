@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.Note
@@ -20,8 +21,10 @@ import com.skohscripts.kairos.core.team.forecast.ScenarioCodec
 import com.skohscripts.kairos.core.team.forecast.TeamScenario
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlin.time.Instant
 import com.skohscripts.kairos.data.db.Member_absence as AbsenceRow
+import com.skohscripts.kairos.data.db.Time_block_exception as BlockExceptionRow
 import com.skohscripts.kairos.data.db.Note as NoteRow
 import com.skohscripts.kairos.data.db.Task as TaskRow
 import com.skohscripts.kairos.data.db.Team_event as EventRow
@@ -121,6 +124,20 @@ internal fun BlockRow.toModel() = TimeBlock(
     end = LocalDateTime.parse(end),
     kind = BlockKind.fromCode(kind),
     recurrence = BlockRecurrence.fromCode(recurrence),
+    createdAt = created_at.instant(),
+)
+
+/** Heure locale stockée « 09:30 » (heures d'une exception de créneau). */
+internal fun LocalTime.hm(): String = "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+
+internal fun BlockExceptionRow.toModel() = BlockException(
+    id = id,
+    blockId = block_id,
+    date = LocalDate.parse(date),
+    skipped = skipped != 0L,
+    title = title,
+    start = start?.let(LocalTime::parse),
+    end = end?.let(LocalTime::parse),
     createdAt = created_at.instant(),
 )
 

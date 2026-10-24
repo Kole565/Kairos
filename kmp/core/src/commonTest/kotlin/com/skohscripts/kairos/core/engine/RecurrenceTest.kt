@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.engine
 
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskRecurrence
@@ -9,6 +10,7 @@ import com.skohscripts.kairos.core.model.TimeBlock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime
 import kotlinx.datetime.plus
 import kotlin.test.Test
@@ -249,5 +251,102 @@ class RecurrenceTest {
         // Hebdomadaire ancré sur le mercredi 4 novembre : le mercredi férié garde son occurrence.
         val weekly = slot(BlockRecurrence.WEEKLY, origin = LocalDate(2026, 11, 4))
         assertEquals(listOf(wednesday), days(Recurrence.expandRecurringBlocks(listOf(weekly), wednesday, wednesday, holidays)))
+    }
+
+    // --- Créneaux mensuels (issue #108) ------------------------------------------------------------------------------
+
+    private fun expand(slot: TimeBlock, from: LocalDate, to: LocalDate, holidays: Set<LocalDate> = emptySet()) =
+        days(Recurrence.expandRecurringBlocks(listOf(slot), from, to, holidays))
+
+    @Test
+    fun monthly_day_slots_clamp_to_the_end_of_month_and_move_back_to_a_workday() {
+        // Le 31, posé un samedi 31 janvier : janvier garde l'origine ; février 28 (samedi) → vendredi 27 ; mars 31
+        // (mardi) ; avril 30 (jour borné) ; mai 31 (dimanche) → vendredi 29.
+        val slot = slot(BlockRecurrence.MONTHLY_DAY, origin = LocalDate(2026, 1, 31))
+        assertEquals(
+            listOf(LocalDate(2026, 1, 31), LocalDate(2026, 2, 27), LocalDate(2026, 3, 31), LocalDate(2026, 4, 30), LocalDate(2026, 5, 29)),
+            expand(slot, LocalDate(2026, 1, 1), LocalDate(2026, 5, 31)),
+        )
+        // Année bissextile : le 31 tombe le mardi 29 février 2028.
+        assertEquals(listOf(LocalDate(2028, 2, 29)), expand(slot, LocalDate(2028, 2, 1), LocalDate(2028, 2, 29)))
+        // Même heure, même durée, identifiant du modèle.
+        val got = Recurrence.expandRecurringBlocks(listOf(slot), LocalDate(2026, 3, 31), LocalDate(2026, 3, 31)).single()
+        assertEquals(LocalDateTime(2026, 3, 31, 9, 30), got.start)
+        assertEquals(LocalDateTime(2026, 3, 31, 9, 45), got.end)
+        assertEquals(1L, got.id)
+    }
+
+    @Test
+    fun monthly_day_slots_skip_holidays_like_monthly_tasks() {
+        // Le 11 : le mercredi 11 novembre 2026 est férié → mardi 10, comme une tâche « le 11 du mois ».
+        val slot = slot(BlockRecurrence.MONTHLY_DAY, origin = LocalDate(2026, 10, 11))
+        val holidays = setOf(LocalDate(2026, 11, 11))
+        assertEquals(listOf(LocalDate(2026, 11, 10)), expand(slot, LocalDate(2026, 11, 1), LocalDate(2026, 11, 30), holidays))
+        assertEquals(Recurrence.calendarDeadline(11, LocalDate(2026, 11, 1), holidays), LocalDate(2026, 11, 10))
+        // Jamais avant l'origine : rien en septembre.
+        assertEquals(emptyList(), expand(slot, LocalDate(2026, 9, 1), LocalDate(2026, 10, 10)))
+    }
+
+    @Test
+    fun a_monthly_day_slot_moved_back_can_land_in_the_previous_month() {
+        // Le 1er août 2026 est un samedi : son occurrence recule au vendredi 31 juillet ; juillet a donc l'origine et
+        // l'occurrence d'août, août n'en a aucune, septembre a la sienne.
+        val slot = slot(BlockRecurrence.MONTHLY_DAY, origin = LocalDate(2026, 7, 1))
+        assertEquals(
+            listOf(LocalDate(2026, 7, 1), LocalDate(2026, 7, 31), LocalDate(2026, 9, 1)),
+            expand(slot, LocalDate(2026, 7, 1), LocalDate(2026, 9, 30)),
+        )
+    }
+
+    @Test
+    fun monthly_weekday_slots_keep_the_rank_of_their_origin() {
+        // 3e mardi : 17 novembre 2026, 15 décembre, 19 janvier 2027.
+        val third = slot(BlockRecurrence.MONTHLY_WEEKDAY, origin = LocalDate(2026, 11, 17))
+        assertEquals(3, Recurrence.weekdayRank(LocalDate(2026, 11, 17)))
+        assertEquals(
+            listOf(LocalDate(2026, 11, 17), LocalDate(2026, 12, 15), LocalDate(2027, 1, 19)),
+            expand(third, LocalDate(2026, 11, 1), LocalDate(2027, 1, 31)),
+        )
+        // Le 30 octobre 2026 est le 5e vendredi : il devient « dernier vendredi » (27 novembre, 4e ; 25 décembre, férié
+        // gardé comme en hebdomadaire).
+        val last = slot(BlockRecurrence.MONTHLY_WEEKDAY, origin = LocalDate(2026, 10, 30))
+        assertEquals(Recurrence.LAST_RANK, Recurrence.weekdayRank(LocalDate(2026, 10, 30)))
+        assertEquals(
+            listOf(LocalDate(2026, 10, 30), LocalDate(2026, 11, 27), LocalDate(2026, 12, 25)),
+            expand(last, LocalDate(2026, 10, 1), LocalDate(2026, 12, 31), setOf(LocalDate(2026, 12, 25))),
+        )
+    }
+
+    @Test
+    fun unknown_block_codes_read_as_one_off_and_the_monthly_codes_are_stable() {
+        assertEquals(BlockRecurrence.MONTHLY_DAY, BlockRecurrence.fromCode("monthly_day"))
+        assertEquals(BlockRecurrence.MONTHLY_WEEKDAY, BlockRecurrence.fromCode("monthly_weekday"))
+        assertEquals(BlockRecurrence.NONE, BlockRecurrence.fromCode("yearly"))
+    }
+
+    // --- Une seule occurrence (issue #110) -----------------------------------------------------------------------------
+
+    @Test
+    fun an_exception_skips_or_changes_one_occurrence_only() {
+        val weekly = slot(BlockRecurrence.WEEKLY, origin = LocalDate(2026, 11, 2))
+        val created = Instant.parse("2026-11-01T08:00:00Z")
+        val exceptions = listOf(
+            BlockException(1, blockId = 1, date = LocalDate(2026, 11, 9), skipped = true, createdAt = created),
+            BlockException(2, blockId = 1, date = LocalDate(2026, 11, 16), title = "Revue", start = LocalTime(16, 0), end = LocalTime(17, 0), createdAt = created),
+            // Exception d'un autre modèle : sans effet sur celui-ci.
+            BlockException(3, blockId = 2, date = LocalDate(2026, 11, 23), skipped = true, createdAt = created),
+        )
+        val got = Recurrence.expandRecurringBlocks(listOf(weekly), LocalDate(2026, 11, 2), LocalDate(2026, 11, 29), exceptions = exceptions)
+        assertEquals(listOf(LocalDate(2026, 11, 2), LocalDate(2026, 11, 16), LocalDate(2026, 11, 23)), days(got))
+        val changed = got[1]
+        assertEquals("Revue", changed.title)
+        assertEquals(LocalDateTime(2026, 11, 16, 16, 0), changed.start)
+        assertEquals(LocalDateTime(2026, 11, 16, 17, 0), changed.end)
+        // Les autres occurrences gardent le modèle.
+        assertEquals("Stand-up", got[2].title)
+        assertEquals(LocalDateTime(2026, 11, 23, 9, 30), got[2].start)
+        // Une exception un jour sans occurrence ne crée rien.
+        val stray = listOf(BlockException(4, blockId = 1, date = LocalDate(2026, 11, 3), title = "X", start = LocalTime(8, 0), end = LocalTime(9, 0), createdAt = created))
+        assertEquals(4, Recurrence.expandRecurringBlocks(listOf(weekly), LocalDate(2026, 11, 2), LocalDate(2026, 11, 29), exceptions = stray).size)
     }
 }

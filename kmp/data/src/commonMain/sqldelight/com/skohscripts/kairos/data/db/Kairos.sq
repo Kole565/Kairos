@@ -66,6 +66,21 @@ CREATE TABLE time_block (
 );
 CREATE INDEX time_block_start ON time_block(start);
 
+-- Exceptions d'occurrences de créneaux récurrents (3.8.0, docs/spec/recurrence.md § Une seule occurrence) : au plus une
+-- par (modèle, jour). skipped = 1 : occurrence sautée ; sinon title / start / end (heures locales « 09:30 ») remplacent
+-- ceux du modèle ce jour-là, NULL = ceux du modèle. Référence block_id sans FOREIGN KEY. Même définition que 8.sqm.
+CREATE TABLE time_block_exception (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    block_id INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    skipped INTEGER NOT NULL DEFAULT 0,
+    title TEXT,
+    start TEXT,
+    end TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (block_id, date)
+);
+
 CREATE TABLE task_dependency (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER NOT NULL,
@@ -210,6 +225,25 @@ DELETE FROM time_block WHERE id = ?;
 
 deleteAllTimeBlocks:
 DELETE FROM time_block;
+
+allBlockExceptions:
+SELECT * FROM time_block_exception ORDER BY id;
+
+insertBlockExceptionWithId:
+INSERT INTO time_block_exception VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Une seule exception par (modèle, jour) : la nouvelle remplace l'ancienne.
+upsertBlockException:
+INSERT OR REPLACE INTO time_block_exception (block_id, date, skipped, title, start, end, created_at) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteBlockException:
+DELETE FROM time_block_exception WHERE block_id = ? AND date = ?;
+
+deleteExceptionsOfBlock:
+DELETE FROM time_block_exception WHERE block_id = ?;
+
+deleteAllBlockExceptions:
+DELETE FROM time_block_exception;
 
 -- Dépendances ------------------------------------------------------------------
 

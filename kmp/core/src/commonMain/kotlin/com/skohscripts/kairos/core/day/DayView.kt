@@ -8,6 +8,7 @@ import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.engine.Staleness
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.Workdays
+import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -57,6 +58,17 @@ data class DayFilter(
 /** Tâche bloquée et titres de ses bloqueurs directs encore à faire (« Mère › Fille » pour une sous-tâche). */
 data class BlockedTask(val task: Task, val blockers: List<String>)
 
+/**
+ * Un créneau stocké qui concerne le jour affiché, pour la liste modifiable de la vue Jour : [template] est la ligne
+ * stockée (ponctuel ou modèle récurrent), [occurrence] ce qu'il est ce jour-là (heures et titre de l'exception
+ * appliqués), [exception] l'exception de ce jour s'il y en a une (issue #110) ; une occurrence sautée reste listée,
+ * pour pouvoir la rétablir.
+ */
+data class EditableBlock(val template: TimeBlock, val occurrence: TimeBlock, val exception: BlockException? = null) {
+    val id: Long get() = template.id
+    val skipped: Boolean get() = exception?.skipped == true
+}
+
 /** Tâche mère ayant encore des sous-tâches à faire : avancement n/m. */
 data class ParentProgress(val task: Task, val done: Int, val total: Int)
 
@@ -98,8 +110,8 @@ data class DayView(
     val priorityOverloadCount: Int,
     val priorityOverloadThreshold: Int,
     val projects: List<String>,
-    /** Créneaux stockés concernant ce jour (ponctuels du jour, modèles récurrents qui y tombent). */
-    val editableBlocks: List<TimeBlock>,
+    /** Créneaux stockés concernant ce jour (ponctuels du jour, modèles récurrents qui y tombent, occurrence sautée comprise). */
+    val editableBlocks: List<EditableBlock>,
     /** Créneaux effectifs du jour (occurrences des récurrents comprises). */
     val dayBlocks: List<TimeBlock>,
     val timeline: List<Scheduling.TimelineEntry>,
@@ -168,11 +180,15 @@ data class DayView(
             val nextDayStart = day.plus(DatePeriod(days = 1)).atTime(0, 0)
             val oneOff = snapshot.timeBlocks.filter { it.recurrence == BlockRecurrence.NONE && it.start < nextDayStart && it.end > dayStart }
             val templates = snapshot.timeBlocks.filter { it.recurrence != BlockRecurrence.NONE }
-            val dayBlocks = oneOff + Recurrence.expandRecurringBlocks(templates, day, day, holidays)
-            val editable = snapshot.timeBlocks.filter {
-                if (it.recurrence == BlockRecurrence.NONE) it.start.date == day
-                else Recurrence.expandRecurringBlocks(listOf(it), day, day, holidays).isNotEmpty()
-            }.sortedBy { it.start.time }
+            val dayBlocks = oneOff + Recurrence.expandRecurringBlocks(templates, day, day, holidays, snapshot.blockExceptions)
+            val exceptionOf = snapshot.blockExceptions.filter { it.date == day }.associateBy { it.blockId }
+            val editable = snapshot.timeBlocks.mapNotNull {
+                when {
+                    it.recurrence == BlockRecurrence.NONE -> if (it.start.date == day) EditableBlock(it, it) else null
+                    Recurrence.occursOn(it, day, holidays) -> EditableBlock(it, Recurrence.occurrence(it, day, exceptionOf[it.id]), exceptionOf[it.id])
+                    else -> null
+                }
+            }.sortedBy { it.occurrence.start.time }
 
             // Durées apprises des tâches sans estimation explicite (docs/spec/durees-apprises.md) : les fiables servent au placement.
             val learned = DurationEstimator.estimates(snapshot, instant)
