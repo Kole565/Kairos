@@ -798,6 +798,10 @@
     <string name="member_field_availability_help">Share of their time given to the team, from 1 to 100.</string>
     <string name="member_field_hours">Hours per day</string>
     <string name="member_field_hours_help">Working hours per day, from 1 to 24 (comma or point).</string>
+    <string name="member_summary_week">%1$d% · %2$d d · %3$s h/week</string>
+    <string name="member_field_weekly">Different hours each day</string>
+    <string name="member_field_weekly_help">Monday to Friday; an empty day or 0 is a day off (four-day week, Wednesdays off…).</string>
+    <string name="member_error_week_empty">At least one working day.</string>
     <string name="member_field_self">This is me</string>
     <string name="member_field_self_help">Team tasks assigned to you will show up in your day. Only one member can be you.</string>
     <string name="member_error_name">The name is required.</string>

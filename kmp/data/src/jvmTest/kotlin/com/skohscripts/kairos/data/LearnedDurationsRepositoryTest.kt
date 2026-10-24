@@ -62,7 +62,7 @@ class LearnedDurationsRepositoryTest {
         val file = Files.createTempFile("kairos-v7", ".db").toFile().also { it.delete() }
         open(file, withExamples = true)
         val before = open(file).snapshot.value.tasks.map { it.id }
-        sql(file, "DROP TABLE time_block_exception", "ALTER TABLE task DROP COLUMN series_id", "PRAGMA user_version = 7")
+        sql(file, "ALTER TABLE team_member DROP COLUMN week_hours", "DROP TABLE time_block_exception", "ALTER TABLE task DROP COLUMN series_id", "PRAGMA user_version = 7")
         val repo = open(file)
         assertEquals(KairosDatabase.Schema.version.toInt(), userVersion(file))
         assertEquals(before, repo.snapshot.value.tasks.map { it.id })

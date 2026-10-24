@@ -799,6 +799,10 @@
     <string name="member_field_availability_help">Part de son temps consacrée à l’équipe, de 1 à 100.</string>
     <string name="member_field_hours">Heures par jour</string>
     <string name="member_field_hours_help">Heures de travail par jour, de 1 à 24 (virgule ou point).</string>
+    <string name="member_summary_week">%1$d % · %2$d j · %3$s h/sem.</string>
+    <string name="member_field_weekly">Heures différentes selon le jour</string>
+    <string name="member_field_weekly_help">Du lundi au vendredi ; un jour vide ou à 0 est libre (semaine de quatre jours, mercredi libre…).</string>
+    <string name="member_error_week_empty">Au moins un jour travaillé.</string>
     <string name="member_field_self">C’est moi</string>
     <string name="member_field_self_help">Les tâches d’équipe qui vous sont assignées apparaîtront dans votre journée. Un seul membre peut être vous.</string>
     <string name="member_error_name">Le nom est obligatoire.</string>

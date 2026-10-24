@@ -124,7 +124,9 @@ CREATE TABLE team_member (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     -- Date du dernier rapport d'avancement intégré pour ce membre (jalon E6) ; NULL = aucun.
-    last_report_at TEXT
+    last_report_at TEXT,
+    -- Semaine type (3.9.0) : heures du lundi au vendredi, « 8,8,8,8,0 » ; NULL = heures par jour chaque jour ouvré.
+    week_hours TEXT
 );
 
 -- Absences des membres (jalon E2) : plages de dates incluses, début et fin au format ISO.
@@ -311,14 +313,14 @@ allTeamMembers:
 SELECT * FROM team_member ORDER BY id;
 
 insertTeamMemberWithId:
-INSERT INTO team_member VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO team_member VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 insertTeamMember:
-INSERT INTO team_member (uid, name, role, availability_percent, hours_per_day, is_self, archived, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?);
+INSERT INTO team_member (uid, name, role, availability_percent, hours_per_day, is_self, archived, created_at, updated_at, week_hours)
+VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?);
 
 updateTeamMember:
-UPDATE team_member SET name = ?, role = ?, availability_percent = ?, hours_per_day = ?, is_self = ?, updated_at = ?
+UPDATE team_member SET name = ?, role = ?, availability_percent = ?, hours_per_day = ?, is_self = ?, updated_at = ?, week_hours = ?
 WHERE id = ?;
 
 -- Rapport d'avancement intégré (jalon E6) : ne touche pas updated_at (la fiche du membre n'a pas changé).

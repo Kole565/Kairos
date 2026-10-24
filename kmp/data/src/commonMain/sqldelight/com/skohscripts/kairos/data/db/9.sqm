@@ -1,0 +1,3 @@
+-- Schéma 9 -> 10 (3.9.0, semaine type d'un membre, docs/spec/equipe-charge.md § Capacité) : additive.
+-- NULL pour chaque membre existant : sa capacité reste celle de ses heures par jour, et l'export ne change pas.
+ALTER TABLE team_member ADD COLUMN week_hours TEXT;

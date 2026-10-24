@@ -290,7 +290,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   Équipe activé), Kairos te guide dans la fiche d’une tâche d’équipe, champ par
   champ (titulaire et sa charge, priorité et taille, effort, échéance,
   catégorie), puis dit où la tâche est arrivée. Rien n’est écrit si tu renonces.
-- **Membres** : quotité, heures par jour, absences ; « C’est moi » fait
+- **Membres** : quotité, heures par jour (ou des heures différentes du lundi
+  au vendredi, un jour à 0 étant libre, pour une semaine de quatre jours),
+  absences ; « C’est moi » fait
   apparaître dans votre vue Jour les tâches d’équipe qui vous sont
   assignées.
 - **Backlog** d’équipe trié par le même score WSJF, catégories = types de

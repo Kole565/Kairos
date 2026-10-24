@@ -115,6 +115,7 @@ object ExportCodec {
         }
         for (d in s.dependencies) require(d.taskId in ids && d.blockerId in ids && d.taskId != d.blockerId) { "dépendance" }
         for (b in s.timeBlocks) require(b.end >= b.start) { "créneau" }
+        for (m in s.members) require(m.weekHours?.let(TeamMember::isValidWeek) ?: true) { "semaine type" }
         unique(s.blockExceptions.map { it.id }, "exceptions de créneau")
         require(s.blockExceptions.map { it.blockId to it.date }.toSet().size == s.blockExceptions.size) { "exceptions de créneau en double" }
         val blockIds = s.timeBlocks.mapTo(HashSet()) { it.id }
@@ -383,16 +384,18 @@ private data class MemberJson(
     val updatedAt: String,
     // Jalon E6 : nul donc omis tant qu'aucun rapport n'a été intégré.
     val lastReportAt: String? = null,
+    // 3.9.0 (issue #104) : nulle donc omise sans semaine type ; un export d'avant ne change pas.
+    val weekHours: List<Double>? = null,
 ) {
     fun toModel() = TeamMember(
         id, uid, name, role, availabilityPercent, hoursPerDay, isSelf, archived,
-        Instant.parse(createdAt), Instant.parse(updatedAt), lastReportAt?.let(Instant::parse),
+        Instant.parse(createdAt), Instant.parse(updatedAt), lastReportAt?.let(Instant::parse), weekHours,
     )
 
     companion object {
         fun from(m: TeamMember) = MemberJson(
             m.id, m.uid, m.name, m.role, m.availabilityPercent, m.hoursPerDay, m.isSelf, m.archived,
-            m.createdAt.toString(), m.updatedAt.toString(), m.lastReportAt?.toString(),
+            m.createdAt.toString(), m.updatedAt.toString(), m.lastReportAt?.toString(), m.weekHours,
         )
     }
 }

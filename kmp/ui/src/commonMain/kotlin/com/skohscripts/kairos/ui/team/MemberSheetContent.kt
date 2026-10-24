@@ -1,5 +1,10 @@
 package com.skohscripts.kairos.ui.team
 
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import com.skohscripts.kairos.ui.generated.resources.member_error_week_empty
+import com.skohscripts.kairos.ui.generated.resources.member_field_weekly_help
+import com.skohscripts.kairos.ui.generated.resources.member_field_weekly
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosRowIconButton
@@ -15,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.graphics.RectangleShape
@@ -152,7 +158,7 @@ fun MemberSheetContent(
     val english = uiLanguage().startsWith("en")
     var input by remember(member?.id) {
         val start = if (member == null) MemberForm.newInput(settings) else MemberForm.inputOf(member)
-        mutableStateOf(if (english) start else start.copy(hoursPerDay = start.hoursPerDay.replace('.', ',')))
+        mutableStateOf(if (english) start else start.copy(hoursPerDay = start.hoursPerDay.replace('.', ','), weekHours = start.weekHours.map { it.replace('.', ',') }))
     }
     var isSelf by remember(member?.id) { mutableStateOf(member?.isSelf == true) }
     var errors by remember(member?.id) { mutableStateOf<Map<String, FieldError>>(emptyMap()) }
@@ -230,16 +236,28 @@ fun MemberSheetContent(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
-                    value = input.hoursPerDay,
-                    onValueChange = { v -> change(MemberForm.HOURS) { it.copy(hoursPerDay = v) } },
-                    label = { Text(stringResource(Res.string.member_field_hours)) },
-                    isError = MemberForm.HOURS in errors,
-                    supportingText = { Text(errors[MemberForm.HOURS]?.let { memberErrorMessage(MemberForm.HOURS, it) } ?: stringResource(Res.string.member_field_hours_help)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                // Semaine type (docs/spec/equipe-charge.md § Capacité, issue #104) : cinq champs remplacent les heures par jour.
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    SwitchRow(input.weekly, stringResource(Res.string.member_field_weekly)) { v -> change(MemberForm.HOURS) { MemberForm.withWeekly(it, v) } }
+                    Text(stringResource(Res.string.member_field_weekly_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (input.weekly) {
+                    WeekHoursFields(input.weekHours, errors) { day, v ->
+                        change(MemberForm.weekKey(day)) { it.copy(weekHours = it.weekHours.mapIndexed { i, old -> if (i == day) v else old }) }
+                        errors = errors - MemberForm.weekKey(0)
+                    }
+                } else {
+                    OutlinedTextField(
+                        value = input.hoursPerDay,
+                        onValueChange = { v -> change(MemberForm.HOURS) { it.copy(hoursPerDay = v) } },
+                        label = { Text(stringResource(Res.string.member_field_hours)) },
+                        isError = MemberForm.HOURS in errors,
+                        supportingText = { Text(errors[MemberForm.HOURS]?.let { memberErrorMessage(MemberForm.HOURS, it) } ?: stringResource(Res.string.member_field_hours_help)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
                 // Un membre archivé ne peut pas être « moi » : la ligne n'est pas proposée.
                 if (!archived) {
                     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -443,6 +461,30 @@ private fun AbsencesSection(
         KairosOutlinedButton(onClick = onAdd, contentPadding = KairosButtonIconPadding) {
             Icon(KairosIcons.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(stringResource(Res.string.member_absence_add), modifier = Modifier.padding(start = 6.dp))
+        }
+    }
+}
+
+/** Cinq champs, lundi à vendredi (« lun. » … « ven. ») ; un jour sans heures est libre. Trois par ligne à 360 dp. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WeekHoursFields(hours: List<String>, errors: Map<String, FieldError>, onChange: (Int, String) -> Unit) {
+    val language = uiLanguage()
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        hours.forEachIndexed { day, value ->
+            val error = errors[MemberForm.weekKey(day)]
+            OutlinedTextField(
+                value = value,
+                onValueChange = { onChange(day, it) },
+                label = { Text(Dates.weekdayAbbrev(day, language)) },
+                isError = error != null,
+                supportingText = error?.let { e ->
+                    { Text(if (e.kind == FieldErrorKind.REQUIRED) stringResource(Res.string.member_error_week_empty) else memberErrorMessage(MemberForm.weekKey(day), e)) }
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.width(96.dp),
+            )
         }
     }
 }

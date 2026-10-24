@@ -153,7 +153,8 @@ rien changer pour qui ne l'active pas.
   **rôle** (texte libre, facultatif), **quotité** (en %, 100 par défaut,
   de 1 à 100), **heures par jour** (défaut : journée de travail des
   Réglages, `workdayEndHour − workdayStartHour` moins une heure, bornée à
-  1…24), case **« C'est moi »** (au plus un membre la porte ; la cocher
+  1…24), interrupteur **« Heures différentes selon le jour »** (3.9.0 : cinq champs du lundi au vendredi, 0 = jour libre,
+  `equipe-charge.md` § Capacité), case **« C'est moi »** (au plus un membre la porte ; la cocher
   sur un membre la retire à l'autre).
 - **Absences** d'un membre : liste de plages de dates (début, fin
   incluses, libellé facultatif : « Congés », « Formation »…). Une absence
@@ -178,7 +179,7 @@ membre, l'écran a deux onglets : « Membres » (ce qui suit) et « Échanges »
   icône `PersonAdd`). Sans aucun membre : un état vide qui explique à quoi
   servent les membres, avec le même bouton.
 - Une carte par **membre actif** (« moi » d'abord, puis par nom) : nom,
-  rôle, quotité et heures par jour (« 80 % · 7 h/j »), et la **prochaine
+  rôle, quotité et heures par jour (« 80 % · 7 h/j », ou avec une semaine type « 80 % · 4 j · 30 h/sem. »), et la **prochaine
   absence** à venir ou en cours (« Absent du 12 au 16 oct. », icône
   `EventBusy`). La charge s'y ajoutera au jalon E4 (`equipe-charge.md`).
 - Section repliable **« Anciens membres (n) »** pour les membres archivés.
@@ -315,7 +316,8 @@ d'équipe, sans changer d'espace (`equipe-moi.md`).
 ### Modèle (`core/team/`, pur)
 
 - `TeamMember` : `id`, `uid` (échanges), `name`, `role`,
-  `availabilityPercent` (1-100), `hoursPerDay` (décimal, 1-24), `isSelf`,
+  `availabilityPercent` (1-100), `hoursPerDay` (décimal, 1-24), `weekHours` (3.9.0 : semaine type, cinq heures du lundi au
+  vendredi, `null` = `hoursPerDay` chaque jour, `equipe-charge.md` § Capacité), `isSelf`,
   `archived`, `lastReportAt` (échanges), `createdAt`, `updatedAt`.
 - `MemberAbsence` : `id`, `memberId`, `start`, `end` (dates locales,
   incluses, `end ≥ start`), `label`.

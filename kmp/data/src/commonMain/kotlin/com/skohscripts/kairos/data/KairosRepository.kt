@@ -21,6 +21,7 @@ import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TeamSettings
+import com.skohscripts.kairos.core.team.TeamMember
 import com.skohscripts.kairos.core.team.MemberForm
 import com.skohscripts.kairos.core.team.QualifiedField
 import com.skohscripts.kairos.core.team.TeamEventKind
@@ -610,17 +611,17 @@ class KairosRepository(
      * ramenées dans leurs bornes (1-100, 1-24) : la validation de saisie est
      * celle de `MemberForm`, ceci n'est qu'un garde-fou. L'`uid` (identité des
      * échanges) est tiré ici : `core` reste sans hasard. [isSelf] retire « C'est
-     * moi » aux autres membres dans la même transaction.
+     * moi » aux autres membres dans la même transaction. [weekHours] : semaine type (issue #104), écartée si elle est mal formée.
      */
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun createMember(name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean): Long? {
+    suspend fun createMember(name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean, weekHours: List<Double>? = null): Long? {
         val clean = name.trim()
         if (clean.isEmpty() || !hoursPerDay.isFinite()) return null
         var id: Long? = null
         write {
             queries.insertTeamMember(
                 Uuid.random().toString(), clean, role.trim(), boundedAvailability(availabilityPercent), boundedHours(hoursPerDay),
-                if (isSelf) 1L else 0L, now(), now(),
+                if (isSelf) 1L else 0L, now(), now(), TeamMember.encodeWeekHours(weekHours?.takeIf { TeamMember.isValidWeek(it) }),
             )
             id = queries.lastInsertedId().awaitAsOneOrNull()
             if (isSelf) id?.let { queries.clearSelfExcept(now(), it) }
@@ -634,7 +635,7 @@ class KairosRepository(
      * moi » aux autres, dans la même transaction ; un membre archivé n'est jamais
      * « moi ».
      */
-    suspend fun updateMember(id: Long, name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean): Boolean {
+    suspend fun updateMember(id: Long, name: String, role: String, availabilityPercent: Int, hoursPerDay: Double, isSelf: Boolean, weekHours: List<Double>? = null): Boolean {
         val clean = name.trim()
         if (clean.isEmpty() || !hoursPerDay.isFinite()) return false
         var done = false
@@ -643,7 +644,7 @@ class KairosRepository(
             val self = isSelf && !member.archived
             queries.updateTeamMember(
                 clean, role.trim(), boundedAvailability(availabilityPercent), boundedHours(hoursPerDay),
-                if (self) 1L else 0L, now(), id,
+                if (self) 1L else 0L, now(), TeamMember.encodeWeekHours(weekHours?.takeIf { TeamMember.isValidWeek(it) }), id,
             )
             if (self) queries.clearSelfExcept(now(), id)
             done = true
@@ -1143,7 +1144,7 @@ class KairosRepository(
                             else -> {
                                 queries.updateTeamMember(
                                     member.name, member.role, mod.percent.toLong(), member.hoursPerDay,
-                                    if (member.isSelf) 1L else 0L, now(), member.id,
+                                    if (member.isSelf) 1L else 0L, now(), TeamMember.encodeWeekHours(member.weekHours), member.id,
                                 )
                                 members = members.map { if (it.id == member.id) it.copy(availabilityPercent = mod.percent) else it }
                                 applied += mod
@@ -1259,7 +1260,7 @@ class KairosRepository(
             queries.insertTeamMemberWithId(
                 m.id, m.uid, m.name, m.role, m.availabilityPercent.toLong(), m.hoursPerDay,
                 if (m.isSelf) 1L else 0L, if (m.archived) 1L else 0L, m.createdAt.store(), m.updatedAt.store(),
-                m.lastReportAt?.store(),
+                m.lastReportAt?.store(), TeamMember.encodeWeekHours(m.weekHours),
             )
         }
         for (a in snapshot.absences) {

@@ -106,6 +106,7 @@ internal fun MemberRow.toModel() = TeamMember(
     createdAt = created_at.instant(),
     updatedAt = updated_at.instant(),
     lastReportAt = last_report_at?.instant(),
+    weekHours = TeamMember.decodeWeekHours(week_hours),
 )
 
 internal fun AbsenceRow.toModel() = MemberAbsence(

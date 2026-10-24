@@ -279,8 +279,9 @@ order (critical path). Cycles are refused.
   walks you through the team task sheet, field by field (assignee and their
   load, priority and size, effort, deadline, category), then says where the task
   landed. Nothing is written if you give up.
-- **Members**: availability, hours per day, absences; "This is me" makes the
-  team tasks assigned to you appear in your Day view.
+- **Members**: availability, hours per day (or different hours from Monday
+  to Friday, a day at 0 being a day off, for a four-day week), absences;
+  "This is me" makes the team tasks assigned to you appear in your Day view.
 - Team **backlog** sorted by the same WSJF score, categories = task types,
   **assignment** and **reassignment** (one by one or in bulk).
 - **Tracking**: one row per member (in progress, to do, done), progress in 10 %

@@ -34,7 +34,15 @@ backlog.
 
 - Capacité d'un membre sur l'horizon, en heures : pour chaque **jour ouvré**
   (jours ouvrés et fériés des Réglages, `ordonnancement.md`) hors de ses
-  absences : `heures par jour × quotité × taux de focus`.
+  absences : `heures du jour × quotité × taux de focus`.
+- **Semaine type** (3.9.0, issue #104) : un membre travaille par défaut les
+  mêmes heures chaque jour ouvré (« heures par jour »). Sa fiche peut lui
+  donner des **heures différentes du lundi au vendredi** (semaine de quatre
+  jours, mercredi libre, demi-journées) : un jour à 0 est un **jour libre**,
+  de capacité nulle ; le week-end reste non travaillé, comme partout dans
+  Kairos. Sans semaine type, la capacité, la charge et les prévisions sont
+  exactement celles d'avant. La carte du membre dit « 4 j · 30 h/sem. » au
+  lieu de « 7 h/j ».
 - **Taux de focus** de l'équipe (`teamFocusFactor`, 80 % par défaut) : la
   part du temps réellement disponible pour les tâches (réunions, support et
   imprévus en moins). Il s'affiche en clair : « Capacité : 96 h (focus
@@ -152,7 +160,12 @@ backlog.
 ### Hors périmètre / différé
 
 - Capacité heure par heure (créneaux des membres) : le manager ne tient pas
-  leur agenda ; la capacité est journalière.
+  leur agenda ; la capacité est journalière (la semaine type donne des heures
+  par jour, pas des plages).
+- Semaine type de « moi » tirée de ses horaires personnels (`planning-personnalise.md`) :
+  le manager la saisit comme pour tout membre ; les deux restent distincts.
+- Week-end travaillé : le calendrier de Kairos (échéances, jours ouvrés,
+  traîne, débit) ne connaît que le lundi-vendredi.
 - Optimisation globale de la répartition (programmation linéaire) : un
   glouton explicable suffit et reste prévisible.
 - Plusieurs taux de focus par membre : un seul, d'équipe (une évolution par
@@ -176,6 +189,23 @@ backlog.
 
 **Horaires par jour, plages et contextes** (3.4-3.5, `planning-personnalise.md`) : la capacité d'un membre ne les suit **pas** ; elle lit toujours
 `workdayStartHour` et `workdayEndHour` (décision tracée, à reconsidérer si les horaires par jour deviennent courants chez les managers).
+
+**Semaine type** (3.9.0, issue #104, **rouvre** la décision précédente pour la capacité) : `TeamMember.weekHours: List<Double>?` (cinq
+valeurs, lundi à vendredi, 0 à 24, au moins une > 0 ; `null` = `hoursPerDay` chaque jour ouvré). `Capacity.baseHours(membre, jour)` rend
+`weekHours[jour de la semaine]` ou `hoursPerDay` ; `dailyHours` part de là (fériés, absences, créneaux de « moi », focus et part du jour
+inchangés) ; `weeklyHours` = somme de la semaine type (sinon 5 × heures) × quotité × focus ; `workdays(membre)` = jours > 0 (5 sans
+semaine type). Tout ce qui lit la capacité suit (`LoadPlan`, `TeamLoad`, `EffortModel` et `ForecastData` des prévisions, suggestion de
+répartition) ; le modèle **par débit** des prévisions, qui compte des tâches finies par semaine d'équipe, n'en dépend pas. Saisie : fiche
+du membre (`MemberForm` : `weekly`, `weekHours`, champs `weekHours.0`…`4`, vide = 0 ; « Au moins un jour travaillé. » si tout est à 0 ;
+`withWeekly` : activer l'interrupteur sur des jours vides les remplit des heures par jour ; masquées, des heures par jour invalides
+sont remplacées par la journée la plus longue).
+Base : colonne `team_member.week_hours` (texte « 8,8,8,8,0 », point décimal, `NULL` = aucune ; migration `9.sqm`, schéma 10, marqueur
+`week_hours`). Export : `weekHours` du membre, absent quand nul (un export d'avant ne change pas) ; refusé à l'import si mal formé.
+Échanges : rien ne change, la capacité reste chez le manager (comme la quotité et les heures). Membre hypothétique d'un scénario : heures
+uniformes, comme avant.
+- *Décisions* : **un modèle par membre** (choix du propriétaire ; écarté : « moi » seulement, d'après ses horaires personnels, qui laissait
+  les autres membres uniformes ; et le statu quo) ; **heures par jour, pas des plages** (le manager ne tient pas les agendas) ; **lundi à
+  vendredi** (le calendrier de Kairos ne travaille pas le week-end) ; **les contextes ne restreignent pas** les tâches d'équipe.
 
 ### Effort (`core/team/Effort.kt`, pur)
 
