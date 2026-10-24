@@ -275,6 +275,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   reste masquée pour la version une fois fermée. Réglages → À propos → « Revoir
   le guide depuis le début » fait tout revenir. « Voir l’écran » défile jusqu’à l’endroit
   dont parle la carte et le met en valeur un instant.
+- **Récurrente et Réglages pas à pas** : dans « Découvrir Kairos », « Créer ma
+  première tâche récurrente » te guide dans la vraie fiche et montre, pour
+  chaque règle, la prochaine échéance qu’elle produirait ; « Régler Kairos pas à
+  pas » passe par la journée de travail, les horaires, les contextes et les
+  meilleures heures, une carte à la fois, et n’enregistre rien avant que tu
+  appuies sur Enregistrer.
 
 ### Gestion d'équipe (facultative)
 

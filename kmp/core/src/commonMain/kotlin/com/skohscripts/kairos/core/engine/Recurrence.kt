@@ -51,6 +51,22 @@ object Recurrence {
         else -> throw IllegalArgumentException("Règle de récurrence inconnue : $rule")
     }
 
+    /**
+     * Aperçu de l'accompagnement de la première tâche récurrente (docs/spec/premiere-tache.md, issue #98) : pour chaque
+     * règle, la prochaine échéance après [base] (première occurrence). Hebdomadaire : ancrée sur le jour de [base] ;
+     * « le N du mois » : l'échéance du mois suivant, N = [dayOfMonth] ou le jour de [base], reculée au jour ouvré précédent.
+     */
+    fun preview(base: LocalDate, dayOfMonth: Int?, holidays: Set<LocalDate>): Map<TaskRecurrence, LocalDate> {
+        val nextMonth = LocalDate(base.year, base.month.ordinal + 1, 1).plus(DatePeriod(months = 1))
+        return linkedMapOf(
+            TaskRecurrence.DAILY to nextDeadline(TaskRecurrence.DAILY, base, holidays = holidays),
+            TaskRecurrence.WEEKDAYS to nextDeadline(TaskRecurrence.WEEKDAYS, base, holidays = holidays),
+            TaskRecurrence.WEEKLY to nextDeadline(TaskRecurrence.WEEKLY, base, holidays = holidays),
+            TaskRecurrence.MONTHLY to nextDeadline(TaskRecurrence.MONTHLY, base, holidays = holidays),
+            TaskRecurrence.MONTHLY_ON_DAY to calendarDeadline((dayOfMonth ?: base.day).coerceIn(1, 31), nextMonth, holidays),
+        )
+    }
+
     fun daysInMonth(year: Int, month: Int): Int {
         val first = LocalDate(year, month, 1)
         val next = if (month == 12) LocalDate(year + 1, 1, 1) else LocalDate(year, month + 1, 1)

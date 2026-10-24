@@ -26,6 +26,9 @@ class NavState {
     /** L'accompagnement de la première tâche est demandé (docs/spec/premiere-tache.md) : la vue Jour ouvre la fiche et l'acquitte. */
     var firstTaskRequest by mutableStateOf(false)
 
+    /** La demande est celle de la première tâche **récurrente** (issue #98) : la fiche suit les étapes de `RecurrenceCoach`. */
+    var firstTaskRecurring by mutableStateOf(false)
+
     /** Catégorie ouverte dans les Réglages (docs/spec/reglages.md) : la coquille en tire le titre et la flèche retour. */
     val settings = SettingsNav()
 

@@ -1,5 +1,9 @@
 package com.skohscripts.kairos.ui.guide
 
+import com.skohscripts.kairos.ui.generated.resources.discover_settings_tour_hint
+import com.skohscripts.kairos.ui.generated.resources.discover_settings_tour
+import com.skohscripts.kairos.ui.generated.resources.discover_first_recurring_hint
+import com.skohscripts.kairos.ui.generated.resources.discover_first_recurring
 import com.skohscripts.kairos.ui.theme.LocalKairosExtraColors
 import com.skohscripts.kairos.ui.generated.resources.discover_chapter_read
 import androidx.compose.foundation.clickable
@@ -46,6 +50,10 @@ fun DiscoverDialog(
     read: Set<GuideChapter> = emptySet(),
     /** « Créer ma première tâche d'équipe » (issue #97), sous le chapitre de l'équipe, seulement s'il est proposé. */
     onFirstTeamTask: () -> Unit = {},
+    /** « Créer ma première tâche récurrente » (issue #98), sous le chapitre « Organiser ». */
+    onFirstRecurring: () -> Unit = {},
+    /** « Régler Kairos pas à pas » (issue #98), sous le chapitre « Réglages ». */
+    onSettingsTour: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -62,8 +70,14 @@ fun DiscoverDialog(
                     Entry(chapter.icon(), stringResource(chapter.title), if (done) stringResource(Res.string.discover_chapter_read, count) else count, done) {
                         onChapter(chapter)
                     }
-                    if (chapter == GuideChapter.TEAM) {
-                        Entry(KairosIcons.Add, stringResource(Res.string.discover_first_team_task), stringResource(Res.string.discover_first_team_task_hint), onClick = onFirstTeamTask)
+                    when (chapter) {
+                        GuideChapter.TEAM ->
+                            Entry(KairosIcons.Add, stringResource(Res.string.discover_first_team_task), stringResource(Res.string.discover_first_team_task_hint), onClick = onFirstTeamTask)
+                        GuideChapter.ORGANIZE ->
+                            Entry(KairosIcons.Repeat, stringResource(Res.string.discover_first_recurring), stringResource(Res.string.discover_first_recurring_hint), onClick = onFirstRecurring)
+                        GuideChapter.SETTINGS ->
+                            Entry(KairosIcons.Tune, stringResource(Res.string.discover_settings_tour), stringResource(Res.string.discover_settings_tour_hint), onClick = onSettingsTour)
+                        else -> Unit
                     }
                 }
             }

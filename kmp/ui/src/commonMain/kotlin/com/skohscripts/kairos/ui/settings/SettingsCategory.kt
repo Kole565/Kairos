@@ -79,6 +79,9 @@ class SettingsNav {
     var category by mutableStateOf<SettingsCategory?>(null)
     var singlePane by mutableStateOf(true)
 
+    /** Étape de la visite des Réglages (docs/spec/premiere-tache.md, issue #98) ; `null` : pas de visite. */
+    var tourStep by mutableStateOf<Int?>(null)
+
     /** Une catégorie est ouverte seule à l'écran : la flèche retour ramène à la liste. */
     val inCategory: Boolean get() = singlePane && category != null
 }

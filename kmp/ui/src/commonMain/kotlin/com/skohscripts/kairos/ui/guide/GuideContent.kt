@@ -65,6 +65,7 @@ enum class GuideSection(
     DAY_NOW(GuideScreen.DAY),
     DAY_BLOCKED(GuideScreen.DAY, missing = Res.string.guide_spot_missing_blocked),
     DAY_PARENTS(GuideScreen.DAY, missing = Res.string.guide_spot_missing_parents),
+    SETTINGS_WORKDAY(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_CONTEXTS(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_HOURS(GuideScreen.SETTINGS, SettingsCategory.DAY),
     SETTINGS_HOLIDAYS(GuideScreen.SETTINGS, SettingsCategory.DAY),

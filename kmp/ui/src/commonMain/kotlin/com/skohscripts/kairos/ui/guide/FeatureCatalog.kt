@@ -17,6 +17,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_trends_body
 import com.skohscripts.kairos.ui.generated.resources.card_reminders_body
 import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_body
 import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_title
+import com.skohscripts.kairos.ui.generated.resources.card_guided_walks_body
+import com.skohscripts.kairos.ui.generated.resources.card_guided_walks_title
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_body
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_title
 import com.skohscripts.kairos.ui.generated.resources.card_reminders_title
@@ -133,6 +135,7 @@ object FeatureCatalog {
         FeatureCard("discover", GuideChapter.FIRST_STEPS, { KairosIcons.Layers }, Res.string.card_discover_title, Res.string.card_discover_body, GuideTarget.Personal(Destination.HOME), since = "3.4.0"),
         FeatureCard("first_task", GuideChapter.FIRST_STEPS, { KairosIcons.Add }, Res.string.card_first_task_title, Res.string.card_first_task_body, GuideTarget.FirstTask, since = "3.4.0"),
         FeatureCard("guide_memory", GuideChapter.FIRST_STEPS, { KairosIcons.Spot }, Res.string.card_guide_memory_title, Res.string.card_guide_memory_body, GuideTarget.Personal(Destination.HOME), since = "3.7.0"),
+        FeatureCard("guided_walks", GuideChapter.FIRST_STEPS, { KairosIcons.Repeat }, Res.string.card_guided_walks_title, Res.string.card_guided_walks_body, GuideTarget.Personal(Destination.HOME), since = "3.9.0"),
         // --- Planifier
         FeatureCard("points", GuideChapter.PLAN, { KairosIcons.Balance }, Res.string.card_points_title, Res.string.card_points_body, GuideTarget.Personal(Destination.DAY, GuideSection.DAY_INBOX)),
         FeatureCard("level_names", GuideChapter.PLAN, { KairosIcons.Flag }, Res.string.card_level_names_title, Res.string.card_level_names_body, GuideTarget.Settings(GuideSection.SETTINGS_LEVELS), since = "3.9.0"),
@@ -218,6 +221,7 @@ object FeatureCatalog {
         "Placement" to "score",
         "Fibonacci points" to "points",
         "Level names" to "level_names",
+        "Recurring task and Settings, step by step" to "guided_walks",
         "Afternoon dip (14h55)" to "score",
         "Hours by day of the week" to "hours",
         "Several windows and contexts" to "contexts",

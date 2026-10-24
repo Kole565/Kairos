@@ -265,6 +265,11 @@ order (critical path). Cycles are refused.
   brings everything back.
   “Show me the screen” scrolls to the exact place a card talks about and
   marks it for a moment.
+- **Recurring task and Settings, step by step**: in "Discover Kairos",
+  "Create my first recurring task" walks you through the real sheet and shows,
+  for each rule, the next deadline it would produce; "Set up Kairos step by
+  step" goes through the working day, the hours, the contexts and the best
+  hours, one card at a time, and saves nothing until you press Save.
 
 ### Team management (optional)
 

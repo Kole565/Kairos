@@ -1,5 +1,9 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.guide.coachHighlight
+import com.skohscripts.kairos.ui.guide.SettingsTourPanel
+import com.skohscripts.kairos.ui.guide.SettingsTourEffect
+import com.skohscripts.kairos.ui.guide.SettingsTour
 import com.skohscripts.kairos.ui.generated.resources.update_see_latest
 import com.skohscripts.kairos.ui.generated.resources.update_android_help
 import com.skohscripts.kairos.core.settings.UiLanguage
@@ -305,7 +309,13 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                 }
             }
         }
-        SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null; restored = false }, onSave = ::save)
+        // Visite des Réglages (issue #98) : son panneau au-dessus de la barre, qu'il cerne à la dernière étape.
+        SettingsTourEffect(nav)
+        SettingsTourPanel(nav)
+        val tourOnSave = nav.tourStep?.let { SettingsTour.STEPS.getOrNull(it)?.step?.save } == true
+        Box(Modifier.coachHighlight(tourOnSave, coaching = nav.tourStep != null)) {
+            SaveBar(dirty, onReset = { values = saved; errors = emptyMap(); general = null; restored = false }, onSave = ::save)
+        }
     }
 
     confirmHide?.let { settings ->

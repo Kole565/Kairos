@@ -59,7 +59,7 @@ class FeatureCatalogTest {
             setOf("slots_month", "month", "stats_trends", "stats_correct", "reminders"),
             FeatureCatalog.newIn("3.8.0").map { it.id }.toSet(),
         )
-        assertEquals(setOf("level_names", "besthours_efficiency"), FeatureCatalog.newIn("3.9.0").map { it.id }.toSet())
+        assertEquals(setOf("level_names", "besthours_efficiency", "guided_walks"), FeatureCatalog.newIn("3.9.0").map { it.id }.toSet())
         // Les versions qui n'ajoutent rien (ou illisibles) n'affichent rien.
         assertEquals(emptyList(), FeatureCatalog.newIn("3.3.0"))
         assertEquals(emptyList(), FeatureCatalog.newIn("garbage"))
@@ -97,8 +97,9 @@ class FeatureCatalogTest {
         }
         // Une section des Réglages ouvre sa catégorie ; les autres n'en ont pas.
         GuideSection.entries.forEach { assertEquals(it.screen == GuideScreen.SETTINGS, it.settingsCategory != null, it.name) }
-        // Chaque section sert au moins une carte.
-        val used = cards.mapNotNull { (it.target as? GuideTarget.Personal)?.section ?: (it.target as? GuideTarget.Settings)?.section }.toSet()
+        // Chaque section sert au moins une carte, ou la visite des Réglages (issue #98).
+        val used = cards.mapNotNull { (it.target as? GuideTarget.Personal)?.section ?: (it.target as? GuideTarget.Settings)?.section }.toSet() +
+            SettingsTour.STEPS.mapNotNull { it.section }
         assertEquals(GuideSection.entries.toSet(), used)
     }
 

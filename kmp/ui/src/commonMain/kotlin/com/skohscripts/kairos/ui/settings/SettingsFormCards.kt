@@ -320,7 +320,7 @@ internal fun SettingsFormCards(
 ) {
     when (category) {
         SettingsCategory.DAY -> {
-            SectionCard(WORKDAY, values, errors, onChange)
+            GuideSpot(GuideSection.SETTINGS_WORKDAY) { SectionCard(WORKDAY, values, errors, onChange) }
             // Les horaires par jour suivent la journée de travail dont ils sont les exceptions (docs/spec/planning-personnalise.md § Lot B1).
             // Cartes que le guide sait montrer (docs/spec/visite-guidee.md, issue #95).
             GuideSpot(GuideSection.SETTINGS_HOURS) { ScheduleCard(values, errors, onChange) }

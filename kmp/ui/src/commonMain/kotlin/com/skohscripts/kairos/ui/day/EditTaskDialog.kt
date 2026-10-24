@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.guide.RecurrencePreview
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosButton
@@ -441,6 +442,12 @@ internal fun EditTaskDialog(
                         onNext = { c.onStep(c.step + 1) },
                         onSkip = c.onSkip,
                         modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                        extra = if (c.current.preview) {
+                            // La règle part de la date saisie : échéance, sinon date programmée, sinon aujourd'hui (issue #98).
+                            { RecurrencePreview(parsedDeadline ?: parsedScheduled ?: today, recurrence, parsedDayOfMonth, c.holidays, uiLanguage()) }
+                        } else {
+                            null
+                        },
                     )
                 }
                 Row(

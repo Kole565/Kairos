@@ -35,7 +35,8 @@ fun DestinationScreen(
         Destination.NOTES -> NotesScreen(services, onOpenTasks = { onNavigate(Destination.DAY) })
         Destination.DAY -> DayScreen(
             services, nav.day, onBackToToday = { onOpenDay(null) },
-            firstTaskRequest = nav.firstTaskRequest, onFirstTaskHandled = { nav.firstTaskRequest = false }, onDiscover = onDiscover,
+            firstTaskRequest = nav.firstTaskRequest, firstTaskRecurring = nav.firstTaskRecurring,
+            onFirstTaskHandled = { nav.firstTaskRequest = false; nav.firstTaskRecurring = false }, onDiscover = onDiscover,
         )
         Destination.WEEK -> if (nav.monthMode) MonthScreen(services, nav, onOpenDay) else WeekScreen(services, nav, onOpenDay)
         Destination.STATS -> StatsScreen(services)

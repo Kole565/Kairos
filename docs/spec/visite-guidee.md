@@ -124,7 +124,7 @@ since, tour)`, **dans l'ordre de la visite**.
   `FirstTask` (lance l'accompagnement de `premiere-tache.md`, sans changer d'écran ; le bouton devient « Créer ma première
   tâche »).
 - **Sections** (`GuideSection`, issue #95) : `DAY_INBOX`, `DAY_AGENDA`, `DAY_NOW`, `DAY_BLOCKED`, `DAY_PARENTS`,
-  `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_HOLIDAYS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`, `SETTINGS_LEVELS`,
+  `SETTINGS_WORKDAY`, `SETTINGS_CONTEXTS`, `SETTINGS_HOURS`, `SETTINGS_HOLIDAYS`, `SETTINGS_BEST_HOURS`, `SETTINGS_LEARNED`, `SETTINGS_LEVELS`,
   `SETTINGS_APPEARANCE`, `SETTINGS_DATA`, `STATS_HOURS` ; chacune
   connaît son écran (`screen`), sa catégorie des Réglages (`settingsCategory`) et son message d'absence (`missing`, pour
   les sections qui peuvent manquer). `AppShell.openTarget` pose la demande dans `NavState.guideSpot`
@@ -134,7 +134,8 @@ since, tour)`, **dans l'ordre de la visite**.
 - **Mise en valeur** (`GuideSpot.kt`) : `LocalGuideSpot` fournit l'état aux écrans (`AppShell`). `GuideMark(section)`
   dessine, tant que `shown == section`, un contour `BorderStroke(2.dp, primary)` aux coins de la carte
   (`shapes.medium`) et l'étiquette « Ici » (`primary` / `onPrimary`, icône `Spot`, `liveRegion` poli) en haut à droite ;
-  `GuideSpotState.show(section)` la pose 3 s (`SPOT_MILLIS`) puis l'efface si rien ne l'a remplacée.
+  `GuideSpotState.show(section)` la pose 3 s (`SPOT_MILLIS`) puis l'efface si rien ne l'a remplacée. `GuideSpotState.held` (3.9.0) cerne une
+  section tant qu'une étape de la visite des Réglages dure (`premiere-tache.md`) ; `GuideMark` lit `shown` ou `held`.
   `GuideSpot(section)` = `GuideMark` + `BringIntoViewRequester` : quand la demande en attente est la sienne, il la
   consomme, attend deux images (l'écran doit être mesuré) et se fait défiler à l'écran. Écrans à colonne défilante :
   les cartes des Réglages (`ContextsCard`, `ScheduleCard`, carte « Jours fériés », `BestHoursCard`, carte « Durées
@@ -161,7 +162,8 @@ since, tour)`, **dans l'ordre de la visite**.
   section `SETTINGS_REMINDERS`, chapitre « Réglages », icône `Alarm`).
 - **Cartes de la 3.9.0** : `level_names` (noms des niveaux, #93 ; section `SETTINGS_LEVELS` de la catégorie
   Planification, chapitre « Planifier », icône `Flag`), `besthours_efficiency` (meilleures heures v2, #105 ; section
-  `STATS_HOURS`, chapitre « Suivre », icône `Timer`).
+  `STATS_HOURS`, chapitre « Suivre », icône `Timer`), `guided_walks` (récurrente et Réglages pas à pas, #98 ; Accueil,
+  chapitre « Premiers pas », icône `Repeat`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section
@@ -170,7 +172,8 @@ since, tour)`, **dans l'ordre de la visite**.
   forme courte) et garde la mesure du plus long titre et du plus long texte.
 - **Hub « Découvrir Kairos »** (`DiscoverDialog`) : « Créer ma première tâche » puis un chapitre par ligne avec son nombre
   de cartes (3.8.0 : sous le chapitre de l'équipe, quand il est proposé, « Créer ma première tâche d'équipe »,
-  `premiere-tache.md` § Première tâche d'équipe) ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
+  `premiere-tache.md` § Première tâche d'équipe ; 3.9.0 : sous « Organiser », « Créer ma première tâche récurrente », et
+  sous « Réglages », « Régler Kairos pas à pas », `premiere-tache.md` § Première tâche récurrente et visite des Réglages) ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
   l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos » de la catégorie « À propos », `reglages.md`) ; états `discover` et `chapter` de
   `AppShell` (`rememberSaveable`, rien n'est mémorisé au-delà).
 - **« Nouveau dans cette version »** : `HomeScreen(version = KairosBuild.VERSION_NAME)` affiche, sous le bloc teinté, les
