@@ -10,13 +10,17 @@ import kotlinx.datetime.LocalDate
 /**
  * Où l'on regarde dans le temps (docs/spec/vue-semaine.md § Navigation) :
  * le jour de la vue Jour (`null` = aujourd'hui, qui avance tout seul) et la
- * semaine de la vue Semaine (`null` = la semaine courante) ; et, dans l'espace
+ * semaine de la vue Semaine (`null` = la semaine courante), ou son mois en vue Mois ; et, dans l'espace
  * Équipe, l'onglet « Échanges » de l'écran Équipe (docs/spec/equipe-echanges.md),
  * que la visite guidée peut ouvrir directement ; enfin la catégorie ouverte des Réglages.
  */
 class NavState {
     var day by mutableStateOf<LocalDate?>(null)
     var week by mutableStateOf<LocalDate?>(null)
+
+    /** La destination Semaine montre le mois (docs/spec/vue-mois.md) ; [month] = un jour du mois affiché, `null` = le courant. */
+    var monthMode by mutableStateOf(false)
+    var month by mutableStateOf<LocalDate?>(null)
     var exchangesTab by mutableStateOf(false)
 
     /** L'accompagnement de la première tâche est demandé (docs/spec/premiere-tache.md) : la vue Jour ouvre la fiche et l'acquitte. */

@@ -197,6 +197,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 - **Semaine** : sept jours (échéances, tâches programmées, tâches faites, créneaux), temps réel de
   la semaine par type ; toucher une tâche la déplace vers un autre jour (fériés et jours libres
   signalés), avec « Annuler ».
+- **Mois** : la bascule « Mois » de la vue Semaine montre le mois entier, une
+  case par jour avec le nombre de tâches prévues, un drapeau pour les échéances,
+  un avertissement pour les journées trop chargées et une icône pour les fériés et
+  jours libres, et la même information en listes dessous ; toucher un jour l’ouvre.
 - **Statistiques** : débit hebdomadaire, calibration des estimations (temps
   réel médian par palier, biais), temps par type, flux, complétude. L’effectif
   est affiché ; un petit échantillon est marqué « peu fiable ». À resserrer par

@@ -11,6 +11,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_stats_explore_body
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_title
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_body
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
+import com.skohscripts.kairos.ui.generated.resources.card_month_body
+import com.skohscripts.kairos.ui.generated.resources.card_month_title
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_title
 import com.skohscripts.kairos.ui.generated.resources.card_settings_categories_title
 import com.skohscripts.kairos.ui.generated.resources.card_settings_categories_body
@@ -132,6 +134,7 @@ object FeatureCatalog {
         FeatureCard("learned", GuideChapter.FOLLOW, { KairosIcons.TrendingUp }, Res.string.card_learned_title, Res.string.card_learned_body, GuideTarget.Settings(GuideSection.SETTINGS_LEARNED), since = "3.4.0"),
         FeatureCard("besthours", GuideChapter.FOLLOW, { KairosIcons.Schedule }, Res.string.card_besthours_title, Res.string.card_besthours_body, GuideTarget.Personal(Destination.STATS, GuideSection.STATS_HOURS), since = "3.5.0"),
         FeatureCard("week", GuideChapter.FOLLOW, { KairosIcons.DateRange }, Res.string.card_week_title, Res.string.card_week_body, GuideTarget.Personal(Destination.WEEK)),
+        FeatureCard("month", GuideChapter.FOLLOW, { KairosIcons.CalendarMonth }, Res.string.card_month_title, Res.string.card_month_body, GuideTarget.Personal(Destination.WEEK), since = "3.8.0"),
         FeatureCard("week_move", GuideChapter.FOLLOW, { KairosIcons.SwapHoriz }, Res.string.card_week_move_title, Res.string.card_week_move_body, GuideTarget.Personal(Destination.WEEK), since = "3.7.0"),
         FeatureCard("stats", GuideChapter.FOLLOW, { KairosIcons.BarChart }, Res.string.guide_you_stats_title, Res.string.guide_you_stats_body, GuideTarget.Personal(Destination.STATS), tour = true),
         FeatureCard("stats_explore", GuideChapter.FOLLOW, { KairosIcons.Download }, Res.string.card_stats_explore_title, Res.string.card_stats_explore_body, GuideTarget.Personal(Destination.STATS), since = "3.7.0"),
@@ -212,6 +215,7 @@ object FeatureCatalog {
         "Three alerts" to "time",
         "Day" to "do",
         "Week" to "week",
+        "Month" to "month",
         "Statistics" to "stats",
         "When you work on each type" to "besthours",
         "Best hours" to "besthours_apply",

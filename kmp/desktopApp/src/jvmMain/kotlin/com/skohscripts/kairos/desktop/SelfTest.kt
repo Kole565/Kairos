@@ -26,6 +26,7 @@ import com.skohscripts.kairos.ui.notes.NotesScreen
 import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
+import com.skohscripts.kairos.ui.month.MonthScreen
 import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpotState
@@ -274,6 +275,7 @@ object SelfTest {
         val teamSettings = settingsIn(team, SettingsCategory.TEAM)
         val notes: @Composable () -> Unit = { KairosTheme { Surface { NotesScreen(services) {} } } }
         val week: @Composable () -> Unit = { KairosTheme { Surface { WeekScreen(services, NavState()) {} } } }
+        val month: @Composable () -> Unit = { KairosTheme { Surface { MonthScreen(services, NavState().apply { monthMode = true }) {} } } }
         val stats: @Composable () -> Unit = { KairosTheme { Surface { StatsScreen(timed) } } }
         // Thème sombre (docs/spec/apparence.md § Thème sombre, issue #72) : système en sombre, rien de réglé.
         fun dark(s: AppServices, destination: Destination = Destination.DAY, secondary: Secondary? = null, team: TeamDestination = TeamDestination.HOME): @Composable () -> Unit =
@@ -320,6 +322,8 @@ object SelfTest {
             Shot("notes", 900, 1000, notes),
             Shot("week", 1200, 1000, week),
             Shot("week-narrow", 420, 2400, week),
+            Shot("month", 1200, 1100, month),
+            Shot("month-narrow", 360, 1600, month),
             Shot("stats", 1200, 1600, stats),
             Shot("stats-hours", 1200, 2600, hoursStats),
             Shot("stats-hours-narrow", 360, 4200, hoursStats),

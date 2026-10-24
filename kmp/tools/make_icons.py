@@ -102,6 +102,11 @@ ICONS = {
     "Spot": ("my_location", False),
     "TableView": ("table_view", False),
     "Image": ("image", False),
+    "Flag": ("flag", False),
+    "CalendarMonth": ("calendar_month", False),
+    "Alarm": ("alarm", False),
+    "ShowChart": ("show_chart", False),
+    "EditNote": ("edit_note", False),
     "DarkMode": ("dark_mode", False),
 }
 

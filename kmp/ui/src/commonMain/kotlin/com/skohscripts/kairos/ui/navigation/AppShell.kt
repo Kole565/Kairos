@@ -99,6 +99,7 @@ import com.skohscripts.kairos.core.stats.TaskStats
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.title_day_other
 import com.skohscripts.kairos.ui.generated.resources.title_week_of
+import com.skohscripts.kairos.ui.generated.resources.title_month_of
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -231,6 +232,7 @@ fun AppShell(
         // Sans rail (fenêtre étroite), date courte : « Semaine · du lundi 5 octobre 2026 » tenait sur trois lignes à 380 dp.
         destination == Destination.DAY && day != null && day != today ->
             stringResource(Res.string.title_day_other, if (layout == NavigationLayout.RAIL) Dates.long(day, language) else Dates.dayShort(day, language))
+        destination == Destination.WEEK && nav.monthMode -> stringResource(Res.string.title_month_of, Dates.monthYear(nav.month ?: today, language))
         destination == Destination.WEEK -> TaskStats.monday(nav.week ?: today).let { monday ->
             stringResource(Res.string.title_week_of, if (layout == NavigationLayout.RAIL) Dates.long(monday, language) else Dates.short(monday, language))
         }

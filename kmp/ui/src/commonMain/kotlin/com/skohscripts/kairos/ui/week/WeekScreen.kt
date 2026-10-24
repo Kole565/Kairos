@@ -58,6 +58,11 @@ import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.backlog_hint
 import com.skohscripts.kairos.ui.generated.resources.backlog_title
 import com.skohscripts.kairos.ui.generated.resources.week_block
+import com.skohscripts.kairos.ui.generated.resources.view_month
+import com.skohscripts.kairos.ui.generated.resources.view_week
+import com.skohscripts.kairos.ui.theme.KairosSegmentedButton
+import com.skohscripts.kairos.ui.theme.KairosSegmentedRow
+import androidx.compose.material3.SegmentedButtonDefaults
 import com.skohscripts.kairos.ui.generated.resources.week_next
 import com.skohscripts.kairos.ui.generated.resources.week_nothing
 import com.skohscripts.kairos.ui.generated.resources.week_scheduled
@@ -135,6 +140,7 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
 
     Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), contentAlignment = Alignment.TopCenter) {
         Column(Modifier.widthIn(max = 1400.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
+            WeekMonthSwitch(nav, today)
             // Titre au-dessus des boutons : entre eux, il n'avait plus de place sur un
             // téléphone et s'affichait une lettre par ligne.
             Text(stringResource(Res.string.week_title, Dates.dayMonth(week.monday, language)), style = MaterialTheme.typography.titleMedium)
@@ -184,6 +190,30 @@ fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> U
                 }
             }
         }
+    }
+}
+
+/**
+ * « Semaine » / « Mois » en tête de la destination Semaine (docs/spec/vue-mois.md) : la vue Mois n'est pas une sixième
+ * destination (cinq au plus dans une barre MD3). Passer de l'une à l'autre garde la période : le mois de la semaine
+ * affichée, la semaine du 1er du mois affiché (la semaine courante pour le mois courant).
+ */
+@Composable
+internal fun WeekMonthSwitch(nav: NavState, today: LocalDate) {
+    KairosSegmentedRow(Modifier.fillMaxWidth()) {
+        KairosSegmentedButton(selected = !nav.monthMode, onClick = {
+            if (nav.monthMode) {
+                // Le mois courant revient à la semaine courante, un autre mois à la semaine de son 1er.
+                nav.week = nav.month?.takeUnless { it.year == today.year && it.month == today.month }
+                nav.monthMode = false
+            }
+        }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text(stringResource(Res.string.view_week)) }
+        KairosSegmentedButton(selected = nav.monthMode, onClick = {
+            if (!nav.monthMode) {
+                nav.month = nav.week
+                nav.monthMode = true
+            }
+        }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text(stringResource(Res.string.view_month)) }
     }
 }
 

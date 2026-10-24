@@ -191,6 +191,10 @@ order (critical path). Cycles are refused.
 - **Week**: seven days (deadlines, scheduled tasks, finished tasks, slots), the
   week's real time by type; tap a task to move it to another day (public
   holidays and days off are flagged), with "Undo".
+- **Month**: the "Month" switch of the Week view shows the whole month, one
+  box per day with the number of planned tasks, a flag for deadlines, a warning
+  for overloaded days and an icon for public holidays and days off, with the same
+  information as lists below; tap a day to open it.
 - **Statistics**: weekly throughput, estimation calibration (median real time
   per level, bias), time by type, flow, completeness. The sample size is
   shown; a small sample is marked "not reliable". Narrow it down by period
