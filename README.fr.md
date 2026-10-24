@@ -76,7 +76,10 @@ bon fichier pour ton système. Tous les fichiers, et leurs sommes de contrôle
 - **Android** : autoriser l’installation depuis le navigateur ou le
   gestionnaire de fichiers quand Android le demande (inutile depuis F-Droid).
 
-**Mises à jour.** Sur Android, par F-Droid ou un nouvel APK. Sur
+**Mises à jour.** Sur Android, par F-Droid ou un nouvel APK ; avec un APK
+installé à la main, Réglages → Général → Mises à jour montre ta version et « Voir
+la dernière version » ouvre la page de téléchargement (Kairos ne se connecte
+toujours pas). Sur
 le bureau, Kairos vérifie toutes les 6 heures s’il existe une nouvelle version
 et l’annonce dans un bandeau (« Télécharger » ouvre sa page) ; réglage dans
 Réglages → Général → Mises à jour. La version web est toujours la dernière.

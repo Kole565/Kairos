@@ -74,7 +74,9 @@ in the [GitHub releases](https://github.com/SKOHscripts/Kairos/releases).
 - **Android**: allow installation from the browser or the file manager when
   Android asks (not needed from F-Droid).
 
-**Updates.** On Android, through F-Droid or a new APK. On the desktop, Kairos
+**Updates.** On Android, through F-Droid or a new APK; with an APK installed
+by hand, Settings → General → Updates shows your version and "See the latest
+version" opens the download page (Kairos still never connects). On the desktop, Kairos
 checks every 6 hours for a new version and announces it in a banner
 ("Download" opens its page); setting in Settings → General → Updates. The web version is
 always the latest.

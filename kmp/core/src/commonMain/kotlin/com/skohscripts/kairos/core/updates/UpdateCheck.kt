@@ -19,6 +19,9 @@ object UpdateCheck {
     /** Dernière version **publiée** (GitHub exclut préversions et brouillons de `/latest`). */
     const val LATEST_URL = "https://api.github.com/repos/SKOHscripts/Kairos/releases/latest"
 
+    /** Page de téléchargement (GitHub Pages), en français ou en anglais : elle dit la dernière version (issue #143). */
+    fun downloadPage(english: Boolean): String = if (english) "https://skohscripts.github.io/Kairos/en/" else "https://skohscripts.github.io/Kairos/"
+
     /** Au plus une vérification automatique toutes les 6 heures. */
     val INTERVAL = 6.hours
 

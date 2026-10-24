@@ -1,5 +1,10 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.generated.resources.update_see_latest
+import com.skohscripts.kairos.ui.generated.resources.update_android_help
+import com.skohscripts.kairos.core.settings.UiLanguage
+import com.skohscripts.kairos.core.updates.UpdateCheck
+import androidx.compose.ui.platform.LocalUriHandler
 import com.skohscripts.kairos.ui.generated.resources.action_revert
 import com.skohscripts.kairos.ui.generated.resources.guide_reset_done
 import com.skohscripts.kairos.ui.generated.resources.guide_reset_action
@@ -239,6 +244,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                         services.updates?.let { updates ->
                             UpdatesCard(updates, values["updateCheckEnabled"].orEmpty()) { onChange("updateCheckEnabled", it) }
                         }
+                        if (services.updates == null && services.downloadPage) DownloadPageCard()
                         services.shortcuts?.let { ShortcutCard(it) }
                     }
                     SettingsCategory.DAY, SettingsCategory.PLANNING, SettingsCategory.TRACKING -> SettingsFormCards(category, values, errors, onChange)
@@ -272,7 +278,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
             val twoPane = maxWidth >= SETTINGS_TWO_PANE_MIN
             SideEffect { nav.singlePane = !twoPane }
             val shown = nav.category ?: SettingsCategory.GENERAL.takeIf { twoPane }
-            val generalHint = if (services.updates != null) Res.string.settings_cat_general_hint_updates else SettingsCategory.GENERAL.hint
+            val generalHint = if (services.updates != null || services.downloadPage) Res.string.settings_cat_general_hint_updates else SettingsCategory.GENERAL.hint
             val list: @Composable () -> Unit = {
                 SettingsCategoryList(selected = shown.takeIf { twoPane }, twoPane = twoPane, flagged = flagged, generalHint = generalHint) { nav.category = it }
             }
@@ -446,6 +452,24 @@ private fun UpdatesCard(updates: UpdateService, enabled: String, onEnabled: (Str
         Text(line, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         KairosOutlinedButton(enabled = status != UpdateStatus.Checking, onClick = { scope.launch { runCatching { updates.check(force = true) } } }) {
             Text(stringResource(Res.string.update_check_now))
+        }
+    }
+}
+
+/**
+ * Mises à jour d'un APK installé à la main (docs/spec/mises-a-jour.md § Android, issue #143) : la version installée et
+ * « Voir la dernière version », qui ouvre la page de téléchargement dans le navigateur. Aucun appel réseau, aucune permission.
+ */
+@Composable
+private fun DownloadPageCard() {
+    val uriHandler = LocalUriHandler.current
+    val english = !UiLanguage.isFrench(uiLanguage())
+    SettingsCard(spacing = KairosSpacing.m) {
+        SettingsCardHeader(KairosIcons.Update, stringResource(Res.string.settings_section_updates), stringResource(Res.string.update_android_help))
+        Text(stringResource(Res.string.update_installed, KairosBuild.VERSION_NAME), style = MaterialTheme.typography.bodyMedium)
+        KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(UpdateCheck.downloadPage(english)) } }, contentPadding = KairosButtonIconPadding) {
+            Icon(KairosIcons.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(stringResource(Res.string.update_see_latest), modifier = Modifier.padding(start = 6.dp))
         }
     }
 }
