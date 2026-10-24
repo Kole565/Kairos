@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.ui.guide.FeatureCatalog
+import com.skohscripts.kairos.ui.guide.GuideChapter
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onAllNodesWithText
@@ -67,6 +69,9 @@ class GuideSpotUiTest {
         waitUntil(conditionDescription = "disparition de « $text »", timeoutMillis = 15_000) { onAllNodesWithText(text).fetchSemanticsNodes().isEmpty() }
 
     /** Aide → « Discover Kairos » → [chapter] → [next] fois « Next » → « Show me the screen ». */
+    /** Nombre de « Next » pour atteindre la carte [id] de [chapter]. */
+    private fun position(chapter: GuideChapter, id: String) = FeatureCatalog.chapter(chapter).indexOfFirst { it.id == id }.also { require(it >= 0) }
+
     private fun ComposeUiTest.showCard(chapter: String, next: Int, title: String) {
         onNodeWithContentDescription("Help").performClick()
         onNodeWithText("Discover Kairos").performClick()
@@ -111,8 +116,8 @@ class GuideSpotUiTest {
     fun theDarkThemeCardOpensTheAppearanceCardAndMarksIt() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        // « Settings » (3.7.0) : réglages clairs, réglages par catégories, puis thème sombre.
-        showCard("Settings", 2, "Dark theme")
+        // « Settings » : la place de la carte est tirée du catalogue (une carte ajoutée avant elle ne casse pas le test).
+        showCard("Settings", position(GuideChapter.SETTINGS, "darktheme"), "Dark theme")
         waitText("Follows the system.")
         waitText("Here")
     }
@@ -121,9 +126,19 @@ class GuideSpotUiTest {
     fun theHolidaysCardOpensThePublicHolidaysCardAndMarksIt() = runComposeUiTest {
         val services = services()
         setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
-        // « Organize » : sous-tâches, récurrence, bloqueurs, créneaux, puis fériés des créneaux « jours ouvrés » (3.7.0).
-        showCard("Organize", 4, "Weekday slots skip holidays")
+        // « Organize » : fériés des créneaux « jours ouvrés » (3.7.0), à sa place dans le catalogue.
+        showCard("Organize", position(GuideChapter.ORGANIZE, "holidays_slots"), "Weekday slots skip holidays")
         waitText("Public holidays", substring = true)
+        waitText("Here")
+    }
+
+    @Test
+    fun theRemindersCardOpensTheRemindersSectionAndMarksIt() = runComposeUiTest {
+        val services = services()
+        setContent { KairosApp(Platform.DESKTOP, Destination.DAY, TeamDestination.BOARD) { services } }
+        // Rappels (3.8.0, docs/spec/rappels.md) : la section de « Timer and statistics ».
+        showCard("Settings", position(GuideChapter.SETTINGS, "reminders"), "Reminders before it is time")
+        waitText("Remind me of fixed-time tasks")
         waitText("Here")
     }
 

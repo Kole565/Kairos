@@ -55,6 +55,10 @@ class FeatureCatalogTest {
             setOf("guide_memory", "week_move", "stats_explore", "holidays_slots", "settings_categories", "darktheme"),
             FeatureCatalog.newIn("3.7.0").map { it.id }.toSet(),
         )
+        assertEquals(
+            setOf("slots_month", "month", "stats_trends", "stats_correct", "reminders"),
+            FeatureCatalog.newIn("3.8.0").map { it.id }.toSet(),
+        )
         // Les versions qui n'ajoutent rien (ou illisibles) n'affichent rien.
         assertEquals(emptyList(), FeatureCatalog.newIn("3.3.0"))
         assertEquals(emptyList(), FeatureCatalog.newIn("garbage"))
