@@ -1,7 +1,9 @@
--- Schéma 9 -> 10 (3.9.0) : additive. Semaine type d'un membre (docs/spec/equipe-charge.md § Capacité) et notes des
--- échanges d'équipe (docs/spec/equipe-echanges.md § Notes).
+-- Schéma 9 -> 10 (3.9.0) : additive. Semaine type d'un membre (docs/spec/equipe-charge.md § Capacité), notes des échanges
+-- d'équipe et tâches proposées au manager (docs/spec/equipe-echanges.md § Notes et § Propositions).
 -- NULL pour chaque membre existant : sa capacité reste celle de ses heures par jour, et l'export ne change pas.
 ALTER TABLE team_member ADD COLUMN week_hours TEXT;
 -- Notes : vides pour chaque tâche existante ; un export sans note ne change pas.
 ALTER TABLE task ADD COLUMN note_out TEXT NOT NULL DEFAULT '';
 ALTER TABLE task ADD COLUMN note_in TEXT;
+-- Propositions : aucune tâche n'est proposée.
+ALTER TABLE task ADD COLUMN proposed_to TEXT;

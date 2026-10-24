@@ -1106,6 +1106,12 @@
     <string name="exchange_change_progress">Progress: %1$s → %2$s</string>
     <string name="exchange_change_started">Started: %1$s → %2$s</string>
     <string name="exchange_change_spent">Time spent: %1$s → %2$s</string>
+    <string name="exchange_proposals">Proposed tasks (%1$d)</string>
+    <string name="exchange_proposals_handled">Proposals already added or declined: %1$d</string>
+    <string name="exchange_proposal_title">Title</string>
+    <string name="exchange_proposal_later">Later</string>
+    <string name="exchange_proposal_add">Add</string>
+    <string name="exchange_proposal_reject">Decline</string>
     <string name="exchange_pack_notes">Notes from the manager</string>
     <string name="exchange_note_line">“%1$s”: %2$s</string>
     <string name="exchange_field_note">note</string>
@@ -1130,6 +1136,8 @@
     <string name="received_removed_description">task removed by %1$s</string>
     <string name="received_keep">Keep as a personal task</string>
     <string name="received_edit_help">Received from %1$s. Title, description, priority, points, category, deadline and duration are replaced with every new packet; progress is yours.</string>
+    <string name="proposal_switch">Propose to %1$s (%2$s)</string>
+    <string name="proposal_help">The task goes with the next report: title, description, duration and type only. The manager decides whether to add it to the team.</string>
     <string name="exchange_note_from">Note from %1$s, %2$s</string>
     <string name="exchange_note_for_manager">Note for the manager</string>
     <string name="exchange_note_for_member">Note for the member</string>

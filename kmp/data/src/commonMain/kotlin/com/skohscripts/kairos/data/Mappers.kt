@@ -78,6 +78,7 @@ internal fun TaskRow.toModel() = Task(
     seriesId = series_id,
     noteOut = note_out,
     noteIn = ExchangeNote.decode(note_in),
+    proposedTo = proposed_to,
 )
 
 internal fun EventRow.toModel() = TeamEvent(

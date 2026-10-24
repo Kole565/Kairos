@@ -76,7 +76,8 @@ données.
   temps passé total (chrono et saisie manuelle), et les **nouvelles
   sous-tâches** que le membre y a créées (titre, faite ou non). Rien
   d'autre de sa base n'en sort (ni tâches personnelles, ni notes, ni
-  créneaux).
+  créneaux), hormis les tâches qu'il a **proposées** au manager (3.9.0,
+  § Tâches proposées par un membre) et sa note sur chaque tâche reçue.
 - Le membre qui n'a pas Kairos n'envoie rien : le manager saisit
   l'avancement à la main dans le Suivi.
 
@@ -126,6 +127,34 @@ d'autres canaux et n'atteint jamais la tâche.
   (« Note envoyée : … »).
 - Le champ rappelle que la note voyage **en clair** dans le fichier, qui
   n'est pas chiffré ; elle ne contient que ce qu'on y écrit.
+
+#### Tâches proposées par un membre (3.9.0, issue #121)
+
+En travaillant, un membre découvre des tâches (un bug, une étape oubliée)
+qui ont leur place au backlog de l'équipe. Les faire recopier par le
+manager perd du détail et du temps.
+
+- Chez le membre, la fiche d'une **tâche personnelle** (ni reçue, ni
+  sous-tâche) propose, dès qu'il a reçu des tâches d'un manager,
+  l'interrupteur **« Proposer à Corentin (Équipe Plateforme) »**. La tâche
+  part alors dans chaque rapport à ce manager comme une **proposition** :
+  titre, description, durée estimée, type ; jamais ses champs privés
+  (priorité, points, dates, sessions, notes, projet).
+- Chez le manager, l'aperçu du rapport liste les propositions **à part** :
+  pour chacune, son titre (modifiable), sa description, sa durée et son
+  type, et un choix **« Plus tard »** (par défaut), **« Ajouter au
+  backlog »** ou **« Refuser »**. Rien n'est créé avant « Intégrer ». Une
+  proposition ajoutée devient une tâche d'équipe **au backlog** (sans
+  titulaire : l'assigner reste au manager), journalisée comme créée par le
+  rapport de ce membre.
+- Intégrer à nouveau le même rapport, ou un rapport suivant qui porte la
+  même proposition, ne crée **aucun doublon** : une proposition déjà ajoutée
+  ou refusée n'est plus proposée au choix (identité stable). « Plus tard »
+  la laisse revenir au rapport suivant.
+- Quand le manager envoie ensuite cette tâche au membre, son Kairos la
+  **rattache** à la tâche qu'il avait proposée (pas de doublon) : elle
+  devient une tâche reçue, marquée « de Corentin ».
+- Un rapport sans proposition est identique à celui d'avant.
 
 #### Onglet « Échanges » : tout au même endroit (manager)
 
@@ -181,6 +210,12 @@ l'expliquent (`accueil.md`).
   date ; un échange sans note efface la note reçue ; un paquet ou un rapport
   sans note est identique à celui d'avant (`ExchangeNotesTest`,
   `TeamExchangeCodecTest`).
+- Propositions (3.9.0) : un rapport porte les tâches proposées et rien de
+  leurs champs privés ; « Ajouter au backlog » crée une tâche d'équipe au
+  backlog avec le titre éventuellement modifié ; « Refuser » la retient ;
+  réintégrer le rapport ne crée aucun doublon ; un paquet qui la renvoie au
+  membre la rattache à sa tâche (`ProposalsTest`) ; l'interrupteur de la fiche
+  propose la tâche (`TeamExchangeUiTest.aPersonalTaskCanBeProposedToTheManager`).
 - L'onglet « Échanges » donne, par membre, la date du dernier paquet, celle du
   dernier rapport et « En attente de son rapport » seulement quand un paquet
   est plus récent que le dernier rapport (`ExchangeStatusTest`) ; « Envoyer ses
@@ -196,8 +231,8 @@ l'expliquent (`accueil.md`).
   étant surtout sur ordinateur ; **fichier seulement**.
 - Chiffrement ou signature des fichiers (comme l'export) : les paquets
   contiennent des titres de tâches ; l'écran de l'envoi le rappelle.
-- Tâches créées **par** le membre et remontées au manager (hors
-  sous-tâches) : différé ; le membre en parle au manager, qui les crée.
+- Accepter une proposition en l'assignant directement à son auteur : elle
+  arrive au backlog, l'assignation reste un geste du manager (3.9.0).
 - Fil de commentaires (plusieurs messages, réponses) : une note par côté
   suffit (3.9.0, issue #120) ; le fil reste différé.
 
@@ -297,6 +332,42 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
   d'afficher une consigne périmée) ; *date = celle du fichier* (écarté : une
   date de saisie, qui ferait sortir une donnée de plus) ; *aucune note dans
   un rapport ou un paquet sans note* (format inchangé).
+
+### Propositions (3.9.0, issue #121)
+
+- **Membre** : `Task.proposedTo` (clé d'origine `TeamOrigin.key` du manager
+  visé, `null` sinon ; colonne `task.proposed_to`, `9.sqm` ; export
+  `proposedTo`, omis quand nul). `TaskEdit.proposal` (`ProposalChange(to)`,
+  `null` = inchangée), appliqué par `updateTask` à l'enregistrement de la
+  fiche (« Annuler » n'écrit rien) : tâche personnelle, sans origine ni mère ;
+  pose un `teamUid` (UUID tiré par le dépôt) s'il n'y en a pas, l'identité de
+  la proposition.
+  `ReportBuilder.proposals` : tâches personnelles à faire, sans origine,
+  `proposedTo` = cette équipe ; `TeamReport.proposals` (`ReportProposal` :
+  `uid`, `title`, `description`, `estimatedMinutes`, `taskType`), champ JSON
+  `proposals` **omis quand vide**. Une tâche proposée que le paquet suivant
+  contient est **adoptée** par `PackMerge` (règle des sous-tâches remontées) :
+  elle prend l'origine, et cesse d'être une proposition (`origin` non nulle).
+- **Manager** : `ReportMergePlan.proposals` (`PlannedProposal` : la
+  proposition et son état `NEW`, `IN_TEAM` — une tâche d'équipe a déjà ce
+  `teamUid` — ou `REJECTED` — `TeamSettings.rejectedProposals`, uids refusés,
+  vide par défaut et jamais écrit vide). `integrateReport(text, decisions)` :
+  `ProposalDecision.Add(title)` crée la tâche d'équipe au backlog (`teamUid` =
+  uid de la proposition, description, durée, type ; titre nettoyé, celui de
+  la proposition s'il est vide ; événement `created`, source `report`,
+  membre = celui qui rapporte) ; `ProposalDecision.Reject` ajoute l'uid aux
+  refusées ; sans décision, rien. Seules les propositions `NEW` acceptent
+  une décision.
+- **Interface** : membre, section « Proposer au manager » de la fiche d'une
+  tâche personnelle (`ProposalSection`, un interrupteur par équipe d'origine) ;
+  manager, section « Propositions » de l'aperçu du rapport, une carte par
+  proposition `NEW` (titre modifiable, résumé, boutons segmentés « Plus
+  tard » / « Ajouter » / « Refuser ») et la mention des déjà traitées.
+- **Décisions** : *identité = `teamUid` de la tâche du membre* (écarté : un
+  identifiant de proposition à part, qui aurait demandé un rattachement de
+  plus) ; *« Plus tard » par défaut* (rien n'est créé sans choix explicite) ;
+  *refus retenu côté manager* (écarté : un retour au membre, qui demanderait
+  un paquet) ; *au backlog, sans titulaire* (demande de l'issue).
 
 ### Envoi (`PackBuilder`, pur)
 

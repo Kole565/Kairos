@@ -119,6 +119,7 @@ data class Settings(
  * Réglages de l'espace Équipe (sous-objet [Settings.team]). Mêmes règles que
  * [Settings] : champ absent = valeur par défaut, champ inconnu ignoré.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class TeamSettings(
     val enabled: Boolean = false,
@@ -152,6 +153,11 @@ data class TeamSettings(
     val minSamples: Int = DEFAULT_MIN_SAMPLES,
     /** Probabilité de tenir une échéance (en %, 1-99) sous laquelle elle est « en danger ». */
     val deadlineRiskPercent: Int = DEFAULT_DEADLINE_RISK_PERCENT,
+    /**
+     * Propositions de membres refusées (docs/spec/equipe-echanges.md § Propositions, issue #121) : leurs identités, pour qu'un
+     * rapport suivant ne les repropose pas. Jamais écrite vide : un export d'équipe d'avant ne change pas.
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER) val rejectedProposals: List<String> = emptyList(),
 ) {
     companion object {
         const val DEFAULT_STALE_PROGRESS_DAYS = 5

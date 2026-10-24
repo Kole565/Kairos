@@ -1108,6 +1108,12 @@
     <string name="exchange_change_progress">Avancement : %1$s → %2$s</string>
     <string name="exchange_change_started">Commencée : %1$s → %2$s</string>
     <string name="exchange_change_spent">Temps passé : %1$s → %2$s</string>
+    <string name="exchange_proposals">Tâches proposées (%1$d)</string>
+    <string name="exchange_proposals_handled">Propositions déjà ajoutées ou refusées : %1$d</string>
+    <string name="exchange_proposal_title">Titre</string>
+    <string name="exchange_proposal_later">Plus tard</string>
+    <string name="exchange_proposal_add">Ajouter</string>
+    <string name="exchange_proposal_reject">Refuser</string>
     <string name="exchange_pack_notes">Notes du manager</string>
     <string name="exchange_note_line">« %1$s » : %2$s</string>
     <string name="exchange_field_note">note</string>
@@ -1132,6 +1138,8 @@
     <string name="received_removed_description">tâche retirée par %1$s</string>
     <string name="received_keep">Garder comme tâche personnelle</string>
     <string name="received_edit_help">Reçue de %1$s. Titre, description, priorité, points, catégorie, échéance et durée sont remplacés à chaque nouveau paquet ; l’avancement est le tien.</string>
+    <string name="proposal_switch">Proposer à %1$s (%2$s)</string>
+    <string name="proposal_help">La tâche part avec le prochain rapport : titre, description, durée et type seulement. Le manager choisit de l’ajouter à l’équipe.</string>
     <string name="exchange_note_from">Note de %1$s, %2$s</string>
     <string name="exchange_note_for_manager">Note pour le manager</string>
     <string name="exchange_note_for_member">Note pour le membre</string>

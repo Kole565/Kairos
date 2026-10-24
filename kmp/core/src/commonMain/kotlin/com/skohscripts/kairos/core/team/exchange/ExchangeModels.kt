@@ -71,6 +71,18 @@ data class ReportTask(
 /** Sous-tâche créée par le membre sous une tâche reçue ; [uid] est posé côté membre et reste stable d'un rapport à l'autre. */
 data class ReportSubtask(val uid: String, val parentUid: String, val title: String, val status: TaskStatus = TaskStatus.TODO)
 
+/**
+ * Tâche proposée par le membre au manager (docs/spec/equipe-echanges.md § Propositions, issue #121) : [uid] = `teamUid` de sa
+ * tâche personnelle, stable ; seulement le titre, la description, la durée estimée et le type (jamais ses champs privés).
+ */
+data class ReportProposal(
+    val uid: String,
+    val title: String,
+    val description: String = "",
+    val estimatedMinutes: Int? = null,
+    val taskType: String = "",
+)
+
 /** Rapport « membre -> manager » (`kairos-team-report`). */
 data class TeamReport(
     val reportedAt: Instant,
@@ -78,4 +90,5 @@ data class TeamReport(
     val member: PackMember,
     val tasks: List<ReportTask> = emptyList(),
     val newSubtasks: List<ReportSubtask> = emptyList(),
+    val proposals: List<ReportProposal> = emptyList(),
 )

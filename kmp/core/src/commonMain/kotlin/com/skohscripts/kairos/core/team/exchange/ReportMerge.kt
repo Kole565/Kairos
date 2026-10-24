@@ -80,6 +80,29 @@ data class NewTeamSubtask(
     val assigneeId: Long?,
 )
 
+/** État d'une proposition chez le manager (docs/spec/equipe-echanges.md § Propositions). */
+enum class ProposalState {
+    /** À décider : « Plus tard », « Ajouter au backlog » ou « Refuser ». */
+    NEW,
+
+    /** Une tâche d'équipe porte déjà son identité : ajoutée par un rapport précédent. */
+    IN_TEAM,
+
+    /** Refusée par le manager (`TeamSettings.rejectedProposals`). */
+    REJECTED,
+}
+
+/** Proposition d'un rapport et son état. */
+data class PlannedProposal(val proposal: ReportProposal, val state: ProposalState)
+
+/** Décision du manager sur une proposition `NEW`. */
+sealed interface ProposalDecision {
+    /** Ajouter au backlog, avec ce titre (celui de la proposition s'il est vide). */
+    data class Add(val title: String) : ProposalDecision
+
+    data object Reject : ProposalDecision
+}
+
 /** Ligne ignorée : [uid], [title] (sous-tâches seulement) et la raison. */
 data class IgnoredReportLine(val uid: String, val title: String?, val reason: IgnoredReason)
 
@@ -101,6 +124,8 @@ data class ReportMergePlan(
     val unchanged: List<Task> = emptyList(),
     val newSubtasks: List<NewTeamSubtask> = emptyList(),
     val ignored: List<IgnoredReportLine> = emptyList(),
+    /** Propositions du membre, dans l'ordre du rapport (issue #121). */
+    val proposals: List<PlannedProposal> = emptyList(),
 ) {
     val accepted: Boolean get() = refusal == null
 
@@ -187,7 +212,22 @@ object ReportMerge {
             unchanged = unchanged,
             newSubtasks = created,
             ignored = ignored,
+            proposals = proposalsOf(snapshot, report, seen),
         )
+    }
+
+    /** Les propositions du rapport (une par identité, hors celles qui sont déjà des lignes du rapport) et leur état. */
+    private fun proposalsOf(snapshot: KairosSnapshot, report: TeamReport, seen: Set<String>): List<PlannedProposal> {
+        val teamUids = snapshot.tasks.filter { it.space == TaskSpace.TEAM }.mapNotNullTo(HashSet()) { it.teamUid }
+        val rejected = snapshot.settings.team?.rejectedProposals.orEmpty().toSet()
+        return report.proposals.filter { it.uid !in seen && it.title.isNotBlank() }.distinctBy { it.uid }.map { p ->
+            val state = when (p.uid) {
+                in teamUids -> ProposalState.IN_TEAM
+                in rejected -> ProposalState.REJECTED
+                else -> ProposalState.NEW
+            }
+            PlannedProposal(p, state)
+        }
     }
 
     /**

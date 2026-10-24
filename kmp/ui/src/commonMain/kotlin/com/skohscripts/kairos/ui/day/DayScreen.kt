@@ -596,6 +596,8 @@ fun DayScreen(
                 // Tâche reçue d'un manager : sa marque et l'avancement déclaré par le membre (docs/spec/equipe-echanges.md).
                 // Tâche perso qui peut compter dans l'équipe (« moi » existe) : l'interrupteur « Compter dans l'équipe ».
                 countInTeam = if (TeamWork.countable(task) && TeamWork.self(snapshot) != null) !task.teamExcluded else null,
+                // Proposer la tâche au manager d'une équipe dont on reçoit des tâches (issue #121).
+                proposalTargets = remember(snapshot.tasks) { ReceivedTasks.origins(snapshot) },
                 received = ReceivedTasks.originOf(task)?.let { origin ->
                     ReceivedTaskSheet(origin, task.originRemoved, onKeep = { scope.launch { repository.detachOrigin(id) }; editingId = null }) { edit, percent ->
                         scope.launch {

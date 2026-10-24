@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.team.exchange.ReportProposal
 import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.team.exchange.ExternalBlocker
@@ -217,6 +218,15 @@ private data class ReportTaskJson(
 )
 
 @Serializable
+private data class ReportProposalJson(
+    val uid: String,
+    val title: String,
+    val description: String? = null,
+    val estimatedMinutes: Int? = null,
+    val taskType: String? = null,
+)
+
+@Serializable
 private data class ReportSubtaskJson(val uid: String, val parentUid: String, val title: String, val status: String = "todo")
 
 @Serializable
@@ -229,6 +239,9 @@ private data class ReportFile(
     val member: MemberRefJson,
     val tasks: List<ReportTaskJson> = emptyList(),
     val newSubtasks: List<ReportSubtaskJson> = emptyList(),
+    // 3.9.0 (docs/spec/equipe-echanges.md § Propositions) : nul, donc omis, sans proposition ; un rapport sans proposition est
+    // celui d'avant, et une version antérieure l'ignore.
+    val proposals: List<ReportProposalJson>? = null,
 ) {
     @Serializable
     data class TeamRefJson(val uid: String)
@@ -255,6 +268,12 @@ private data class ReportFile(
             },
             newSubtasks = newSubtasks.map {
                 ReportSubtask(it.uid.requireText("subtask.uid"), it.parentUid.requireText("subtask.parentUid"), it.title, status(it.status))
+            },
+            proposals = proposals.orEmpty().map {
+                ReportProposal(
+                    it.uid.requireText("proposal.uid"), it.title.trim().take(ExportCodec.MAX_TITLE), it.description.orEmpty(),
+                    it.estimatedMinutes?.takeIf { m -> m > 0 }, it.taskType.orEmpty().trim(),
+                )
             },
         )
     }
@@ -285,6 +304,9 @@ private data class ReportFile(
             },
             newSubtasks = r.newSubtasks.map {
                 ReportSubtaskJson(it.uid, it.parentUid, it.title, if (it.status == TaskStatus.DONE) "done" else "todo")
+            },
+            proposals = r.proposals.takeIf { it.isNotEmpty() }?.map {
+                ReportProposalJson(it.uid, it.title, it.description.ifEmpty { null }, it.estimatedMinutes, it.taskType.ifEmpty { null })
             },
         )
     }

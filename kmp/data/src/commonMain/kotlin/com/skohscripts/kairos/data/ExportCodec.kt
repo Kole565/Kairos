@@ -259,6 +259,8 @@ private data class TaskJson(
     // Notes des échanges d'équipe (3.9.0, docs/spec/equipe-echanges.md § Notes) : omises quand vides.
     val noteOut: String? = null,
     val noteIn: ExchangeNoteJson? = null,
+    // Proposition au manager (3.9.0, docs/spec/equipe-echanges.md § Propositions) : omise quand nulle.
+    val proposedTo: String? = null,
 ) {
     fun toModel() = Task(
         id = id,
@@ -293,6 +295,7 @@ private data class TaskJson(
         seriesId = seriesId,
         noteOut = ExchangeNote.clean(noteOut).orEmpty(),
         noteIn = noteIn?.toModel(),
+        proposedTo = proposedTo,
     )
 
     companion object {
@@ -303,7 +306,7 @@ private data class TaskJson(
             t.manualTimeSpentMinutes, t.createdAt.toString(), t.updatedAt.toString(),
             encodeSpace(t.space), t.assigneeId, t.progressPercent, t.startedOn?.toString(), t.teamUid,
             t.origin, if (t.originRemoved) true else null, t.reportedMinutes, if (t.teamExcluded) true else null,
-            t.seriesId, t.noteOut.ifEmpty { null }, t.noteIn?.let(ExchangeNoteJson::from),
+            t.seriesId, t.noteOut.ifEmpty { null }, t.noteIn?.let(ExchangeNoteJson::from), t.proposedTo,
         )
     }
 }

@@ -327,7 +327,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   rapport ». Chacun garde la main sur ses champs ; rien n’est supprimé sans
   qu’on le choisisse. Chaque tâche peut porter une **note** courte dans chaque
   sens (« Bloquée en attendant la clé d’API »), affichée avec son auteur et sa
-  date et gardée dans l’historique de la tâche.
+  date et gardée dans l’historique de la tâche. Un membre peut aussi
+  **proposer** une de ses tâches au manager : elle part avec le prochain
+  rapport (titre, description, durée, type), et le manager l’ajoute au
+  backlog, la refuse ou décide plus tard.
 - Un seul utilisateur, le manager : tout reste sur l’appareil, sans compte
   ni réseau ; les fichiers circulent comme on veut (courriel, clé USB…).
 

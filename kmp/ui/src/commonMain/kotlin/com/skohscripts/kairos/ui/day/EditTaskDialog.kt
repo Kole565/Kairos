@@ -1,5 +1,9 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.core.model.TaskSpace
+import com.skohscripts.kairos.ui.generated.resources.proposal_help
+import com.skohscripts.kairos.ui.generated.resources.proposal_switch
+import com.skohscripts.kairos.data.ProposalChange
 import com.skohscripts.kairos.ui.generated.resources.exchange_note_help_pack
 import com.skohscripts.kairos.ui.generated.resources.exchange_note_help_report
 import com.skohscripts.kairos.ui.generated.resources.exchange_note_for_member
@@ -179,6 +183,11 @@ internal fun EditTaskDialog(
      * mis en évidence ; `null` : la fiche habituelle, qui n'est alors pas modifiée.
      */
     coach: CoachSession? = null,
+    /**
+     * Équipes d'origine auxquelles proposer cette tâche personnelle (docs/spec/equipe-echanges.md § Propositions, issue #121) ;
+     * vide : pas de section.
+     */
+    proposalTargets: List<TeamOrigin> = emptyList(),
 ) {
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
@@ -211,6 +220,8 @@ internal fun EditTaskDialog(
     var receivedProgress by remember { mutableStateOf((task.progressPercent ?: 0).toFloat()) }
     // Note à envoyer (docs/spec/equipe-echanges.md § Notes) : tâche d'équipe ou tâche reçue seulement.
     var noteOut by remember { mutableStateOf(task.noteOut) }
+    var proposedTo by remember { mutableStateOf(task.proposedTo) }
+    val canPropose = proposalTargets.isNotEmpty() && task.id != 0L && task.space == TaskSpace.PERSONAL && task.origin == null && task.parentId == null
     var counted by remember { mutableStateOf(countInTeam ?: true) }
     // Création (identifiant 0, docs/spec/premiere-tache.md) : rien n'existe encore, donc pas de « Supprimer » ; le titre est requis.
     val creating = task.id == 0L
@@ -275,6 +286,7 @@ internal fun EditTaskDialog(
                             minLines = 3,
                             modifier = Modifier.fillMaxWidth().tabLeavesField().coachField(EditField.DESCRIPTION, coach),
                         )
+                        if (canPropose) ProposalSection(proposalTargets, proposedTo) { proposedTo = it }
                         if (received != null) {
                             ReceivedMark(received.origin, received.removed)
                             Text(
@@ -499,6 +511,7 @@ internal fun EditTaskDialog(
                                     reassign = if (teamEditing && assignee != task.assigneeId) Reassignment(assignee, keepInProgress) else null,
                                     teamExcluded = if (countInTeam != null && counted != countInTeam) !counted else null,
                                     noteOut = noteOut.takeIf { (teamEditing || received != null) && it != task.noteOut },
+                                    proposal = if (canPropose && proposedTo != task.proposedTo) ProposalChange(proposedTo) else null,
                                 )
                             if (team != null && teamEditing) {
                                 val percent = progress.roundToInt()
@@ -617,5 +630,21 @@ private fun ExchangeNoteSection(received: ExchangeNote?, value: String, toManage
             minLines = 2,
             modifier = Modifier.fillMaxWidth().tabLeavesField(),
         )
+    }
+}
+
+/**
+ * Proposer une tâche personnelle au manager d'une équipe dont on a reçu des tâches (docs/spec/equipe-echanges.md § Propositions,
+ * issue #121) : un interrupteur par équipe (une seule cible à la fois) ; la proposition part avec le prochain rapport.
+ */
+@Composable
+private fun ProposalSection(targets: List<TeamOrigin>, selected: String?, onChange: (String?) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        targets.forEach { origin ->
+            SwitchRow(selected == origin.key, stringResource(Res.string.proposal_switch, managerLabel(origin), origin.teamName)) { on ->
+                onChange(if (on) origin.key else null)
+            }
+        }
+        Text(stringResource(Res.string.proposal_help), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

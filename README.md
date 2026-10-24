@@ -312,7 +312,10 @@ order (critical path). Cycles are refused.
   and flags "Waiting for their report". Everyone keeps control of their own
   fields; nothing is deleted unless you choose it. Each task can carry a short
   **note** each way ("Blocked until the API key arrives"), shown with its
-  author and date and kept in the task's history.
+  author and date and kept in the task's history. A member can also
+  **propose** one of their own tasks to the manager: it goes with the next
+  report (title, description, duration, type), and the manager adds it to the
+  backlog, declines it or decides later.
 - A single user, the manager: everything stays on the device, with no account
   or network; the files travel however you like (email, USB drive…).
 

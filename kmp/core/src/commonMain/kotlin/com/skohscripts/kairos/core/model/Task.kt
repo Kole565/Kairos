@@ -78,6 +78,11 @@ data class Task(
      */
     val noteOut: String = "",
     val noteIn: ExchangeNote? = null,
+    /**
+     * Tâche personnelle proposée au manager d'une équipe d'origine (docs/spec/equipe-echanges.md § Propositions, issue #121) :
+     * la clé `TeamOrigin.key` de cette équipe ; `null` = non proposée.
+     */
+    val proposedTo: String? = null,
 ) {
     /**
      * Pas encore clarifiée (GTD) : il manque la priorité **ou** les points. Elle
