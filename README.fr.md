@@ -244,6 +244,13 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   permission), aucun compte.
 - **Export et import** JSON (Réglages → Données) ; une sauvegarde automatique
   précède chaque import.
+- Sur le bureau, le **dossier des données** peut changer (Réglages → Données →
+  « Changer de dossier… », pour un dossier synchronisé ou chiffré) ou être fixé
+  au lancement avec `--data-dir=<dossier>` ; il sert au prochain démarrage, et
+  tes données sont copiées, jamais déplacées. Réglages → À propos →
+  **Diagnostic** : un journal local facultatif (désactivé par défaut, sans le
+  contenu de tes tâches) et « Copier le diagnostic » pour un rapport de bug.
+  La vérification des mises à jour suit le proxy du système.
 - **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
 - Interface en **français** et en **anglais** : la langue du système (français
@@ -391,7 +398,9 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Statistiques | Fenêtre des indicateurs | 8 semaines |
 | Équipe | Équipe | Gestion d’équipe, puis ses seuils, sa charge et ses prévisions | désactivé |
 | Données | Données, réglages par défaut | Export, import, restaurer les valeurs par défaut | |
+| | Dossier des données (bureau) | Changer de dossier…, revenir au dossier par défaut (prochain démarrage) | dossier du système |
 | À propos | | Découvrir Kairos, À propos et guide, revoir le guide depuis le début | |
+| | Diagnostic (bureau) | Tenir un journal de diagnostic, copier le diagnostic | désactivé |
 
 ## Développement
 

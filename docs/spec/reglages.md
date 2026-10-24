@@ -151,8 +151,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
 
 - Thème sombre (`navigation-theme.md`, `apparence.md` : décision rouverte pour `3.7.0`, issue #72).
 - Recherche parmi les réglages : sept catégories se parcourent d'un coup d'œil ; à rouvrir si elles grossissent.
-- Réglage du chemin de la base, d'un proxy ou du niveau de journalisation (voir
-  l'en-tête).
+- Proxy saisi dans Kairos : écarté, le bureau suit le proxy du système ; le dossier des données et le journal de
+  diagnostic du bureau sont dans `bureau-avance.md` (3.9.0, issue #115), hors du formulaire (propres à l'appareil).
 
 ## 2. Solution technique
 

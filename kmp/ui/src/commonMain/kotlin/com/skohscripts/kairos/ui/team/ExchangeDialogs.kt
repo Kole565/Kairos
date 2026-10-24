@@ -200,6 +200,7 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
             is ExchangePreview.Pack -> {
                 val result = services.repository.receivePack(preview.text)
                 val plan = result.plan
+                services.diagnostics?.log("exchange pack ${if (result.applied) "applied" else "refused"}")
                 messages(
                     if (result.applied) getString(Res.string.exchange_pack_done, plan.created.size, plan.visibleUpdates.size, plan.removed.size)
                     else getString(Res.string.exchange_pack_not_applied),
@@ -209,6 +210,7 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
             is ExchangePreview.Report -> {
                 val result = services.repository.integrateReport(preview.text, preview.decisions.toMap())
                 val plan = result.plan
+                services.diagnostics?.log("exchange report ${if (result.applied) "applied" else "refused"}")
                 messages(
                     if (result.applied) getString(Res.string.exchange_report_done_summary, plan.member?.name.orEmpty(), plan.updates.size, plan.newSubtasks.size)
                     else getString(Res.string.exchange_report_not_applied),
@@ -217,6 +219,7 @@ internal suspend fun applyExchange(services: AppServices, preview: ExchangePrevi
             }
         }
     } catch (e: ImportException) {
+        services.diagnostics?.log("exchange ${e.reason.name.lowercase()}")
         messages(importErrorMessage(e))
         return false
     }

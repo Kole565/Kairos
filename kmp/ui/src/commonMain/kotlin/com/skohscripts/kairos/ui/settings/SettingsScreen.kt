@@ -255,6 +255,8 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                     SettingsCategory.TEAM -> TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services, onChange = onChange)
                     SettingsCategory.DATA -> {
                         GuideSpot(GuideSection.SETTINGS_DATA) { DataCard(services) }
+                        // Bureau : dossier des données choisi (docs/spec/bureau-avance.md).
+                        services.dataFolder?.let { DataFolderCard(it) }
                         RestoreDefaultsCard {
                             // Décimales à la virgule en français, comme à l'ouverture de l'écran ; rien n'est écrit avant « Enregistrer ».
                             values = SettingsForm.restoreDefaults(values).mapValues { (key, value) ->
@@ -270,6 +272,8 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                         SettingsLinkCard(KairosIcons.PlayArrow, Res.string.settings_discover_entry, Res.string.settings_discover_entry_hint, onDiscover)
                         SettingsLinkCard(KairosIcons.Info, Res.string.settings_about_entry, Res.string.settings_about_entry_hint, onOpenAbout)
                         GuideResetCard(services, current.guide)
+                        // Bureau : journal de diagnostic (docs/spec/bureau-avance.md).
+                        services.diagnostics?.let { DiagnosticsCard(it) }
                     }
                 }
             }
@@ -562,8 +566,8 @@ private fun DataCard(services: AppServices) {
                 scope.launch {
                     val text = ExportCodec.encode(services.repository.snapshot.value, KairosBuild.VERSION_NAME, services.clock.now())
                     val saved = runCatching { services.files.saveText("kairos-export-${fileStamp(services)}.json", text) }
-                    saved.onSuccess { if (it) messages(getString(Res.string.export_done)) }
-                        .onFailure { messages(getString(Res.string.file_error)) }
+                    saved.onSuccess { if (it) { services.diagnostics?.log("export ok"); messages(getString(Res.string.export_done)) } }
+                        .onFailure { services.diagnostics?.log("export failed"); messages(getString(Res.string.file_error)) }
                 }
             }, contentPadding = KairosButtonIconPadding) {
                 Icon(KairosIcons.Download, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -581,6 +585,7 @@ private fun DataCard(services: AppServices) {
                             is ImportedFile.Exchange -> exchange = file.preview
                         }
                     } catch (e: ImportException) {
+                        services.diagnostics?.log("import ${e.reason.name.lowercase()}")
                         messages(importErrorMessage(e))
                     }
                 }

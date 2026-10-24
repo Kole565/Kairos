@@ -34,9 +34,11 @@ suspend fun saveBackup(services: AppServices, prefix: String, messages: (String)
     val current = ExportCodec.encode(services.repository.snapshot.value, KairosBuild.VERSION_NAME, services.clock.now())
     val backed = runCatching { services.backups.save("$prefix-${fileStamp(services)}.json", current) }
     if (backed.isFailure) {
+        services.diagnostics?.log("backup failed")
         messages(getString(Res.string.file_error))
         return false
     }
+    services.diagnostics?.log("backup ok")
     return true
 }
 
@@ -50,9 +52,11 @@ suspend fun replaceWithBackup(services: AppServices, snapshot: KairosSnapshot, m
     // Filet : une écriture refusée par la base (contrainte, disque) annule la transaction ; l'application le dit au
     // lieu de quitter sur l'erreur SQLite brute (constaté avant que l'import ne valide les identifiants).
     if (runCatching { services.repository.replaceAll(snapshot) }.isFailure) {
+        services.diagnostics?.log("import full failed")
         messages(getString(Res.string.file_error))
         return false
     }
+    services.diagnostics?.log("import full ok tasks=${snapshot.tasks.size}")
     services.teamUi.reset()
     return true
 }

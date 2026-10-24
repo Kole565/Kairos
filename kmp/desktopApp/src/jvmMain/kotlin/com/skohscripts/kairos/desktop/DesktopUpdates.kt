@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import java.net.Proxy
+import java.net.ProxySelector
 import com.skohscripts.kairos.core.AppVersion
 import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.core.updates.UpdateCheck
@@ -33,6 +35,8 @@ class DesktopUpdates(
     private val file: File,
     private val clock: Clock = Clock.System,
     private val installed: AppVersion = AppVersion.current,
+    /** Journal de diagnostic (docs/spec/bureau-avance.md) : résultat, code HTTP, proxy ; jamais de contenu. */
+    private val log: (String) -> Unit = {},
     private val fetch: (String) -> Pair<Int, String> = ::httpGet,
 ) : UpdateService {
     @Serializable
@@ -67,6 +71,7 @@ class DesktopUpdates(
             else -> saved.copy(lastCheck = now.toString(), failed = true)
         }
         status.value = statusOf(saved)
+        log("update ${if (saved.failed) "failed" else "ok"} $code proxy=${if (usesProxy(UpdateCheck.LATEST_URL)) "yes" else "no"}")
         write()
     }
 
@@ -94,11 +99,28 @@ class DesktopUpdates(
     }
 
     companion object {
+        /**
+         * Le sélecteur de proxy du système (docs/spec/bureau-avance.md § Proxy) : `main` pose `java.net.useSystemProxies` avant
+         * toute connexion, les propriétés `https.proxyHost` de Java restent prises en compte.
+         */
         private val client: HttpClient by lazy {
-            HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL).build()
+            HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).followRedirects(HttpClient.Redirect.NORMAL)
+                .proxy(ProxySelector.getDefault() ?: HttpClient.Builder.NO_PROXY).build()
         }
 
-        /** GET de [url] : code et corps. Le proxy du système est celui de la JVM (`-Dhttps.proxyHost`…). */
+        /** Un proxy du système s'applique à [url] (journal de diagnostic). */
+        fun usesProxy(url: String): Boolean = runCatching {
+            ProxySelector.getDefault()?.select(URI.create(url)).orEmpty().any { it.type() != Proxy.Type.DIRECT }
+        }.getOrDefault(false)
+
+        /** Option de la JVM qui fait suivre le proxy du système d'exploitation ; posée par `main` si elle n'est pas donnée. */
+        fun useSystemProxies() {
+            if (System.getProperty(SYSTEM_PROXIES) == null) System.setProperty(SYSTEM_PROXIES, "true")
+        }
+
+        private const val SYSTEM_PROXIES = "java.net.useSystemProxies"
+
+        /** GET de [url] : code et corps, par le proxy du système. */
         fun httpGet(url: String): Pair<Int, String> {
             val request = HttpRequest.newBuilder(URI.create(url))
                 .timeout(Duration.ofSeconds(10))

@@ -33,6 +33,7 @@ dans `docs/spec-v3/`, est le seul.
 | [`demarrage.md`](demarrage.md) | Page de démarrage commune (Android, bureau, web) : l'aiguille du cadran fait un tour et se pose sur le logo, pause, fondu ; relais natifs (écran de démarrage Android, chargement web) ; rapport de plantage Android. | après 3.2.0, 3.3.0 (#65) |
 | [`apparence.md`](apparence.md) | Couleur du thème : graines proposées, couleur libre, couleurs du système (Android 12 et plus), schéma MD3 dérivé. | #45 |
 | [`mises-a-jour.md`](mises-a-jour.md) | Vérification des nouvelles versions sur le bureau (GitHub, 6 heures), bandeau, carte des Réglages. | M5 |
+| [`bureau-avance.md`](bureau-avance.md) | Bureau : dossier des données choisi (Réglages ou `--data-dir=`, effet au prochain démarrage, copie jamais déplacement), journal de diagnostic local et « Copier le diagnostic », proxy du système. | 3.9.0 (#115) |
 | [`raccourci-portable.md`](raccourci-portable.md) | Copies portables du bureau : détection (marqueur de la release), entrée de menu Linux avec icône et classe de fenêtre, raccourcis Windows (menu Démarrer, Bureau), proposés au lancement, carte des Réglages. | #46 |
 | [`soutien.md`](soutien.md) | Cœur de la barre du haut et bouton de « À propos » vers la page de don (GitHub Pages). | passe design |
 | [`accessibilite.md`](accessibilite.md) | Lecteurs d'écran (boutons, états, titres), cibles de 48 dp, contrastes. | M5 |

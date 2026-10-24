@@ -236,6 +236,12 @@ order (critical path). Cycles are refused.
   have the permission), no account.
 - JSON **export and import** (Settings → Data); an automatic backup precedes
   every import.
+- On the desktop, the **data folder** can be changed (Settings → Data →
+  "Change folder…", for a synced or encrypted folder) or set at launch with
+  `--data-dir=<folder>`; it takes effect at the next start, and your data is
+  copied, never moved. Settings → About → **Diagnostics**: an optional local log
+  (off by default, no task content) and "Copy diagnostics" for a bug report.
+  The update check follows the system proxy.
 - **Web version**: data saved in the browser and, in Edge or Chrome, **linked
   to a file** kept up to date on every change.
 - Interface in **French** and **English**: the system language (French if the
@@ -374,7 +380,9 @@ you press "Save").
 | | Statistics | Window of the indicators | 8 weeks |
 | Team | Team | Team management, then its thresholds, load and forecasts | off |
 | Data | Data, default settings | Export, import, restore the defaults | |
+| | Data folder (desktop) | Change folder…, back to the default folder (next start) | system folder |
 | About | | Discover Kairos, About & guide, see the guide again from the start | |
+| | Diagnostics (desktop) | Keep a diagnostic log, copy diagnostics | off |
 
 ## Development
 

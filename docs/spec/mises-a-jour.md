@@ -81,8 +81,8 @@ savoir.
   jamais vérifié, 6 heures passées, ou horloge revenue en arrière.
 - `DesktopUpdates(fichier, horloge, version, fetch)` : `check(force)` sous
   verrou ; GET (`java.net.http`, 10 s, en-têtes `Accept:
-  application/vnd.github+json` et `User-Agent: Kairos/<version>`, proxy de
-  la JVM) ; 200 → disponible ou à jour, 404 → à jour, sinon → échec ; état
+  application/vnd.github+json` et `User-Agent: Kairos/<version>`, proxy du
+  système : `java.net.useSystemProxies`, `bureau-avance.md`) ; 200 → disponible ou à jour, 404 → à jour, sinon → échec ; état
   écrit dans `updates.json` du dossier de données (`lastCheck`, `failed`,
   `latest`, `url`, `dismissed`) et relu au lancement. Pas créé pour
   l'auto-test (base en mémoire, aucun réseau).

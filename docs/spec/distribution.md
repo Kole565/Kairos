@@ -154,8 +154,9 @@ remplacer ; une version stable s'installe par-dessus la précédente.
 - **Services** (`DesktopServices.open`) : `JdbcSqliteDriver` sur
   `<données>/kairos.db` (ou en mémoire pour l'auto-test), exemples dans la
   langue de la JVM, dossier des données affiché dans la carte Données.
-- **Dossier de données** : `KAIROS_DATA_DIR` s'il est défini, sinon la racine
-  Kairos de `platformdirs` + `v3` :
+- **Dossier de données** : `--data-dir=` puis `KAIROS_DATA_DIR` s'ils sont
+  donnés, puis le dossier choisi dans les Réglages (`bureau-avance.md`, 3.9.0),
+  sinon la racine Kairos de `platformdirs` + `v3` :
   - Windows : `%LOCALAPPDATA%\Kairos\v3` ;
   - macOS : `~/Library/Application Support/Kairos/v3` ;
   - Linux : `$XDG_DATA_HOME/Kairos/v3`, par défaut `~/.local/share/Kairos/v3`.

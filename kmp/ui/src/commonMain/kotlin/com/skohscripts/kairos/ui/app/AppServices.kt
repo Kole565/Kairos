@@ -30,6 +30,10 @@ class AppServices(
      * « Mises à jour » avec le lien vers la page de téléchargement. Faux ailleurs (le bureau a [updates], un magasin met à jour).
      */
     val downloadPage: Boolean = false,
+    /** Dossier des données à choisir (bureau, docs/spec/bureau-avance.md) ; `null` ailleurs. */
+    val dataFolder: DataFolderService? = null,
+    /** Journal de diagnostic (bureau, docs/spec/bureau-avance.md) ; `null` ailleurs. */
+    val diagnostics: Diagnostics? = null,
     /** Bureau, copie portable seulement : raccourci (docs/spec/raccourci-portable.md). */
     val shortcuts: ShortcutService? = null,
     /** Espace Équipe : sélection du Backlog, choix et résultats des Prévisions, graine injectable (tests). */
