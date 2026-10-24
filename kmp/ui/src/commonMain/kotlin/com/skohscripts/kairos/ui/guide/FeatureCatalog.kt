@@ -238,6 +238,7 @@ object FeatureCatalog {
         "Theme color" to "settings",
         "Dark theme" to "darktheme",
         "Guided first task" to "first_task",
+        "Guided first team task" to "team_backlog",
         "Discover Kairos" to "discover",
     )
 }

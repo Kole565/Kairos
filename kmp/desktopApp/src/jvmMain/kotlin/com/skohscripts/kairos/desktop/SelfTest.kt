@@ -27,6 +27,7 @@ import com.skohscripts.kairos.ui.screens.AboutScreen
 import com.skohscripts.kairos.ui.stats.StatsScreen
 import com.skohscripts.kairos.ui.week.WeekScreen
 import com.skohscripts.kairos.ui.month.MonthScreen
+import com.skohscripts.kairos.ui.team.TeamTaskCreateDialog
 import com.skohscripts.kairos.ui.guide.GuideChapter
 import com.skohscripts.kairos.ui.guide.GuideSection
 import com.skohscripts.kairos.ui.guide.GuideSpotState
@@ -385,6 +386,9 @@ object SelfTest {
             Shot("team-absence-narrow", 360, 900, absenceEditor(compact = true)),
             // Jalon E3 : Backlog, Suivi (colonnes puis sections empilées), sélection multiple, fiche d'une tâche avec historique.
             Shot("team-backlog", 1200, 1300, atWidth(1200.dp) { TeamBacklogScreen(board) }),
+            // Première tâche d'équipe accompagnée (issue #97), à l'étape « Qui la porte ».
+            Shot("team-first-task-coach", 900, 1000, overScrim { TeamTaskCreateDialog(board, 1, {}, {}, {}) }),
+            Shot("team-first-task-coach-narrow", 360, 900, overScrim { TeamTaskCreateDialog(board, 1, {}, {}, {}) }),
             Shot("team-backlog-narrow", 360, 2000, atWidth(360.dp) { TeamBacklogScreen(board) }),
             Shot("team-backlog-selection", 1200, 900, atWidth(1200.dp) { TeamBacklogScreen(selectionServices, initialSelection = setOf(seeded.ids.getValue("vat"), seeded.ids.getValue("demo"))) }),
             Shot("team-board", 1200, 1700, atWidth(1200.dp) { TeamBoardScreen(board) }),

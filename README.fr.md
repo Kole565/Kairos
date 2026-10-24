@@ -266,6 +266,10 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 
 - À activer dans **Réglages → Équipe** ; désactivée, rien ne change dans
   Kairos. Activée, un sélecteur **Perso | Équipe** apparaît en haut.
+- **Première tâche d’équipe guidée** : depuis « Découvrir Kairos » (espace
+  Équipe activé), Kairos te guide dans la fiche d’une tâche d’équipe, champ par
+  champ (titulaire et sa charge, priorité et taille, effort, échéance,
+  catégorie), puis dit où la tâche est arrivée. Rien n’est écrit si tu renonces.
 - **Membres** : quotité, heures par jour, absences ; « C’est moi » fait
   apparaître dans votre vue Jour les tâches d’équipe qui vous sont
   assignées.

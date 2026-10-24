@@ -287,6 +287,9 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
 
 ### Interface (`ui/team/`)
 
+- Création accompagnée d'une première tâche d'équipe (3.8.0, issue #97) : `TeamTaskCreateDialog` (`premiere-tache.md`
+  § Première tâche d'équipe), la fiche d'équipe en création, depuis « Découvrir Kairos ».
+
 - `TeamBacklogScreen(services, initialSelection)` : `Capture` réutilisé en
   volet « Tâche » seul (`taskOnly`, crée par `createTeamTask`) ; filtres
   (recherche, catégorie, priorité, « Avec échéance ») ; sections « À

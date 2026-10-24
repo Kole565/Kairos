@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.navigation
 
+import com.skohscripts.kairos.ui.team.TeamTaskCreateDialog
+import com.skohscripts.kairos.ui.team.TeamTaskCreatedDialog
 import androidx.compose.runtime.collectAsState
 import com.skohscripts.kairos.core.KairosBuild
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -147,6 +149,9 @@ fun AppShell(
     // Hub « Découvrir Kairos » et chapitre en cours de lecture (docs/spec/visite-guidee.md) : états de la coquille, rien n'est mémorisé.
     var discover by rememberSaveable { mutableStateOf(false) }
     var chapter by rememberSaveable { mutableStateOf<GuideChapter?>(null) }
+    // Première tâche d'équipe accompagnée (issue #97) : étape du coach (`null` = fiche fermée, -1 = coach passé) et tâche créée.
+    var teamCoachStep by rememberSaveable { mutableStateOf<Int?>(null) }
+    var teamCreated by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val snackbar = remember { SnackbarHostState() }
     // Veille du chrono pour toute l'application : les alertes jouent quel que soit l'écran.
@@ -331,7 +336,25 @@ fun AppShell(
             onChapter = { discover = false; chapter = it },
             onDismiss = { discover = false },
             read = memory?.readChapters.orEmpty().mapNotNull { name -> GuideChapter.entries.firstOrNull { it.name == name } }.toSet(),
+            // La fiche s'ouvre dans l'espace Équipe, sur le Backlog où la tâche arrivera.
+            onFirstTeamTask = {
+                discover = false
+                if (!team) onSpaceChange(Space.TEAM)
+                onNavigateTeam(TeamDestination.BACKLOG)
+                teamCoachStep = 0
+            },
         )
+    }
+    teamCoachStep?.let { step ->
+        TeamTaskCreateDialog(
+            services, step,
+            onStep = { teamCoachStep = it },
+            onDismiss = { teamCoachStep = null },
+            onCreated = { id -> teamCoachStep = null; teamCreated = id },
+        )
+    }
+    teamCreated?.let { id ->
+        TeamTaskCreatedDialog(services, id, onOpen = { teamCreated = null; onNavigateTeam(it) }, onDismiss = { teamCreated = null })
     }
     chapter?.let { picked ->
         GuideDialog(

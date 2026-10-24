@@ -257,6 +257,10 @@ order (critical path). Cycles are refused.
 
 - Turn it on in **Settings → Team**; when off, nothing changes in Kairos. When
   on, a **Personal | Team** selector appears at the top.
+- **Guided first team task**: from "Discover Kairos" (team space on), Kairos
+  walks you through the team task sheet, field by field (assignee and their
+  load, priority and size, effort, deadline, category), then says where the task
+  landed. Nothing is written if you give up.
 - **Members**: availability, hours per day, absences; "This is me" makes the
   team tasks assigned to you appear in your Day view.
 - Team **backlog** sorted by the same WSJF score, categories = task types,

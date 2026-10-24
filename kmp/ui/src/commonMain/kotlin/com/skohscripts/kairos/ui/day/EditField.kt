@@ -4,11 +4,13 @@ package com.skohscripts.kairos.ui.day
  * Les champs de la fiche d'une tâche, dans l'ordre où elle les présente (docs/spec/premiere-tache.md § Un coach par-dessus la vraie
  * fiche). Le coach de la première tâche rattache une étape à chacun ; chaque champ porte la balise de test `edit-field-<NOM>`, ce
  * qui permet de vérifier que la liste du coach et la fiche disent la même chose. [advanced] : le champ est dans les options
- * avancées, que le coach ouvre quand il l'explique.
+ * avancées, que le coach ouvre quand il l'explique. [team] : champ de la seule fiche d'une tâche d'équipe (« Assigné à », 3.8.0,
+ * issue #97), que seul le coach de la première tâche d'équipe explique.
  */
-internal enum class EditField(val advanced: Boolean = false) {
+internal enum class EditField(val advanced: Boolean = false, val team: Boolean = false) {
     TITLE,
     DESCRIPTION,
+    ASSIGNEE(team = true),
     PRIORITY,
     POINTS,
     MINUTES,
@@ -25,4 +27,9 @@ internal enum class EditField(val advanced: Boolean = false) {
 
     /** Balise de test du champ. */
     val tag: String get() = "edit-field-$name"
+
+    companion object {
+        /** Les champs de la fiche d'une tâche personnelle. */
+        val personal: List<EditField> get() = entries.filter { !it.team }
+    }
 }

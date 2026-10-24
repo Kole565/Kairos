@@ -107,6 +107,7 @@ import com.skohscripts.kairos.core.engine.DurationEstimator
 import com.skohscripts.kairos.ui.guide.CoachPanel
 import com.skohscripts.kairos.ui.guide.CoachSession
 import com.skohscripts.kairos.ui.guide.coachField
+import com.skohscripts.kairos.ui.generated.resources.edit_title_first_team
 import com.skohscripts.kairos.ui.guide.coachHighlight
 import androidx.compose.runtime.LaunchedEffect
 import com.skohscripts.kairos.core.settings.UiLanguage
@@ -239,8 +240,18 @@ internal fun EditTaskDialog(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp),
                 ) {
-                    Text(stringResource(if (creating) Res.string.edit_title_first else Res.string.edit_title), style = MaterialTheme.typography.headlineSmall)
-                    if (team != null && teamEditing) TeamTaskTabs(tab, team.history.size) { tab = it }
+                    Text(
+                        stringResource(
+                            when {
+                                creating && team != null -> Res.string.edit_title_first_team
+                                creating -> Res.string.edit_title_first
+                                else -> Res.string.edit_title
+                            },
+                        ),
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                    // Création : pas encore d'historique, pas d'onglets.
+                    if (team != null && teamEditing && !creating) TeamTaskTabs(tab, team.history.size) { tab = it }
                     if (team != null && teamEditing && tab == 1) {
                         TaskHistory(team.history, team.assign, team.today)
                     }
@@ -277,6 +288,7 @@ internal fun EditTaskDialog(
                                 },
                                 progress = progress,
                                 onProgress = { progress = it },
+                                coach = coach,
                             )
                         }
                         Column(Modifier.coachField(EditField.PRIORITY, coach)) { PriorityPills(priority, { priority = it }, showMeaning = true) }

@@ -7,10 +7,12 @@ puis féliciter. Fichiers couverts : `kmp/ui/.../ui/guide/FirstTaskCoach.kt`,
 `ui/day/FirstTaskCards.kt`, `ui/day/TaskRow.kt`, `ui/app/Welcome.kt`,
 `ui/navigation/AppShell.kt`, `ui/navigation/NavState.kt`, `core/ExampleData.kt`
 (`isExample`). Tests : `FirstTaskCoachUiTest`, `FirstTaskCoachTest`,
-`ExampleDataTest`, `M6GuideUiTest`, `M5ScreensUiTest`._
+`ExampleDataTest`, `M6GuideUiTest`, `M5ScreensUiTest`. Première tâche d'équipe (3.8.0) : `ui/team/TeamTaskCoach.kt`,
+`TeamTaskCoach` (`ui/guide/FirstTaskCoach.kt`), `ui/team/TeamTaskSheet.kt`, `ui/guide/DiscoverDialog.kt`,
+`ui/navigation/AppShell.kt` ; tests `TeamTaskCoachTest`, `TeamTaskCoachUiTest`._
 
 État : **issue #64 (retour du propriétaire)**, spécifiée le 2026-10-13,
-**implémentée en 3.4.0**. Complète `accueil.md` (accueil du premier lancement) et
+**implémentée en 3.4.0** ; première tâche d'équipe (issue #97) implémentée en 3.8.0. Complète `accueil.md` (accueil du premier lancement) et
 s'appuie sur le catalogue de `visite-guidee.md`.
 
 ## 1. Besoin métier (cahier des charges)
@@ -56,6 +58,21 @@ déroutant sans explication.
 6. **Interruption** : fermer la fiche ou le coach n'écrit rien ; rouvrir
    recommence au titre. La rotation de l'écran conserve l'étape.
 
+7. **Première tâche d'équipe** (3.8.0, issue #97). Le manager qui active l'espace Équipe découvre une fiche aux
+   champs propres (titulaire, effort). Dans « Découvrir Kairos », sous le chapitre de l'équipe et **seulement si
+   l'espace Équipe est activé**, l'entrée « Créer ma première tâche d'équipe » (« Pas à pas : titulaire, taille,
+   effort, catégorie. ») ouvre l'espace Équipe, le Backlog, et la vraie fiche d'une **nouvelle tâche d'équipe**
+   (« Nouvelle tâche d'équipe », sans onglets ni avancement ni « Commencer » tant qu'elle n'existe pas), avec le même
+   panneau (non bloquant, « Précédent / Suivant / Passer le guide », région vivante). Sept étapes : ce que l'équipe
+   doit livrer (titre, description) ; qui la porte (« Assigné à » : Backlog, ou un membre dont le menu montre la
+   charge) ; priorité et taille (points, effort calibré) ; effort et échéance (l'estimation l'emporte, la ligne
+   « Effort », les signaux) ; catégorie (type de tâche) ; pour aller plus loin (bloqueurs entre tâches d'équipe,
+   récurrence qui garde le titulaire, le reste comme en Perso) ; enregistrer (Backlog ou « À faire » chez le
+   titulaire, puis « Commencer », l'avancement, l'« Historique »). Les félicitations « Première tâche d'équipe créée »
+   ne viennent qu'une fois la tâche **réellement créée** : « « X » est au Backlog : assigne-la quand quelqu'un peut la
+   prendre. » ou « « X » est « À faire » chez Léa : le Suivi montre son état et sa charge. », avec « Voir le Backlog »
+   ou « Voir le Suivi », et « Fermer ». « Annuler » n'écrit rien. Rien de tout cela n'existe en mode solo.
+
 ### Critères de succès
 
 - Parcours complet : la tâche existe avec les valeurs saisies, les félicitations
@@ -71,9 +88,15 @@ déroutant sans explication.
   annoncé sur Android ; textes FR/EN (`StringsParityTest`) ; captures
   `--self-test` et `--store-screenshots` regardées.
 
+- Première tâche d'équipe : chaque champ de la fiche d'équipe a exactement une étape, « Assigné à » compris, la
+  marche part du titre et finit sur l'enregistrement, ses textes sont les siens (`TeamTaskCoachTest`) ; parcours
+  complet avec Léa assignée, journal `created` et `assigned`, félicitations après la création seulement, « Voir le
+  Suivi » ; abandon sans écriture ; aucune entrée en mode solo (`TeamTaskCoachUiTest`) ; captures
+  `desktop-team-first-task-coach(-narrow).png` regardées.
+
 ### Hors périmètre / différé
 
-- La fiche de l'espace Équipe (chapitre ultérieur de `visite-guidee.md`).
+- Expliquer la place d'une tâche d'équipe après sa création (le Suivi la montre ; pas d'étapes de placement).
 - Une récurrente pas à pas, l'accompagnement des réglages.
 
 ## 2. Solution technique
@@ -113,6 +136,19 @@ tard ») remplace la première étape par « Pas encore placée » qui dit pourq
 cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`ListBuilder` retient la place de chaque ligne,
 `rowPositions`).
 
+### Première tâche d'équipe (`TeamTaskCreateDialog`, 3.8.0)
+
+- `DiscoverDialog(onFirstTeamTask)` : l'entrée suit la ligne du chapitre `TEAM` (proposé seulement si
+  `teamModeEnabled`). `AppShell` passe dans l'espace Équipe, ouvre le Backlog et pose `teamCoachStep = 0`
+  (`rememberSaveable` : l'étape survit à une rotation, `-1` = coach passé, `null` = fiche fermée).
+- `TeamTaskCreateDialog(services, étape, …)` : brouillon `Task(0, "", space = TEAM)`, `EditTaskDialog` avec
+  `TeamTaskSheet(editable = true)` (menu d'assignation et sa charge, `rememberTeamLoad`) et
+  `CoachSession(steps = TeamTaskCoach.STEPS)`. En création, `EditTaskDialog` titre « Nouvelle tâche d'équipe »
+  (`edit_title_first_team`) et n'affiche pas les onglets ; `TeamTaskFields` n'affiche ni avancement ni « Commencer »
+  (`task.id == 0`). « Enregistrer » : `createTeamTask` puis `updateTask` ; `onCreated(id)` pose `teamCreated`.
+- `TeamTaskCreatedDialog` : lit la tâche créée et son titulaire dans la base ; « Voir le Backlog » (sans titulaire) ou
+  « Voir le Suivi », « Fermer » (`discover_close`).
+
 ### Déclenchement
 
 - `WelcomeDialog(onFirstTask)` : bouton « Créer ma première tâche » sous le texte des exemples (visite guidée et
@@ -143,5 +179,18 @@ cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`
 - **Aucune animation décorative** : sobriété du design system.
 - **Titres des étapes distincts des libellés de la fiche** (« Enregistrer la tâche », « Pour aller plus loin ») : un titre
   de panneau identique à un libellé de la fiche rendrait les tests et les lecteurs d'écran ambigus.
+- **Première tâche d'équipe : la même fiche, d'autres étapes** (2026-10-24, issue #97) : `CoachSession` prend sa liste
+  d'étapes (`FirstTaskCoach.STEPS` par défaut, `TeamTaskCoach.STEPS`) ; `EditField.ASSIGNEE` (`team = true`) balise
+  « Assigné à » (`TeamTaskFields(coach)`), `EditField.personal` est la liste de la fiche personnelle
+  (`FirstTaskCoachTest` la compare). Une étape couvre parfois deux champs voisins (titre et description, priorité et
+  points) : sept étapes plutôt que dix, pour un manager qui connaît déjà la fiche personnelle.
+- **Entrée dans le hub, pas une carte du chapitre Équipe** : les cartes du chapitre Équipe **sont** la visite de
+  l'espace Équipe (six étapes, cibles d'équipe seulement, `GuideStepsTest`) ; une carte « créer » y aurait ajouté une
+  étape d'une autre nature. L'entrée suit la ligne du chapitre, comme « Créer ma première tâche » ouvre le hub.
+- **Création réelle d'abord** : `createTeamTask(titre)` puis `updateTask(id, édition)`, dont la réaffectation écrit
+  l'événement `assigned` ; les félicitations lisent la tâche créée (titulaire réel). Écarté : un dépôt dédié à la
+  création complète (un chemin d'écriture de plus à journaliser).
+- **Pas de persistance** : l'entrée reste dans le hub, à rejouer ; rien n'est retenu dans `Settings.guide` (aucune
+  invitation à faire disparaître côté équipe).
 - **Empreinte sur les bases vides** : l'invitation s'affiche aussi sur une base sans aucune tâche ; les tests de la vue Jour
   qui y cherchent la carte « Recherche » défilent jusqu'à elle (liste paresseuse).

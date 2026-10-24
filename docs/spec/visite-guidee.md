@@ -165,7 +165,8 @@ since, tour)`, **dans l'ordre de la visite**.
 - **`GuideDialog`** accepte n'importe quelle sélection (`GuideDialog(steps, key, …)`, `GuideDialog(kind, …)` en est la
   forme courte) et garde la mesure du plus long titre et du plus long texte.
 - **Hub « Découvrir Kairos »** (`DiscoverDialog`) : « Créer ma première tâche » puis un chapitre par ligne avec son nombre
-  de cartes ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
+  de cartes (3.8.0 : sous le chapitre de l'équipe, quand il est proposé, « Créer ma première tâche d'équipe »,
+  `premiere-tache.md` § Première tâche d'équipe) ; choisir un chapitre ferme le hub et ouvre ses cartes dans `GuideDialog` ; accessible depuis l'Accueil (bouton),
   l'aide (entrée « Découvrir Kairos ») et les Réglages (carte « Découvrir Kairos » de la catégorie « À propos », `reglages.md`) ; états `discover` et `chapter` de
   `AppShell` (`rememberSaveable`, rien n'est mémorisé au-delà).
 - **« Nouveau dans cette version »** : `HomeScreen(version = KairosBuild.VERSION_NAME)` affiche, sous le bloc teinté, les

@@ -62,6 +62,20 @@ import com.skohscripts.kairos.ui.generated.resources.guide_next
 import com.skohscripts.kairos.ui.generated.resources.guide_previous
 import com.skohscripts.kairos.ui.generated.resources.guide_step_counter
 import com.skohscripts.kairos.ui.generated.resources.coach_skip
+import com.skohscripts.kairos.ui.generated.resources.team_coach_title_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_title_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_assignee_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_assignee_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_size_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_size_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_effort_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_effort_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_category_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_category_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_more_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_more_body
+import com.skohscripts.kairos.ui.generated.resources.team_coach_save_title
+import com.skohscripts.kairos.ui.generated.resources.team_coach_save_body
 import com.skohscripts.kairos.ui.icons.KairosIcons
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -113,11 +127,35 @@ internal object FirstTaskCoach {
 }
 
 /**
+ * Les étapes du coach de la première tâche d'**équipe** (docs/spec/premiere-tache.md § Première tâche d'équipe, issue #97) : la même
+ * fiche, avec « Assigné à » et l'effort, et une étape par groupe de champs, dans l'ordre de la fiche d'équipe.
+ */
+internal object TeamTaskCoach {
+    val STEPS: List<CoachStep> = listOf(
+        CoachStep({ KairosIcons.Edit }, Res.string.team_coach_title_title, Res.string.team_coach_title_body, setOf(EditField.TITLE, EditField.DESCRIPTION)),
+        CoachStep({ KairosIcons.PersonAdd }, Res.string.team_coach_assignee_title, Res.string.team_coach_assignee_body, setOf(EditField.ASSIGNEE)),
+        CoachStep({ KairosIcons.Balance }, Res.string.team_coach_size_title, Res.string.team_coach_size_body, setOf(EditField.PRIORITY, EditField.POINTS)),
+        CoachStep({ KairosIcons.Schedule }, Res.string.team_coach_effort_title, Res.string.team_coach_effort_body, setOf(EditField.MINUTES, EditField.DEADLINE)),
+        CoachStep({ KairosIcons.Label }, Res.string.team_coach_category_title, Res.string.team_coach_category_body, setOf(EditField.TYPE)),
+        CoachStep(
+            { KairosIcons.ExpandMore }, Res.string.team_coach_more_title, Res.string.team_coach_more_body,
+            setOf(EditField.SCHEDULED, EditField.PROJECT, EditField.MANUAL_TIME, EditField.RECURRENCE, EditField.PIN, EditField.SUBTASKS, EditField.BLOCKERS),
+        ),
+        CoachStep({ KairosIcons.Check }, Res.string.team_coach_save_title, Res.string.team_coach_save_body, save = true),
+    )
+}
+
+/**
  * L'accompagnement en cours dans la fiche : l'étape courante [step] (conservée par l'appelant, `rememberSaveable`), le moyen de la
  * changer et de l'abandonner. Fermer le coach n'écrit rien.
  */
-internal class CoachSession(val step: Int, val onStep: (Int) -> Unit, val onSkip: () -> Unit) {
-    val steps: List<CoachStep> get() = FirstTaskCoach.STEPS
+internal class CoachSession(
+    val step: Int,
+    val onStep: (Int) -> Unit,
+    val onSkip: () -> Unit,
+    /** Les étapes : celles de la première tâche, ou celles de la première tâche d'équipe ([TeamTaskCoach.STEPS], issue #97). */
+    val steps: List<CoachStep> = FirstTaskCoach.STEPS,
+) {
     val current: CoachStep get() = steps[step.coerceIn(0, steps.lastIndex)]
     fun highlights(field: EditField): Boolean = field in current.fields
 }
