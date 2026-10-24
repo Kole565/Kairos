@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
@@ -76,6 +77,7 @@ object ReportBuilder {
                 startedOn = t.startedOn ?: firstSession[t.id] ?: today.takeIf { !done && (progress ?: 0) > 0 },
                 progressPercent = progress,
                 spentMinutes = spent[t.id] ?: 0,
+                note = ExchangeNote.clean(t.noteOut),
             )
         }
 

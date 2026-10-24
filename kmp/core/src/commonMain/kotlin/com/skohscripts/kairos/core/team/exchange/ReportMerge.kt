@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskSpace
@@ -48,6 +49,9 @@ sealed interface ReportChange {
 
     /** Total de temps rapporté, en minutes ([from] `null` : premier rapport). */
     data class Spent(val from: Int?, val to: Int) : ReportChange
+
+    /** Note du membre (docs/spec/equipe-echanges.md § Notes) : [to] `null`, le rapport n'en porte plus. */
+    data class Note(val from: String?, val to: String?) : ReportChange
 }
 
 /**
@@ -144,6 +148,7 @@ object ReportMerge {
                 continue
             }
             val update = apply(task, member, line.status, line.doneOn ?: reportDay, line.startedOn, line.progressPercent, line.spentMinutes)
+                .withNote(task, member, line.note, report.reportedAt)
             if (update == null) unchanged += task else updates += update
         }
 
@@ -183,6 +188,19 @@ object ReportMerge {
             newSubtasks = created,
             ignored = ignored,
         )
+    }
+
+    /**
+     * La note du membre (docs/spec/equipe-echanges.md § Notes) ajoutée à la mise à jour : `noteIn` = (texte, date du rapport, nom du
+     * membre) quand le texte change, effacée si le rapport n'en porte plus ; une note inchangée garde sa date.
+     */
+    private fun ReportTaskUpdate?.withNote(task: Task, member: TeamMember, note: String?, at: Instant): ReportTaskUpdate? {
+        val text = ExchangeNote.clean(note)
+        if (text == task.noteIn?.text) return this
+        val change = ReportChange.Note(task.noteIn?.text, text)
+        val noteIn = text?.let { ExchangeNote(it, at, member.name) }
+        return this?.copy(after = after.copy(noteIn = noteIn), changes = changes + change)
+            ?: ReportTaskUpdate(task, task.copy(noteIn = noteIn), listOf(change), formerHolder = task.assigneeId != member.id)
     }
 
     /**

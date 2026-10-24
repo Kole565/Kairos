@@ -29,6 +29,8 @@ data class PackTask(
     val deadline: LocalDate? = null,
     val estimatedMinutes: Int? = null,
     val progressPercent: Int? = null,
+    /** Note du manager pour le membre (docs/spec/equipe-echanges.md § Notes) ; `null` : aucune. */
+    val note: String? = null,
 )
 
 /** [taskUid] est bloquée par [blockerUid] : deux tâches du même paquet. */
@@ -62,6 +64,8 @@ data class ReportTask(
     val startedOn: LocalDate? = null,
     val progressPercent: Int? = null,
     val spentMinutes: Int = 0,
+    /** Note du membre pour le manager (docs/spec/equipe-echanges.md § Notes) ; `null` : aucune. */
+    val note: String? = null,
 )
 
 /** Sous-tâche créée par le membre sous une tâche reçue ; [uid] est posé côté membre et reste stable d'un rapport à l'autre. */

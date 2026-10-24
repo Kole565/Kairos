@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
@@ -255,6 +256,9 @@ private data class TaskJson(
     val teamExcluded: Boolean? = null,
     // Série d'une tâche récurrente (docs/spec/durees-apprises.md) : nul, donc omis, pour toute tâche d'avant la 3.4.
     val seriesId: Long? = null,
+    // Notes des échanges d'équipe (3.9.0, docs/spec/equipe-echanges.md § Notes) : omises quand vides.
+    val noteOut: String? = null,
+    val noteIn: ExchangeNoteJson? = null,
 ) {
     fun toModel() = Task(
         id = id,
@@ -287,6 +291,8 @@ private data class TaskJson(
         reportedMinutes = reportedMinutes,
         teamExcluded = teamExcluded == true,
         seriesId = seriesId,
+        noteOut = ExchangeNote.clean(noteOut).orEmpty(),
+        noteIn = noteIn?.toModel(),
     )
 
     companion object {
@@ -297,8 +303,18 @@ private data class TaskJson(
             t.manualTimeSpentMinutes, t.createdAt.toString(), t.updatedAt.toString(),
             encodeSpace(t.space), t.assigneeId, t.progressPercent, t.startedOn?.toString(), t.teamUid,
             t.origin, if (t.originRemoved) true else null, t.reportedMinutes, if (t.teamExcluded) true else null,
-            t.seriesId,
+            t.seriesId, t.noteOut.ifEmpty { null }, t.noteIn?.let(ExchangeNoteJson::from),
         )
+    }
+}
+
+/** Note reçue d'un échange d'équipe (docs/spec/equipe-echanges.md § Notes) : texte borné à la lecture. */
+@Serializable
+private data class ExchangeNoteJson(val text: String, val at: String, val from: String = "") {
+    fun toModel() = ExchangeNote(text.take(ExchangeNote.MAX_LENGTH), Instant.parse(at), from)
+
+    companion object {
+        fun from(n: ExchangeNote) = ExchangeNoteJson(n.text, n.at.toString(), n.from)
     }
 }
 

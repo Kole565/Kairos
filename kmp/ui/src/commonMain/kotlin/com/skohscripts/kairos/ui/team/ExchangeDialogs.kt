@@ -1,5 +1,10 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.generated.resources.exchange_change_note_removed
+import com.skohscripts.kairos.ui.generated.resources.exchange_change_note
+import com.skohscripts.kairos.ui.generated.resources.exchange_field_note
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_line
+import com.skohscripts.kairos.ui.generated.resources.exchange_pack_notes
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -364,6 +369,12 @@ private fun PackBody(plan: PackMergePlan) {
             }
         }
     }
+    // Notes du manager (docs/spec/equipe-echanges.md § Notes) : lues avant de recevoir.
+    if (plan.notes.isNotEmpty()) {
+        Section(stringResource(Res.string.exchange_pack_notes)) {
+            plan.notes.forEach { (title, text) -> Line(stringResource(Res.string.exchange_note_line, title, text)) }
+        }
+    }
     Text(stringResource(Res.string.exchange_pack_backup), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
@@ -384,6 +395,7 @@ private fun fieldLabel(field: PackField): String = stringResource(
         PackField.CATEGORY -> Res.string.exchange_field_category
         PackField.DEADLINE -> Res.string.exchange_field_deadline
         PackField.ESTIMATE -> Res.string.exchange_field_estimate
+        PackField.NOTE -> Res.string.exchange_field_note
     },
 )
 
@@ -471,6 +483,7 @@ private fun changeText(change: ReportChange, language: String): String {
             change.to?.let { dayText(it, language) } ?: none,
         )
         is ReportChange.Spent -> stringResource(Res.string.exchange_change_spent, change.from?.let { duration(it) } ?: none, duration(change.to))
+        is ReportChange.Note -> change.to?.let { stringResource(Res.string.exchange_change_note, it) } ?: stringResource(Res.string.exchange_change_note_removed)
     }
 }
 

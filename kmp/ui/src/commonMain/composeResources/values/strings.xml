@@ -1106,6 +1106,13 @@
     <string name="exchange_change_progress">Progress: %1$s → %2$s</string>
     <string name="exchange_change_started">Started: %1$s → %2$s</string>
     <string name="exchange_change_spent">Time spent: %1$s → %2$s</string>
+    <string name="exchange_pack_notes">Notes from the manager</string>
+    <string name="exchange_note_line">“%1$s”: %2$s</string>
+    <string name="exchange_field_note">note</string>
+    <string name="exchange_change_note">Note: %1$s</string>
+    <string name="exchange_change_note_removed">Note removed</string>
+    <string name="event_note_received">Note from %1$s: %2$s</string>
+    <string name="event_note_sent">Note sent: %1$s</string>
     <string name="exchange_status_todo">to do</string>
     <string name="exchange_status_done">done</string>
     <string name="exchange_status_archived">archived</string>
@@ -1123,6 +1130,11 @@
     <string name="received_removed_description">task removed by %1$s</string>
     <string name="received_keep">Keep as a personal task</string>
     <string name="received_edit_help">Received from %1$s. Title, description, priority, points, category, deadline and duration are replaced with every new packet; progress is yours.</string>
+    <string name="exchange_note_from">Note from %1$s, %2$s</string>
+    <string name="exchange_note_for_manager">Note for the manager</string>
+    <string name="exchange_note_for_member">Note for the member</string>
+    <string name="exchange_note_help_report">Goes with the next report, in plain text: the file is not encrypted. %1$d characters at most.</string>
+    <string name="exchange_note_help_pack">Goes with the next package, in plain text: the file is not encrypted. %1$d characters at most.</string>
 
     <!-- Home, guided tour and help (docs/spec/accueil.md) -->
     <string name="title_home">Home</string>

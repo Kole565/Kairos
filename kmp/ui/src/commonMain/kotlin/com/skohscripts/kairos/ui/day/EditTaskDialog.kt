@@ -1,5 +1,13 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_help_pack
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_help_report
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_for_member
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_for_manager
+import com.skohscripts.kairos.ui.generated.resources.exchange_note_from
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.TimeZone
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.ui.guide.RecurrencePreview
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
@@ -201,6 +209,8 @@ internal fun EditTaskDialog(
     var tab by remember { mutableStateOf(if (team?.initialHistory == true) 1 else 0) }
     val teamEditing = team?.editable == true
     var receivedProgress by remember { mutableStateOf((task.progressPercent ?: 0).toFloat()) }
+    // Note à envoyer (docs/spec/equipe-echanges.md § Notes) : tâche d'équipe ou tâche reçue seulement.
+    var noteOut by remember { mutableStateOf(task.noteOut) }
     var counted by remember { mutableStateOf(countInTeam ?: true) }
     // Création (identifiant 0, docs/spec/premiere-tache.md) : rien n'existe encore, donc pas de « Supprimer » ; le titre est requis.
     val creating = task.id == 0L
@@ -273,6 +283,7 @@ internal fun EditTaskDialog(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             if (task.status == TaskStatus.TODO) ProgressField(receivedProgress) { receivedProgress = it }
+                            ExchangeNoteSection(task.noteIn, noteOut, toManager = true) { noteOut = it }
                         }
                         if (team != null) {
                             TeamTaskFields(
@@ -291,6 +302,7 @@ internal fun EditTaskDialog(
                                 onProgress = { progress = it },
                                 coach = coach,
                             )
+                            if (teamEditing && !creating) ExchangeNoteSection(task.noteIn, noteOut, toManager = false) { noteOut = it }
                         }
                         Column(Modifier.coachField(EditField.PRIORITY, coach)) { PriorityPills(priority, { priority = it }, showMeaning = true) }
                         // Durée suggérée (issue #15.6) : choisir un palier calibré
@@ -486,6 +498,7 @@ internal fun EditTaskDialog(
                                     blockerIds = blockers,
                                     reassign = if (teamEditing && assignee != task.assigneeId) Reassignment(assignee, keepInProgress) else null,
                                     teamExcluded = if (countInTeam != null && counted != countInTeam) !counted else null,
+                                    noteOut = noteOut.takeIf { (teamEditing || received != null) && it != task.noteOut },
                                 )
                             if (team != null && teamEditing) {
                                 val percent = progress.roundToInt()
@@ -579,5 +592,30 @@ private fun TypeField(value: String, types: List<String>, label: StringResource,
                 DropdownMenuItem(text = { Text(option.ifEmpty { none }) }, onClick = { onChange(option); expanded = false })
             }
         }
+    }
+}
+
+/**
+ * Note d'échange (docs/spec/equipe-echanges.md § Notes, issue #120) : la dernière note reçue de l'autre côté (auteur, date), puis
+ * celle à envoyer avec le prochain rapport ([toManager], tâche reçue) ou le prochain paquet (tâche d'équipe). Bornée à
+ * `ExchangeNote.MAX_LENGTH` ; l'aide rappelle que le fichier n'est pas chiffré.
+ */
+@Composable
+private fun ExchangeNoteSection(received: ExchangeNote?, value: String, toManager: Boolean, onChange: (String) -> Unit) {
+    val language = uiLanguage()
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        received?.let { note ->
+            val date = Dates.short(note.at.toLocalDateTime(TimeZone.currentSystemDefault()).date, language)
+            Text(stringResource(Res.string.exchange_note_from, note.from, date), style = MaterialTheme.typography.labelLarge)
+            Text(note.text, style = MaterialTheme.typography.bodyMedium)
+        }
+        OutlinedTextField(
+            value,
+            { onChange(it.take(ExchangeNote.MAX_LENGTH)) },
+            label = { Text(stringResource(if (toManager) Res.string.exchange_note_for_manager else Res.string.exchange_note_for_member)) },
+            supportingText = { Text(stringResource(if (toManager) Res.string.exchange_note_help_report else Res.string.exchange_note_help_pack, ExchangeNote.MAX_LENGTH)) },
+            minLines = 2,
+            modifier = Modifier.fillMaxWidth().tabLeavesField(),
+        )
     }
 }

@@ -104,6 +104,29 @@ données.
     avertissement.
 - Sauvegarde automatique avant intégration, comme pour la réception.
 
+#### Notes jointes aux échanges (3.9.0, issue #120)
+
+Quand un membre rapporte 70 %, il ne peut pas dire « bloqué en attendant la
+clé d'API », et le manager ne peut pas lui répondre : le contexte passe par
+d'autres canaux et n'atteint jamais la tâche.
+
+- Chaque tâche échangée a une **note courte** de chaque côté, pas un fil de
+  discussion : le manager écrit la sienne dans la fiche d'une tâche d'équipe
+  (« Note pour le membre »), le membre la sienne dans la fiche d'une tâche
+  reçue (« Note pour le manager ») ; 500 caractères au plus, texte brut.
+- Le **paquet** emporte la note du manager, le **rapport** celle du membre.
+  Chaque échange porte au plus la **dernière** note de chaque côté.
+- La fiche montre la note reçue de l'autre côté, avec son **auteur** et sa
+  **date** (celle du paquet ou du rapport) : « Note de Léa, 3 oct. ». Un
+  échange sans note efface la note reçue précédente (elle n'est plus
+  d'actualité).
+- Les aperçus avant réception (paquet) et avant intégration (rapport)
+  listent les notes reçues. Chez le manager, une note reçue entre dans le
+  **journal** de la tâche (« Note de Léa : … »), comme une note envoyée
+  (« Note envoyée : … »).
+- Le champ rappelle que la note voyage **en clair** dans le fichier, qui
+  n'est pas chiffré ; elle ne contient que ce qu'on y écrit.
+
 #### Onglet « Échanges » : tout au même endroit (manager)
 
 L'écran Équipe a deux onglets, **« Membres »** (l'écran d'avant) et
@@ -152,6 +175,12 @@ l'expliquent (`accueil.md`).
   créneau (`TeamExchangeCodecTest.reportLeaksNothingPersonal`).
 - Un export complet (`export-import.md`) n'est jamais pris pour un paquet ou
   un rapport, et inversement.
+- Notes (3.9.0) : la note du manager arrive chez le membre avec son auteur
+  et la date du paquet, celle du membre chez le manager avec la date du
+  rapport ; recevoir deux fois le même échange ne change ni la note ni sa
+  date ; un échange sans note efface la note reçue ; un paquet ou un rapport
+  sans note est identique à celui d'avant (`ExchangeNotesTest`,
+  `TeamExchangeCodecTest`).
 - L'onglet « Échanges » donne, par membre, la date du dernier paquet, celle du
   dernier rapport et « En attente de son rapport » seulement quand un paquet
   est plus récent que le dernier rapport (`ExchangeStatusTest`) ; « Envoyer ses
@@ -169,7 +198,8 @@ l'expliquent (`accueil.md`).
   contiennent des titres de tâches ; l'écran de l'envoi le rappelle.
 - Tâches créées **par** le membre et remontées au manager (hors
   sous-tâches) : différé ; le membre en parle au manager, qui les crée.
-- Commentaires échangés : différé.
+- Fil de commentaires (plusieurs messages, réponses) : une note par côté
+  suffit (3.9.0, issue #120) ; le fil reste différé.
 
 ## 2. Solution technique
 
@@ -225,6 +255,48 @@ Deux formats JSON UTF-8 indentés, distincts de l'export par leur champ
   (`TeamPack`, `PackTask`, `PackDependency`, `ExternalBlocker`,
   `TeamReport`, `ReportTask`, `ReportSubtask`) ; `TeamExchangeCodec` ne fait
   que la traduction JSON.
+
+### Notes (3.9.0, issue #120)
+
+- **Modèle** : `Task.noteOut` (la note que **ce** côté enverra, texte, vide par
+  défaut) et `Task.noteIn: ExchangeNote?` (la dernière note reçue de l'autre
+  côté : `text`, `at`, `from`). `ExchangeNote.MAX_LENGTH` = 500 ; au-delà, un
+  texte reçu est tronqué, une saisie est bornée par le champ.
+- **Base** : colonnes `task.note_out` (texte, `''` par défaut) et
+  `task.note_in` (texte nul ; « instant␟auteur␟texte », séparateur U+001F,
+  comme `TeamOrigin`), ajoutées par `9.sqm` (schéma 10, avec
+  `team_member.week_hours`). **Export** : `noteOut` et `noteIn` d'une tâche,
+  absents quand vides (un export sans note ne change pas).
+- **Formats** : `PackTask.note` et `ReportTask.note`, facultatifs (`note`
+  dans le JSON, omis quand nul) : une version antérieure les ignore ; un
+  paquet ou un rapport sans note est identique à celui d'avant.
+- **Envoi** : `PackBuilder` pose `note` = `noteOut` de la tâche (vide = nul) ;
+  `recordPackSent` écrit, pour chaque tâche qui en porte une, un événement
+  `note` (valeur : le texte, membre : destinataire, source `manual`).
+- **Réception** (`PackMerge`, champ du manager) : `noteIn` = la note du paquet
+  (auteur : nom du manager, date : `exportedAt`), gardée telle quelle si le
+  texte n'a pas changé (pas de nouvelle date), effacée si le paquet n'en porte
+  pas ; `PackField.NOTE` dans les champs changés ; `PackMergePlan.notes` liste
+  (titre, texte) des notes nouvelles pour l'aperçu.
+- **Rapport** (`ReportBuilder`) : `note` = `noteOut` de la tâche reçue.
+- **Intégration** (`ReportMerge`) : `ReportChange.Note(from, to)` quand le
+  texte change ; `noteIn` = (texte, `reportedAt`, nom du membre), nul si le
+  rapport n'en porte plus ; le dépôt journalise un événement `note` (source
+  `report`, membre : celui qui rapporte) quand une note arrive.
+- **Journal** : `TeamEventKind.NOTE` (« note »), affiché « Note de Léa : … »
+  (source `report`) ou « Note envoyée : … » (sinon) dans l'historique.
+- **Interface** : `EditTaskDialog`, section « Note » d'une tâche d'équipe et
+  d'une tâche reçue (`ExchangeNoteSection`) : la note reçue (« Note de Léa,
+  3 oct. ») puis le champ de la note à envoyer, avec l'aide « Part avec le
+  prochain paquet (rapport), en clair : le fichier n'est pas chiffré. » ;
+  `TaskEdit.noteOut` (nul = inchangé). Aperçus : `ExchangePreviews` liste
+  « Notes : « titre » : texte ».
+- **Décisions** : *une note par côté*, pas un fil (demande de l'issue) ;
+  *la note reçue est un champ de l'autre côté* : écrasée à chaque échange,
+  effacée par un échange qui n'en porte pas (écarté : la garder, au risque
+  d'afficher une consigne périmée) ; *date = celle du fichier* (écarté : une
+  date de saisie, qui ferait sortir une donnée de plus) ; *aucune note dans
+  un rapport ou un paquet sans note* (format inchangé).
 
 ### Envoi (`PackBuilder`, pur)
 

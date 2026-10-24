@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import com.skohscripts.kairos.core.KairosBuild
@@ -311,6 +312,8 @@ class KairosRepository(
                     manualTimeSpentMinutes = edit.manualTimeSpentMinutes?.takeIf { it >= 0 },
                     // « Compter dans l'équipe » ne concerne qu'une tâche perso (docs/spec/equipe-moi.md).
                     teamExcluded = edit.teamExcluded?.takeIf { task.space == TaskSpace.PERSONAL } ?: task.teamExcluded,
+                    // Note à envoyer (docs/spec/equipe-echanges.md § Notes) : nettoyée, bornée ; `null` = inchangée.
+                    noteOut = edit.noteOut?.let { ExchangeNote.clean(it).orEmpty() } ?: task.noteOut,
             )
             // Série « le N du mois » enregistrée sans échéance : la tâche EST l'occurrence de ce mois. Sans cela, l'affichage
             // suivant en créait une seconde, de même titre, et l'originale restait « sans créneau » (recurrence.md).
@@ -779,8 +782,15 @@ class KairosRepository(
     suspend fun recordPackSent(prepared: PreparedPack) {
         if (prepared.taskUids.isEmpty()) return
         write {
+            val events = state.value.teamEvents
             state.value.tasks.filter { it.space == TaskSpace.TEAM && it.teamUid in prepared.taskUids }.sortedBy { it.id }
-                .forEach { journal(it, TeamEventKind.SENT, null, prepared.packId, TeamEventSource.MANUAL, memberId = prepared.memberId) }
+                .forEach { t ->
+                    journal(t, TeamEventKind.SENT, null, prepared.packId, TeamEventSource.MANUAL, memberId = prepared.memberId)
+                    // La note envoyée (docs/spec/equipe-echanges.md § Notes), une fois : renvoyer la même note ne la répète pas.
+                    val note = ExchangeNote.clean(t.noteOut) ?: return@forEach
+                    val last = events.lastOrNull { it.taskId == t.id && it.kind == TeamEventKind.NOTE && it.source != TeamEventSource.REPORT }
+                    if (last?.toValue != note) journal(t, TeamEventKind.NOTE, null, note, TeamEventSource.MANUAL, memberId = prepared.memberId)
+                }
         }
     }
 
@@ -964,6 +974,8 @@ class KairosRepository(
                     journal(after, TeamEventKind.PROGRESS, (change.from ?: 0).toString(), (change.to ?: 0).toString(), src, memberId = reporterId)
                 }
                 is ReportChange.Spent -> journal(after, TeamEventKind.TIME, change.from?.toString(), change.to.toString(), src, memberId = reporterId)
+                // Une note reçue entre au journal ; une note retirée par le membre, non (rien à lire).
+                is ReportChange.Note -> change.to?.let { journal(after, TeamEventKind.NOTE, null, it, src, memberId = reporterId) }
                 is ReportChange.Status -> Unit
             }
         }
@@ -1253,7 +1265,7 @@ class KairosRepository(
                 t.createdAt.store(), t.updatedAt.store(), t.space.code.toLong(), t.assigneeId,
                 t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
                 t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
-                t.seriesId,
+                t.seriesId, t.noteOut, t.noteIn?.encode(),
             )
         }
         for (m in snapshot.members) {
@@ -1319,7 +1331,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             now(), now(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(), t.startedOn.store(), t.teamUid,
             t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(), if (t.teamExcluded) 1L else 0L,
-            t.seriesId,
+            t.seriesId, t.noteOut, t.noteIn?.encode(),
         )
         val id = queries.lastInsertedId().awaitAsOneOrNull()
         if (t.space == TaskSpace.TEAM && id != null) {
@@ -1348,7 +1360,7 @@ class KairosRepository(
             t.recurrencePeriod, t.taskType, t.fibonacciPoints?.toLong(), t.manualTimeSpentMinutes?.toLong(),
             if (touch) now() else t.updatedAt.store(), t.space.code.toLong(), t.assigneeId, t.progressPercent?.toLong(),
             t.startedOn.store(), t.teamUid, t.origin, if (t.originRemoved) 1L else 0L, t.reportedMinutes?.toLong(),
-            if (t.teamExcluded) 1L else 0L, t.seriesId, t.id,
+            if (t.teamExcluded) 1L else 0L, t.seriesId, t.noteOut, t.noteIn?.encode(), t.id,
         )
     }
 
@@ -1509,6 +1521,11 @@ data class TaskEdit(
      * `null` = inchangé. Sans effet sur une tâche d'équipe.
      */
     val teamExcluded: Boolean? = null,
+    /**
+     * Note à envoyer avec le prochain paquet (tâche d'équipe) ou rapport (tâche reçue), docs/spec/equipe-echanges.md § Notes ;
+     * `null` = inchangée.
+     */
+    val noteOut: String? = null,
 )
 
 /**

@@ -174,7 +174,7 @@ est chaque sujet, avec l'historique de ce qui s'est passé.
   les cinq états suffisent ; un besoin de plus rouvrira cette spec.
 - Sprints ou itérations nommées : l'horizon glissant de `equipe-charge.md`
   en tient lieu.
-- Commentaires en fil sur une tâche (la description sert de notes).
+- Commentaires en fil sur une tâche (la description sert de notes ; une note par côté voyage avec les échanges depuis la 3.9.0, `equipe-echanges.md` § Notes).
 - Glisser-déposer (toutes plateformes, § Décisions).
 
 ## 2. Solution technique

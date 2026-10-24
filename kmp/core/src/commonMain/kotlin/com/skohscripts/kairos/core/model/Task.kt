@@ -72,6 +72,12 @@ data class Task(
      * par leur titre). Sert à retrouver le temps passé sur les occurrences passées.
      */
     val seriesId: Long? = null,
+    /**
+     * Notes des échanges d'équipe (docs/spec/equipe-echanges.md § Notes, issue #120) : [noteOut], la note que ce côté enverra
+     * avec le prochain paquet (manager) ou rapport (membre), vide par défaut ; [noteIn], la dernière note reçue de l'autre côté.
+     */
+    val noteOut: String = "",
+    val noteIn: ExchangeNote? = null,
 ) {
     /**
      * Pas encore clarifiée (GTD) : il manque la priorité **ou** les points. Elle

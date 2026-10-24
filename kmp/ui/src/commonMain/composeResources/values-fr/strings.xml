@@ -1108,6 +1108,13 @@
     <string name="exchange_change_progress">Avancement : %1$s → %2$s</string>
     <string name="exchange_change_started">Commencée : %1$s → %2$s</string>
     <string name="exchange_change_spent">Temps passé : %1$s → %2$s</string>
+    <string name="exchange_pack_notes">Notes du manager</string>
+    <string name="exchange_note_line">« %1$s » : %2$s</string>
+    <string name="exchange_field_note">note</string>
+    <string name="exchange_change_note">Note : %1$s</string>
+    <string name="exchange_change_note_removed">Note retirée</string>
+    <string name="event_note_received">Note de %1$s : %2$s</string>
+    <string name="event_note_sent">Note envoyée : %1$s</string>
     <string name="exchange_status_todo">à faire</string>
     <string name="exchange_status_done">faite</string>
     <string name="exchange_status_archived">archivée</string>
@@ -1125,6 +1132,11 @@
     <string name="received_removed_description">tâche retirée par %1$s</string>
     <string name="received_keep">Garder comme tâche personnelle</string>
     <string name="received_edit_help">Reçue de %1$s. Titre, description, priorité, points, catégorie, échéance et durée sont remplacés à chaque nouveau paquet ; l’avancement est le tien.</string>
+    <string name="exchange_note_from">Note de %1$s, %2$s</string>
+    <string name="exchange_note_for_manager">Note pour le manager</string>
+    <string name="exchange_note_for_member">Note pour le membre</string>
+    <string name="exchange_note_help_report">Part avec le prochain rapport, en clair : le fichier n’est pas chiffré. %1$d caractères au plus.</string>
+    <string name="exchange_note_help_pack">Part avec le prochain paquet, en clair : le fichier n’est pas chiffré. %1$d caractères au plus.</string>
 
     <!-- Accueil, visite guidée et aide (docs/spec/accueil.md) -->
     <string name="title_home">Accueil</string>

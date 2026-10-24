@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.data
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.team.exchange.ExternalBlocker
 import com.skohscripts.kairos.core.team.exchange.PackDependency
@@ -120,6 +121,8 @@ private data class PackTaskJson(
     val deadline: String? = null,
     val estimatedMinutes: Int? = null,
     val progressPercent: Int? = null,
+    // 3.9.0 (docs/spec/equipe-echanges.md § Notes) : omise sans note, ignorée par une version antérieure.
+    val note: String? = null,
 )
 
 @Serializable
@@ -162,6 +165,7 @@ private data class PackFile(
                     deadline = it.deadline?.let(LocalDate::parse),
                     estimatedMinutes = it.estimatedMinutes,
                     progressPercent = it.progressPercent,
+                    note = ExchangeNote.clean(it.note),
                 )
             },
             dependencies = dependencies.map { PackDependency(it.taskUid, it.blockerUid) },
@@ -191,6 +195,7 @@ private data class PackFile(
                     deadline = it.deadline?.toString(),
                     estimatedMinutes = it.estimatedMinutes,
                     progressPercent = it.progressPercent,
+                    note = it.note,
                 )
             },
             dependencies = p.dependencies.map { PackDependencyJson(it.taskUid, it.blockerUid) },
@@ -207,6 +212,8 @@ private data class ReportTaskJson(
     val startedOn: String? = null,
     val progressPercent: Int? = null,
     val spentMinutes: Int = 0,
+    // 3.9.0 (docs/spec/equipe-echanges.md § Notes) : omise sans note, ignorée par une version antérieure.
+    val note: String? = null,
 )
 
 @Serializable
@@ -243,6 +250,7 @@ private data class ReportFile(
                     startedOn = it.startedOn?.let(LocalDate::parse),
                     progressPercent = it.progressPercent,
                     spentMinutes = it.spentMinutes,
+                    note = ExchangeNote.clean(it.note),
                 )
             },
             newSubtasks = newSubtasks.map {
@@ -272,6 +280,7 @@ private data class ReportFile(
                     startedOn = it.startedOn?.toString(),
                     progressPercent = it.progressPercent,
                     spentMinutes = it.spentMinutes,
+                    note = it.note,
                 )
             },
             newSubtasks = r.newSubtasks.map {

@@ -310,7 +310,9 @@ order (critical path). Cycles are refused.
   which the manager receives in the same place and merges after a preview. For
   each member, the tab shows the date of the last packet and the last report,
   and flags "Waiting for their report". Everyone keeps control of their own
-  fields; nothing is deleted unless you choose it.
+  fields; nothing is deleted unless you choose it. Each task can carry a short
+  **note** each way ("Blocked until the API key arrives"), shown with its
+  author and date and kept in the task's history.
 - A single user, the manager: everything stays on the device, with no account
   or network; the files travel however you like (email, USB drive…).
 

@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.core.team.exchange
 
+import com.skohscripts.kairos.core.model.ExchangeNote
 import com.skohscripts.kairos.core.engine.Dependencies
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
 import com.skohscripts.kairos.core.model.KairosSnapshot
@@ -16,7 +17,7 @@ enum class PackRefusal {
 }
 
 /** Champ du manager qu'une mise à jour change (aperçu de réception). */
-enum class PackField { TITLE, DESCRIPTION, PRIORITY, POINTS, CATEGORY, DEADLINE, ESTIMATE }
+enum class PackField { TITLE, DESCRIPTION, PRIORITY, POINTS, CATEGORY, DEADLINE, ESTIMATE, NOTE }
 
 /** Paire de tâches désignées par leur `teamUid` : [taskUid] est bloquée par [blockerUid]. */
 data class DependencyRef(val taskUid: String, val blockerUid: String)
@@ -72,6 +73,11 @@ data class PackMergePlan(
     /** Mises à jour qui changent quelque chose de visible (compteur « mises à jour » de l'aperçu). */
     val visibleUpdates: List<UpdatedReceivedTask> get() = updated.filter { it.isVisible }
 
+    /** Notes nouvelles du manager, (titre, texte), pour l'aperçu (docs/spec/equipe-echanges.md § Notes). */
+    val notes: List<Pair<String, String>>
+        get() = created.mapNotNull { n -> n.task.noteIn?.let { n.task.title to it.text } } +
+            updated.mapNotNull { u -> u.after.noteIn?.takeIf { it != u.before.noteIn }?.let { u.after.title to it.text } }
+
     /** Rien à écrire : le paquet a déjà été reçu tel quel. */
     val isNoop: Boolean
         get() = created.isEmpty() && updated.isEmpty() && removed.isEmpty() && dependencyAdds.isEmpty() && dependencyRemoves.isEmpty()
@@ -126,7 +132,7 @@ object PackMerge {
             val parentUid = parentOf(p)
             val existing = received[p.uid] ?: adoptable[p.uid]
             if (existing == null) {
-                created += NewReceivedTask(newTask(p, encoded, now), parentUid)
+                created += NewReceivedTask(newTask(p, encoded, now).copy(noteIn = noteOf(p, pack, null)), parentUid)
                 continue
             }
             val adopted = existing.origin == null
@@ -136,7 +142,8 @@ object PackMerge {
                 existing.parentId != null && existing.parentId in receivedIds -> null
                 else -> existing.parentId
             }
-            val after = withManagerFields(existing, p, keepWhenEmpty = adopted).copy(origin = encoded, originRemoved = false, parentId = parentId)
+            val after = withManagerFields(existing, p, keepWhenEmpty = adopted)
+                .copy(origin = encoded, originRemoved = false, parentId = parentId, noteIn = noteOf(p, pack, existing.noteIn))
             val pending = parentUid != null && parentExisting == null
             if (after == existing && !pending) {
                 unchanged += existing
@@ -167,6 +174,15 @@ object PackMerge {
             externalBlockers = pack.externalBlockers.filter { it.taskUid in packUids },
             memberChanged = receivedAll.any { ReceivedTasks.originOf(it)?.memberUid != pack.member.uid },
         )
+    }
+
+    /**
+     * La note du manager reçue avec [p] (docs/spec/equipe-echanges.md § Notes) : celle d'avant si le texte n'a pas changé (pas de
+     * nouvelle date), sinon datée du paquet et signée du manager ; `null` si le paquet n'en porte pas.
+     */
+    private fun noteOf(p: PackTask, pack: TeamPack, before: ExchangeNote?): ExchangeNote? {
+        val text = ExchangeNote.clean(p.note) ?: return null
+        return before?.takeIf { it.text == text } ?: ExchangeNote(text, pack.exportedAt, pack.team.manager)
     }
 
     private fun newTask(p: PackTask, origin: String, now: Instant) = Task(
@@ -214,6 +230,7 @@ object PackMerge {
         if (before.taskType != after.taskType) add(PackField.CATEGORY)
         if (before.deadline != after.deadline) add(PackField.DEADLINE)
         if (before.estimatedMinutes != after.estimatedMinutes) add(PackField.ESTIMATE)
+        if (before.noteIn != after.noteIn) add(PackField.NOTE)
     }
 
     private fun sanitizedPriority(value: Int?) = value?.takeIf { it in PRIORITY_VALUES }

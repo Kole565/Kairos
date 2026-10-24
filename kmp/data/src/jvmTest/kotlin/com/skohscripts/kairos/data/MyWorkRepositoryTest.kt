@@ -52,7 +52,7 @@ class MyWorkRepositoryTest {
         val file = Files.createTempFile("kairos-v6", ".db").toFile().also { it.delete() }
         open(file)
         val before = open(file).snapshot.value.tasks.map { it.id }
-        sql(file, "ALTER TABLE team_member DROP COLUMN week_hours", "DROP TABLE time_block_exception", "ALTER TABLE task DROP COLUMN series_id", "ALTER TABLE task DROP COLUMN team_excluded", "PRAGMA user_version = 6")
+        sql(file, "ALTER TABLE team_member DROP COLUMN week_hours", "ALTER TABLE task DROP COLUMN note_out", "ALTER TABLE task DROP COLUMN note_in", "DROP TABLE time_block_exception", "ALTER TABLE task DROP COLUMN series_id", "ALTER TABLE task DROP COLUMN team_excluded", "PRAGMA user_version = 6")
 
         val repo = open(file)
         assertEquals(KairosDatabase.Schema.version.toInt(), userVersion(file))
