@@ -151,7 +151,17 @@ object SelfTest {
                         com.skohscripts.kairos.core.model.WorkSession(id++, task.id, start, start.plus(kotlin.time.Duration.parse("1h")), start)
                     }
                 }
-                s.repository.replaceAll(snap.copy(workSessions = sessions))
+                // Les trois tâches chronométrées sont terminées à une semaine d'écart : le biais par semaine (issue #112) et
+                // « Corriger les estimations… » (issue #101) ont de quoi se montrer.
+                val estimates = listOf(240, 180, 240)
+                val finished = types.mapIndexed { i, t ->
+                    t.copy(
+                        status = com.skohscripts.kairos.core.model.TaskStatus.DONE,
+                        estimatedMinutes = estimates[i],
+                        updatedAt = base.minus(kotlin.time.Duration.parse("${7 * i}d")),
+                    )
+                }.associateBy { it.id }
+                s.repository.replaceAll(snap.copy(workSessions = sessions, tasks = snap.tasks.map { finished[it.id] ?: it }))
             }
         }
         val hoursStats: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.STATS) { hoursServices } }

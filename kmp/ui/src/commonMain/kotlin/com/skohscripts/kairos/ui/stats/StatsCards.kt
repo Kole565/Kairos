@@ -24,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.stats.BestHours
+import com.skohscripts.kairos.core.stats.StatsTrends
 import com.skohscripts.kairos.core.stats.TaskStats
+import com.skohscripts.kairos.ui.generated.resources.stats_bias_trend_title
+import com.skohscripts.kairos.ui.generated.resources.stats_tracked_title
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.day.duration
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -84,7 +87,9 @@ import kotlin.math.round
 internal enum class StatsCard(val title: StringResource, val fileKey: String) {
     KEY_FIGURES(Res.string.stats_key_figures, "key-figures"),
     THROUGHPUT(Res.string.stats_throughput_title, "throughput"),
+    TRACKED(Res.string.stats_tracked_title, "tracked-time"),
     CALIBRATION(Res.string.stats_calibration_title, "calibration"),
+    BIAS_TREND(Res.string.stats_bias_trend_title, "bias-trend"),
     TIME_BY_TYPE(Res.string.stats_types_title, "time-by-type"),
     HOURS(Res.string.stats_hours_title, "hours"),
     BACKLOG(Res.string.stats_flow_title, "backlog"),
@@ -97,7 +102,7 @@ internal enum class StatsCard(val title: StringResource, val fileKey: String) {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun StatsCardView(card: StatsCard, stats: TaskStats.Dashboard, hours: BestHours.Result, language: String) {
+internal fun StatsCardView(card: StatsCard, stats: TaskStats.Dashboard, hours: BestHours.Result, trends: StatsTrends.Result, language: String) {
     when (card) {
         StatsCard.KEY_FIGURES -> TileFlow { tile ->
             StatTile(stats.completedInWindow.toString(), stringResource(Res.string.stats_kpi_done, stats.windowWeeks), tile)
@@ -113,6 +118,10 @@ internal fun StatsCardView(card: StatsCard, stats: TaskStats.Dashboard, hours: B
                 BarRow(Dates.dayMonth(w.weekStart, language), fraction(w.completed, max), stringResource(Res.string.stats_throughput_row, w.completed, w.points))
             }
         }
+
+        StatsCard.TRACKED -> TrackedCard(trends, language)
+
+        StatsCard.BIAS_TREND -> BiasTrendCard(trends, language)
 
         StatsCard.CALIBRATION -> Panel(KairosIcons.Schedule, stringResource(Res.string.stats_calibration_title), stringResource(Res.string.stats_calibration_hint)) {
             if (stats.calibration.isEmpty()) {

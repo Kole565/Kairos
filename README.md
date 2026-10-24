@@ -202,6 +202,9 @@ order (critical path). Cycles are refused.
   view (type, project, priority…); nothing is saved. "Export…" saves what the
   screen shows: the tables as one CSV file (ready for a spreadsheet), or one card
   as a PNG image with its date, period and filter.
+- **Trends** (Statistics): tracked time day by day (week by week beyond 8
+  weeks) and the estimation bias week by week, each chart with its written
+  summary and sample size.
 - **Correct the estimates** (Statistics): replaces the estimate of finished,
   timed tasks with the time really spent, after a preview where you untick
   the ones to keep; "Undo" brings the old estimates back.

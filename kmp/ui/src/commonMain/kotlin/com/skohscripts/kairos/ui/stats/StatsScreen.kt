@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.stats
 
+import com.skohscripts.kairos.core.stats.StatsTrends
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
 import com.skohscripts.kairos.ui.generated.resources.action_revert
@@ -109,6 +110,8 @@ fun StatsScreen(services: AppServices) {
     val stats = remember(input) { query.dashboard(input, today, now, timeZone) }
     // Quand on travaille chaque type (docs/spec/planning-personnalise.md § Lot C, étape C1) : observation seule.
     val hours = remember(input) { query.hours(input, now, timeZone) }
+    // Évolutions (issue #112) : même entrée, même fenêtre.
+    val trends = remember(input) { StatsTrends.compute(input.tasks, input.sessions, today, input.settings.statsWindowWeeks, now, timeZone) }
     val projects = remember(snapshot) { snapshot.tasks.map { it.projectTag }.filter { it.isNotEmpty() }.distinct().sorted() }
     // Export (issue #113) : ce que l'écran montre, rien n'est écrit dans la base. [capture] = carte en cours de rendu hors écran.
     val scope = rememberCoroutineScope()
@@ -143,7 +146,7 @@ fun StatsScreen(services: AppServices) {
                             .onFailure { messages(getString(Res.string.file_error)) }
                     }
                 },
-            ) { StatsCardImage({ StatsCardView(card, stats, hours, language) }, caption) }
+            ) { StatsCardImage({ StatsCardView(card, stats, hours, trends, language) }, caption) }
         }
         Column(Modifier.widthIn(max = 960.dp).fillMaxWidth().padding(KairosSpacing.l), verticalArrangement = Arrangement.spacedBy(KairosSpacing.m)) {
             // Une base vide n'a rien à filtrer : l'état vide seul.
@@ -186,9 +189,9 @@ fun StatsScreen(services: AppServices) {
             StatsCard.entries.forEach { card ->
                 if (card == StatsCard.HOURS) {
                     // Panneau que la carte « Quand tu travailles chaque type » fait voir (docs/spec/visite-guidee.md, issue #95).
-                    GuideSpot(GuideSection.STATS_HOURS) { StatsCardView(card, stats, hours, language) }
+                    GuideSpot(GuideSection.STATS_HOURS) { StatsCardView(card, stats, hours, trends, language) }
                 } else {
-                    StatsCardView(card, stats, hours, language)
+                    StatsCardView(card, stats, hours, trends, language)
                 }
                 // Sous la carte, pas dedans : l'image exportée d'une carte ne montre pas de bouton.
                 if (card == StatsCard.CALIBRATION && corrections.isNotEmpty()) {

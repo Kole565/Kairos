@@ -362,6 +362,17 @@
     <string name="stats_bias_under">Tu sous-estimes.</string>
     <string name="stats_bias_over">Tu surestimes.</string>
     <string name="stats_bias_fair">Estimations justes.</string>
+    <string name="stats_tracked_title">Temps chronométré au fil du temps</string>
+    <string name="stats_tracked_hint_daily">Une barre par jour de la période : le temps des sessions de chrono commencées ce jour-là.</string>
+    <string name="stats_tracked_hint_weekly">Une barre par semaine de la période : le temps des sessions de chrono commencées cette semaine-là.</string>
+    <string name="stats_tracked_summary">Total %1$s · %2$d sur %3$d avec du temps (%4$s) · pointe : %5$s (%6$s)</string>
+    <string name="stats_tracked_scale">max %1$s</string>
+    <string name="stats_tracked_empty">Aucun temps chronométré sur la période.</string>
+    <string name="stats_bias_trend_title">Biais d’estimation par semaine</string>
+    <string name="stats_bias_trend_hint">Temps réel ÷ estimé des tâches terminées chaque semaine. La ligne pointillée est ×1 : au-dessus, tu sous-estimes ; un point creux est peu fiable.</string>
+    <string name="stats_bias_trend_summary">Semaines mesurées : %1$d sur %2$d. Dernière : ×%3$s (%4$s).</string>
+    <string name="stats_bias_week_row">Semaine du %1$s : ×%2$s · %3$s réel pour %4$s estimé (%5$s)</string>
+    <string name="stats_bias_trend_empty">Pas encore de tâche terminée avec une estimation et du temps réel sur la période.</string>
     <string name="stats_types_title">Répartition du temps réel</string>
     <string name="stats_types_hint">Où passe le temps chronométré, sur %1$d semaine(s).</string>
     <string name="stats_types_empty">Aucun temps chronométré sur la période.</string>
@@ -1337,6 +1348,8 @@
     <string name="card_month_body">Dans la vue Semaine, « Mois » montre chaque jour du mois : tâches prévues, échéances, journées trop chargées, fériés et jours libres. Touche un jour pour l’ouvrir.</string>
     <string name="card_correct_title">Corriger ses estimations</string>
     <string name="card_correct_body">Dans les Statistiques, « Corriger les estimations… » remplace l’estimation de tâches terminées par le temps chronométré, après un aperçu où l’on décoche ce qu’on garde ; « Annuler » rend les anciennes.</string>
+    <string name="card_trends_title">Voir les choses évoluer</string>
+    <string name="card_trends_body">Les Statistiques montrent le temps chronométré jour par jour et le biais d’estimation semaine par semaine, chaque graphique avec son résumé écrit.</string>
     <string name="card_settings_categories_title">Des réglages rangés par catégories</string>
     <string name="card_settings_categories_body">Général, Journée et horaires, Planification, Chrono et statistiques… : chaque catégorie a son icône et son résumé ; sur grand écran, la liste et la catégorie côte à côte.</string>
     <string name="card_darktheme_title">Thème sombre</string>

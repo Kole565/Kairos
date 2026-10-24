@@ -13,10 +13,11 @@ Jour (`vue-jour.md`). Tests : `core/.../stats/StatsDifferentialTest.kt`
 `StatsExportUiTest`. Correction des estimations (3.8.0) : `core/.../stats/EstimateCorrection.kt`,
 `ui/.../stats/EstimateCorrectionDialog.kt`, `KairosRepository.setEstimates` ; tests `EstimateCorrectionTest`,
 `KairosRepositoryTest.correctingEstimatesWritesFinishedPersonalTasksOnlyAndKeepsTheirCompletionDate`,
-`EstimateCorrectionUiTest`._
+`EstimateCorrectionUiTest`. Évolutions (3.8.0) : `core/.../stats/StatsTrends.kt`, `ui/.../stats/StatsTrendCards.kt` ;
+tests `StatsTrendsTest`, `StatsTrendsUiTest`._
 
 État : **jalon M4** ; filtres interactifs (issue #114) et export CSV et image (issue #113) en 3.7.0 ; « Corriger les
-estimations… » (issue #101) en 3.8.0. Les sorties sont figées par les fichiers d'or de
+estimations… » (issue #101) et évolutions dans le temps (issue #112) en 3.8.0. Les sorties sont figées par les fichiers d'or de
 `StatsDifferentialTest` (`stats.json`, source de vérité depuis
 `retrait-kairos2.md`).
 
@@ -91,6 +92,23 @@ ce filtre. Change-le ou réinitialise-le plus haut. », le filtre restant visibl
 Honnêteté statistique : chaque agrégat montre son effectif ; sous 3, il est
 marqué « peu fiable » (icône d'alerte), mais reste affiché.
 
+**Évolutions** (3.8.0, issue #112). Deux cartes montrent comment les choses bougent, pas seulement les totaux de la
+période ; elles suivent la période et les filtres comme les autres :
+- « Temps chronométré au fil du temps », après le débit : une barre par jour de la période (une par semaine au-delà de
+  8 semaines, 26 au plus pour « Tout »), le temps des sessions commencées ce jour-là ; l'échelle (« max 3 h »), la date
+  de la première et de la dernière barre, puis le résumé écrit « Total 14 h · 6 sur 55 avec du temps (n=6) · pointe :
+  mer. 21/10 (3 h) », « peu fiable » sous 3 jours (ou semaines) avec du temps. Rien sur la période : « Aucun temps
+  chronométré sur la période. »
+- « Biais d'estimation par semaine », après la calibration : pour chaque semaine, temps réel ÷ estimé des tâches
+  terminées cette semaine-là (estimation et temps réel, comme le biais global) ; un point par semaine mesurée, relié au
+  suivant, creux si la semaine est peu fiable (moins de 3 tâches), et la ligne pointillée ×1 ; au-dessus, le résumé
+  « Semaines mesurées : 3 sur 8. Dernière : ×1.50 (n=1, peu fiable). », dessous une ligne par semaine mesurée, la plus
+  récente d'abord (« Semaine du 19/10 : ×1.50 · 6 h réel pour 4 h estimé (n=1, peu fiable) »). Rien : « Pas encore de
+  tâche terminée avec une estimation et du temps réel sur la période. »
+- Une seule teinte (le primaire) ; aucune information par la couleur seule : chaque graphique a son résumé écrit, et le
+  lecteur d'écran lit le résumé du temps chronométré (graphique et résumé en un nœud) et les lignes du biais. Les deux
+  cartes s'exportent en image comme les autres ; le CSV ne change pas.
+
 **Corriger les estimations** (3.8.0, issue #101). L'écran est en lecture seule, sauf cette action explicite. Pour
 nettoyer son historique avant de se fier à la calibration (une tâche terminée avec une estimation irréaliste, ou sans
 estimation), le bouton « Corriger les estimations… », sous la carte de calibration, n'apparaît que s'il y a quelque
@@ -121,6 +139,12 @@ saisi, celui de la calibration). Toutes les tâches terminées, quelles que soie
   (`StatsDifferentialTest.dashboard_matches_golden`).
 - Choisir « 4 sem. » change le libellé des chiffres clés ; filtrer sur un type réduit l'effectif (« Filtré : 1 sur 2
   tâches ») ; un filtre sans résultat le dit et se réinitialise ; la ligne tient à 360 dp (`StatsFilterUiTest`).
+- Évolutions : barres par jour sur la fenêtre (11 jours du lundi d'il y a une semaine à un jeudi), par semaine au-delà
+  de 8 semaines, total, effectif, pointe, moyenne ; biais par semaine dont la somme redonne le biais global de la
+  fenêtre ; semaine sans tâche sans ratio ; la fenêtre suit les réglages, « Tout » est borné à 26 semaines
+  (`StatsTrendsTest`, valeurs figées écrites à la main) ; résumé lu par le lecteur d'écran, effectif et « not reliable »
+  (`StatsTrendsUiTest.eachChartHasAWrittenSummaryWithItsSample`). Fichiers d'or existants (`stats.json`,
+  `stats-export.csv`) inchangés.
 - Correction des estimations : seules les tâches faites, Perso, non reçues, chronométrées et dont l'estimation diffère ;
   temps réel = chrono plus temps saisi ; les plus récentes d'abord (`EstimateCorrectionTest`) ; le dépôt n'écrit que ces
   tâches, garde leur `updatedAt`, annule avec les valeurs d'avant
@@ -138,7 +162,9 @@ saisi, celui de la calibration). Toutes les tâches terminées, quelles que soie
 
 ### Hors périmètre / différé
 
-- Graphiques temporels fins, estimation par apprentissage ; un débit par mois pour « Tout ».
+- Estimation par apprentissage ; un débit par mois pour « Tout » ; le temps chronométré empilé par type (une couleur par
+  type sortirait de la charte : une seule teinte pour les barres, le tertiaire réservé au deep work ; la répartition par
+  type reste la carte « Où va le temps réel ») ; créées contre terminées par semaine ; les évolutions dans le CSV.
 - Corriger les estimations des tâches d'équipe ou d'une période choisie seulement.
 - Image de l'écran entier, PDF, export des prévisions de l'espace Équipe (`equipe-simulation.md`).
 
@@ -294,6 +320,24 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   `stackedWhenNarrow`, et partage son tracé (`BarTrack`). Sans ces options,
   le rendu des statistiques est inchangé.
 
+### Évolutions (`StatsTrends`, `core` ; `StatsTrendCards`, `ui` ; 3.8.0)
+
+- `StatsTrends.compute(tâches, sessions, aujourd'hui, semaines, maintenant, fuseau)` sur l'entrée filtrée
+  (`StatsQuery.Input`, `settings.statsWindowWeeks` = la période choisie) ; semaines bornées à 1-`MAX_WEEKS` (26).
+  Fenêtre = celle du tableau de bord (lundi d'il y a `semaines - 1` semaines → aujourd'hui).
+  - `tracked` : `daily` si `semaines ≤ DAILY_MAX_WEEKS` (8) ; minutes des sessions commencées (date locale,
+    `TimeTracking.sessionsInRange`, `sessionMinutes`) par jour, sinon par lundi ; `Tracked.total`, `active`, `busiest`
+    (la plus haute, la plus ancienne à égalité), `averageActive`.
+  - `weeklyBias` : tâches `DONE` d'estimation non nulle et de temps réel positif
+    (`spentMinutesByTask(sessions, maintenant, tâches)`), rangées par lundi de leur `updatedAt` local dans la fenêtre ;
+    `WeekBias(count, estimé, réel)`, `ratio` nul sans tâche, `reliable` dès `MIN_SAMPLE` (3).
+- `StatsCard.TRACKED` (après `THROUGHPUT`) et `StatsCard.BIAS_TREND` (après `CALIBRATION`), rendus par `TrackedCard` et
+  `BiasTrendCard` ; `StatsCardView` reçoit `trends`. Barres : `Row` de `Box` à hauteur relative au maximum (2 dp au
+  moins pour une valeur non nulle), espacement 1 dp au-delà de 30 barres ; biais : `Canvas` (ligne `outline` en
+  pointillés à ×1, segments et points `primary`, point creux = `surface` + contour), plafond ×4, points décalés de 6 dp
+  des bords ; graphiques en `clearAndSetSemantics { }`, résumé du temps chronométré en `contentDescription` de la
+  colonne fusionnée. Icône `ShowChart` (ajoutée à `make_icons.py`).
+
 ### Corriger les estimations (`EstimateCorrection`, `core` ; `EstimateCorrectionDialog`, `ui` ; 3.8.0)
 
 - `EstimateCorrection.candidates(snapshot, maintenant)` : tâches `DONE`, `PERSONAL`, `origin == null`, dont les sessions
@@ -347,6 +391,12 @@ disparue y tombe) : `Profile(type, sessions, minutes, share, lift, peak, reliabl
   échéances tenues : un chiffre
   statistique n'est pas une erreur ; le rouge reste aux lignes de tâches
   en retard.
+- **Par semaine au-delà de 8 semaines** (2026-10-24, issue #112) : 56 barres tiennent encore à 360 dp (4 dp chacune) ; au-delà,
+  une barre par jour ne se lit plus. Le libellé de la carte le dit (« Une barre par jour / par semaine »).
+- **Pas d'empilement par type** : l'issue le citait en exemple ; il demanderait une couleur par type, hors de la charte
+  (une teinte pour les barres, tertiaire réservé au deep work). La répartition par type a déjà sa carte.
+- **Biais par semaine de fin, comme le débit** : la date de fin d'une tâche faite est sa dernière modification (aucun
+  horodatage dédié) ; la somme des semaines redonne le biais global restreint à la fenêtre (testé).
 - **Corriger sans toucher `updatedAt`** (issue #101) : la vue Semaine et les statistiques datent la fin d'une tâche faite
   par sa dernière modification ; une correction l'aurait fait « terminer » aujourd'hui. Écarté : une colonne « terminée
   le » (une migration pour une action rare).

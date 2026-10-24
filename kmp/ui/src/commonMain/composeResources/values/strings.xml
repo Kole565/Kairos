@@ -361,6 +361,17 @@
     <string name="stats_bias_under">You underestimate.</string>
     <string name="stats_bias_over">You overestimate.</string>
     <string name="stats_bias_fair">Your estimates are accurate.</string>
+    <string name="stats_tracked_title">Tracked time over time</string>
+    <string name="stats_tracked_hint_daily">One bar per day of the period: the time of the timer sessions started that day.</string>
+    <string name="stats_tracked_hint_weekly">One bar per week of the period: the time of the timer sessions started that week.</string>
+    <string name="stats_tracked_summary">Total %1$s · %2$d of %3$d with time (%4$s) · peak: %5$s (%6$s)</string>
+    <string name="stats_tracked_scale">max %1$s</string>
+    <string name="stats_tracked_empty">No tracked time in this period.</string>
+    <string name="stats_bias_trend_title">Estimation bias per week</string>
+    <string name="stats_bias_trend_hint">Real time ÷ estimate of the tasks finished each week. The dotted line is ×1: above it, you underestimate; a hollow point is not reliable.</string>
+    <string name="stats_bias_trend_summary">Measured weeks: %1$d of %2$d. Latest: ×%3$s (%4$s).</string>
+    <string name="stats_bias_week_row">Week of %1$s: ×%2$s · %3$s real for %4$s estimated (%5$s)</string>
+    <string name="stats_bias_trend_empty">No finished task with an estimate and real time in this period yet.</string>
     <string name="stats_types_title">Where the real time goes</string>
     <string name="stats_types_hint">Where the timed work goes, over %1$d week(s).</string>
     <string name="stats_types_empty">No timed work over the period.</string>
@@ -1335,6 +1346,8 @@
     <string name="card_month_body">In the Week view, “Month” shows every day of the month: planned tasks, deadlines, overloaded days, public holidays and days off. Tap a day to open it.</string>
     <string name="card_correct_title">Correct your estimates</string>
     <string name="card_correct_body">In Statistics, “Correct the estimates…” replaces the estimate of finished tasks with the timed duration, after a preview where you untick what to keep; “Undo” brings the old ones back.</string>
+    <string name="card_trends_title">See how things evolve</string>
+    <string name="card_trends_body">Statistics show the tracked time day by day and the estimation bias week by week, each chart with its written summary.</string>
     <string name="card_settings_categories_title">Settings sorted by category</string>
     <string name="card_settings_categories_body">General, Day and hours, Planning, Timer and statistics…: each category has its icon and summary; on a wide screen, the list and the category sit side by side.</string>
     <string name="card_darktheme_title">Dark theme</string>

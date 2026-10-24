@@ -209,6 +209,9 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   « Exporter… » enregistre ce que l’écran montre : les tableaux dans un fichier
   CSV (prêt pour un tableur), ou une carte en image PNG avec sa date, sa période
   et son filtre.
+- **Évolutions** (Statistiques) : le temps chronométré jour par jour (semaine
+  par semaine au-delà de 8 semaines) et le biais d’estimation semaine par
+  semaine, chaque graphique avec son résumé écrit et son effectif.
 - **Corriger les estimations** (Statistiques) : remplace l’estimation de tâches
   terminées et chronométrées par le temps réellement passé, après un aperçu où
   l’on décoche celles à garder ; « Annuler » rend les anciennes estimations.
