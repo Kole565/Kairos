@@ -56,6 +56,12 @@ import com.skohscripts.kairos.core.settings.FieldErrorKind
 import com.skohscripts.kairos.core.settings.FieldKind
 import com.skohscripts.kairos.core.settings.SettingsForm
 import com.skohscripts.kairos.ui.generated.resources.Res
+import com.skohscripts.kairos.ui.generated.resources.setting_reminders_next
+import com.skohscripts.kairos.ui.generated.resources.setting_reminders_lead_help
+import com.skohscripts.kairos.ui.generated.resources.setting_reminders_lead
+import com.skohscripts.kairos.ui.generated.resources.setting_reminders_enabled
+import com.skohscripts.kairos.ui.generated.resources.settings_reminders_body
+import com.skohscripts.kairos.ui.generated.resources.settings_reminders_title
 import com.skohscripts.kairos.ui.generated.resources.settings_chrono_body
 import com.skohscripts.kairos.ui.generated.resources.settings_chrono_title
 import com.skohscripts.kairos.ui.generated.resources.settings_error_color
@@ -179,6 +185,9 @@ private val TEXTS: Map<String, FieldText> = mapOf(
     "timerIdleAlertMinutes" to FieldText(Res.string.settings_idle),
     "pomodoroFocusMinutes" to FieldText(Res.string.settings_pomodoro),
     "timerAlertSound" to FieldText(Res.string.settings_sound),
+    "reminders.enabled" to FieldText(Res.string.setting_reminders_enabled),
+    "reminders.leadMinutes" to FieldText(Res.string.setting_reminders_lead, Res.string.setting_reminders_lead_help),
+    "reminders.nextTask" to FieldText(Res.string.setting_reminders_next),
     "holidaysFr" to FieldText(Res.string.setting_holidays_fr),
     "extraHolidays" to FieldText(Res.string.setting_extra_holidays, Res.string.setting_extra_holidays_help),
     "updateCheckEnabled" to FieldText(Res.string.setting_update_check),
@@ -224,6 +233,10 @@ private val GUARDS = Section(Res.string.settings_section_guards, null, KairosIco
 private val CHRONO = Section(
     Res.string.settings_chrono_title, Res.string.settings_chrono_body, KairosIcons.NotificationsActive,
     listOf("timerIdleAlertMinutes", "pomodoroFocusMinutes", "timerAlertSound"),
+)
+private val REMINDERS = Section(
+    Res.string.settings_reminders_title, Res.string.settings_reminders_body, KairosIcons.Alarm,
+    listOf("reminders.enabled", "reminders.leadMinutes", "reminders.nextTask"),
 )
 private val STATS = Section(Res.string.settings_section_stats, null, KairosIcons.BarChart, listOf("statsWindowWeeks"))
 
@@ -324,6 +337,7 @@ internal fun SettingsFormCards(
         }
         SettingsCategory.TRACKING -> {
             SectionCard(CHRONO, values, errors, onChange)
+            GuideSpot(GuideSection.SETTINGS_REMINDERS) { SectionCard(REMINDERS, values, errors, onChange) }
             SectionCard(STATS, values, errors, onChange)
         }
         else -> Unit

@@ -187,6 +187,11 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   suggérée. Un bandeau dans l’application, et une notification système :
   Android (notification permanente avec chronomètre, même application
   fermée), zone de notification du bureau, notification du navigateur.
+- **Rappels** (Réglages, désactivés par défaut) : une notification quelques
+  minutes avant une tâche à heure fixe et, si tu le veux, quand le plan passe à
+  la tâche suivante. Sur Android même Kairos fermé (quelques minutes de retard
+  possibles téléphone en veille, aucune permission de plus) ; sur le bureau et
+  le web tant que Kairos est ouvert.
 
 ### Vues
 

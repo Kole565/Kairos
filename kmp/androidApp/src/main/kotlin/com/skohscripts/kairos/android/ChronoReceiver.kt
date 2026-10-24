@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Alarmes de seuil et action « Arrêter » de la notification permanente
- * (docs/spec/temps-reel-chrono.md § Android). Fonctionne application
+ * (docs/spec/temps-reel-chrono.md § Android), et alarmes des rappels (docs/spec/rappels.md). Fonctionne application
  * fermée : la base est ouverte par [KairosProcess] si besoin.
  */
 class ChronoReceiver : BroadcastReceiver() {
@@ -17,6 +17,11 @@ class ChronoReceiver : BroadcastReceiver() {
                 val title = intent.getStringExtra(EXTRA_TITLE) ?: return
                 val body = intent.getStringExtra(EXTRA_BODY) ?: return
                 ChronoSync.postAlert(context, intent.getIntExtra(EXTRA_KIND, 0), title, body)
+            }
+            ACTION_REMINDER -> {
+                val title = intent.getStringExtra(EXTRA_TITLE) ?: return
+                val body = intent.getStringExtra(EXTRA_BODY) ?: return
+                ReminderSync.post(context, intent.getIntExtra(EXTRA_KIND, 0), title, body)
             }
             ACTION_STOP -> {
                 val pending = goAsync()
@@ -34,6 +39,7 @@ class ChronoReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_ALERT = "com.skohscripts.kairos.CHRONO_ALERT"
         const val ACTION_STOP = "com.skohscripts.kairos.CHRONO_STOP"
+        const val ACTION_REMINDER = "com.skohscripts.kairos.REMINDER"
         const val EXTRA_KIND = "kind"
         const val EXTRA_TITLE = "title"
         const val EXTRA_BODY = "body"

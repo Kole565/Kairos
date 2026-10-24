@@ -69,6 +69,11 @@ data class Settings(
      * même règle que [team], une base ou un export qui n'y a jamais touché ne change pas.
      */
     val guide: GuideSettings? = null,
+    /**
+     * Rappels des tâches à heure fixe et de la tâche suivante (docs/spec/rappels.md, issue #103). `null` = les valeurs par
+     * défaut de [ReminderSettings] (désactivés) ; même règle que [learning].
+     */
+    val reminders: ReminderSettings? = null,
 ) {
     /** L'espace Équipe est activé (valeur enregistrée). */
     val teamModeEnabled: Boolean get() = team?.enabled == true

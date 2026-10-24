@@ -291,6 +291,17 @@
     <string name="settings_saved">Réglages enregistrés.</string>
     <string name="notif_channel_chrono">Chrono en cours</string>
     <string name="notif_channel_alerts">Alertes du chrono</string>
+    <string name="settings_reminders_title">Rappels</string>
+    <string name="settings_reminders_body">Une notification du système avant une tâche à heure fixe et, si tu le veux, quand le plan passe à la tâche suivante. Sur Android, même Kairos fermé, avec quelques minutes de retard possibles téléphone en veille ; sur le bureau et le web, tant que Kairos est ouvert.</string>
+    <string name="setting_reminders_enabled">Rappeler les tâches à heure fixe</string>
+    <string name="setting_reminders_lead">Combien de minutes avant</string>
+    <string name="setting_reminders_lead_help">De 0 (à l’heure même) à 120.</string>
+    <string name="setting_reminders_next">Signaler aussi la tâche suivante du plan</string>
+    <string name="reminder_fixed_body">Commence à %1$s (dans %2$s)</string>
+    <string name="reminder_fixed_now_body">Commence à %1$s</string>
+    <string name="reminder_next_body">C’est l’heure : prévue jusqu’à %1$s</string>
+    <string name="reminder_clock">%1$sh%2$s</string>
+    <string name="notif_channel_reminders">Rappels</string>
     <string name="notif_stop">Arrêter</string>
 
     <!-- Notes, Semaine, Stats, guide des points (M4) -->
@@ -1372,6 +1383,8 @@
     <string name="card_correct_body">Dans les Statistiques, « Corriger les estimations… » remplace l’estimation de tâches terminées par le temps chronométré, après un aperçu où l’on décoche ce qu’on garde ; « Annuler » rend les anciennes.</string>
     <string name="card_trends_title">Voir les choses évoluer</string>
     <string name="card_trends_body">Les Statistiques montrent le temps chronométré jour par jour et le biais d’estimation semaine par semaine, chaque graphique avec son résumé écrit.</string>
+    <string name="card_reminders_title">Des rappels avant l’heure</string>
+    <string name="card_reminders_body">Dans Réglages → Chrono et statistiques, les rappels préviennent avant une tâche à heure fixe et, si tu le veux, quand le plan passe à la tâche suivante. Désactivés par défaut.</string>
     <string name="card_settings_categories_title">Des réglages rangés par catégories</string>
     <string name="card_settings_categories_body">Général, Journée et horaires, Planification, Chrono et statistiques… : chaque catégorie a son icône et son résumé ; sur grand écran, la liste et la catégorie côte à côte.</string>
     <string name="card_darktheme_title">Thème sombre</string>
@@ -1429,7 +1442,7 @@
     <string name="settings_cat_planning">Planification</string>
     <string name="settings_cat_planning_hint">Types de tâches, meilleures heures, durées apprises, garde-fous, score de priorité</string>
     <string name="settings_cat_tracking">Chrono et statistiques</string>
-    <string name="settings_cat_tracking_hint">Alertes du chrono, fenêtre des statistiques</string>
+    <string name="settings_cat_tracking_hint">Alertes du chrono, rappels, fenêtre des statistiques</string>
     <string name="settings_cat_team">Équipe</string>
     <string name="settings_cat_team_hint">Gestion d’équipe, suivi, charge et prévisions</string>
     <string name="settings_cat_data">Données</string>

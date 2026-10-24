@@ -14,6 +14,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_correct_body
 import com.skohscripts.kairos.ui.generated.resources.card_trends_body
+import com.skohscripts.kairos.ui.generated.resources.card_reminders_body
+import com.skohscripts.kairos.ui.generated.resources.card_reminders_title
 import com.skohscripts.kairos.ui.generated.resources.card_trends_title
 import com.skohscripts.kairos.ui.generated.resources.card_correct_title
 import com.skohscripts.kairos.ui.generated.resources.card_month_title
@@ -161,6 +163,7 @@ object FeatureCatalog {
         // --- Réglages
         FeatureCard("settings", GuideChapter.SETTINGS, { KairosIcons.Settings }, Res.string.card_settings_title, Res.string.card_settings_body, GuideTarget.Settings(), since = "3.4.0"),
         FeatureCard("settings_categories", GuideChapter.SETTINGS, { KairosIcons.Tune }, Res.string.card_settings_categories_title, Res.string.card_settings_categories_body, GuideTarget.Settings(), since = "3.7.0"),
+        FeatureCard("reminders", GuideChapter.SETTINGS, { KairosIcons.Alarm }, Res.string.card_reminders_title, Res.string.card_reminders_body, GuideTarget.Settings(GuideSection.SETTINGS_REMINDERS), since = "3.8.0"),
         FeatureCard("darktheme", GuideChapter.SETTINGS, { KairosIcons.DarkMode }, Res.string.card_darktheme_title, Res.string.card_darktheme_body, GuideTarget.Settings(GuideSection.SETTINGS_APPEARANCE), since = "3.7.0"),
         FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), tour = true),
     )
@@ -237,6 +240,7 @@ object FeatureCatalog {
         "File exchanges" to "team_exchanges",
         "Theme color" to "settings",
         "Dark theme" to "darktheme",
+        "Reminders" to "reminders",
         "Guided first task" to "first_task",
         "Guided first team task" to "team_backlog",
         "Discover Kairos" to "discover",

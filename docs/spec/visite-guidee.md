@@ -157,7 +157,8 @@ since, tour)`, **dans l'ordre de la visite**.
 - **Cartes de la 3.8.0** (une par nouveauté) : `slots_month` (créneaux mensuels et une seule occurrence, #108 et #110 ;
   vue Jour, chapitre « Organiser »), `month` (vue Mois, #107 ; destination Semaine, chapitre « Suivre », icône
   `CalendarMonth`), `stats_correct` (corriger les estimations, #101 ; Stats, chapitre « Suivre », icône `EditNote`), `stats_trends`
-  (évolutions des statistiques, #112 ; Stats, chapitre « Suivre », icône `ShowChart`).
+  (évolutions des statistiques, #112 ; Stats, chapitre « Suivre », icône `ShowChart`), `reminders` (rappels, #103 ;
+  section `SETTINGS_REMINDERS`, chapitre « Réglages », icône `Alarm`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section

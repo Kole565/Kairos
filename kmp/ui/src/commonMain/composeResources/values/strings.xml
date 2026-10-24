@@ -290,6 +290,17 @@
     <string name="settings_saved">Settings saved.</string>
     <string name="notif_channel_chrono">Running timer</string>
     <string name="notif_channel_alerts">Timer alerts</string>
+    <string name="settings_reminders_title">Reminders</string>
+    <string name="settings_reminders_body">A system notification before a fixed-time task and, if you want, when the plan moves on to the next task. On Android, even with Kairos closed, possibly a few minutes late while the phone sleeps; on desktop and the web, while Kairos is open.</string>
+    <string name="setting_reminders_enabled">Remind me of fixed-time tasks</string>
+    <string name="setting_reminders_lead">How many minutes before</string>
+    <string name="setting_reminders_lead_help">From 0 (right on time) to 120.</string>
+    <string name="setting_reminders_next">Also signal the next task of the plan</string>
+    <string name="reminder_fixed_body">Starts at %1$s (in %2$s)</string>
+    <string name="reminder_fixed_now_body">Starts at %1$s</string>
+    <string name="reminder_next_body">Time for it: planned until %1$s</string>
+    <string name="reminder_clock">%1$s:%2$s</string>
+    <string name="notif_channel_reminders">Reminders</string>
     <string name="notif_stop">Stop</string>
 
     <!-- Notes, Semaine, Stats, guide des points (M4) -->
@@ -1370,6 +1381,8 @@
     <string name="card_correct_body">In Statistics, “Correct the estimates…” replaces the estimate of finished tasks with the timed duration, after a preview where you untick what to keep; “Undo” brings the old ones back.</string>
     <string name="card_trends_title">See how things evolve</string>
     <string name="card_trends_body">Statistics show the tracked time day by day and the estimation bias week by week, each chart with its written summary.</string>
+    <string name="card_reminders_title">Reminders before it is time</string>
+    <string name="card_reminders_body">In Settings → Timer and statistics, reminders warn you before a fixed-time task and, if you want, when the plan moves on to the next task. Off by default.</string>
     <string name="card_settings_categories_title">Settings sorted by category</string>
     <string name="card_settings_categories_body">General, Day and hours, Planning, Timer and statistics…: each category has its icon and summary; on a wide screen, the list and the category sit side by side.</string>
     <string name="card_darktheme_title">Dark theme</string>
@@ -1427,7 +1440,7 @@
     <string name="settings_cat_planning">Planning</string>
     <string name="settings_cat_planning_hint">Task types, best hours, learned durations, safeguards, priority score</string>
     <string name="settings_cat_tracking">Timer and statistics</string>
-    <string name="settings_cat_tracking_hint">Timer alerts, statistics window</string>
+    <string name="settings_cat_tracking_hint">Timer alerts, reminders, statistics window</string>
     <string name="settings_cat_team">Team</string>
     <string name="settings_cat_team_hint">Team management, follow-up, load and forecasts</string>
     <string name="settings_cat_data">Data</string>

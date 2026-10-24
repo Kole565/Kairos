@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.navigation
 
+import com.skohscripts.kairos.ui.reminders.ReminderWatcher
 import com.skohscripts.kairos.ui.team.TeamTaskCreateDialog
 import com.skohscripts.kairos.ui.team.TeamTaskCreatedDialog
 import androidx.compose.runtime.collectAsState
@@ -157,6 +158,8 @@ fun AppShell(
     // Veille du chrono pour toute l'application : les alertes jouent quel que soit l'écran.
     val alerts = remember { mutableStateListOf<String>() }
     ChronoWatcher(services, alerts)
+    // Rappels des tâches à heure fixe et de la tâche suivante (docs/spec/rappels.md) : mêmes bandeaux.
+    ReminderWatcher(services, alerts)
     UpdateWatcher(services)
     val scope = rememberCoroutineScope()
     // Ce que le guide a retenu (docs/spec/visite-guidee.md § Persistance, issue #94).

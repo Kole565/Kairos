@@ -38,7 +38,11 @@ object KairosProcess {
         val app = context.applicationContext
         return services ?: scope.async {
             val notifier = AndroidNotifier(app)
-            AndroidServices.open(app, files, notifier).also { ChronoSync.start(app, it.repository, scope) }
+            AndroidServices.open(app, files, notifier).also {
+                ChronoSync.start(app, it.repository, scope)
+                // Rappels (docs/spec/rappels.md) : même processus, mêmes alarmes inexactes.
+                ReminderSync.start(app, it.repository, scope)
+            }
         }.also { services = it }
     }
 }

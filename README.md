@@ -182,6 +182,11 @@ order (critical path). Cycles are refused.
   break. A banner in the app, and a system notification: Android (ongoing
   notification with a stopwatch, even with the app closed), the desktop
   notification area, the browser notification.
+- **Reminders** (Settings, off by default): a notification a few minutes
+  before a fixed-time task and, if you want, when the plan moves on to the
+  next task. On Android even with Kairos closed (possibly a few minutes late
+  while the phone sleeps, no extra permission); on desktop and the web while
+  Kairos is open.
 
 ### Views
 

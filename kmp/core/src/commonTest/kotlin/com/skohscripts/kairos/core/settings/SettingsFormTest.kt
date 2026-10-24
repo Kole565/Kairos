@@ -459,4 +459,19 @@ class SettingsFormTest {
         val restored = SettingsForm.restoreDefaults(SettingsForm.values(custom))
         assertNull(SettingsForm.validate(restored, custom).settings!!.schedule)
     }
+
+    @Test
+    fun remindersStayNullUntilChangedAndAreBounded() {
+        // Rappels (docs/spec/rappels.md) : nuls tant qu'on n'y touche pas, donc absents de l'export.
+        assertNull(SettingsForm.validate(SettingsForm.values(base), base).settings!!.reminders)
+        assertEquals("false", SettingsForm.values(base)["reminders.enabled"])
+        assertEquals("10", SettingsForm.values(base)["reminders.leadMinutes"])
+        val on = validate("reminders.enabled" to "true", "reminders.leadMinutes" to "0", "reminders.nextTask" to "true").settings!!
+        assertEquals(com.skohscripts.kairos.core.model.ReminderSettings(enabled = true, leadMinutes = 0, nextTask = true), on.reminders)
+        assertEquals(FieldErrorKind.TOO_LARGE, validate("reminders.leadMinutes" to "121").fieldErrors["reminders.leadMinutes"]!!.kind)
+        assertEquals(FieldErrorKind.TOO_SMALL, validate("reminders.leadMinutes" to "-1").fieldErrors["reminders.leadMinutes"]!!.kind)
+        // Revenus aux valeurs par défaut : de nouveau nuls.
+        val back = SettingsForm.validate(SettingsForm.values(on) + ("reminders.enabled" to "false") + ("reminders.leadMinutes" to "10") + ("reminders.nextTask" to "false"), on).settings!!
+        assertNull(back.reminders)
+    }
 }

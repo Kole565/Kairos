@@ -56,6 +56,8 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
      erreur) : **Score de priorité** (base de valeur, horizon d'urgence, poids maximal de l'urgence, points par
      défaut) et **Creux de l'après-midi** (activé, début, creux le plus profond, fin, force de la pénalité).
   4. **Chrono et statistiques** : **Alertes du chrono** (chrono oublié, pause suggérée, son de secours),
+     **Rappels** (3.8.0 : « Rappeler les tâches à heure fixe », « Combien de minutes avant » 0-120, 10 par défaut,
+     « Signaler aussi la tâche suivante du plan » ; désactivés par défaut, `rappels.md`),
      **Statistiques** (fenêtre en semaines).
   5. **Équipe** : la carte **Équipe** (interrupteur « Gestion d'équipe », puis, mode activé, nom de l'équipe et du
      manager, seuils « sans avancement », « ballottée » et limite d'en-cours, horizon, taux de focus, heures par
@@ -194,7 +196,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   `Sort`, `Timer`, `Groups`, `Database`, `Info`). `SettingsCategory.of(clé)` range chaque champ de `SettingsForm` :
   `language`, `themeColor`, `updateCheckEnabled` → Général ; journée de travail, `schedule.dN.*`, `schedule.cN.*`
   (contextes), `holidaysFr`, `extraHolidays` → Journée et horaires ; `taskTypes`, `schedule.bestHours.*`,
-  `learning.*`, garde-fous, score, creux → Planification ; chrono et `statsWindowWeeks` → Chrono et statistiques ;
+  `learning.*`, garde-fous, score, creux → Planification ; chrono, `reminders.*` et `statsWindowWeeks` → Chrono et statistiques ;
   `team.*` → Équipe. Une clé inconnue lève une erreur (aucune ne tombe en silence hors de l'écran) ;
   `SettingsCategory.of(GeneralError)` : `WORKDAY_ORDER` → Journée et horaires, `DIP_ORDER` → Planification.
 - **Navigation interne** (`SettingsNav`, porté par `NavState.settings` pour que la coquille le lise) : `category`
@@ -224,7 +226,7 @@ un nombre) ne doit jamais être enregistré, ni à moitié.
   `Update`, Raccourci `InstallDesktop`, Journée de travail `Work`, Horaires par jour `CalendarViewWeek`, Contextes
   `Workspaces`, Jours fériés `EventBusy`, Types de tâches `Label`, Meilleures heures `LightMode`, Durées apprises
   `History`, Garde-fous `Shield`, Score de priorité `Leaderboard`, Creux de l'après-midi `Bedtime`, Alertes du chrono
-  `NotificationsActive`, Statistiques `BarChart`, Équipe `Groups`, Données `Database`, Réglages par défaut
+  `NotificationsActive`, Rappels `Alarm`, Statistiques `BarChart`, Équipe `Groups`, Données `Database`, Réglages par défaut
   `SettingsBackupRestore` ; « Découvrir Kairos » `PlayArrow` et « À propos et guide » `Info` gardent leur
   `ListItem` dans une carte cliquable (`SettingsLinkCard`).
 - Enregistrement refusé : catégorie à ouvrir = la première, dans l'ordre de `SettingsCategory`, qui contient une
