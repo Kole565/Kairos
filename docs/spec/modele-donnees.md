@@ -43,7 +43,7 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   manuel seulement, `export-import.md`).
 - Colonnes des intégrations retirées : `task.source`, `task.external_id`,
   `task.linked_ticket_id`, `time_block.source`, `time_block.external_id`,
-  table `task_sync_meta` (Kairos 2). Les calendriers importés de la 3.10.0 ont leurs propres colonnes
+  table `task_sync_meta` (ancienne version). Les calendriers importés de la 3.10.0 ont leurs propres colonnes
   (`time_block.source_id`, `source_uid`, `connexions-externes.md`).
 
 ## 2. Solution technique
