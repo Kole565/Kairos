@@ -481,11 +481,11 @@ private fun UpdatesCard(updates: UpdateService, enabled: String, onEnabled: (Str
 @Composable
 private fun DownloadPageCard() {
     val uriHandler = LocalUriHandler.current
-    val english = !UiLanguage.isFrench(uiLanguage())
+    val language = uiLanguage()
     SettingsCard(spacing = KairosSpacing.m) {
         SettingsCardHeader(KairosIcons.Update, stringResource(Res.string.settings_section_updates), stringResource(Res.string.update_android_help))
         Text(stringResource(Res.string.update_installed, KairosBuild.VERSION_NAME), style = MaterialTheme.typography.bodyMedium)
-        KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(UpdateCheck.downloadPage(english)) } }, contentPadding = KairosButtonIconPadding) {
+        KairosOutlinedButton(onClick = { runCatching { uriHandler.openUri(UpdateCheck.downloadPage(language)) } }, contentPadding = KairosButtonIconPadding) {
             Icon(KairosIcons.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(stringResource(Res.string.update_see_latest), modifier = Modifier.padding(start = 6.dp))
         }

@@ -93,8 +93,8 @@ savoir.
   `surfaceContainerHigh` et icône `Download`, ouverture par
   `LocalUriHandler`.
 
-- Android (3.9.0) : `InstallSource.installedByHand(installateur)` (`core/updates`, pur) ; `UpdateCheck.downloadPage(anglais)`
-  rend l'adresse de la page. `AndroidServices` lit l'installateur (`PackageManager.getInstallSourceInfo(...)
+- Android (3.9.0) : `InstallSource.installedByHand(installateur)` (`core/updates`, pur) ; `UpdateCheck.downloadPage(langue)`
+  rend l'adresse de la page dans la langue de l'interface (3.11.0, `fr` à la racine, les cinq autres dans leur dossier, repli `en/` ; `i18n.md`). `AndroidServices` lit l'installateur (`PackageManager.getInstallSourceInfo(...)
   .installingPackageName` dès l'API 30, `getInstallerPackageName` avant ; aucune permission) et, à la main seulement,
   pose `AppServices.downloadPage = true`. `SettingsScreen` : `DownloadPageCard` dans Général quand `updates` est nul
   et `downloadPage` vrai ; « Voir la dernière version » ouvre la page par `LocalUriHandler` (intention `ACTION_VIEW`,

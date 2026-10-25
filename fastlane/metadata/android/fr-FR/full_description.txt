@@ -33,4 +33,4 @@ Désactivée par défaut, la gestion d’équipe ajoute un second espace pour le
 <li>Les réunions d’un fichier d’agenda (.ics : Outlook, Google, Thunderbird) ou, si vous le souhaitez, des calendriers du téléphone : Kairos demande alors l’accès au calendrier, en lecture seule, et ne se connecte toujours à aucun réseau.</li>
 </ul>
 
-Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français et en anglais (au choix dans les réglages ; l’anglais par défaut si votre système n’est pas en français).
+Kairos existe aussi pour Windows, Linux et macOS, et dans le navigateur. Logiciel libre sous licence MIT, en français, anglais, espagnol, allemand, russe et italien (au choix dans les réglages ; par défaut la langue de votre système si elle en fait partie, l’anglais sinon).

@@ -44,7 +44,7 @@ data class Settings(
     val themeColor: String = DEFAULT_THEME_COLOR,
     /** Thème : [THEME_MODE_SYSTEM] (suit le système), [THEME_MODE_LIGHT] ou [THEME_MODE_DARK] (docs/spec/apparence.md, issue #72). */
     val themeMode: String = THEME_MODE_SYSTEM,
-    /** Langue de l'interface : [LANGUAGE_SYSTEM] (suit le système), [LANGUAGE_FR] ou [LANGUAGE_EN] (docs/spec/i18n.md). */
+    /** Langue de l'interface : [LANGUAGE_SYSTEM] (suit le système) ou l'une des langues de `UiLanguage.SUPPORTED` (docs/spec/i18n.md). */
     val language: String = LANGUAGE_SYSTEM,
     /**
      * Réglages de l'espace Équipe (docs/spec/equipe.md). `null` tant que
@@ -98,20 +98,41 @@ data class Settings(
         const val THEME_MODE_LIGHT = "light"
         const val THEME_MODE_DARK = "dark"
 
-        /** Langue de l'interface : celle du système (français si le système est en français, anglais sinon). */
+        /** Langue de l'interface : celle du système si elle est traduite, l'anglais sinon (`UiLanguage.SUPPORTED`). */
         const val LANGUAGE_SYSTEM = "system"
         const val LANGUAGE_FR = "fr"
         const val LANGUAGE_EN = "en"
+        const val LANGUAGE_ES = "es"
+        const val LANGUAGE_DE = "de"
+        const val LANGUAGE_RU = "ru"
+        const val LANGUAGE_IT = "it"
 
         /** Types de tâche par défaut. */
         const val DEFAULT_TASK_TYPES_FR =
             "Développement,Revue de code,Réunion,Documentation,Administratif,Veille/formation"
         const val DEFAULT_TASK_TYPES_EN =
             "Development,Code review,Meeting,Documentation,Administration,Learning"
+        const val DEFAULT_TASK_TYPES_ES =
+            "Desarrollo,Revisión de código,Reunión,Documentación,Administrativo,Formación"
+        const val DEFAULT_TASK_TYPES_DE =
+            "Entwicklung,Code-Review,Meeting,Dokumentation,Verwaltung,Weiterbildung"
+        const val DEFAULT_TASK_TYPES_RU =
+            "Разработка,Код-ревью,Встреча,Документация,Администрирование,Обучение"
+        const val DEFAULT_TASK_TYPES_IT =
+            "Sviluppo,Revisione del codice,Riunione,Documentazione,Amministrazione,Formazione"
+
+        /** Types de tâche par défaut dans [language] (étiquette de langue ; anglais pour une langue non traduite). */
+        fun defaultTaskTypes(language: String): String = when (UiLanguage.lang(language)) {
+            LANGUAGE_FR -> DEFAULT_TASK_TYPES_FR
+            LANGUAGE_ES -> DEFAULT_TASK_TYPES_ES
+            LANGUAGE_DE -> DEFAULT_TASK_TYPES_DE
+            LANGUAGE_RU -> DEFAULT_TASK_TYPES_RU
+            LANGUAGE_IT -> DEFAULT_TASK_TYPES_IT
+            else -> DEFAULT_TASK_TYPES_EN
+        }
 
         /** Réglages d'une base neuve, types de tâche dans la langue de l'interface ([language] : celle du système). */
-        fun defaults(language: String): Settings =
-            Settings(taskTypes = if (UiLanguage.isFrench(language)) DEFAULT_TASK_TYPES_FR else DEFAULT_TASK_TYPES_EN)
+        fun defaults(language: String): Settings = Settings(taskTypes = defaultTaskTypes(language))
     }
 }
 

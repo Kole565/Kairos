@@ -122,7 +122,7 @@ internal class BlockFormState(title: String, day: LocalDate, start: LocalTime?, 
     val initialDay: LocalDate = day
 
     /** Langue de saisie des dates (`30/09/2026` en français), posée par [BlockFields]. */
-    var french by mutableStateOf(false)
+    var dayFirst by mutableStateOf(false)
     var title by mutableStateOf(title)
     var day by mutableStateOf(day.toString())
     var start by mutableStateOf(start?.let(Dates::field).orEmpty())
@@ -130,7 +130,7 @@ internal class BlockFormState(title: String, day: LocalDate, start: LocalTime?, 
     var deepwork by mutableStateOf(deepwork)
     var recurrence by mutableStateOf(recurrence)
 
-    val parsedDay get() = Dates.parseDate(day, french)
+    val parsedDay get() = Dates.parseDate(day, dayFirst)
     val parsedStart get() = Dates.parseTime(start)
     val parsedEnd get() = Dates.parseTime(end)
     val orderError get() = parsedStart != null && parsedEnd != null && parsedEnd!! <= parsedStart!!
@@ -162,7 +162,7 @@ internal fun BlockFields(state: BlockFormState) {
             modifier = Modifier.fillMaxWidth().quietShortcuts(),
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            state.french = UiLanguage.isFrench(uiLanguage())
+            state.dayFirst = UiLanguage.dayFirst(uiLanguage())
             val dayError = state.day.isNotBlank() && state.parsedDay == null
             DateField(
                 state.day, { state.day = it }, Res.string.block_date, dayError, state.initialDay,

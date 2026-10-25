@@ -228,10 +228,10 @@ internal fun EditTaskDialog(
     // Le coach ouvre les options avancées quand il en explique un champ.
     LaunchedEffect(coach?.step) { if (coach?.current?.opensAdvanced == true) advanced = true }
 
-    val french = UiLanguage.isFrench(uiLanguage())
-    val parsedDeadline = Dates.parseDate(deadline, french)
+    val dayFirst = UiLanguage.dayFirst(uiLanguage())
+    val parsedDeadline = Dates.parseDate(deadline, dayFirst)
     val deadlineInvalid = deadline.isNotBlank() && parsedDeadline == null
-    val parsedScheduled = Dates.parseDate(scheduled, french)
+    val parsedScheduled = Dates.parseDate(scheduled, dayFirst)
     val scheduledInvalid = scheduled.isNotBlank() && parsedScheduled == null
     val parsedPin = Dates.parseTime(pin)
     val pinInvalid = pin.isNotBlank() && parsedPin == null
@@ -375,7 +375,7 @@ internal fun EditTaskDialog(
                                 recurrence = it
                                 // « Le … du mois » : proposer le jour de l'échéance (sinon du jour affiché) plutôt qu'un champ vide en erreur.
                                 if (it == TaskRecurrence.MONTHLY_ON_DAY && dayOfMonth.isBlank()) {
-                                    dayOfMonth = ((Dates.parseDate(deadline, french) ?: day).day).toString()
+                                    dayOfMonth = ((Dates.parseDate(deadline, dayFirst) ?: day).day).toString()
                                 }
                             }
                             if (recurrence == TaskRecurrence.MONTHLY_ON_DAY) {

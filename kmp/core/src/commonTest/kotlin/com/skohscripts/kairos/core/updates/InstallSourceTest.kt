@@ -24,7 +24,10 @@ class InstallSourceTest {
 
     @Test
     fun theDownloadPageFollowsTheLanguage() {
-        assertEquals("https://skohscripts.github.io/Kairos/", UpdateCheck.downloadPage(english = false))
-        assertEquals("https://skohscripts.github.io/Kairos/en/", UpdateCheck.downloadPage(english = true))
+        assertEquals("https://skohscripts.github.io/Kairos/", UpdateCheck.downloadPage("fr"))
+        assertEquals("https://skohscripts.github.io/Kairos/en/", UpdateCheck.downloadPage("en"))
+        assertEquals("https://skohscripts.github.io/Kairos/es/", UpdateCheck.downloadPage("es"))
+        assertEquals("https://skohscripts.github.io/Kairos/ru/", UpdateCheck.downloadPage("ru-RU"))
+        assertEquals("https://skohscripts.github.io/Kairos/en/", UpdateCheck.downloadPage("zh"))
     }
 }

@@ -23,7 +23,7 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
 - Au tout premier lancement, l'utilisateur ne voit pas une page vide : un
   jeu d'exemples est posé (tâches, créneaux, une note), dans la langue de
   l'interface. Ce sont des objets ordinaires (tag de projet « Exemple »,
-  titre préfixé « [Exemple] ») qu'on termine ou supprime comme les siens.
+  titre préfixé « [Exemple] », « [Example] », « [Ejemplo] »… selon la langue) qu'on termine ou supprime comme les siens.
 - Les exemples ne sont posés **qu'une fois**, sur une base neuve : supprimer
   tous les exemples ne les fait jamais revenir.
 - Une mise à jour de l'application ne perd jamais une tâche ni une valeur

@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.core.updates
 
 import com.skohscripts.kairos.core.AppVersion
+import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
@@ -19,8 +20,12 @@ object UpdateCheck {
     /** Dernière version **publiée** (GitHub exclut préversions et brouillons de `/latest`). */
     const val LATEST_URL = "https://api.github.com/repos/SKOHscripts/Kairos/releases/latest"
 
-    /** Page de téléchargement (GitHub Pages), en français ou en anglais : elle dit la dernière version (issue #143). */
-    fun downloadPage(english: Boolean): String = if (english) "https://skohscripts.github.io/Kairos/en/" else "https://skohscripts.github.io/Kairos/"
+    /**
+     * Page de téléchargement (GitHub Pages) dans la langue de l'interface [language] (une de `UiLanguage.SUPPORTED`) :
+     * elle dit la dernière version (issue #143). Le français est à la racine, les autres langues dans leur dossier.
+     */
+    fun downloadPage(language: String): String =
+        "https://skohscripts.github.io/Kairos/" + if (UiLanguage.isFrench(language)) "" else "${UiLanguage.resolve(language, language)}/"
 
     /** Au plus une vérification automatique toutes les 6 heures. */
     val INTERVAL = 6.hours

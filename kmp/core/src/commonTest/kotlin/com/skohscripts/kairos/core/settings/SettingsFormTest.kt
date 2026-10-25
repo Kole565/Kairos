@@ -140,7 +140,8 @@ class SettingsFormTest {
         assertEquals(Settings.LANGUAGE_FR, validate("language" to " FR ").settings!!.language)
         assertEquals(Settings.LANGUAGE_EN, validate("language" to "en").settings!!.language)
         // Une valeur inconnue (base importée d'une version future) suit le système.
-        assertEquals(Settings.LANGUAGE_SYSTEM, validate("language" to "ru").settings!!.language)
+        assertEquals(Settings.LANGUAGE_RU, validate("language" to "ru").settings!!.language)
+        assertEquals(Settings.LANGUAGE_SYSTEM, validate("language" to "pt").settings!!.language)
     }
 
     @Test
