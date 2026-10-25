@@ -181,7 +181,8 @@ remplacer ; une version stable s'installe par-dessus la précédente.
   `desktop-day-full-narrow.png`, `desktop-day-chrono.png`,
   `desktop-notes.png`, `desktop-week.png`, `desktop-week-narrow.png`,
   `desktop-stats.png`, puis les Réglages par catégories, `reglages.md` : `desktop-settings-narrow.png`,
-  `desktop-settings-tracking-narrow.png`, `desktop-settings-advanced.png`), puis, sur une base où la gestion d'équipe est activée,
+  `desktop-settings-tracking-narrow.png`, `desktop-settings-advanced.png`), une base avec un calendrier importé (aperçu,
+  vues Jour, Semaine et Mois, carte « Calendriers » : `desktop-calendar-*.png`, `connexions-externes.md`), puis, sur une base où la gestion d'équipe est activée,
   l'espace Équipe (`desktop-team.png`, `desktop-team-narrow.png` en 360 px,
   `desktop-team-settings.png`, et, depuis le jalon E2, l'écran Équipe, la
   fiche d'un membre et l'éditeur d'absence, chacun en 1200 et 360 px :

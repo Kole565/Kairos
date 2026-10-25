@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.month
 
+import com.skohscripts.kairos.ui.day.markTitle
+import com.skohscripts.kairos.ui.generated.resources.day_marks_description
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -150,6 +152,7 @@ private fun dayDescription(day: MonthDay, language: String): String {
     if (day.overloaded) parts += stringResource(Res.string.month_desc_overloaded)
     if (day.holiday) parts += stringResource(Res.string.month_desc_holiday)
     if (day.dayOff) parts += stringResource(Res.string.month_desc_day_off)
+    if (day.marks.isNotEmpty()) parts += stringResource(Res.string.day_marks_description, day.marks.map { markTitle(it) }.joinToString(", "))
     return parts.joinToString(" ")
 }
 
@@ -195,6 +198,8 @@ private fun DayCell(day: MonthDay, isToday: Boolean, language: String, modifier:
                 if (day.deadlines.isNotEmpty()) Icon(KairosIcons.Flag, contentDescription = null, modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
                 if (day.overloaded) Icon(KairosIcons.Warning, contentDescription = null, modifier = Modifier.size(14.dp), tint = scheme.error)
                 if (off) Icon(KairosIcons.EventBusy, contentDescription = null, modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                // Journée entière d'un calendrier importé (issue #136) : les titres sont dans la description de la case.
+                if (day.marks.isNotEmpty()) Icon(KairosIcons.Event, contentDescription = null, modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
             }
         }
     }

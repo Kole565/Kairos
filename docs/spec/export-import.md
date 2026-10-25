@@ -116,6 +116,13 @@ JSON UTF-8 indenté :
   ne change pas (`KairosRepositoryTest.deletingASeriesDeletesItsExceptionsAndExportsRoundTripThem`) ; une version
   antérieure l'ignore. À l'import : identifiants uniques, une exception par `(blockId, date)`, `blockId` d'un créneau
   du fichier, fin après début quand les deux sont là, sinon « illisible ».
+- **Calendriers importés** (3.10.0, `connexions-externes.md` § Stockage) : `calendarSources`
+  (`[ { "id", "name", "hideTitles": true, "importedAt", "createdAt" } ]`, `hideTitles` seulement s'il est vrai),
+  `dayMarks` (`[ { "id", "title", "start": "2026-10-28", "end": "2026-10-30", "sourceId", "sourceUid", "createdAt" } ]`)
+  et, par créneau, `sourceId` et `sourceUid`, écrits **seulement s'il y en a** : sans changer la version du format ni
+  compter comme donnée d'équipe ; l'export d'une base sans calendrier ne change pas. Une version antérieure les ignore
+  (créneaux importés lus comme manuels, aucun badge). À l'import : identifiants uniques, nom non vide, `sourceId` d'un
+  calendrier du fichier, journée dans l'ordre, sinon « illisible ».
 - **Version 2** (espace Équipe, `equipe.md` § Export) : `members` (membres
   d'équipe), `absences` (ajouté au jalon E2), `teamEvents` (journal, jalon
   E3), `teamScenarios` (jalon E5) — un lecteur 2 plus ancien ignore les champs qu'il ne connaît pas —
@@ -165,7 +172,8 @@ JSON UTF-8 indenté :
   `FileService.saveText(nom)` ; message « Export enregistré. » si écrit ;
   erreur de fichier → « Le fichier n'a pas pu être lu ou écrit. ».
 - Importer : `FileService.openText()` → `readImportedFile`, qui aiguille
-  par `TeamExchangeCodec.detect` : un paquet ou un rapport ouvre son aperçu
+  par `TeamExchangeCodec.detect` (un fichier iCalendar, reconnu avant par `IcsParser.isCalendar`, ouvre l'aperçu
+  d'import de calendrier avec sauvegarde `avant-import-calendrier-…`, `connexions-externes.md`) : un paquet ou un rapport ouvre son aperçu
   et sa fusion ciblée (`equipe-echanges.md` § Interface) ; un export suit
   le chemin ci-dessous. `decode` (message selon la raison
   en cas d'échec) → `AlertDialog` de confirmation → `BackupStore.save(

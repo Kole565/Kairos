@@ -29,4 +29,8 @@ data class KairosSnapshot(
     val teamScenarios: List<TeamScenario> = emptyList(),
     /** Exceptions d'occurrences de créneaux récurrents (3.8.0, issue #110) ; vide tant qu'aucune n'a été posée. */
     val blockExceptions: List<BlockException> = emptyList(),
+    /** Calendriers importés (3.10.0, issue #136) ; vide tant qu'aucun calendrier n'a été importé. */
+    val calendarSources: List<CalendarSource> = emptyList(),
+    /** Journées entières des calendriers importés (badges) ; vide tant qu'aucun calendrier n'a été importé. */
+    val dayMarks: List<DayMark> = emptyList(),
 )

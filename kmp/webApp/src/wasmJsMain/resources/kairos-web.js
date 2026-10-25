@@ -114,7 +114,7 @@
       return new Promise((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
-        input.accept = ".json,application/json";
+        input.accept = ".json,.ics,application/json,text/calendar";
         input.onchange = async () => {
           const f = input.files && input.files[0];
           resolve(f ? await f.text() : null);

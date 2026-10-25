@@ -10,6 +10,7 @@ import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockException
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.DayMark
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -138,6 +139,8 @@ data class DayView(
     val windows: List<Schedule.Window> = emptyList(),
     /** Tâches « Sans créneau » dont le contexte n'a aucune plage ce jour-là : identifiant → nom du contexte ([Scheduling.ScheduledDay.noWindow]). */
     val noWindow: Map<Long, String> = emptyMap(),
+    /** Journées entières des calendriers importés qui couvrent ce jour (badges, sans effet sur le planning ; issue #136). */
+    val dayMarks: List<DayMark> = emptyList(),
 ) {
     /** Bandeau de surcharge : plus de P0 non bloquées que le seuil des réglages. */
     val priorityOverload: Boolean get() = priorityOverloadCount > priorityOverloadThreshold
@@ -281,6 +284,7 @@ data class DayView(
                 dayBlocks = dayBlocks.sortedBy { it.start },
                 timeline = timeline,
                 holidays = holidays,
+                dayMarks = snapshot.dayMarks.filter { it.covers(day) }.sortedBy { it.title },
                 spentByTask = spent,
                 running = running,
                 runningTask = runningTask,

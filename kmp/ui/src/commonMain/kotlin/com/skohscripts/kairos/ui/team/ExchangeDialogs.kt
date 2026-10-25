@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.core.calendar.CalendarImport
+import com.skohscripts.kairos.core.calendar.CalendarPlan
+import com.skohscripts.kairos.core.calendar.IcsParser
 import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_reject
 import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_add
 import com.skohscripts.kairos.ui.generated.resources.exchange_proposal_later
@@ -151,6 +154,9 @@ sealed interface ImportedFile {
 
     /** Paquet ou rapport d'équipe : fusion ciblée, après aperçu. */
     class Exchange(val preview: ExchangePreview) : ImportedFile
+
+    /** Calendrier `.ics` (issue #136) : créneaux et badges d'un calendrier, après aperçu (docs/spec/connexions-externes.md). */
+    class Calendar(val plan: CalendarPlan) : ImportedFile
 }
 
 /** Aperçu d'un fichier d'échange : le texte à appliquer et le plan calculé, sans rien écrire. */
@@ -173,11 +179,22 @@ sealed interface ExchangePreview {
 }
 
 /**
- * Aiguillage du bouton « Importer » : lit le champ `format` d'abord, puis le décodeur du format. Export complet →
- * [ImportedFile.Full] ; paquet ou rapport → aperçu, sans écriture.
+ * Aiguillage du bouton « Importer » : un calendrier iCalendar se reconnaît à son contenu (`BEGIN:VCALENDAR`) ; sinon le
+ * champ `format` d'abord, puis le décodeur du format. Export complet → [ImportedFile.Full] ; paquet, rapport ou
+ * calendrier → aperçu, sans écriture.
  * @throws ImportException fichier illisible, trop récent ou d'un autre format.
  */
-fun readImportedFile(services: AppServices, text: String): ImportedFile = when (TeamExchangeCodec.detect(text)) {
+fun readImportedFile(services: AppServices, text: String): ImportedFile {
+    if (IcsParser.isCalendar(text)) {
+        val zone = TimeZone.currentSystemDefault()
+        val plan = runCatching { CalendarImport.plan(text, services.clock.now().toLocalDateTime(zone).date, zone) }
+            .getOrElse { throw ImportException(ImportException.Reason.CORRUPTED, it) }
+        return ImportedFile.Calendar(plan)
+    }
+    return readKairosFile(services, text)
+}
+
+private fun readKairosFile(services: AppServices, text: String): ImportedFile = when (TeamExchangeCodec.detect(text)) {
     TeamExchangeCodec.Kind.EXPORT -> ImportedFile.Full(ExportCodec.decode(text))
     TeamExchangeCodec.Kind.PACK -> ImportedFile.Exchange(ExchangePreview.Pack(text, services.repository.previewPack(text)))
     TeamExchangeCodec.Kind.REPORT -> {

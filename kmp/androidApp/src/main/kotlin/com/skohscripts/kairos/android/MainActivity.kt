@@ -139,7 +139,8 @@ class MainActivity : ComponentActivity(), FileService {
 
     override suspend fun openText(): String? {
         val result = CompletableDeferred<Uri?>().also { pendingOpen = it }
-        openDocument.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+        // .ics (issue #136) : `text/calendar`, parfois annoncé `text/x-vcalendar`.
+        openDocument.launch(arrayOf("application/json", "text/plain", "text/calendar", "text/x-vcalendar", "application/octet-stream"))
         val uri = result.await() ?: return null
         return withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)!!.use { it.readBytes().decodeToString() }

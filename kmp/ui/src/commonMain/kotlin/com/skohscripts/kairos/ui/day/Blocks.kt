@@ -1,5 +1,9 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.calendar_imported_from
+import com.skohscripts.kairos.ui.generated.resources.calendar_block_delete
+import com.skohscripts.kairos.ui.generated.resources.calendar_block_delete_title
+import com.skohscripts.kairos.ui.generated.resources.calendar_block_delete_body
 import com.skohscripts.kairos.ui.theme.KairosRowIconButton
 import com.skohscripts.kairos.ui.theme.KairosButton
 import com.skohscripts.kairos.ui.theme.KairosTextButton
@@ -254,7 +258,8 @@ private fun BlockRecurrenceField(value: BlockRecurrence, day: LocalDate, onChang
 
 /**
  * Liste des créneaux stockés du jour, chacun modifiable : un ponctuel, ou l'occurrence du jour d'un récurrent (heures
- * de l'occurrence, exception comprise ; une occurrence sautée reste listée, barrée, pour pouvoir la rétablir).
+ * de l'occurrence, exception comprise ; une occurrence sautée reste listée, barrée, pour pouvoir la rétablir). Un créneau
+ * importé d'un calendrier porte son origine et un bouton « Supprimer » à la place de « Modifier » ([onEdit] dans les deux cas).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -277,10 +282,12 @@ internal fun DayBlockList(blocks: List<EditableBlock>, language: String, onEdit:
                         textDecoration = decoration,
                     )
                     Text(
-                        b.title.ifEmpty { stringResource(Res.string.block_untitled) },
+                        blockTitle(b),
                         style = MaterialTheme.typography.bodyMedium,
                         textDecoration = decoration,
                     )
+                    // Créneau importé (issue #136) : d'où il vient ; il ne se modifie pas, il se supprime.
+                    b.source?.let { Badge(stringResource(Res.string.calendar_imported_from, sourceName(it)), icon = KairosIcons.Event) }
                     if (b.kind == BlockKind.DEEPWORK) {
                         Badge(
                             stringResource(Res.string.tag_deepwork),
@@ -296,7 +303,11 @@ internal fun DayBlockList(blocks: List<EditableBlock>, language: String, onEdit:
                         eb.exception != null -> Badge(stringResource(Res.string.block_badge_changed))
                     }
                 }
-                KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { onEdit(eb) })
+                if (b.imported) {
+                    KairosRowIconButton(KairosIcons.Delete, stringResource(Res.string.calendar_block_delete), onClick = { onEdit(eb) })
+                } else {
+                    KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { onEdit(eb) })
+                }
             }
         }
     }
@@ -308,6 +319,18 @@ private fun recurrenceBadge(r: BlockRecurrence) = when (r) {
     BlockRecurrence.WEEKLY -> Res.string.block_badge_weekly
     BlockRecurrence.MONTHLY_DAY, BlockRecurrence.MONTHLY_WEEKDAY -> Res.string.block_badge_monthly
     BlockRecurrence.NONE -> null
+}
+
+/** Supprimer un créneau importé (issue #136) : il reviendra au prochain import de son calendrier, le dialogue le dit. */
+@Composable
+internal fun ImportedBlockDeleteDialog(block: TimeBlock, onDismiss: () -> Unit, onDelete: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.calendar_block_delete_title)) },
+        text = { Text(stringResource(Res.string.calendar_block_delete_body, blockTitle(block), block.source?.let { sourceName(it) }.orEmpty())) },
+        confirmButton = { KairosTextButton(onClick = onDelete) { Text(stringResource(Res.string.action_delete), color = MaterialTheme.colorScheme.error) } },
+        dismissButton = { KairosTextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) } },
+    )
 }
 
 /** Ce que « Seulement celle-ci » peut faire de l'occurrence du jour (issue #110). */

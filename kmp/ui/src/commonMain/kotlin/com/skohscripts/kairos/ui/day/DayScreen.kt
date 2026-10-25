@@ -431,6 +431,8 @@ fun DayScreen(
                     GuideMark(GuideSection.DAY_AGENDA) {
                         Column(Modifier.padding(top = KairosListSectionExtra)) {
                             Text(stringResource(Res.string.agenda_title), style = MaterialTheme.typography.titleMedium)
+                            // Journées entières des calendriers importés : un badge, sans effet sur le planning (issue #136).
+                            DayMarkBadges(view.dayMarks, Modifier.padding(vertical = 4.dp))
                             Hint(stringResource(if (view.agenda.isEmpty()) Res.string.agenda_empty else Res.string.agenda_hint))
                         }
                     }
@@ -610,7 +612,14 @@ fun DayScreen(
             )
         }
     }
-    editingBlock?.let { block ->
+    editingBlock?.takeIf { it.template.imported }?.let { block ->
+        ImportedBlockDeleteDialog(
+            block.template,
+            onDismiss = { editingBlock = null },
+            onDelete = { scope.launch { repository.deleteBlock(block.id) }; editingBlock = null },
+        )
+    }
+    editingBlock?.takeIf { !it.template.imported }?.let { block ->
         BlockDialog(
             block,
             day,

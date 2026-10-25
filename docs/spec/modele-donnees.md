@@ -43,7 +43,8 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
   manuel seulement, `export-import.md`).
 - Colonnes des intégrations retirées : `task.source`, `task.external_id`,
   `task.linked_ticket_id`, `time_block.source`, `time_block.external_id`,
-  table `task_sync_meta`.
+  table `task_sync_meta` (Kairos 2). Les calendriers importés de la 3.10.0 ont leurs propres colonnes
+  (`time_block.source_id`, `source_uid`, `connexions-externes.md`).
 
 ## 2. Solution technique
 
@@ -77,7 +78,12 @@ navigateur : le même modèle et les mêmes règles doivent valoir partout.
     une tâche archivée n'est ni affichée ni basculée.
 - `TimeBlock` : `id`, `title`, `start`, `end` (locales), `kind`
   (`BlockKind` : `busy`, `deepwork`), `recurrence` (`BlockRecurrence` : `""`,
-  `daily`, `weekdays`, `weekly`, et depuis la 3.8.0 `monthly_day`, `monthly_weekday`, `recurrence.md`), `createdAt`.
+  `daily`, `weekdays`, `weekly`, et depuis la 3.8.0 `monthly_day`, `monthly_weekday`, `recurrence.md`), `createdAt`,
+  et depuis la 3.10.0 `source` (`BlockSource?`, nul pour un créneau saisi à la main ; `Imported(calendarId, uid)` pour
+  un créneau d'un calendrier importé, `connexions-externes.md`).
+- `CalendarSource` (3.10.0) : `id`, `name`, `hideTitles`, `importedAt`, `createdAt` ; `DayMark` (3.10.0) : `id`,
+  `title`, `start`, `end` (dates, fin incluse), `source`, `createdAt` : journée entière d'un calendrier importé, badge
+  sans blocage.
 - `BlockException` (3.8.0, `recurrence.md` § Une seule occurrence) : `id`, `blockId` (le modèle), `date`, `skipped`
   (faux par défaut), `title`, `start`, `end` (heures locales `LocalTime`, `null` = celles du modèle), `createdAt` ; au
   plus une par `(blockId, date)`.
@@ -164,7 +170,7 @@ quotidien), une note, les réglages par défaut de la langue. Identifiants
    appliquées **dans une seule transaction**.
 3. `PRAGMA user_version` = version du schéma.
 
-`actualVersion` teste des marqueurs, du plus récent au plus ancien : colonne `team_member.week_hours` (10), table `time_block_exception` (9), colonne
+`actualVersion` teste des marqueurs, du plus récent au plus ancien : table `calendar_source` (11), colonne `team_member.week_hours` (10), table `time_block_exception` (9), colonne
 `task.series_id` (8), `task.team_excluded` (7), `task.origin` (6), table `team_scenario` (5),
 `task.progress_percent` (4), table `member_absence` (3), `task.space` (2),
 sinon 1. Chaque nouveau fichier `.sqm` ajoute son marqueur à
@@ -183,7 +189,10 @@ Schéma 7 : `6.sqm` ajoute `task.team_excluded` (0 par défaut, en fin de
 table, `equipe-moi.md`). Schéma 8 : `7.sqm` ajoute `task.series_id` (nulle, en fin de
 table, sans rétro-remplissage, `durees-apprises.md`). Schéma 9 : `8.sqm` (3.8.0) ajoute la table
 `time_block_exception`, vide (`recurrence.md`, `BlockExceptionMigrationTest`). Schéma 10 : `9.sqm` (3.9.0) ajoute
-`team_member.week_hours` (nulle, en fin de table, `equipe-charge.md` § Capacité, `WeekHoursMigrationTest`).
+`team_member.week_hours` (nulle, en fin de table, `equipe-charge.md` § Capacité, `WeekHoursMigrationTest`). Schéma 11 :
+`10.sqm` (3.10.0) ajoute `time_block.source_id` et `time_block.source_uid` (nulles, en fin de table), l'index
+`time_block_source`, les tables `calendar_source` et `day_mark`, vides (`connexions-externes.md` § Stockage,
+`CalendarImportRepositoryTest`).
 Les
 schémas de référence de chaque version
 (`data/src/commonMain/sqldelight/databases/<n>.db`, générés par

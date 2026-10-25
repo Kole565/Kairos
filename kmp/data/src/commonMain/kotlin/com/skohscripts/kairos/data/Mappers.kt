@@ -12,6 +12,9 @@ import com.skohscripts.kairos.core.model.TaskRecurrence
 import com.skohscripts.kairos.core.model.TaskSpace
 import com.skohscripts.kairos.core.model.TaskStatus
 import com.skohscripts.kairos.core.model.TimeBlock
+import com.skohscripts.kairos.core.model.DayMark
+import com.skohscripts.kairos.core.model.BlockSource
+import com.skohscripts.kairos.core.model.CalendarSource
 import com.skohscripts.kairos.core.model.WorkSession
 import com.skohscripts.kairos.core.team.MemberAbsence
 import com.skohscripts.kairos.core.team.TeamEvent
@@ -33,6 +36,8 @@ import com.skohscripts.kairos.data.db.Team_member as MemberRow
 import com.skohscripts.kairos.data.db.Team_scenario as ScenarioRow
 import com.skohscripts.kairos.data.db.Task_dependency as DependencyRow
 import com.skohscripts.kairos.data.db.Time_block as BlockRow
+import com.skohscripts.kairos.data.db.Day_mark as DayMarkRow
+import com.skohscripts.kairos.data.db.Calendar_source as CalendarSourceRow
 import com.skohscripts.kairos.data.db.Work_session as SessionRow
 
 // Conversions ligne SQLite <-> modèle (docs/spec/modele-donnees.md § Stockage) :
@@ -129,6 +134,24 @@ internal fun BlockRow.toModel() = TimeBlock(
     end = LocalDateTime.parse(end),
     kind = BlockKind.fromCode(kind),
     recurrence = BlockRecurrence.fromCode(recurrence),
+    createdAt = created_at.instant(),
+    source = source_id?.let { BlockSource.Imported(it, source_uid.orEmpty()) },
+)
+
+internal fun DayMarkRow.toModel() = DayMark(
+    id = id,
+    title = title,
+    start = LocalDate.parse(start),
+    end = LocalDate.parse(end),
+    source = BlockSource.Imported(source_id, source_uid),
+    createdAt = created_at.instant(),
+)
+
+internal fun CalendarSourceRow.toModel() = CalendarSource(
+    id = id,
+    name = name,
+    hideTitles = hide_titles != 0L,
+    importedAt = imported_at.instant(),
     createdAt = created_at.instant(),
 )
 

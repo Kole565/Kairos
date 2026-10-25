@@ -9,6 +9,8 @@ import kotlin.time.Instant
  * Créneau de la journée saisi à la main : occupé (réunion) ou fenêtre de deep
  * work réservée. Un créneau récurrent est un **modèle** unique, projeté à la
  * volée (docs/spec/recurrence.md) ; aucune occurrence n'est stockée.
+ * [source] : `null` pour un créneau saisi à la main ; sinon le calendrier dont il vient (docs/spec/connexions-externes.md),
+ * toujours ponctuel et occupé, en lecture seule sauf la suppression.
  */
 data class TimeBlock(
     val id: Long,
@@ -18,7 +20,52 @@ data class TimeBlock(
     val kind: BlockKind = BlockKind.BUSY,
     val recurrence: BlockRecurrence = BlockRecurrence.NONE,
     val createdAt: Instant,
+    val source: BlockSource? = null,
+) {
+    /** Vient d'un calendrier externe : ne se modifie pas (le prochain import l'écraserait), se supprime. */
+    val imported: Boolean get() = source != null
+}
+
+/**
+ * D'où vient un créneau ou une journée d'un calendrier externe (docs/spec/connexions-externes.md § Modèle). [uid] : `UID` de
+ * l'événement iCalendar, le même pour toutes les occurrences d'une série ; avec le début, il identifie une occurrence.
+ */
+sealed interface BlockSource {
+    val uid: String
+
+    /** Calendrier importé d'un fichier `.ics` ([CalendarSource]), stocké. */
+    data class Imported(val calendarId: Long, override val uid: String) : BlockSource
+
+    /** Calendrier du téléphone (Android), lu en direct, jamais stocké. */
+    data class Device(val calendarName: String, override val uid: String) : BlockSource
+}
+
+/**
+ * Un calendrier importé : son nom (il l'identifie : réimporter sous ce nom le remplace), le choix « Masquer les titres »
+ * du dernier import, et la date de ce dernier import.
+ */
+data class CalendarSource(
+    val id: Long,
+    val name: String,
+    val hideTitles: Boolean = false,
+    val importedAt: Instant,
+    val createdAt: Instant,
 )
+
+/**
+ * Événement « toute la journée » d'un calendrier externe (choix du propriétaire, 2026-10-24) : un badge du [start] au [end]
+ * inclus, qui ne bloque aucun temps et ne change pas le planning.
+ */
+data class DayMark(
+    val id: Long,
+    val title: String,
+    val start: LocalDate,
+    val end: LocalDate,
+    val source: BlockSource,
+    val createdAt: Instant,
+) {
+    fun covers(day: LocalDate): Boolean = day in start..end
+}
 
 enum class BlockKind(val code: String) {
     BUSY("busy"),

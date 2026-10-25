@@ -174,6 +174,15 @@ order (critical path). Cycles are refused.
   on a weekday ("the 3rd Tuesday", "the last Friday"). On any recurring slot,
   "Only this one" skips that day or changes its title and hours for that day
   only; "Restore" brings the series back.
+- **Calendar import**: Settings → Data → Calendars → "Import a calendar…" (or
+  Import) reads an `.ics` file (Outlook, Google Calendar, Thunderbird,
+  Nextcloud…). A preview comes first; each event becomes a read-only busy slot
+  in your time zone (repeating events unfolded over the next 6 months,
+  cancelled and "free" ones skipped, tentative ones kept, titles can be
+  hidden), whole-day events become a badge on the day without blocking time.
+  Description, location and attendees are never kept. "Reimport" replaces the
+  calendar's slots from today on, never yours; "Remove" takes it all away; an
+  imported slot can be deleted on its own. No network, no account.
 - **Deep work**: a slot reserved for a single task, the most urgent one; the
   others work around it.
 - **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a
@@ -379,7 +388,7 @@ you press "Save").
 | Timer and statistics | Timer alerts | Forgotten timer, suggested break, fallback sound | 180 min, 50 min, off |
 | | Statistics | Window of the indicators | 8 weeks |
 | Team | Team | Team management, then its thresholds, load and forecasts | off |
-| Data | Data, default settings | Export, import, restore the defaults | |
+| Data | Data, calendars, default settings | Export, import, import a calendar (reimport, remove), restore the defaults | |
 | | Data folder (desktop) | Change folder…, back to the default folder (next start) | system folder |
 | About | | Discover Kairos, About & guide, see the guide again from the start | |
 | | Diagnostics (desktop) | Keep a diagnostic log, copy diagnostics | off |

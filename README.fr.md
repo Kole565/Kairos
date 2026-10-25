@@ -180,6 +180,21 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
 - **Créneaux occupés** (réunions, déjeuner…), ponctuels ou récurrents
   (quotidien, jours ouvrés, hebdomadaire), modifiables et supprimables ; un
   créneau « jours ouvrés » saute les jours fériés, comme une tâche « jours ouvrés ».
+- **Créneaux mensuels, un jour à part** : un créneau peut revenir chaque mois,
+  un jour donné (« le 15 », ramené au jour ouvré précédent comme une tâche
+  mensuelle) ou un jour de la semaine (« le 3e mardi », « le dernier vendredi »).
+  Sur tout créneau récurrent, « Seulement celle-ci » saute ce jour ou en change
+  le titre et les heures pour ce jour seulement ; « Rétablir » remet la série.
+- **Import de calendrier** : Réglages → Données → Calendriers → « Importer un
+  calendrier… » (ou Importer) lit un fichier `.ics` (Outlook, Google Agenda,
+  Thunderbird, Nextcloud…). Un aperçu vient d’abord ; chaque événement devient
+  un créneau occupé en lecture seule dans ton fuseau horaire (événements répétés
+  dépliés sur les 6 prochains mois, annulés et « disponible » écartés, provisoires
+  gardés, titres masquables), et ceux sur la journée entière un badge sur le
+  jour, sans bloquer de temps. La description, le lieu et les participants ne
+  sont jamais gardés. « Réimporter » remplace les créneaux du calendrier à
+  partir d’aujourd’hui, jamais les tiens ; « Retirer » l’enlève tout entier ; un
+  créneau importé se supprime seul. Ni réseau, ni compte.
 - **Deep work** : un créneau réservé à une seule tâche, la plus urgente ; les
   autres le contournent.
 - **Frise** de la journée : planifié, occupé, épinglé, deep work, conflits, et
@@ -397,7 +412,7 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | Chrono et statistiques | Alertes du chrono | Chrono oublié, pause suggérée, son de secours | 180 min, 50 min, désactivé |
 | | Statistiques | Fenêtre des indicateurs | 8 semaines |
 | Équipe | Équipe | Gestion d’équipe, puis ses seuils, sa charge et ses prévisions | désactivé |
-| Données | Données, réglages par défaut | Export, import, restaurer les valeurs par défaut | |
+| Données | Données, calendriers, réglages par défaut | Export, import, importer un calendrier (réimporter, retirer), restaurer les valeurs par défaut | |
 | | Dossier des données (bureau) | Changer de dossier…, revenir au dossier par défaut (prochain démarrage) | dossier du système |
 | À propos | | Découvrir Kairos, À propos et guide, revoir le guide depuis le début | |
 | | Diagnostic (bureau) | Tenir un journal de diagnostic, copier le diagnostic | désactivé |

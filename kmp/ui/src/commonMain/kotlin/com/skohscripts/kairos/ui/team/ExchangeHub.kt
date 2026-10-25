@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.team
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +47,7 @@ import com.skohscripts.kairos.ui.generated.resources.Res
 import com.skohscripts.kairos.ui.generated.resources.exchange_send_action
 import com.skohscripts.kairos.ui.generated.resources.file_error
 import com.skohscripts.kairos.ui.generated.resources.hub_awaiting
+import com.skohscripts.kairos.ui.generated.resources.hub_calendar_file
 import com.skohscripts.kairos.ui.generated.resources.hub_full_file
 import com.skohscripts.kairos.ui.generated.resources.hub_how_title
 import com.skohscripts.kairos.ui.generated.resources.hub_members_title
@@ -107,10 +110,11 @@ fun ExchangeHub(services: AppServices, onOpenMember: (Long) -> Unit, onTour: () 
                             return@launch
                         } ?: return@launch
                         try {
-                            when (val file = readImportedFile(services, text)) {
+                            when (val file = withContext(Dispatchers.Default) { readImportedFile(services, text) }) {
                                 is ImportedFile.Exchange -> preview = file.preview
                                 // Jamais de remplacement de toutes les données depuis l'écran Équipe : c'est le rôle de Réglages → Données.
                                 is ImportedFile.Full -> messages(getString(Res.string.hub_full_file))
+                                is ImportedFile.Calendar -> messages(getString(Res.string.hub_calendar_file))
                             }
                         } catch (e: ImportException) {
                             messages(importErrorMessage(e))

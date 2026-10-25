@@ -108,6 +108,8 @@ ICONS = {
     "ShowChart": ("show_chart", False),
     "EditNote": ("edit_note", False),
     "DarkMode": ("dark_mode", False),
+    # Calendriers importés (3.10.0, issue #136) : créneau importé, journée entière.
+    "Event": ("event", False),
 }
 
 
