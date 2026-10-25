@@ -1458,7 +1458,9 @@
     <string name="card_slots_month_title">Monthly slots, and one day apart</string>
     <string name="card_slots_month_body">A time slot can come back every month, on the 15th or on the 3rd Tuesday. On a recurring slot, “Only this one” skips that day or changes its hours, without touching the rest of the series.</string>
     <string name="card_calendar_import_title">Import your meetings from a calendar</string>
-    <string name="card_calendar_import_body">Settings → Data → Import also reads an .ics file from Outlook, Google Calendar or Thunderbird: each meeting becomes a busy slot, whole-day events a badge on the day. Import it again to update it.</string>
+    <string name="card_calendar_import_body">Settings → Data → Calendars imports an .ics file from Outlook, Google Calendar or Thunderbird: each meeting becomes a busy slot, whole-day events a badge on the day. Import it again to update it. On Android, the phone’s calendars can also be read live.</string>
+    <string name="card_linked_file_title">A copy of your data in a synced folder</string>
+    <string name="card_linked_file_body">On the desktop and Android, Settings → Data → “Create a file” keeps an up-to-date copy of your data in a folder you choose (Syncthing, Nextcloud…). If another device changed it, Kairos asks before writing.</string>
     <string name="card_month_title">The month at a glance</string>
     <string name="card_month_body">In the Week view, “Month” shows every day of the month: planned tasks, deadlines, overloaded days, public holidays and days off. Tap a day to open it.</string>
     <string name="card_correct_title">Correct your estimates</string>

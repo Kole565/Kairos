@@ -1,0 +1,1 @@
+Kairos 3.10.0: import your meetings from an .ics file (Outlook, Google, Thunderbird) as busy slots, whole-day events as a badge; on Android, read the phone’s calendars live (optional permission, still no network); keep an up-to-date copy of your data in a synced folder (Syncthing, Nextcloud), with a guard if another device changed it.

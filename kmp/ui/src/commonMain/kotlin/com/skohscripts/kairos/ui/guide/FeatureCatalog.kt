@@ -13,6 +13,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_body
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_calendar_import_body
 import com.skohscripts.kairos.ui.generated.resources.card_calendar_import_title
+import com.skohscripts.kairos.ui.generated.resources.card_linked_file_body
+import com.skohscripts.kairos.ui.generated.resources.card_linked_file_title
 import com.skohscripts.kairos.ui.generated.resources.card_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_correct_body
 import com.skohscripts.kairos.ui.generated.resources.card_trends_body
@@ -178,6 +180,7 @@ object FeatureCatalog {
         FeatureCard("reminders", GuideChapter.SETTINGS, { KairosIcons.Alarm }, Res.string.card_reminders_title, Res.string.card_reminders_body, GuideTarget.Settings(GuideSection.SETTINGS_REMINDERS), since = "3.8.0"),
         FeatureCard("darktheme", GuideChapter.SETTINGS, { KairosIcons.DarkMode }, Res.string.card_darktheme_title, Res.string.card_darktheme_body, GuideTarget.Settings(GuideSection.SETTINGS_APPEARANCE), since = "3.7.0"),
         FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), tour = true),
+        FeatureCard("linked_file", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.card_linked_file_title, Res.string.card_linked_file_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), since = "3.10.0"),
     )
 
     /** Les cartes d'un chapitre, dans l'ordre. */
@@ -247,7 +250,7 @@ object FeatureCatalog {
         "When you work on each type" to "besthours",
         "Best hours" to "besthours_apply",
         "Web version" to "data",
-        "Linked file" to "data",
+        "Linked file" to "linked_file",
         "Settings" to "settings",
         "Members" to "team_members",
         "Tracking" to "team_board",
