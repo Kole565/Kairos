@@ -1615,6 +1615,14 @@
     <string name="calendars_remove_body">Ses créneaux passés et ses badges partent aussi. Tes propres créneaux ne sont pas touchés.</string>
     <string name="calendars_removed">Calendrier « %1$s » retiré.</string>
     <string name="calendars_not_calendar">Ce fichier n’est pas un calendrier (.ics).</string>
+    <string name="calendar_device_from">Calendrier du téléphone « %1$s »</string>
+    <string name="calendars_phone_title">Calendriers du téléphone</string>
+    <string name="calendars_phone_switch">Utiliser les calendriers du téléphone</string>
+    <string name="calendars_phone_help">Les événements des calendriers du téléphone (Google, Exchange, DAVx⁵, ICSx⁵, Outlook avec « Synchroniser les calendriers ») apparaissent en créneaux occupés en lecture seule, lus en direct, jamais stockés ni exportés. Kairos ne demande l’accès au calendrier qu’à l’activation, et ne se connecte toujours à aucun réseau. Si ton organisation bloque la copie d’Outlook, importe plutôt un fichier .ics.</string>
+    <string name="calendars_phone_choose">Choisis les calendriers à utiliser (aucun par défaut) :</string>
+    <string name="calendars_phone_empty">Aucun calendrier sur ce téléphone.</string>
+    <string name="calendars_phone_denied">Kairos n’a plus accès aux calendriers du téléphone.</string>
+    <string name="calendars_phone_settings">Ouvrir les réglages du système</string>
     <string name="day_mark_all_day">Toute la journée</string>
     <string name="day_marks_description">Toute la journée : %1$s</string>
     <string name="hub_calendar_file">Ce fichier est un calendrier, pas un échange d’équipe. Pour l’importer : Réglages → Données → Importer.</string>

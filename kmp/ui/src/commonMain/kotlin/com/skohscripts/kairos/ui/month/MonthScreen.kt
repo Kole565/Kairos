@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.month
 
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
 import com.skohscripts.kairos.ui.day.markTitle
 import com.skohscripts.kairos.ui.generated.resources.day_marks_description
 import androidx.compose.foundation.BorderStroke
@@ -85,7 +86,9 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 fun MonthScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> Unit) {
-    val snapshot by services.repository.personalSnapshot.collectAsState()
+    val stored by services.repository.personalSnapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, stored)
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(timeZone).date
     val language = uiLanguage()

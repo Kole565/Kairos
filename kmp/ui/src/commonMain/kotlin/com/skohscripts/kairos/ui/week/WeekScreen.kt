@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.week
 
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
 import com.skohscripts.kairos.ui.day.DayMarkBadges
 import com.skohscripts.kairos.ui.day.blockTitle
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -115,7 +116,9 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> Unit) {
-    val snapshot by services.repository.personalSnapshot.collectAsState()
+    val stored by services.repository.personalSnapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, stored)
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val now = services.clock.now()
     val today = now.toLocalDateTime(timeZone).date

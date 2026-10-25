@@ -77,7 +77,8 @@ qu'elles ne pourraient l'être.
 #### Créneaux de « moi »
 
 - Les créneaux **occupés** de la vue Jour (réunions, ponctuelles ou
-  récurrentes, et depuis la 3.10.0 ceux importés d'un calendrier, `connexions-externes.md`) réduisent la capacité de
+  récurrentes, et depuis la 3.10.0 ceux importés d'un calendrier ou lus dans les calendriers du téléphone,
+  `connexions-externes.md`) réduisent la capacité de
   « moi » les jours concernés, pour la
   part qui tombe dans sa journée de travail. Les fenêtres de deep work ne
   réduisent rien (c'est du temps de travail).

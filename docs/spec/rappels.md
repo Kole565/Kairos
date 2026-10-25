@@ -54,7 +54,8 @@ un rappel discret avant une tâche à heure fixe et, s'il le souhaite, quand le 
   (`SettingsFormTest`).
 - La veille de l'application affiche le rappel à l'heure dite (horloge simulée) et ne l'affiche qu'une fois
   (`ReminderUiTest.theFixedTimeTaskIsRemindedOnceAtItsTime`).
-- APK sans nouvelle permission (le manifeste garde `POST_NOTIFICATIONS` et `RECEIVE_BOOT_COMPLETED`).
+- APK sans nouvelle permission (le manifeste garde `POST_NOTIFICATIONS` et `RECEIVE_BOOT_COMPLETED` ; `READ_CALENDAR`,
+  facultative, arrive en 3.10.0 pour les calendriers du téléphone, `connexions-externes.md`).
 
 ### Hors périmètre / différé
 

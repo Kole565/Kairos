@@ -34,8 +34,8 @@ un autre jour.
   la grille.
 - Sept cartes, du lundi au dimanche (« mar. 29/09 ») ; aujourd'hui en
   conteneur secondaire avec un contour. Dans chaque carte : les créneaux
-  (« Déjeuner (12h00-13h00) », occurrences des récurrents comprises ; un créneau importé d'un calendrier porte l'icône
-  `Event`, et les journées entières d'un calendrier importé sont des pastilles sous la date, 3.10.0,
+  (« Déjeuner (12h00-13h00) », occurrences des récurrents comprises ; un créneau importé d'un calendrier ou lu dans un
+  calendrier du téléphone porte l'icône `Event`, et les journées entières d'un calendrier importé sont des pastilles sous la date, 3.10.0,
   `connexions-externes.md`), les
   tâches faites ce jour-là (barrées, coche verte), les tâches à faire dont
   l'**échéance** tombe ce jour-là et qui ne sont pas programmées un autre jour (priorité d'abord, sans priorité en

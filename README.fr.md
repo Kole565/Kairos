@@ -195,6 +195,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   sont jamais gardés. « Réimporter » remplace les créneaux du calendrier à
   partir d’aujourd’hui, jamais les tiens ; « Retirer » l’enlève tout entier ; un
   créneau importé se supprime seul. Ni réseau, ni compte.
+- **Calendriers du téléphone** (Android) : Réglages → Données → « Utiliser les
+  calendriers du téléphone » montre les événements des calendriers cochés
+  (Google, Exchange, DAVx⁵, ICSx⁵, Outlook avec « Synchroniser les
+  calendriers ») en créneaux occupés en lecture seule, lus en direct, jamais
+  stockés ni exportés. Kairos ne demande l’accès au calendrier qu’à ce moment
+  (une permission facultative, pas une permission réseau).
 - **Deep work** : un créneau réservé à une seule tâche, la plus urgente ; les
   autres le contournent.
 - **Frise** de la journée : planifié, occupé, épinglé, deep work, conflits, et

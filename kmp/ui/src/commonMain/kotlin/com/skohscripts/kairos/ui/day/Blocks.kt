@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.ui.generated.resources.calendar_device_from
+import com.skohscripts.kairos.core.model.BlockSource
 import com.skohscripts.kairos.ui.generated.resources.calendar_imported_from
 import com.skohscripts.kairos.ui.generated.resources.calendar_block_delete
 import com.skohscripts.kairos.ui.generated.resources.calendar_block_delete_title
@@ -287,7 +289,10 @@ internal fun DayBlockList(blocks: List<EditableBlock>, language: String, onEdit:
                         textDecoration = decoration,
                     )
                     // Créneau importé (issue #136) : d'où il vient ; il ne se modifie pas, il se supprime.
-                    b.source?.let { Badge(stringResource(Res.string.calendar_imported_from, sourceName(it)), icon = KairosIcons.Event) }
+                    b.source?.let { src ->
+                        val label = if (src is BlockSource.Device) Res.string.calendar_device_from else Res.string.calendar_imported_from
+                        Badge(stringResource(label, sourceName(src)), icon = KairosIcons.Event)
+                    }
                     if (b.kind == BlockKind.DEEPWORK) {
                         Badge(
                             stringResource(Res.string.tag_deepwork),
@@ -303,7 +308,9 @@ internal fun DayBlockList(blocks: List<EditableBlock>, language: String, onEdit:
                         eb.exception != null -> Badge(stringResource(Res.string.block_badge_changed))
                     }
                 }
-                if (b.imported) {
+                if (b.source is BlockSource.Device) {
+                    // Calendrier du téléphone : lu en direct, rien à supprimer dans Kairos (on le change dans l'agenda).
+                } else if (b.imported) {
                     KairosRowIconButton(KairosIcons.Delete, stringResource(Res.string.calendar_block_delete), onClick = { onEdit(eb) })
                 } else {
                     KairosRowIconButton(KairosIcons.Edit, stringResource(Res.string.action_edit), onClick = { onEdit(eb) })

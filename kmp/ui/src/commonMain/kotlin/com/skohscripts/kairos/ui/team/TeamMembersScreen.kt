@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team
 
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
 import com.skohscripts.kairos.core.team.Capacity
 import com.skohscripts.kairos.ui.generated.resources.member_summary_week
 import com.skohscripts.kairos.ui.app.uiLanguage
@@ -141,7 +142,9 @@ fun TeamMembersScreen(
     /** Lance la visite de l'espace Équipe (lien de l'onglet « Échanges ») ; sans effet hors de la coquille. */
     onTour: () -> Unit = {},
 ) {
-    val snapshot by services.repository.snapshot.collectAsState()
+    val stored by services.repository.snapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, stored)
     val today = services.clock.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val active = remember(snapshot.members) { TeamMembers.active(snapshot.members) }
     val former = remember(snapshot.members) { TeamMembers.archived(snapshot.members) }

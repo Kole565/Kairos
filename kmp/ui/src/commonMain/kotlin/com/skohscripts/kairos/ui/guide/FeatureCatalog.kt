@@ -233,6 +233,7 @@ object FeatureCatalog {
         "Busy slots" to "slots",
         "Monthly slots, one day apart" to "slots_month",
         "Calendar import" to "calendar_import",
+        "Phone calendars" to "calendar_import",
         "Deep work" to "slots",
         "Timeline" to "do",
         "Timer per task" to "time",

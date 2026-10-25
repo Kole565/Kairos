@@ -1,5 +1,14 @@
 package com.skohscripts.kairos.ui.settings
 
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_choose
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_empty
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_settings
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_denied
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_switch
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_help
+import com.skohscripts.kairos.ui.generated.resources.calendars_phone_title
+import com.skohscripts.kairos.ui.app.DeviceCalendarState
+import com.skohscripts.kairos.ui.app.CalendarService
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -274,6 +283,7 @@ internal fun CalendarsCard(services: AppServices) {
             }
         }
     }
+    services.calendars?.let { PhoneCalendarsCard(it) }
     preview?.let { (plan, target) -> CalendarImportDialog(services, plan, onDone = { preview = null }, presetName = target) }
     removing?.let { c ->
         val total = snapshot.timeBlocks.count { (it.source as? com.skohscripts.kairos.core.model.BlockSource.Imported)?.calendarId == c.source.id }
@@ -292,5 +302,41 @@ internal fun CalendarsCard(services: AppServices) {
             },
             dismissButton = { KairosTextButton(onClick = { removing = null }) { Text(stringResource(Res.string.action_cancel)) } },
         )
+    }
+}
+
+/**
+ * Calendriers du téléphone (Android, docs/spec/connexions-externes.md § Étape 2) : l'interrupteur, qui seul demande
+ * l'autorisation ; puis les calendriers du téléphone à cocher (aucun par défaut) ; autorisation retirée : le dire et
+ * ouvrir les réglages du système.
+ */
+@Composable
+private fun PhoneCalendarsCard(service: CalendarService) {
+    val state by service.state.collectAsState()
+    val scope = rememberCoroutineScope()
+    SettingsCard(spacing = KairosSpacing.m) {
+        SettingsCardHeader(KairosIcons.Event, stringResource(Res.string.calendars_phone_title), stringResource(Res.string.calendars_phone_help))
+        SwitchRow(state !is DeviceCalendarState.Off, stringResource(Res.string.calendars_phone_switch)) { on ->
+            scope.launch { if (on) service.enable() else service.disable() }
+        }
+        when (val s = state) {
+            DeviceCalendarState.Off -> Unit
+            DeviceCalendarState.Denied -> {
+                Text(stringResource(Res.string.calendars_phone_denied), style = MaterialTheme.typography.bodyMedium)
+                KairosOutlinedButton(onClick = service::openSystemSettings) { Text(stringResource(Res.string.calendars_phone_settings)) }
+            }
+            is DeviceCalendarState.On -> {
+                if (s.calendars.isEmpty()) {
+                    Text(stringResource(Res.string.calendars_phone_empty), style = MaterialTheme.typography.bodyMedium)
+                } else {
+                    Text(stringResource(Res.string.calendars_phone_choose), style = MaterialTheme.typography.bodyMedium)
+                    s.calendars.forEach { c ->
+                        LabeledCheckbox(c.id in s.selected, { checked ->
+                            scope.launch { service.select(if (checked) s.selected + c.id else s.selected - c.id) }
+                        }, if (c.account.isBlank() || c.account == c.name) c.name else "${c.name} · ${c.account}")
+                    }
+                }
+            }
+        }
     }
 }

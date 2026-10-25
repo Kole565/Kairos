@@ -5,10 +5,14 @@
      (docs/spec/temps-reel-chrono.md § Android) : notifier (demandée à
      l'opt-in des alertes, jamais au démarrage) et remettre la notification et
      les alarmes après un redémarrage. Aucune alarme exacte : pas de
-     SCHEDULE_EXACT_ALARM. -->
+     SCHEDULE_EXACT_ALARM. Une troisième, facultative (3.10.0,
+     docs/spec/connexions-externes.md § Android) : lire les calendriers du
+     téléphone, demandée seulement quand l'utilisateur l'active ; ce n'est pas
+     une permission réseau. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
     <application
         android:name=".KairosApplication"
         android:label="@string/app_name"

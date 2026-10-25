@@ -114,6 +114,9 @@ remplacer ; une version stable s'installe par-dessus la précédente.
   `POST_NOTIFICATIONS` (demandée à l'opt-in des alertes) et
   `RECEIVE_BOOT_COMPLETED` pour le chrono (`temps-reel-chrono.md`), avec
   ses deux récepteurs (`ChronoReceiver` non exporté, `BootReceiver`) ;
+  `READ_CALENDAR`, **facultative**, demandée seulement quand l'utilisateur
+  active « Utiliser les calendriers du téléphone » (3.10.0,
+  `connexions-externes.md`) : ce n'est pas une permission réseau ;
   activité `singleTop` (la notification du chrono la rouvre) ;
   `enableOnBackInvokedCallback="true"` (geste retour prédictif) ;
   `windowSoftInputMode="adjustResize"`. Base et suivi du chrono ouverts une

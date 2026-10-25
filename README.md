@@ -183,6 +183,11 @@ order (critical path). Cycles are refused.
   Description, location and attendees are never kept. "Reimport" replaces the
   calendar's slots from today on, never yours; "Remove" takes it all away; an
   imported slot can be deleted on its own. No network, no account.
+- **Phone calendars** (Android): Settings → Data → "Use my phone calendars"
+  shows the events of the calendars you tick (Google, Exchange, DAVx⁵,
+  ICSx⁵, Outlook with "Sync calendars" on) as read-only busy slots, read live
+  and never stored or exported. Kairos asks for calendar access only at that
+  moment (an optional permission, not a network one).
 - **Deep work**: a slot reserved for a single task, the most urgent one; the
   others work around it.
 - **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a

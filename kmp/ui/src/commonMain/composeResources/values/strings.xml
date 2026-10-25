@@ -1613,6 +1613,14 @@
     <string name="calendars_remove_body">Its past slots and its whole-day badges go too. Your own slots are not touched.</string>
     <string name="calendars_removed">Calendar “%1$s” removed.</string>
     <string name="calendars_not_calendar">This file is not a calendar (.ics).</string>
+    <string name="calendar_device_from">Phone calendar “%1$s”</string>
+    <string name="calendars_phone_title">Phone calendars</string>
+    <string name="calendars_phone_switch">Use my phone calendars</string>
+    <string name="calendars_phone_help">Events from the phone’s calendars (Google, Exchange, DAVx⁵, ICSx⁵, Outlook with “Sync calendars” on) show as read-only busy slots, read live and never stored or exported. Kairos asks for calendar access only when you turn this on, and still makes no network connection. If your organisation blocks Outlook’s copy, import a .ics file instead.</string>
+    <string name="calendars_phone_choose">Choose the calendars to use (none by default):</string>
+    <string name="calendars_phone_empty">No calendar on this phone.</string>
+    <string name="calendars_phone_denied">Kairos no longer has access to the phone calendars.</string>
+    <string name="calendars_phone_settings">Open system settings</string>
     <string name="day_mark_all_day">All day</string>
     <string name="day_marks_description">All day: %1$s</string>
     <string name="hub_calendar_file">This file is a calendar, not a team exchange. To import it: Settings → Data → Import.</string>

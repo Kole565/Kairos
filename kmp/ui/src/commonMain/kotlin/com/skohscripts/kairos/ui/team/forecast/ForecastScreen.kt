@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.ui.team.forecast
 
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosSpacing
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
@@ -101,7 +102,9 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ForecastScreen(services: AppServices) {
     val ui = services.teamUi
-    val snapshot by services.repository.snapshot.collectAsState()
+    val base by services.repository.snapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, base)
     val zone = remember { TimeZone.currentSystemDefault() }
     val today = services.clock.now().toLocalDateTime(zone).date
     val language = uiLanguage()

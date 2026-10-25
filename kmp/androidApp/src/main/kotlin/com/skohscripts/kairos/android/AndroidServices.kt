@@ -55,6 +55,8 @@ object AndroidServices {
             backups = FolderBackups(File(context.filesDir, "backups")),
             dataLocation = null,
             linkedStorage = linked,
+            // Calendriers du téléphone (docs/spec/connexions-externes.md § Android) : lus en direct, jamais stockés.
+            calendars = AndroidCalendarService(context, KairosProcess.scope, clock).also { it.refresh() },
             clock = clock,
             notifier = notifier,
             firstLaunch = opened.created,

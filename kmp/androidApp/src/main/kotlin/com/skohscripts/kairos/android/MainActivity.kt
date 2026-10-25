@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity(), FileService {
         pendingOpen?.complete(it)
     }
     private var pendingPermission: CompletableDeferred<Boolean>? = null
-    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         pendingPermission?.complete(it)
     }
 
@@ -97,8 +97,12 @@ class MainActivity : ComponentActivity(), FileService {
         super.onResume()
         KairosProcess.activity = this
         if (crashReport != null) return
-        // L'utilisateur a pu changer l'autorisation dans les réglages du système.
-        KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().notifier as? AndroidNotifier)?.refresh() }
+        // L'utilisateur a pu changer l'autorisation dans les réglages du système (notifications, calendrier).
+        KairosProcess.scope.launch {
+            val services = KairosProcess.services(this@MainActivity).await()
+            (services.notifier as? AndroidNotifier)?.refresh()
+            (services.calendars as? AndroidCalendarService)?.refresh()
+        }
     }
 
     // Arrière-plan : le fichier lié reçoit tout de suite ce qui attendait son délai (docs/spec/export-import.md).
@@ -120,9 +124,12 @@ class MainActivity : ComponentActivity(), FileService {
     }
 
     /** Demande `POST_NOTIFICATIONS` (Android 13+) ; `true` si accordée. */
-    suspend fun requestNotificationPermission(): Boolean = withContext(Dispatchers.Main) {
+    suspend fun requestNotificationPermission(): Boolean = requestPermission(Manifest.permission.POST_NOTIFICATIONS)
+
+    /** Demande une autorisation d'exécution (notifications, lecture du calendrier) ; `true` si accordée. */
+    suspend fun requestPermission(permission: String): Boolean = withContext(Dispatchers.Main) {
         val result = CompletableDeferred<Boolean>().also { pendingPermission = it }
-        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        permissionRequest.launch(permission)
         result.await()
     }
 

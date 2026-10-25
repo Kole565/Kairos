@@ -20,13 +20,18 @@ de fichier (`kairos-web.js`, `MainActivity.kt`). Tests : `IcsParserTest`,
 `IcsRuleTest`, `IcsZonesTest`, `CalendarImportTest` (exemples réels recopiés
 en constantes dans `IcsSamples.kt` : les tests de `core` tournent aussi hors
 JVM), `CalendarImportRepositoryTest` (dépôt, export, migration 10 → 11),
-`CalendarImportUiTest`. Prévus pour l'étape 2 : `ui/app/CalendarService.kt`,
-`ExternalBlocks.kt`, `kmp/androidApp/.../AndroidCalendarService.kt`,
-`ExternalBlocksTest`._
+`CalendarImportUiTest`. Étape 2 : `core/calendar/ExternalBlocks.kt`,
+`ui/app/CalendarService.kt` (`withDeviceCalendars`), section du téléphone de
+`settings/CalendarImport.kt`, `day/DayScreen.kt`, `week/WeekScreen.kt`,
+`month/MonthScreen.kt`, `team/TeamMembersScreen.kt`,
+`team/forecast/ForecastScreen.kt`, `kmp/androidApp/.../AndroidCalendarService.kt`,
+`MainActivity.kt` (`requestPermission`), `AndroidManifest.xml` ; tests
+`ExternalBlocksTest`, `PhoneCalendarsUiTest`._
 
 État : étape 1, import d'un fichier `.ics` (issue #136), **implémentée en
 3.10.0**. Étape 2, calendriers du téléphone sur Android (issue #138) :
-spécifiée le 2026-10-24, non implémentée. Suivi : #140. Choix produit validés
+**implémentée en 3.10.0** (`READ_CALENDAR` facultative, acceptée par le
+propriétaire le 2026-10-24). Suivi : #140. Choix produit validés
 par le propriétaire le 2026-10-24 ; à l'implémentation, le 2026-10-24 encore :
 une journée entière devient un **badge** sans bloquer de temps, un créneau
 importé se **supprime** seul (il ne se modifie pas), les fuseaux passent par
@@ -220,13 +225,19 @@ par le calendrier du téléphone, jamais par le réseau.
   nommé dans l'aperçu, les créneaux et badges apparaissent dans la vue
   Semaine (vérifié à la main le 2026-10-25).
 
-Étape 2 (à vérifier à l'implémentation) :
+Étape 2 :
 
-- Créneaux du téléphone : pas de bouton « Modifier », placement du planning et
-  charge de « moi » identiques à des créneaux manuels de mêmes heures ; rien
-  n'est écrit en base ni exporté ; dédoublonnage par identifiant d'événement
-  et début (`ExternalBlocksTest`) ; vérification à la main sur un appareil
-  avec DAVx⁵ ou ICSx⁵ et avec Outlook « Synchroniser les calendriers ».
+- Mêmes règles qu'à l'import (libres, annulés, refusés écartés ; journée
+  entière en badge ; découpage à minuit) ; un créneau importé de même `UID` et
+  même début qu'un créneau du téléphone disparaît au profit de celui-ci
+  (`ExternalBlocksTest`).
+- Interrupteur, aucun calendrier coché d'office, créneau du téléphone dans la
+  vue Jour sans « Modifier » ni « Supprimer », rien en base ; accès refusé ou
+  retiré : message et « Ouvrir les réglages du système »
+  (`PhoneCalendarsUiTest`, service simulé).
+- À vérifier à la main sur un appareil : DAVx⁵ ou ICSx⁵, Outlook
+  « Synchroniser les calendriers », autorisation retirée dans le système (la
+  CI compile l'APK, aucun test n'y lit un vrai fournisseur de calendrier).
 
 ### Hors périmètre / différé
 
@@ -406,52 +417,59 @@ par le calendrier du téléphone, jamais par le réseau.
 - Carte du guide `calendar_import` (chapitre Organiser, `since = "3.10.0"`,
   ouvre Réglages → Données).
 
-### Créneaux du téléphone dans l'interface (`ui/app`, étape 2, non implémentée)
+### Calendriers du téléphone (étape 2)
 
-- `CalendarService` (interface, `AppServices.calendars: CalendarService?`,
-  nul sur bureau, web et dans les tests) : `state:
-  StateFlow<DeviceCalendarState>` (`Off`, `NeedsPermission`, `Denied`,
-  `On(calendars, selected)`), `blocks: StateFlow<List<TimeBlock>>`,
-  `enable()`, `disable()`, `select(ids)`.
-- `ExternalBlocks.merge(snapshot, deviceBlocks): KairosSnapshot` :
-  `snapshot.copy(timeBlocks = …)` avec les créneaux du téléphone ajoutés et,
-  pour chaque créneau du téléphone, le créneau importé de même `uid` et de
-  même `start` retiré. Seuls les écrans qui **calculent** un planning
-  appellent `merge` : `DayScreen`, `WeekScreen`, `LoadCompute`,
-  `ForecastState`. L'export, l'import, les échanges d'équipe et l'édition
-  lisent toujours `repository.snapshot`. Les créneaux du téléphone ne
-  peuvent donc pas être écrits ni exportés.
-- `DayBlockList` et la vue Semaine traitent un créneau `Device` comme un
-  créneau importé (icône `Event`, `sourceName`), sans « Supprimer » (il n'est
-  pas en base). Couleur : celle d'un créneau occupé, aucune couleur de
-  calendrier.
+- `DeviceEvent` (`core/calendar`) : un événement lu dans le système
+  (calendrier, `uid`, titre, début et fin en instants, journée entière,
+  libre, annulé, refusé). `ExternalBlocks.map(événements, fuseau)` :
+  `DeviceCalendarData(blocks, marks)` ; mêmes règles que `CalendarImport`
+  (libres, annulés, refusés, durée nulle écartés ; journée entière en
+  `DayMark`, ses dates lues en UTC comme Android les donne, fin exclue ;
+  créneau découpé à minuit par `CalendarImport.splitAtMidnight`) ;
+  identifiants négatifs, uniques dans la liste ; source
+  `BlockSource.Device(calendrier, uid)`.
+- `ExternalBlocks.merge(snapshot, data)` : `snapshot.copy` avec les créneaux et
+  journées du téléphone ajoutés ; un créneau (une journée) importé de même
+  `uid` et de même début est retiré. Pur, dans `core`.
+- `CalendarService` (`ui/app`, `AppServices.calendars`, nul sur le bureau,
+  le web et dans les tests) : `state` (`DeviceCalendarState` : `Off`,
+  `Denied`, `On(calendars, selected)`), `data`, `enable()`, `disable()`,
+  `select(ids)`, `openSystemSettings()`.
+- `withDeviceCalendars(services, snapshot)` (composable) : seuls les écrans qui
+  **calculent** un planning l'appellent : `DayScreen`, `WeekScreen`,
+  `MonthScreen`, `TeamMembersScreen` (charge de « moi »), `ForecastScreen`.
+  L'export, l'import, les échanges d'équipe et l'édition lisent toujours
+  `repository.snapshot` : les créneaux du téléphone ne peuvent être ni
+  écrits ni exportés.
+- `DayBlockList` : badge « Calendrier du téléphone « Nom » » (icône `Event`,
+  `sourceName`), ni « Modifier » ni « Supprimer » ; vue Semaine : icône
+  `Event` comme un créneau importé. Couleur : celle d'un créneau occupé,
+  aucune couleur de calendrier.
+- `PhoneCalendarsCard` (`settings/CalendarImport.kt`, sous la carte
+  « Calendriers ») : aide, interrupteur (`SwitchRow`), cases des calendriers
+  (« Nom · compte »), état `Denied` avec « Ouvrir les réglages du système ».
 
-### Android (`androidApp`, étape 2, non implémentée)
+### Android (`androidApp`, étape 2)
 
-- `AndroidCalendarService` : `READ_CALENDAR` ajouté au manifeste, demandé
-  par `ActivityResultContracts.RequestPermission` seulement depuis
-  l'interrupteur.
-- Lecture de `CalendarContract.Calendars` (nom, compte, visibles) et de
-  `CalendarContract.Instances` sur `[aujourd'hui − 31 jours, aujourd'hui +
-  6 mois]`, hors du fil principal. `Instances` déploie déjà les répétitions,
-  les exceptions et les fuseaux : aucun code de répétition ici.
-- Colonnes : `TITLE`, `BEGIN`, `END`, `ALL_DAY`, `AVAILABILITY`
-  (`AVAILABILITY_FREE` écarté), `STATUS` (`STATUS_CANCELED` écarté),
-  `SELF_ATTENDEE_STATUS` (`ATTENDEE_STATUS_DECLINED` écarté),
-  `UID_2445`. Mêmes règles que `CalendarImport` : journée entière en
-  `DayMark` (`BlockSource.Device`), découpage à minuit
-  (`CalendarImport.splitAtMidnight`).
-- Sélection (identifiants de calendrier, propres à l'appareil) et
-  interrupteur gardés dans les préférences de l'application, **jamais**
-  dans `Settings` ni dans l'export.
-- Rafraîchissement : à chaque reprise de l'activité et par un
-  `ContentObserver` sur `CalendarContract.Instances.CONTENT_URI`, regroupé
-  (1 s). Autorisation retirée constatée à la reprise → `Denied`, liste vide.
-
-### Interface (étape 2, non implémentée)
-
-- `CalendarsCard`, section Android : interrupteur, liste des calendriers du
-  téléphone, état `Denied` avec « Ouvrir les réglages du système ».
+- `AndroidCalendarService` : `READ_CALENDAR` au manifeste, demandée par
+  `MainActivity.requestPermission` (`ActivityResultContracts.RequestPermission`)
+  seulement depuis l'interrupteur ; refus : l'interrupteur reste éteint.
+- Lecture de `CalendarContract.Calendars` (`VISIBLE = 1` : nom, compte) et de
+  `CalendarContract.Instances` sur `[maintenant − 31 jours, maintenant + 184
+  jours]`, hors du fil principal (`Dispatchers.IO`), pour les calendriers
+  cochés seulement. `Instances` déploie déjà les répétitions, les exceptions
+  et les fuseaux : aucun code de répétition ici.
+- Colonnes : `TITLE` (une ligne, 200 caractères), `BEGIN`, `END`, `ALL_DAY`,
+  `AVAILABILITY` (`AVAILABILITY_FREE` écarté), `STATUS` (`STATUS_CANCELED`
+  écarté), `SELF_ATTENDEE_STATUS` (`ATTENDEE_STATUS_DECLINED` écarté),
+  `UID_2445` (sans UID : `event-<EVENT_ID>`), `CALENDAR_DISPLAY_NAME`.
+- Interrupteur et sélection dans les préférences de l'application
+  (`phone-calendars`), **jamais** dans `Settings` ni dans l'export.
+- Rafraîchissement : à l'ouverture des services, à chaque reprise de
+  l'activité (`MainActivity.onResume`) et par un `ContentObserver` sur
+  `CalendarContract.Events.CONTENT_URI` (descendants compris), regroupé
+  (1 s). Autorisation retirée constatée → `Denied`, plus aucun créneau,
+  observateur retiré.
 
 ### Décisions et pièges tracés
 
@@ -517,6 +535,12 @@ par le calendrier du téléphone, jamais par le réseau.
   `merge` au moment du calcul garde `core` pur et le dépôt inchangé.
 - **Dédoublonnage par `uid` et début**, au profit du téléphone : c'est la
   source vivante. Sans début, une série entière disparaîtrait.
+- **Fusion dans `core`, pas dans `ui/app`** : pure, elle se teste avec le reste
+  du calendrier ; l'interface n'en garde que l'appel composable.
+- **Observateur sur `Events`** plutôt que sur `Instances` : les fournisseurs
+  notifient les changements d'événements ; `Instances` est une vue calculée.
+- **Pas d'état « autorisation à demander »** : l'autorisation est demandée au
+  geste ; refusée, rien ne change ; retirée ensuite, c'est `Denied`.
 - **Journée entière = badge, pas un créneau** (propriétaire, 2026-10-24,
   remplace « un créneau par jour, de 00:00 au lendemain ») : un congé posé
   « toute la journée » ne vide pas le planning ; c'est à l'utilisateur de
@@ -540,12 +564,3 @@ par le calendrier du téléphone, jamais par le réseau.
   l'aperçu sépare deux calendriers.
 - **Provisoire et absent comptés occupés, « travaille ailleurs » libre** :
   ce que l'agenda d'Outlook montre comme indisponible.
-
-### Impacts sur les specs existantes (étape 2, à reporter à l'implémentation)
-
-- `distribution.md` : `READ_CALENDAR` dans le manifeste et dans
-  « Comportement attendu ».
-- `publication.md` et fiches Fastlane FR/EN : autorisation facultative de
-  lecture du calendrier ; « sans réseau » reste vrai.
-- `architecture.md` : `CalendarService`, `ExternalBlocks`.
-- `equipe-moi.md`, `vue-jour.md`, `vue-semaine.md` : créneaux du téléphone.
