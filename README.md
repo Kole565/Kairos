@@ -263,9 +263,11 @@ order (critical path). Cycles are refused.
   Kairos stops writing to it and asks: overwrite, import it, or unlink.
 - **Web version**: data saved in the browser and, in Edge or Chrome, **linked
   to a file** kept up to date on every change.
-- Interface in **French** and **English**: the system language (French if the
-  system is in French, English otherwise), or the one you pick in Settings →
-  General → Language. More languages are coming in a future version.
+- **Languages**: the interface speaks **English, French, Spanish, German, Russian
+  and Italian**. Kairos follows the system language when it is one of these
+  (English otherwise), or the one you pick in Settings → General → Language.
+  Dates, hours and numbers follow it, and so do the sample tasks of a new
+  installation. Another language? See [Translating Kairos](#translating-kairos).
 
 ### Finding your way
 
@@ -378,7 +380,7 @@ you press "Save").
 
 | Category | Section | Settings | Default |
 |---|---|---|---|
-| General | Language | Interface language (System, Français, English) | System |
+| General | Language | Interface language (System, Français, English, Español, Deutsch, Русский, Italiano) | System |
 | | Appearance | Theme color (suggested, free, or system on Android 12+) | honey `#C28417` |
 | | Appearance | Dark theme (two-state switch) | follows the system |
 | | Updates (desktop) | Check for new versions | on |
@@ -402,6 +404,30 @@ you press "Save").
 | | Data folder (desktop) | Change folder…, back to the default folder (next start) | system folder |
 | About | | Discover Kairos, About & guide, see the guide again from the start | |
 | | Diagnostics (desktop) | Keep a diagnostic log, copy diagnostics | off |
+
+## Translating Kairos
+
+The interface is available in English, French, Spanish, German, Russian and
+Italian. The English and French texts are the reference; the Spanish, German,
+Russian and Italian ones were produced with the help of an AI model and have not
+been proofread by native speakers: **corrections are very welcome**, and so is a
+new language written in the Latin or Cyrillic alphabet (Portuguese, Dutch, Polish,
+Ukrainian…).
+
+- All the texts are in
+  [`kmp/ui/src/commonMain/composeResources/values-xx/strings.xml`](kmp/ui/src/commonMain/composeResources/values-es/strings.xml)
+  (`values/` is English, the fallback): one file per language, the same keys
+  everywhere. Fix a text in the file of your language, or copy `values/strings.xml`
+  into `values-xx/` and translate it. Keep the placeholders (`%1$s`, `%1$d`) and
+  the typographic apostrophe `’`; the `StringsParityTest` test checks it.
+- A new language also needs a few lines of code (month names, sample tasks, the
+  name in the language list) and a store listing: the checklist is in
+  [`docs/spec/i18n.md`](docs/spec/i18n.md) (in French), section “Ajouter une langue”.
+- Open a pull request in English, or an issue if you would rather not touch the
+  code: it is enough to send the translated file.
+- Languages whose script the bundled font cannot display (Chinese, Japanese,
+  Korean, Arabic, Hebrew, Hindi…) need more work: see
+  [issue #147](https://github.com/SKOHscripts/Kairos/issues/147).
 
 ## Development
 

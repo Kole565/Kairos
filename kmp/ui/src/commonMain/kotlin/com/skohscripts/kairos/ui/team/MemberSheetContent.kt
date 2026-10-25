@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.settings.FieldError
 import com.skohscripts.kairos.core.settings.FieldErrorKind
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.core.team.MemberAbsence
 import com.skohscripts.kairos.core.team.MemberForm
 import com.skohscripts.kairos.core.team.TeamEvent
@@ -154,8 +155,8 @@ fun MemberSheetContent(
     /** Noms des autres membres (archivés compris) : un doublon est refusé. */
     takenNames: List<String> = emptyList(),
 ) {
-    // Heures par jour à la virgule en français (« 7,5 », comme la carte du membre) ; la saisie accepte les deux.
-    val english = uiLanguage().startsWith("en")
+    // Heures par jour à la virgule hors anglais (« 7,5 », comme la carte du membre) ; la saisie accepte les deux.
+    val english = !UiLanguage.dayFirst(uiLanguage())
     var input by remember(member?.id) {
         val start = if (member == null) MemberForm.newInput(settings) else MemberForm.inputOf(member)
         mutableStateOf(if (english) start else start.copy(hoursPerDay = start.hoursPerDay.replace('.', ','), weekHours = start.weekHours.map { it.replace('.', ',') }))

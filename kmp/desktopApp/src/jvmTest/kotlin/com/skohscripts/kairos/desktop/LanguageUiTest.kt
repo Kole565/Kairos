@@ -56,11 +56,25 @@ class LanguageUiTest {
     private fun androidx.compose.ui.test.ComposeUiTest.hasText(text: String) = onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
 
     @Test
-    fun aSystemLanguageOtherThanFrenchFallsBackToEnglish() = runComposeUiTest {
-        val services = services(Settings(), "ru")
+    fun aSystemLanguageWithoutTranslationFallsBackToEnglish() = runComposeUiTest {
+        val services = services(Settings(), "zh")
         setContent { KairosApp(Platform.DESKTOP) { services } }
         waitText("What is Kairos for?")
         check(!hasText("Accueil")) { "l'interface devrait être en anglais" }
+    }
+
+    @Test
+    fun aTranslatedSystemLanguageIsFollowed() = runComposeUiTest {
+        // Le libellé « Accueil » de la navigation, dans chaque langue traduite.
+        val home = mapOf("es" to "Inicio", "de" to "Start", "ru" to "Главная", "it" to "Home")
+        val services = services(Settings(), "es-MX")
+        setContent { KairosApp(Platform.DESKTOP) { services } }
+        waitText(home.getValue("es"))
+        check(!hasText("Accueil") && !hasText("Home")) { "l'interface devrait être en espagnol" }
+        for ((language, label) in home.filterKeys { it != "es" }) {
+            runBlocking { services.repository.updateSettings(services.repository.snapshot.value.settings.copy(language = language)) }
+            waitText(label)
+        }
     }
 
     @Test

@@ -532,11 +532,14 @@
     <string name="theme_dark_system">Follows the system.</string>
     <string name="theme_dark_chosen">Chosen here: switch it back to follow the system again.</string>
     <string name="settings_section_language">Language</string>
-    <string name="language_help">By default, Kairos follows the system language: French if the system is in French, English otherwise.</string>
+    <string name="language_help">By default, Kairos follows the system language when it is one of those below, and English otherwise.</string>
     <string name="language_system">System</string>
     <string name="language_fr">Français</string>
     <string name="language_en">English</string>
-    <string name="settings_language_more">More languages are coming in a future version.</string>
+    <string name="language_es">Español</string>
+    <string name="language_de">Deutsch</string>
+    <string name="language_ru">Русский</string>
+    <string name="language_it">Italiano</string>
     <string name="theme_custom">Custom color</string>
     <string name="theme_custom_help">Format #RRGGBB, for example #2F6FED.</string>
     <string name="theme_system">System colors</string>
@@ -1479,6 +1482,8 @@
     <string name="card_settings_categories_body">General, Day and hours, Planning, Timer and statistics…: each category has its icon and summary; on a wide screen, the list and the category sit side by side.</string>
     <string name="card_darktheme_title">Dark theme</string>
     <string name="card_darktheme_body">Kairos follows your system’s theme. The “Dark theme” switch in Appearance picks the other one; switching it back follows the system again.</string>
+    <string name="card_languages_title">Languages</string>
+    <string name="card_languages_body">Kairos speaks English, French, Spanish, German, Russian and Italian. It follows your system language when it is one of these (English otherwise); Settings → General → Language picks another one. Dates, hours and numbers follow it.</string>
     <string name="edit_title_first">First task</string>
     <string name="schedule_window">Window %1$d</string>
     <string name="schedule_add_window">Add a window</string>

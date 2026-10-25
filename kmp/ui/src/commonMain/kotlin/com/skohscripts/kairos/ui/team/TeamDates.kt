@@ -1,6 +1,8 @@
 package com.skohscripts.kairos.ui.team
 
 import androidx.compose.runtime.Composable
+import com.skohscripts.kairos.core.model.Settings
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.core.team.MemberAbsence
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
@@ -14,7 +16,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * Une plage de dates lisible en une ou deux moitiés : « 12 oct. » seul pour un
- * jour, sinon « 12 » + « 16 oct. » (même mois, français) ou « Oct 12 » + « 16 »
+ * jour, sinon « 12 » + « 16 oct. » (même mois, jour avant mois) ou « Oct 12 » + « 16 »
  * (même mois, anglais) ; l'année n'est écrite que si elle diffère de celle de
  * [today]. Noms de mois et ordre par langue : le code commun n'a pas de
  * formatage localisé (`Dates`).
@@ -22,14 +24,15 @@ import org.jetbrains.compose.resources.stringResource
 internal data class DateSpan(val first: String, val second: String?)
 
 internal fun dateSpan(start: LocalDate, end: LocalDate, today: LocalDate, language: String): DateSpan {
-    val english = language.lowercase().startsWith("en")
+    val english = !UiLanguage.dayFirst(language)
     fun withYear(date: LocalDate, text: String) =
         if (date.year == today.year) text else if (english) "$text, ${date.year}" else "$text ${date.year}"
     if (start == end) return DateSpan(withYear(end, Dates.short(end, language)), null)
     val sameMonth = start.year == end.year && start.month == end.month
     return when {
         sameMonth && english -> DateSpan(Dates.short(start, language), withYear(end, end.day.toString()))
-        sameMonth -> DateSpan(start.day.toString(), withYear(end, Dates.short(end, language)))
+        // Allemand : « 12. bis 16. Okt » (le point suit le numéro du jour, comme dans « 16. Okt »).
+        sameMonth -> DateSpan(if (UiLanguage.lang(language) == Settings.LANGUAGE_DE) "${start.day}." else start.day.toString(), withYear(end, Dates.short(end, language)))
         else -> DateSpan(withYear(start, Dates.short(start, language)), withYear(end, Dates.short(end, language)))
     }
 }

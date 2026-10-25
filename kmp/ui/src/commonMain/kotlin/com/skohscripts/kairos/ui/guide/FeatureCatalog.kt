@@ -23,6 +23,8 @@ import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_body
 import com.skohscripts.kairos.ui.generated.resources.card_besthours_eff_title
 import com.skohscripts.kairos.ui.generated.resources.card_guided_walks_body
 import com.skohscripts.kairos.ui.generated.resources.card_guided_walks_title
+import com.skohscripts.kairos.ui.generated.resources.card_languages_body
+import com.skohscripts.kairos.ui.generated.resources.card_languages_title
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_body
 import com.skohscripts.kairos.ui.generated.resources.card_level_names_title
 import com.skohscripts.kairos.ui.generated.resources.card_reminders_title
@@ -179,6 +181,7 @@ object FeatureCatalog {
         FeatureCard("settings_categories", GuideChapter.SETTINGS, { KairosIcons.Tune }, Res.string.card_settings_categories_title, Res.string.card_settings_categories_body, GuideTarget.Settings(), since = "3.7.0"),
         FeatureCard("reminders", GuideChapter.SETTINGS, { KairosIcons.Alarm }, Res.string.card_reminders_title, Res.string.card_reminders_body, GuideTarget.Settings(GuideSection.SETTINGS_REMINDERS), since = "3.8.0"),
         FeatureCard("darktheme", GuideChapter.SETTINGS, { KairosIcons.DarkMode }, Res.string.card_darktheme_title, Res.string.card_darktheme_body, GuideTarget.Settings(GuideSection.SETTINGS_APPEARANCE), since = "3.7.0"),
+        FeatureCard("languages", GuideChapter.SETTINGS, { KairosIcons.Translate }, Res.string.card_languages_title, Res.string.card_languages_body, GuideTarget.Settings(), since = "3.11.0"),
         FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), tour = true),
         FeatureCard("linked_file", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.card_linked_file_title, Res.string.card_linked_file_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), since = "3.10.0"),
     )
@@ -260,6 +263,7 @@ object FeatureCatalog {
         "File exchanges" to "team_exchanges",
         "Theme color" to "settings",
         "Dark theme" to "darktheme",
+        "Languages" to "languages",
         "Reminders" to "reminders",
         "Guided first task" to "first_task",
         "Guided first team task" to "team_backlog",

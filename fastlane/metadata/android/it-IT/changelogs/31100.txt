@@ -1,0 +1,1 @@
+Kairos 3.11.0: l’app ora parla spagnolo, tedesco, russo e italiano, oltre a inglese e francese. Segue la lingua del sistema se è una di queste (altrimenti l’inglese), oppure si sceglie una lingua nelle impostazioni. Anche date, orari e numeri seguono la lingua, e le attività di esempio di una nuova installazione sono tradotte.

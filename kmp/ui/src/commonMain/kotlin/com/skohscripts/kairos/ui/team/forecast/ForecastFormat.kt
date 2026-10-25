@@ -1,6 +1,7 @@
 package com.skohscripts.kairos.ui.team.forecast
 
 import androidx.compose.runtime.Composable
+import com.skohscripts.kairos.core.model.Settings
 import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.core.team.forecast.DataSourceKind
 import com.skohscripts.kairos.core.team.forecast.ForecastModel
@@ -31,12 +32,17 @@ import kotlin.math.roundToInt
  * jour de calcul), phrases de source des données.
  */
 
-private fun english(language: String) = !UiLanguage.isFrench(language)
-
-/** « 3 200 » (espace insécable, que la ligne ne coupe pas) ou « 3,200 ». */
+/**
+ * « 3 200 » (français, russe : espace insécable, que la ligne ne coupe pas), « 3.200 » (allemand, espagnol, italien)
+ * ou « 3,200 » (anglais).
+ */
 internal fun groupedNumber(value: Int, language: String): String {
     val digits = kotlin.math.abs(value).toString()
-    val separator = if (english(language)) "," else ' '.toString()
+    val separator = when (UiLanguage.lang(language)) {
+        Settings.LANGUAGE_FR, Settings.LANGUAGE_RU -> "\u00A0"
+        Settings.LANGUAGE_DE, Settings.LANGUAGE_ES, Settings.LANGUAGE_IT -> "."
+        else -> ","
+    }
     val grouped = digits.reversed().chunked(3).joinToString(separator).reversed()
     return if (value < 0) "-$grouped" else grouped
 }
@@ -68,7 +74,7 @@ internal fun dateLabel(date: LocalDate, today: LocalDate, language: String): Str
 internal fun decimal1(value: Double, language: String): String {
     val rounded = (value * 10).roundToInt() / 10.0
     val text = Dates.number(rounded)
-    return if (english(language)) text else text.replace('.', ',')
+    return if (UiLanguage.dayFirst(language)) text.replace('.', ',') else text
 }
 
 /**
@@ -99,8 +105,8 @@ internal fun sourceText(source: SourceInfo, model: ForecastModel): String {
 @Composable
 internal fun atLeastText(counts: List<Pair<Int, Int>>): String {
     val (firstCount, firstPercent) = counts.first()
-    // « 0 tâche » et « 1 tâche » en français, « 0 tasks » et « 1 task » en anglais.
-    val singular = if (english(uiLanguage())) firstCount == 1 else firstCount <= 1
+    // « 0 tâche » et « 1 tâche » en français, « 0 tasks » et « 1 task » ailleurs.
+    val singular = if (UiLanguage.isFrench(uiLanguage())) firstCount <= 1 else firstCount == 1
     val first = stringResource(
         if (singular) Res.string.forecast_by_first_one else Res.string.forecast_by_first_many,
         firstCount, percentLabel(firstPercent),

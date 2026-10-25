@@ -2,6 +2,8 @@ package com.skohscripts.kairos.core
 
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.Settings
+import com.skohscripts.kairos.core.settings.UiLanguage
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,9 +17,9 @@ class ExampleDataTest {
     private val fr = ExampleData.snapshot(today, now, "fr")
 
     @Test
-    fun anExampleIsRecognisedInBothLanguagesAndAUserTaskIsNot() {
+    fun anExampleIsRecognisedInEveryLanguageAndAUserTaskIsNot() {
         assertTrue(fr.tasks.all(ExampleData::isExample))
-        assertTrue(ExampleData.snapshot(today, now, "en").tasks.all(ExampleData::isExample))
+        for (language in UiLanguage.SUPPORTED) assertTrue(ExampleData.snapshot(today, now, language).tasks.all(ExampleData::isExample), language)
         assertTrue(fr.tasks.first().copy(title = "Relever le courrier").let { !ExampleData.isExample(it) })
     }
 
@@ -71,12 +73,28 @@ class ExampleDataTest {
     }
 
     @Test
-    fun anyLanguageButFrenchGetsTheEnglishExamples() {
-        // Repli anglais (issue #70) : une langue système autre que le français (russe, allemand…) donne l'anglais.
+    fun anUntranslatedLanguageGetsTheEnglishExamples() {
+        // Repli anglais (issue #70) : une langue système sans traduction (portugais, chinois…) donne l'anglais.
         val english = ExampleData.snapshot(today, now, "en").tasks.map { it.title }
-        for (language in listOf("de", "ru", "en-US")) {
+        for (language in listOf("pt", "zh-Hans", "en-US", "")) {
             assertEquals(english, ExampleData.snapshot(today, now, language).tasks.map { it.title }, language)
         }
         assertEquals(fr.tasks.map { it.title }, ExampleData.snapshot(today, now, "fr-CA").tasks.map { it.title })
+    }
+
+    @Test
+    fun everyTranslatedLanguageHasItsOwnConsistentExamples() {
+        val prefixes = mapOf("es" to "[Ejemplo]", "de" to "[Beispiel]", "ru" to "[Пример]", "it" to "[Esempio]")
+        for ((language, prefix) in prefixes) {
+            val snapshot = ExampleData.snapshot(today, now, "$language-XX")
+            assertEquals(10, snapshot.tasks.size, language)
+            assertTrue(snapshot.tasks.all { it.title.startsWith("$prefix ") }, language)
+            assertTrue(snapshot.timeBlocks.all { it.title.startsWith("$prefix ") }, language)
+            // Mêmes priorités et tailles que le jeu français : seul le texte change.
+            assertEquals(fr.tasks.map { it.priority to it.fibonacciPoints }, snapshot.tasks.map { it.priority to it.fibonacciPoints }, language)
+            // Les types des exemples existent dans les réglages de la même langue.
+            assertEquals(Settings.defaultTaskTypes(language), snapshot.settings.taskTypes, language)
+            assertTrue(snapshot.tasks.map { it.taskType }.filter { it.isNotEmpty() }.all { it in snapshot.settings.taskTypeList }, language)
+        }
     }
 }

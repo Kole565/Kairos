@@ -280,9 +280,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   l’importer ou délier.
 - **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
-- Interface en **français** et en **anglais** : la langue du système (français
-  si le système est en français, anglais sinon), ou celle que tu choisis dans
-  Réglages → Général → Langue. D’autres langues arriveront dans une prochaine version.
+- **Langues** : l’interface parle **anglais, français, espagnol, allemand, russe
+  et italien**. Kairos suit la langue du système quand elle en fait partie
+  (l’anglais sinon), ou celle que tu choisis dans Réglages → Général → Langue.
+  Les dates, les heures et les nombres la suivent, ainsi que les tâches d’exemple
+  d’une première installation. Une autre langue ? Voir
+  [Traduire Kairos](#traduire-kairos).
 
 ### S’y retrouver
 
@@ -404,7 +407,7 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 
 | Catégorie | Section | Réglages | Défaut |
 |---|---|---|---|
-| Général | Langue | Langue de l’interface (Système, Français, English) | Système |
+| Général | Langue | Langue de l’interface (Système, Français, English, Español, Deutsch, Русский, Italiano) | Système |
 | | Apparence | Couleur du thème (proposée, libre, ou du système sur Android 12+) | miel `#C28417` |
 | | Apparence | Thème sombre (interrupteur à deux états) | suit le système |
 | | Mises à jour (bureau) | Vérifier les nouvelles versions | activé |
@@ -428,6 +431,31 @@ touché ; rien n’est enregistré avant « Enregistrer »).
 | | Dossier des données (bureau) | Changer de dossier…, revenir au dossier par défaut (prochain démarrage) | dossier du système |
 | À propos | | Découvrir Kairos, À propos et guide, revoir le guide depuis le début | |
 | | Diagnostic (bureau) | Tenir un journal de diagnostic, copier le diagnostic | désactivé |
+
+## Traduire Kairos
+
+L’interface existe en anglais, français, espagnol, allemand, russe et italien.
+L’anglais et le français font référence ; l’espagnol, l’allemand, le russe et
+l’italien ont été produits avec l’aide d’un modèle d’IA et n’ont pas été relus
+par des locuteurs natifs : **les corrections sont les bienvenues**, de même qu’une
+nouvelle langue écrite en alphabet latin ou cyrillique (portugais, néerlandais,
+polonais, ukrainien…).
+
+- Tous les textes sont dans
+  [`kmp/ui/src/commonMain/composeResources/values-xx/strings.xml`](kmp/ui/src/commonMain/composeResources/values-es/strings.xml)
+  (`values/` est l’anglais, la langue de repli) : un fichier par langue, les mêmes
+  clés partout. Corrige un texte dans le fichier de ta langue, ou copie
+  `values/strings.xml` dans `values-xx/` et traduis-le. Garde les paramètres
+  (`%1$s`, `%1$d`) et l’apostrophe typographique `’` ; le test `StringsParityTest`
+  le vérifie.
+- Une nouvelle langue demande aussi quelques lignes de code (noms des mois, tâches
+  d’exemple, nom dans la liste des langues) et une fiche de magasin : la liste
+  des étapes est dans [`docs/spec/i18n.md`](docs/spec/i18n.md), section « Ajouter une langue ».
+- Ouvre une pull request en anglais, ou une issue si tu préfères ne pas toucher au
+  code : envoyer le fichier traduit suffit.
+- Les langues dont l’écriture n’est pas couverte par la police embarquée (chinois,
+  japonais, coréen, arabe, hébreu, hindi…) demandent plus de travail : voir
+  l’[issue #147](https://github.com/SKOHscripts/Kairos/issues/147).
 
 ## Développement
 

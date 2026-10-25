@@ -533,11 +533,14 @@
     <string name="theme_dark_system">Suit le système.</string>
     <string name="theme_dark_chosen">Choisi ici : rebascule-le pour suivre à nouveau le système.</string>
     <string name="settings_section_language">Langue</string>
-    <string name="language_help">Par défaut, Kairos suit la langue du système : le français si le système est en français, l’anglais sinon.</string>
+    <string name="language_help">Par défaut, Kairos suit la langue du système lorsqu’elle fait partie de celles ci-dessous, et l’anglais sinon.</string>
     <string name="language_system">Système</string>
     <string name="language_fr">Français</string>
     <string name="language_en">English</string>
-    <string name="settings_language_more">D’autres langues arriveront dans une prochaine version.</string>
+    <string name="language_es">Español</string>
+    <string name="language_de">Deutsch</string>
+    <string name="language_ru">Русский</string>
+    <string name="language_it">Italiano</string>
     <string name="theme_custom">Couleur personnalisée</string>
     <string name="theme_custom_help">Format #RRGGBB, par exemple #2F6FED.</string>
     <string name="theme_system">Couleurs du système</string>
@@ -1481,6 +1484,8 @@
     <string name="card_settings_categories_body">Général, Journée et horaires, Planification, Chrono et statistiques… : chaque catégorie a son icône et son résumé ; sur grand écran, la liste et la catégorie côte à côte.</string>
     <string name="card_darktheme_title">Thème sombre</string>
     <string name="card_darktheme_body">Kairos suit le thème de ton système. L’interrupteur « Thème sombre » de l’Apparence choisit l’autre ; le rebasculer suit à nouveau le système.</string>
+    <string name="card_languages_title">Langues</string>
+    <string name="card_languages_body">Kairos parle français, anglais, espagnol, allemand, russe et italien. Il suit la langue de ton système quand elle en fait partie (l’anglais sinon) ; Réglages → Général → Langue en choisit une autre. Les dates, les heures et les nombres la suivent.</string>
     <string name="edit_title_first">Première tâche</string>
     <string name="schedule_window">Plage %1$d</string>
     <string name="schedule_add_window">Ajouter une plage</string>

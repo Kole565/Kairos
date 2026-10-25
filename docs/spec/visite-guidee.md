@@ -167,6 +167,8 @@ since, tour)`, **dans l'ordre de la visite**.
 - **Cartes de la 3.10.0** : `calendar_import` (import d'un calendrier `.ics` et calendriers du téléphone, #136 et
   #138 ; section `SETTINGS_DATA`, chapitre « Organiser », icône `Event`), `linked_file` (fichier lié sur le bureau et
   Android, #137 ; section `SETTINGS_DATA`, chapitre « Réglages », icône `Description`).
+- **Carte de la 3.11.0** : `languages` (les six langues et leur choix, #75 ; cible `GuideTarget.Settings()` sans section,
+  chapitre « Réglages », icône `Translate`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section

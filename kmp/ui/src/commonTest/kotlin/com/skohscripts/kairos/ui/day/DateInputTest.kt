@@ -18,18 +18,18 @@ class DateInputTest {
     }
 
     @Test
-    fun dayFirstDatesAreAcceptedInFrenchOnly() {
-        assertEquals(sept30, Dates.parseDate("30/09/2026", french = true))
-        assertEquals(sept30, Dates.parseDate("30-9-2026", french = true))
+    fun dayFirstDatesAreAcceptedExceptInEnglish() {
+        assertEquals(sept30, Dates.parseDate("30/09/2026", dayFirst = true))
+        assertEquals(sept30, Dates.parseDate("30-9-2026", dayFirst = true))
         // Ni le français sans la langue, ni l'ordre mois/jour de l'anglais : ambigus.
-        assertNull(Dates.parseDate("30/09/2026", french = false))
-        assertNull(Dates.parseDate("09/30/2026", french = true))
+        assertNull(Dates.parseDate("30/09/2026", dayFirst = false))
+        assertNull(Dates.parseDate("09/30/2026", dayFirst = true))
     }
 
     @Test
     fun unreadableOrImpossibleDatesAreRejected() {
         listOf("", "  ", "demain", "2026-13-01", "2026-02-30", "2026-9", "30/09/26", "2026-9-30-1", "20x6-09-30").forEach {
-            assertNull(Dates.parseDate(it, french = true), it)
+            assertNull(Dates.parseDate(it, dayFirst = true), it)
         }
     }
 

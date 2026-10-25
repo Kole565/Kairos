@@ -190,7 +190,7 @@ cerne la ligne de la tâche (2 dp primaire) et la liste défile jusqu'à elle (`
   et que `settings.guide?.firstTaskDone` n'est pas vrai, masquable pour la session (« Pas maintenant »). `DayScreen`
   pose `firstTaskDone` (`KairosRepository.updateGuide`) quand une tâche est enregistrée depuis la fiche alors que
   l'accompagnement est actif (`coachStep >= 0`) ; `visite-guidee.md` § Persistance. `ExampleData.isExample`
-  reconnaît le préfixe de titre « [Exemple] » / « [Example] » dans les deux langues.
+  reconnaît le préfixe de titre « [Exemple] » / « [Example] » / « [Ejemplo] » / « [Beispiel] » / « [Пример] » / « [Esempio] » dans les six langues.
 
 ### Première tâche récurrente et visite des Réglages (3.9.0, issue #98)
 

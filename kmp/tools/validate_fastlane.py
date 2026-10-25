@@ -2,14 +2,15 @@
 
 F-Droid lit `fastlane/metadata/android/<langue>/` dans le
 dépôt, au commit du tag : une fiche incomplète ou trop longue se voit trop tard.
-Ce script échoue (code 1) si, pour fr-FR et en-US :
+Ce script échoue (code 1) si, pour fr-FR, en-US, es-ES, de-DE, ru-RU et it-IT :
 
 - title.txt (50), short_description.txt (80), full_description.txt (4000)
   manquent, sont vides ou trop longs ;
 - le journal de la version courante (`changelogs/<versionCode>.txt`, 500 au plus)
   manque — versionCode lu dans kmp/gradle.properties ;
-- images/icon.png n'est pas un PNG de 512 × 512 ;
-- images/phoneScreenshots/ ne contient pas au moins deux PNG, numérotés 1, 2…
+- (fr-FR et en-US seulement) images/icon.png n'est pas un PNG de 512 × 512, ou
+  images/phoneScreenshots/ ne contient pas au moins deux PNG, numérotés 1, 2… :
+  les autres langues n'ont pas d'images, F-Droid reprend celles de en-US.
 
 Sans dépendance :
 
@@ -23,7 +24,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 META = ROOT / "fastlane" / "metadata" / "android"
-LOCALES = ("fr-FR", "en-US")
+LOCALES = ("fr-FR", "en-US", "es-ES", "de-DE", "ru-RU", "it-IT")
+# Les images (icône, captures) vivent dans ces deux dossiers ; F-Droid replie les autres langues sur en-US.
+IMAGE_LOCALES = ("fr-FR", "en-US")
 LIMITS = {"title.txt": 50, "short_description.txt": 80, "full_description.txt": 4000}
 
 
@@ -58,6 +61,8 @@ def main() -> None:
             errors.append(f"journal absent pour versionCode {code} : {changelog}")
         elif len(changelog.read_text(encoding="utf-8").strip()) > 500:
             errors.append(f"{changelog} dépasse 500 caractères")
+        if locale not in IMAGE_LOCALES:
+            continue
         icon = folder / "images" / "icon.png"
         if not icon.exists() or png_size(icon) != (512, 512):
             errors.append(f"{icon} absent ou pas en 512 × 512")

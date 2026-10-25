@@ -77,8 +77,9 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 
 ### Fiches Fastlane (`fastlane/metadata/android/`)
 
-- Deux langues, `fr-FR` et `en-US`, lues par F-Droid au commit
-  du tag : `title.txt` (« Kairos »), `short_description.txt` (≤ 80),
+- Six langues (3.11.0, `i18n.md`) : `fr-FR`, `en-US`, `es-ES`, `de-DE`, `ru-RU` et `it-IT`, lues par F-Droid au commit
+  du tag. Les images (icône, captures) ne sont que dans `fr-FR` et `en-US` : F-Droid replie les autres langues sur `en-US`
+  (`validate_fastlane.py` ne les exige que pour ces deux dossiers). Dans chaque dossier : `title.txt` (« Kairos »), `short_description.txt` (≤ 80),
   `full_description.txt` (≤ 4000, HTML simple `<b>`, `<ul>`, `<li>`),
   `changelogs/<versionCode>.txt` (≤ 500), `images/icon.png` (512 px,
   `make_app_icons.py`), `images/phoneScreenshots/1.png` à `8.png`.
@@ -202,7 +203,8 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
 
 ### Page de téléchargement (`site/`, `pages.yml`)
 
-- `site/index.html` (français) et `site/en/index.html` (anglais), versionnés,
+- `site/index.html` (français), `site/en/`, `site/es/`, `site/de/`, `site/ru/` et `site/it/` (`index.html` chacun, 3.11.0),
+  versionnés ; chaque page relie les cinq autres (`<nav>`, `hreflang`) et affiche les captures de `screens/en/`,
   en HTML et CSS seuls (`style.css`) ; `os.js` (facultatif) ajoute `current`
   à la carte du système du visiteur, seul bloc teinté (`primary-container`).
   Charte « miel » : rôles MD3 en variables, Roboto servie par la page
@@ -214,8 +216,8 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   captures 1 à 5 et 9, le thème sombre (défilement horizontal), notes de première installation, pied de
   page (licence, source, tickets).
 - Marqueurs remplacés par `pages.yml` : `@@DL@@` (base des téléchargements),
-  `@@WEB@@` (`app/` ou `preview/`), `@@NOTICE_FR@@` et `@@NOTICE_EN@@`
-  (bandeau). Un marqueur restant fait échouer la construction.
+  `@@WEB@@` (`app/` ou `preview/`), `@@NOTICE_FR@@`, `@@NOTICE_EN@@`, `@@NOTICE_ES@@`, `@@NOTICE_DE@@`, `@@NOTICE_RU@@` et
+  `@@NOTICE_IT@@` (bandeau de préversion, texte par langue dans le script Python de `pages.yml`). Un marqueur restant fait échouer la construction.
 - `pages.yml` assemble le site dans `$RUNNER_TEMP/site` : `site/`, la
   préversion web sous `preview/`, les polices de
   `kmp/ui/src/commonMain/composeResources/font/` sous `fonts/`, les captures

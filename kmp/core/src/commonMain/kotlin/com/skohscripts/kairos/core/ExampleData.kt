@@ -26,14 +26,14 @@ import kotlin.time.Instant
  */
 object ExampleData {
     /**
-     * Vrai pour une tâche posée par le jeu d'exemples, dans l'une ou l'autre langue : son titre porte le préfixe
-     * « [Exemple] » / « [Example] » (docs/spec/premiere-tache.md § Déclenchement). Sert à savoir si l'utilisateur a déjà
+     * Vrai pour une tâche posée par le jeu d'exemples, dans l'une quelconque des langues : son titre porte le préfixe
+     * « [Exemple] » / « [Example] » / « [Ejemplo] »… (docs/spec/premiere-tache.md § Déclenchement). Sert à savoir si l'utilisateur a déjà
      * créé une tâche à lui ; dérivé des données, rien n'est mémorisé.
      */
-    fun isExample(task: Task): Boolean = task.title.startsWith(Texts.FR.prefix) || task.title.startsWith(Texts.EN.prefix)
+    fun isExample(task: Task): Boolean = Texts.ALL.any { task.title.startsWith(it.prefix) }
 
     fun snapshot(today: LocalDate, now: Instant, language: String): KairosSnapshot {
-        val t = if (UiLanguage.isFrench(language)) Texts.FR else Texts.EN
+        val t = Texts.of(UiLanguage.lang(language))
         val soon = today.plus(DatePeriod(days = 2))
         val later = today.plus(DatePeriod(days = 7))
         fun at(hour: Int, minute: Int = 0) = LocalDateTime(today, LocalTime(hour, minute))
@@ -196,6 +196,143 @@ object ExampleData {
                 lunch = "Lunch",
                 note = "Random idea: rethink how sprints are split?\nTo flesh out before turning it into a task, or to archive if it leads nowhere.",
             )
+
+            val ES = Texts(
+                prefix = "[Ejemplo]",
+                projectTag = "Ejemplo",
+                typeDev = "Desarrollo",
+                typeMeeting = "Reunión",
+                typeDoc = "Documentación",
+                typeAdmin = "Administrativo",
+                typeLearning = "Formación",
+                bugTitle = "Corregir el error de inicio de sesión",
+                bugDesc = "Ejemplo: prioridad P0 y fecha límite cercana, la tarea sube al principio de la lista. Bórrala cuando quieras.",
+                reviewTitle = "Preparar la revisión del sprint",
+                reviewDesc = "Ejemplo: una tarea P1 normal, lista para planificarse.",
+                standupTitle = "Reunión de equipo (fijada a las 9:30)",
+                standupDesc = "Ejemplo: una tarea fijada se queda a su hora, lo demás se organiza a su alrededor.",
+                docTitle = "Redactar la documentación",
+                docDesc = "Ejemplo: una tarea madre; se planifican sus subtareas.",
+                docPlanTitle = "Documentación: esquema",
+                docWriteTitle = "Documentación: redacción",
+                approvalTitle = "Conseguir la aprobación del cliente",
+                approvalDesc = "Ejemplo: esta tarea bloquea a otra (ruta crítica).",
+                deployTitle = "Desplegar en producción",
+                deployDesc = "Ejemplo: bloqueada hasta que llegue la aprobación.",
+                ideaTitle = "Idea: automatizar el informe semanal",
+                ideaDesc = "Ejemplo: sin prioridad ni puntos de Fibonacci, la tarea se queda en «Por procesar», al principio de la página, hasta que la completes.",
+                certTitle = "Renovar la certificación",
+                certDesc = "Ejemplo: programada para más adelante, espera su día.",
+                meeting = "Reunión del proyecto",
+                deepWork = "Deep work",
+                lunch = "Comida",
+                note = "Idea suelta: ¿revisar cómo se dividen los sprints?\nHay que desarrollarla antes de convertirla en tarea, o archivarla si no lleva a ninguna parte.",
+            )
+            val DE = Texts(
+                prefix = "[Beispiel]",
+                projectTag = "Beispiel",
+                typeDev = "Entwicklung",
+                typeMeeting = "Meeting",
+                typeDoc = "Dokumentation",
+                typeAdmin = "Verwaltung",
+                typeLearning = "Weiterbildung",
+                bugTitle = "Login-Fehler beheben",
+                bugDesc = "Beispiel: Priorität P0 und Frist in Kürze, die Aufgabe steigt an die Spitze der Liste. Lösche sie, wann du willst.",
+                reviewTitle = "Sprint-Review vorbereiten",
+                reviewDesc = "Beispiel: eine gewöhnliche P1-Aufgabe, bereit zur Planung.",
+                standupTitle = "Team-Meeting (fixiert auf 9:30)",
+                standupDesc = "Beispiel: eine fixierte Aufgabe bleibt zu ihrer Uhrzeit, alles andere ordnet sich drumherum.",
+                docTitle = "Dokumentation schreiben",
+                docDesc = "Beispiel: eine übergeordnete Aufgabe; geplant werden ihre Unteraufgaben.",
+                docPlanTitle = "Dokumentation: Gliederung",
+                docWriteTitle = "Dokumentation: Ausarbeitung",
+                approvalTitle = "Freigabe des Kunden einholen",
+                approvalDesc = "Beispiel: diese Aufgabe blockiert eine andere (kritischer Pfad).",
+                deployTitle = "In Produktion ausrollen",
+                deployDesc = "Beispiel: blockiert, bis die Freigabe vorliegt.",
+                ideaTitle = "Idee: den Wochenbericht automatisieren",
+                ideaDesc = "Beispiel: ohne Priorität und ohne Fibonacci-Punkte bleibt die Aufgabe oben auf der Seite unter „Zu bearbeiten“, bis du sie einstufst.",
+                certTitle = "Zertifizierung erneuern",
+                certDesc = "Beispiel: für später eingeplant, sie wartet auf ihren Tag.",
+                meeting = "Projektbesprechung",
+                deepWork = "Deep work",
+                lunch = "Mittagessen",
+                note = "Lose Idee: die Aufteilung der Sprints überdenken?\nVor dem Anlegen einer Aufgabe ausarbeiten oder archivieren, wenn nichts daraus wird.",
+            )
+            val RU = Texts(
+                prefix = "[Пример]",
+                projectTag = "Пример",
+                typeDev = "Разработка",
+                typeMeeting = "Встреча",
+                typeDoc = "Документация",
+                typeAdmin = "Администрирование",
+                typeLearning = "Обучение",
+                bugTitle = "Исправить ошибку входа",
+                bugDesc = "Пример: приоритет P0 и близкий срок, задача поднимается в начало списка. Удали ее, когда захочешь.",
+                reviewTitle = "Подготовить ревью спринта",
+                reviewDesc = "Пример: обычная задача P1, готовая к планированию.",
+                standupTitle = "Встреча команды (закреплена на 9:30)",
+                standupDesc = "Пример: закрепленная задача остается на своем часе, остальное выстраивается вокруг нее.",
+                docTitle = "Написать документацию",
+                docDesc = "Пример: родительская задача; планируются ее подзадачи.",
+                docPlanTitle = "Документация: план",
+                docWriteTitle = "Документация: написание",
+                approvalTitle = "Получить одобрение клиента",
+                approvalDesc = "Пример: эта задача блокирует другую (критический путь).",
+                deployTitle = "Выкатить в продакшен",
+                deployDesc = "Пример: заблокирована, пока нет одобрения.",
+                ideaTitle = "Идея: автоматизировать еженедельный отчет",
+                ideaDesc = "Пример: без приоритета и баллов Фибоначчи задача остается в начале страницы в разделе «К обработке», пока ты ее не оценишь.",
+                certTitle = "Продлить сертификацию",
+                certDesc = "Пример: запланирована на потом, она ждет своего дня.",
+                meeting = "Встреча по проекту",
+                deepWork = "Deep work",
+                lunch = "Обед",
+                note = "Мысль на лету: пересмотреть разбиение спринтов?\nРазвить, прежде чем превращать в задачу, или убрать в архив, если она ни к чему не ведет.",
+            )
+            val IT = Texts(
+                prefix = "[Esempio]",
+                projectTag = "Esempio",
+                typeDev = "Sviluppo",
+                typeMeeting = "Riunione",
+                typeDoc = "Documentazione",
+                typeAdmin = "Amministrazione",
+                typeLearning = "Formazione",
+                bugTitle = "Correggere il bug di accesso",
+                bugDesc = "Esempio: priorità P0 e scadenza vicina, l’attività sale in cima alla lista. Eliminala quando vuoi.",
+                reviewTitle = "Preparare la revisione dello sprint",
+                reviewDesc = "Esempio: una normale attività P1, pronta per essere pianificata.",
+                standupTitle = "Riunione di team (fissata alle 9:30)",
+                standupDesc = "Esempio: un’attività fissata resta alla sua ora, il resto si organizza intorno.",
+                docTitle = "Scrivere la documentazione",
+                docDesc = "Esempio: un’attività madre; sono le sue sottoattività a essere pianificate.",
+                docPlanTitle = "Documentazione: schema",
+                docWriteTitle = "Documentazione: stesura",
+                approvalTitle = "Ottenere l’approvazione del cliente",
+                approvalDesc = "Esempio: questa attività ne blocca un’altra (percorso critico).",
+                deployTitle = "Rilasciare in produzione",
+                deployDesc = "Esempio: bloccata finché non arriva l’approvazione.",
+                ideaTitle = "Idea: automatizzare il rapporto settimanale",
+                ideaDesc = "Esempio: senza priorità né punti di Fibonacci, l’attività resta in «Da elaborare» in cima alla pagina finché non la qualifichi.",
+                certTitle = "Rinnovare la certificazione",
+                certDesc = "Esempio: programmata per più tardi, aspetta il suo giorno.",
+                meeting = "Riunione di progetto",
+                deepWork = "Deep work",
+                lunch = "Pranzo",
+                note = "Idea buttata lì: rivedere come si dividono gli sprint?\nDa sviluppare prima di farne un’attività, o da archiviare se non porta da nessuna parte.",
+            )
+
+            val ALL = listOf(FR, EN, ES, DE, RU, IT)
+
+            /** Le jeu de textes de [lang] (première partie d'une étiquette de langue) ; l'anglais pour une langue sans jeu. */
+            fun of(lang: String): Texts = when (lang) {
+                "fr" -> FR
+                "es" -> ES
+                "de" -> DE
+                "ru" -> RU
+                "it" -> IT
+                else -> EN
+            }
         }
     }
 }

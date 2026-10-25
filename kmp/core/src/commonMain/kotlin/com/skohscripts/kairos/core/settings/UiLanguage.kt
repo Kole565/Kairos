@@ -4,23 +4,37 @@ import com.skohscripts.kairos.core.model.Settings
 
 /**
  * Langue de l'interface (docs/spec/i18n.md), pure : le système et le réglage sont des paramètres.
- * Deux langues, `fr` et `en` ; toute langue système autre que le français donne l'anglais (repli, issue #70).
+ * Six langues ([SUPPORTED]) ; toute langue système qui n'en fait pas partie donne l'anglais (repli, issue #70).
  */
 object UiLanguage {
-    /** `fr` ou `en` : le choix de l'utilisateur ([Settings.language]), ou à défaut la langue [system] (`fr`, `fr-CA`, `de`…). */
-    fun resolve(setting: String, system: String): String = when (normalize(setting)) {
-        Settings.LANGUAGE_FR -> Settings.LANGUAGE_FR
-        Settings.LANGUAGE_EN -> Settings.LANGUAGE_EN
-        else -> if (isFrench(system)) Settings.LANGUAGE_FR else Settings.LANGUAGE_EN
+    /** Les langues de l'interface, dans l'ordre de la carte Langue des Réglages. */
+    val SUPPORTED: List<String> = listOf(
+        Settings.LANGUAGE_FR, Settings.LANGUAGE_EN, Settings.LANGUAGE_ES,
+        Settings.LANGUAGE_DE, Settings.LANGUAGE_RU, Settings.LANGUAGE_IT,
+    )
+
+    /**
+     * Une langue de [SUPPORTED] : le choix de l'utilisateur ([Settings.language]), ou à défaut la langue [system]
+     * (`fr`, `es-MX`, `de_AT`…) si elle est traduite, sinon l'anglais.
+     */
+    fun resolve(setting: String, system: String): String {
+        val chosen = normalize(setting)
+        if (chosen != Settings.LANGUAGE_SYSTEM) return chosen
+        return lang(system).takeIf { it in SUPPORTED } ?: Settings.LANGUAGE_EN
     }
+
+    /** La première partie d'une étiquette de langue, en minuscules : `es` pour `es`, `ES`, `es-MX`, `es_AR` (`frr` reste `frr`). */
+    fun lang(tag: String): String = tag.trim().lowercase().substringBefore('-').substringBefore('_')
 
     /** La langue [tag] (`fr`, `fr-FR`, `fr_CA`, `FR`) est le français. */
-    fun isFrench(tag: String): Boolean = tag.trim().lowercase().let { it == "fr" || it.startsWith("fr-") || it.startsWith("fr_") }
+    fun isFrench(tag: String): Boolean = lang(tag) == Settings.LANGUAGE_FR
 
-    /** Valeur enregistrée d'un choix : `fr`, `en`, sinon [Settings.LANGUAGE_SYSTEM] (valeur inconnue = suivre le système). */
-    fun normalize(setting: String): String = when (setting.trim().lowercase()) {
-        Settings.LANGUAGE_FR -> Settings.LANGUAGE_FR
-        Settings.LANGUAGE_EN -> Settings.LANGUAGE_EN
-        else -> Settings.LANGUAGE_SYSTEM
-    }
+    /**
+     * Le jour s'écrit avant le mois (« 30/09 ») et la virgule est le séparateur décimal : toutes les langues traduites
+     * sauf l'anglais. Une langue inconnue suit l'anglais, comme [resolve].
+     */
+    fun dayFirst(tag: String): Boolean = lang(tag).let { it in SUPPORTED && it != Settings.LANGUAGE_EN }
+
+    /** Valeur enregistrée d'un choix : une langue de [SUPPORTED], sinon [Settings.LANGUAGE_SYSTEM] (valeur inconnue = suivre le système). */
+    fun normalize(setting: String): String = setting.trim().lowercase().takeIf { it in SUPPORTED } ?: Settings.LANGUAGE_SYSTEM
 }

@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui.team
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.intl.Locale
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.day.Dates
 import com.skohscripts.kairos.ui.generated.resources.Res
@@ -24,12 +25,10 @@ import kotlin.math.roundToInt
  * formatage localisé : la langue vient de `uiLanguage()`, comme pour les dates.
  */
 
-private fun english(language: String) = language.lowercase().startsWith("en")
-
-/** « 96 », « 13,4 » (français) ou « 13.4 » (anglais) : une décimale au plus. */
+/** « 96 », « 13,4 » (toute langue sauf l'anglais) ou « 13.4 » (anglais) : une décimale au plus. */
 internal fun decimalText(value: Double, language: String): String {
     val text = Dates.number(value)
-    return if (english(language)) text else text.replace('.', ',')
+    return if (UiLanguage.dayFirst(language)) text.replace('.', ',') else text
 }
 
 /** « 96 h », « 13,4 h ». */
@@ -45,12 +44,12 @@ internal fun percentText(percent: Double?): String = if (percent == null) "—" 
 internal fun weeksText(weeks: Int): String =
     if (weeks == 1) stringResource(Res.string.load_horizon_one) else stringResource(Res.string.load_horizon_many, weeks)
 
-/** « ≈ 1,5 semaine » : le singulier jusqu'à 2 en français, à 1 exactement en anglais. */
+/** « ≈ 1,5 semaine » : le singulier jusqu'à 2 en français, à 1 exactement dans les autres langues. */
 @Composable
 internal fun teamWeeksText(weeks: Double): String {
     val language = uiLanguage()
     val rounded = round(weeks * 10) / 10
-    val singular = if (english(language)) rounded == 1.0 else rounded < 2.0
+    val singular = if (UiLanguage.isFrench(language)) rounded < 2.0 else rounded == 1.0
     return stringResource(if (singular) Res.string.load_weeks_singular else Res.string.load_weeks_plural, decimalText(weeks, language))
 }
 

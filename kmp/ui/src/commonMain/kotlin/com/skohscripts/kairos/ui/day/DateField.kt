@@ -82,9 +82,9 @@ internal fun DateField(
     modifier: Modifier = Modifier.fillMaxWidth(),
     shortcuts: Boolean = true,
 ) {
-    val french = UiLanguage.isFrench(uiLanguage())
+    val dayFirst = UiLanguage.dayFirst(uiLanguage())
     var picking by remember { mutableStateOf(false) }
-    val parsed = Dates.parseDate(value, french)
+    val parsed = Dates.parseDate(value, dayFirst)
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         OutlinedTextField(
             value,

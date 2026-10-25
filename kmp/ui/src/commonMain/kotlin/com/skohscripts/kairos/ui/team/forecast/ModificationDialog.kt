@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
 import com.skohscripts.kairos.core.model.PRIORITY_VALUES
+import com.skohscripts.kairos.core.settings.UiLanguage
 import com.skohscripts.kairos.core.team.MemberForm
 import com.skohscripts.kairos.core.team.forecast.Scenario
 import com.skohscripts.kairos.core.team.forecast.ScenarioModification
@@ -304,5 +305,5 @@ private fun EditorChoices.hasNothingToPick(type: ModType): Boolean = when (type)
 /** « 7 » ou « 7,5 » pour un champ de saisie. */
 private fun decimalInput(value: Double, language: String): String {
     val text = if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
-    return if (language.lowercase().startsWith("en")) text else text.replace('.', ',')
+    return if (UiLanguage.dayFirst(language)) text.replace('.', ',') else text
 }
