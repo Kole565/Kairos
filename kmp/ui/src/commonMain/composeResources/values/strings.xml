@@ -142,6 +142,15 @@
     <string name="web_authorize">Allow access</string>
     <string name="web_save_failed">Saving in the browser failed: %1$s. Export your data.</string>
     <string name="web_link_open_confirm_body">The data in this browser will be replaced by that of “%1$s”, which will then be kept up to date.</string>
+    <string name="linked_intro">Kairos can keep an up-to-date copy of your data in a file of your choice, for example in a Syncthing or Nextcloud folder. It opens anywhere with Import.</string>
+    <string name="linked_unlink">Unlink</string>
+    <string name="linked_changed">The linked file “%1$s” was changed elsewhere (another device?). Kairos no longer writes to it until you choose.</string>
+    <string name="linked_overwrite">Overwrite</string>
+    <string name="linked_import">Import it</string>
+    <string name="linked_write_failed">Kairos can no longer write to “%1$s”; your data is safe in Kairos.</string>
+    <string name="linked_retry">Retry</string>
+    <string name="linked_open_confirm_body">The data on this device will be replaced by that of “%1$s”, which will then be kept up to date. A backup is made just before.</string>
+    <string name="linked_import_confirm_body">The data on this device will be replaced by that of “%1$s”, changed elsewhere. A backup is made just before.</string>
 
     <!-- Vue Jour complète (M2) -->
     <string name="capture_title">Capture</string>

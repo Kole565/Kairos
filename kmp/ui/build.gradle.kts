@@ -32,6 +32,8 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            // Temps virtuel : le délai du fichier lié (LinkedFileSyncTest).
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

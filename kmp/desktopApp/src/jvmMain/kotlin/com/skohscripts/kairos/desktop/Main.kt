@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.desktop
 
+import kotlinx.coroutines.runBlocking
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -60,6 +61,8 @@ fun main(args: Array<String>) {
         }
         Window(
             onCloseRequest = {
+                // Le fichier lié reçoit ce qui attendait encore son délai (docs/spec/export-import.md).
+                runBlocking { runCatching { DesktopServices.current?.flush() } }
                 instance.release()
                 exitApplication()
             },

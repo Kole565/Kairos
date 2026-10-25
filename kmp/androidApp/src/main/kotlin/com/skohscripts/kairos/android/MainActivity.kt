@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.android
 
+import com.skohscripts.kairos.ui.app.LinkedFileSync
 import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
@@ -100,6 +101,13 @@ class MainActivity : ComponentActivity(), FileService {
         KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().notifier as? AndroidNotifier)?.refresh() }
     }
 
+    // Arrière-plan : le fichier lié reçoit tout de suite ce qui attendait son délai (docs/spec/export-import.md).
+    override fun onStop() {
+        super.onStop()
+        if (crashReport != null) return
+        KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().linkedStorage as? LinkedFileSync)?.flush() }
+    }
+
     override fun onDestroy() {
         if (KairosProcess.activity === this) KairosProcess.activity = null
         super.onDestroy()
@@ -135,6 +143,26 @@ class MainActivity : ComponentActivity(), FileService {
             contentResolver.openOutputStream(uri, "wt")!!.use { it.write(data) }
         }
         return true
+    }
+
+    /**
+     * Sélecteur du fichier lié (docs/spec/export-import.md § Fichier lié) : créer (`kairos.json` proposé) ou ouvrir, puis
+     * accès persistant en lecture et écriture, pour écrire à chaque changement sans le redemander.
+     */
+    suspend fun pickLinkedFile(create: Boolean, suggestedName: String?): Uri? {
+        val uri = if (create) {
+            val result = CompletableDeferred<Uri?>().also { pendingSave = it }
+            createDocument.getValue("application/json").launch(suggestedName ?: "kairos.json")
+            result.await()
+        } else {
+            val result = CompletableDeferred<Uri?>().also { pendingOpen = it }
+            openDocument.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+            result.await()
+        } ?: return null
+        runCatching {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        return uri
     }
 
     override suspend fun openText(): String? {

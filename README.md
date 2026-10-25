@@ -251,6 +251,11 @@ order (critical path). Cycles are refused.
   copied, never moved. Settings → About → **Diagnostics**: an optional local log
   (off by default, no task content) and "Copy diagnostics" for a bug report.
   The update check follows the system proxy.
+- **Linked file**: on the desktop and Android too, Settings → Data → "Create a
+  file" keeps an up-to-date copy of your data (an export, which opens anywhere)
+  in a folder of your choice, for example a Syncthing or Nextcloud folder,
+  written 2 seconds after each change. If another device changed the file,
+  Kairos stops writing to it and asks: overwrite, import it, or unlink.
 - **Web version**: data saved in the browser and, in Edge or Chrome, **linked
   to a file** kept up to date on every change.
 - Interface in **French** and **English**: the system language (French if the

@@ -10,9 +10,13 @@ navigateur. Fichiers couverts : `kmp/data/.../ExportCodec.kt`,
 `resources/kairos-web.js`, `resources/kairos-sqljs.worker.js`),
 `kmp/webApp/webpack.config.d/sqljs.js`, et les services de fichiers et de
 sauvegarde du bureau et d'Android (`DesktopServices.kt`, `AndroidServices.kt`,
-`MainActivity.kt`)._
+`MainActivity.kt`) ; fichier lié sur toutes les plateformes (3.10.0, issue #137) :
+`kmp/ui/.../app/LinkedFileSync.kt`, `kmp/desktopApp/.../DesktopLinkedFile.kt`,
+`kmp/androidApp/.../AndroidLinkedFile.kt`. Tests : `KairosRepositoryTest`,
+`LinkedFileSyncTest`, `DesktopLinkedFileTest`, `LinkedFileUiTest`._
 
-État : **jalon M1**, implémenté.
+État : **jalon M1**, implémenté ; fichier lié du bureau et d'Android, « Délier » et garde contre une modification
+faite ailleurs : **3.10.0** (issue #137, choix du propriétaire du 2026-10-25).
 
 ## 1. Besoin métier (cahier des charges)
 
@@ -65,6 +69,40 @@ base. Il faut donc pouvoir :
     bandeau propose de la redonner ;
   - Firefox et Safari n'ont pas de fichier lié : le bandeau conseille
     d'exporter régulièrement, ou d'utiliser Edge ou Chrome.
+- **Bureau et Android : fichier lié** (3.10.0, issue #137), pour garder une
+  copie à jour dans un dossier synchronisé (Syncthing, Nextcloud, Dropbox…).
+  Les données restent dans la base ; le fichier en est une copie, au format
+  d'export (il s'ouvre partout par « Importer »). Proposé dans la carte
+  Données seulement, jamais par un bandeau tant que rien n'est lié :
+  - « Kairos peut tenir à jour une copie de tes données dans un fichier de ton
+    choix (par exemple dans un dossier Syncthing ou Nextcloud). » ;
+  - **« Créer un fichier »** (`kairos.json` proposé) : le fichier est écrit
+    tout de suite, puis tenu à jour ;
+  - **« Ouvrir un fichier Kairos »** : un export ou un fichier lié existant ;
+    ses données remplacent celles de l'appareil après confirmation et une
+    sauvegarde automatique, exactement comme « Importer » ; il est ensuite
+    tenu à jour ;
+  - une fois lié : « Enregistré aussi dans le fichier « kairos.json ». » et
+    **« Délier »** (le fichier reste tel quel, Kairos cesse d'y écrire).
+  - Écriture 2 secondes après le dernier changement, et aussitôt quand
+    l'application passe en arrière-plan ou se ferme.
+- **Partout (bureau, Android, web) : modification faite ailleurs.** Si le
+  fichier lié n'est plus celui que cet appareil a écrit en dernier (un autre
+  appareil l'a changé), Kairos **n'écrit plus** et un bandeau (vue Jour et
+  carte Données) dit : « Le fichier lié « … » a été modifié ailleurs (un autre
+  appareil ?). Kairos n'y écrit plus tant que tu n'as pas choisi. », avec
+  **« Écraser »** (y écrire les données de cet appareil), **« L'importer »**
+  (ses données remplacent celles de l'appareil, avec confirmation et
+  sauvegarde, comme « Importer ») et **« Délier »**.
+- **Échec d'écriture** (dossier disparu, accès retiré, carte mémoire
+  retirée) : bandeau d'erreur « Kairos n'arrive plus à écrire dans « … » ; tes
+  données sont à l'abri dans Kairos. » avec « Réessayer » et « Délier » ;
+  jamais de plantage. Une écriture réussie le fait disparaître.
+- Le lien est **propre à l'appareil** : ni dans les réglages, ni dans
+  l'export.
+- Version web : « Délier » s'ajoute à « Ouvrir un fichier Kairos » quand un
+  fichier est lié ; « Ouvrir un fichier Kairos » fait désormais la sauvegarde
+  automatique d'« Importer » avant de remplacer les données.
 
 ### Critères de succès
 
@@ -76,8 +114,22 @@ base. Il faut donc pouvoir :
   dans Chromium) ; un instantané illisible au démarrage donne un écran
   d'erreur, jamais une base vide qui l'écraserait.
 
+- Fichier lié (`LinkedFileSyncTest`, `DesktopLinkedFileTest`) : une seule
+  écriture 2 s après une rafale de changements, écriture aussitôt à la mise en
+  arrière-plan, écriture atomique sur le bureau (jamais de fichier à moitié
+  écrit), fichier écrit = export valide qui redonne la même base, fichier
+  modifié ailleurs jamais écrasé sans choix, échec d'écriture signalé puis
+  levé par une écriture réussie, lien retrouvé au lancement ; carte Données
+  et bandeau (`LinkedFileUiTest`). Android vérifié à la main (dossier
+  Syncthing et fournisseur de documents Nextcloud ; accès retiré → bandeau).
+  Version web : démarrage et carte Données vérifiés dans Chromium ; la garde et
+  « Délier » passent par les sélecteurs du navigateur, que Playwright ne pilote
+  pas : à vérifier à la main dans Edge ou Chrome.
+
 ### Hors périmètre
 
+- Recharger tout seul le fichier quand un autre appareil l'a changé, résoudre
+  un conflit, fusionner : synchronisation (#88, 4.0.0).
 - Fusion de deux bases (sans synchronisation, une fusion créerait des
   doublons indétectables) : l'import remplace.
 - Chiffrement des exports.
@@ -232,7 +284,63 @@ n'écrit qu'un fichier de lecture, jamais relu par Kairos (`statistiques.md` § 
   Bandeau neutre (`surfaceContainerHigh`), sauf `SaveFailed` en conteneur
   d'erreur (charte § Bannières).
 
+### Fichier lié du bureau et d'Android (3.10.0, issue #137)
+
+- `LinkedStorage` (`ui/app`) devient le contrat commun aux trois plateformes :
+  `state`, `createFile`, `openFile` / `adoptOpened`, `authorize` (web),
+  `unlink`, `overwrite` (écrire malgré une modification faite ailleurs),
+  `readLinked` (contenu actuel du fichier, pour « L'importer ») puis
+  `acknowledge(texte)` (le contenu importé devient la référence), `retry` ;
+  `browser` (vrai sur le web : bandeau d'incitation et textes du
+  navigateur). Nouveaux états : `Changed(nom)`, `WriteFailed(nom)`.
+- `LinkedFileSync` (`ui/app`, commun au bureau et à Android) met en œuvre
+  `LinkedStorage` sur un `LinkedFileIo` de plateforme (choisir un fichier à
+  créer ou à ouvrir, lire, écrire, nom affiché, lien gardé) :
+  - `changed(instantané)` (branché sur `onChanged` du dépôt) garde le dernier
+    instantané et programme l'écriture `DEBOUNCE` = 2 s plus tard (une
+    rafale = une écriture) ; `flush()` écrit tout de suite ce qui attend
+    (arrière-plan, fermeture) ;
+  - avant d'écrire, le fichier est relu : si son **empreinte**
+    (`LinkHash.of` : longueur et FNV-1a 64 bits du texte) diffère de celle du
+    dernier texte écrit ou adopté, état `Changed`, rien n'est écrit ; lecture
+    ou écriture impossible → `WriteFailed` (l'écriture suivante réessaie) ;
+  - le lien (`SavedLink` : cible, nom, empreinte) est gardé par la plateforme
+    à chaque écriture réussie et relu au lancement.
+- Bureau (`DesktopLinkedFile`) : `FileDialog` ; écriture dans un fichier
+  temporaire du même dossier puis `Files.move(ATOMIC_MOVE)` (repli
+  `REPLACE_EXISTING` si le système de fichiers refuse l'atomique) ; lien dans
+  `linked-file.json` du dossier des données ; `flush` à la fermeture de la
+  fenêtre.
+- Android (`AndroidLinkedFile`) : `CreateDocument` / `OpenDocument` du Storage
+  Access Framework et `takePersistableUriPermission` (lecture et écriture) :
+  **aucune permission** dans le manifeste ; écriture en mode `"wt"` (certains
+  fournisseurs ignorent la troncature en `"w"` et laissent des octets en
+  trop) ; nom affiché par `OpenableColumns.DISPLAY_NAME` ; lien dans les
+  préférences de l'application ; `flush` dans `onStop`.
+- Web (`WebLinkedStorage`) : même garde (empreinte du dernier texte écrit,
+  gardée dans IndexedDB avec la poignée, `linkRead` avant `linkWrite`),
+  `unlink` oublie la poignée (`linkForget`). Écriture à chaque changement,
+  sans délai, comme avant.
+- Interface : `StorageBanner` sert les trois plateformes. Carte Données :
+  toujours (lié, pas lié, à résoudre). Vue Jour : sur le web comme avant ;
+  sur le bureau et Android seulement `Changed` et `WriteFailed`. « Ouvrir un
+  fichier Kairos » et « L'importer » passent par `replaceWithBackup`.
+
 ### Décisions et pièges tracés
+
+- **Fichier lié = copie au format d'export, la base reste la référence**
+  (#137) : synchroniser une base SQLite vivante (`-wal`, `-shm`) par
+  Syncthing ou OneDrive la corrompt ou crée des copies en conflit ; un export
+  écrit d'un bloc ne risque rien.
+- **Empreinte du contenu plutôt que date de modification** : les fournisseurs
+  de documents d'Android ne donnent pas une date fiable, et une écriture de
+  cet appareil ne doit jamais se prendre pour une modification étrangère.
+- **Rien n'est écrit sur une modification faite ailleurs** sans choix
+  (propriétaire, 2026-10-25) : deux appareils liés au même fichier
+  s'écraseraient sinon l'un l'autre sans un mot. Recharger tout seul, c'est
+  de la synchronisation (#88).
+- **Pas de bandeau d'incitation sur le bureau ni sur Android** (propriétaire,
+  2026-10-25) : les données y sont déjà dans un fichier.
 
 - **Instantané JSON plutôt que SQLite persistant dans l'OPFS** : le VFS OPFS
   de SQLite exige `SharedArrayBuffer`, donc des en-têtes COOP/COEP que GitHub

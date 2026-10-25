@@ -266,6 +266,12 @@ remonte dans l’ordre (chemin critique). Les cycles sont refusés.
   **Diagnostic** : un journal local facultatif (désactivé par défaut, sans le
   contenu de tes tâches) et « Copier le diagnostic » pour un rapport de bug.
   La vérification des mises à jour suit le proxy du système.
+- **Fichier lié** : sur le bureau et Android aussi, Réglages → Données →
+  « Créer un fichier » tient à jour une copie de tes données (un export, qui
+  s’ouvre partout) dans le dossier de ton choix, par exemple un dossier
+  Syncthing ou Nextcloud, écrite 2 secondes après chaque changement. Si un autre
+  appareil a modifié le fichier, Kairos n’y écrit plus et te demande : écraser,
+  l’importer ou délier.
 - **Version web** : données enregistrées dans le navigateur, et, dans Edge ou
   Chrome, **liées à un fichier** tenu à jour à chaque modification.
 - Interface en **français** et en **anglais** : la langue du système (français

@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.desktop
 
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.CoroutineScope
+import com.skohscripts.kairos.ui.app.LinkedFileSync
 import com.skohscripts.kairos.data.db.KairosDatabase
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
@@ -48,11 +51,16 @@ object DesktopServices {
         val clock = Clock.System
         val language = Locale.getDefault().language
         val opened = KairosStore.open(JdbcSqliteDriver(url))
+        // Fichier lié (docs/spec/export-import.md § Fichier lié du bureau et d'Android) : branché sur chaque nouvel état.
+        val linked = LinkedFileSync(DesktopLinkedFile(dataDir), CoroutineScope(SupervisorJob() + Dispatchers.IO), clock)
         val repository = KairosRepository.open(
             opened,
             examples = { ExampleData.snapshot(clock.todayIn(TimeZone.currentSystemDefault()), clock.now(), language) },
             clock = clock,
+            onChanged = { linked.changed(it) },
         )
+        linked.start(repository.snapshot.value)
+        if (!inMemory) current = linked
         diagnostics?.log("db.open ${if (opened.created) "created" else "schema ${KairosDatabase.Schema.version}"} tasks=${repository.snapshot.value.tasks.size}")
         AppServices(
             repository = repository,
@@ -69,12 +77,19 @@ object DesktopServices {
             applyLanguage = { Locale.setDefault(Locale.forLanguageTag(it)) },
             dataFolder = folder,
             diagnostics = diagnostics,
+            // L'auto-test (base en mémoire) n'écrit jamais dans un fichier de l'utilisateur.
+            linkedStorage = if (inMemory) null else linked,
         )
     }
+
+    /** Le fichier lié de la base ouverte : `Main` écrit ce qui attend à la fermeture de la fenêtre. */
+    @Volatile
+    var current: LinkedFileSync? = null
+        private set
 }
 
 /** Boîtes de dialogue AWT natives (Windows, macOS ; GTK sous Linux). */
-private object DialogFiles : FileService {
+internal object DialogFiles : FileService {
     override suspend fun saveText(suggestedName: String, text: String): Boolean {
         val file = choose(FileDialog.SAVE, suggestedName) ?: return false
         withContext(Dispatchers.IO) { file.writeText(text) }

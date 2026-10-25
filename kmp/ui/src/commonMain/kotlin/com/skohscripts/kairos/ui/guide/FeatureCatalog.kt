@@ -246,6 +246,7 @@ object FeatureCatalog {
         "When you work on each type" to "besthours",
         "Best hours" to "besthours_apply",
         "Web version" to "data",
+        "Linked file" to "data",
         "Settings" to "settings",
         "Members" to "team_members",
         "Tracking" to "team_board",
