@@ -1485,7 +1485,7 @@
     <string name="card_darktheme_title">Thème sombre</string>
     <string name="card_darktheme_body">Kairos suit le thème de ton système. L’interrupteur « Thème sombre » de l’Apparence choisit l’autre ; le rebasculer suit à nouveau le système.</string>
     <string name="card_languages_title">Langues</string>
-    <string name="card_languages_body">Kairos parle français, anglais, espagnol, allemand, russe et italien. Il suit la langue de ton système quand elle en fait partie (l’anglais sinon) ; Réglages → Général → Langue en choisit une autre. Les dates, les heures et les nombres la suivent.</string>
+    <string name="card_languages_body">Kairos parle français, anglais, espagnol, allemand, russe et italien. Il suit la langue de ton système quand elle en fait partie (l’anglais sinon) ; Réglages → Général → Langue en choisit une autre. Les dates, les heures et les nombres la suivent.</string>
     <string name="edit_title_first">Première tâche</string>
     <string name="schedule_window">Plage %1$d</string>
     <string name="schedule_add_window">Ajouter une plage</string>
