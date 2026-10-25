@@ -12,6 +12,7 @@ import com.skohscripts.kairos.data.KairosStore
 import com.skohscripts.kairos.ui.app.AppServices
 import com.skohscripts.kairos.ui.app.BackupStore
 import com.skohscripts.kairos.ui.app.FileService
+import com.skohscripts.kairos.ui.app.LinkHash
 import com.skohscripts.kairos.ui.app.LinkedFileState
 import com.skohscripts.kairos.ui.app.LinkedStorage
 import com.skohscripts.kairos.ui.app.OpenedFile
@@ -101,6 +102,7 @@ private class WebLinkedStorage(private val clock: Clock, private val dataFile: S
     lateinit var repository: KairosRepository
     private val mutable = MutableStateFlow<LinkedFileState>(LinkedFileState.NotLinked)
     override val state: StateFlow<LinkedFileState> = mutable.asStateFlow()
+    override val browser: Boolean = true
 
     /** Faux tant que des données attendent d'être rechargées du fichier lié : rien n'est écrit. */
     private var persisting = false
@@ -130,14 +132,37 @@ private class WebLinkedStorage(private val clock: Clock, private val dataFile: S
         }
         val current = mutable.value
         if (current is LinkedFileState.SaveFailed) mutable.value = LinkedFileState.NotLinked
-        if (current is LinkedFileState.Linked && !KairosWeb.linkWrite(text).await<JsBoolean>().toBoolean()) {
-            mutable.value = LinkedFileState.NeedsPermission(current.name, restore = false)
+        if (current is LinkedFileState.Linked) writeLinked(current.name, text, force = false)
+    }
+
+    /**
+     * Écrit [text] dans le fichier lié, sauf s'il a été modifié ailleurs (empreinte du dernier texte écrit, gardée avec la
+     * poignée) : alors [LinkedFileState.Changed], rien n'est écrit. [force] : « Écraser ».
+     */
+    private suspend fun writeLinked(name: String, text: String, force: Boolean): Boolean {
+        if (!force) {
+            val onDisk = KairosWeb.linkRead().await<JsString?>()?.toString()
+            val known = KairosWeb.linkHashGet().await<JsString?>()?.toString()
+            // Première écriture après la mise à jour (aucune empreinte gardée) : le fichier est celui de cet appareil.
+            if (onDisk != null && known != null && LinkHash.of(onDisk) != known) {
+                mutable.value = LinkedFileState.Changed(name)
+                return false
+            }
         }
+        if (!KairosWeb.linkWrite(text).await<JsBoolean>().toBoolean()) {
+            mutable.value = LinkedFileState.NeedsPermission(name, restore = false)
+            return false
+        }
+        KairosWeb.linkHashSet(LinkHash.of(text)).await<JsAny?>()
+        mutable.value = LinkedFileState.Linked(name)
+        return true
     }
 
     override suspend fun createFile(): Boolean {
-        val name = KairosWeb.linkCreate("kairos.json", encode(repository.snapshot.value)).await<JsString?>()?.toString()
+        val text = encode(repository.snapshot.value)
+        val name = KairosWeb.linkCreate("kairos.json", text).await<JsString?>()?.toString()
             ?: return false
+        KairosWeb.linkHashSet(LinkHash.of(text)).await<JsAny?>()
         mutable.value = LinkedFileState.Linked(name)
         return true
     }
@@ -150,6 +175,7 @@ private class WebLinkedStorage(private val clock: Clock, private val dataFile: S
 
     override suspend fun adoptOpened(): Boolean {
         if (!KairosWeb.linkAdopt().await<JsBoolean>().toBoolean()) return false
+        KairosWeb.linkRead().await<JsString?>()?.toString()?.let { KairosWeb.linkHashSet(LinkHash.of(it)).await<JsAny?>() }
         mutable.value = LinkedFileState.Linked(pendingName ?: "kairos.json")
         persisting = true
         return true
@@ -161,6 +187,7 @@ private class WebLinkedStorage(private val clock: Clock, private val dataFile: S
         mutable.value = LinkedFileState.Linked(current.name)
         if (current.restore) {
             val text = KairosWeb.linkRead().await<JsString?>()?.toString() ?: return false
+            KairosWeb.linkHashSet(LinkHash.of(text)).await<JsAny?>()
             persisting = true
             repository.replaceAll(ExportCodec.decode(text))
         } else {
@@ -168,4 +195,30 @@ private class WebLinkedStorage(private val clock: Clock, private val dataFile: S
         }
         return true
     }
+
+    override suspend fun unlink() {
+        KairosWeb.linkForget().await<JsAny?>()
+        mutable.value = LinkedFileState.NotLinked
+    }
+
+    override suspend fun overwrite() {
+        val current = mutable.value as? LinkedFileState.Changed ?: return
+        writeLinked(current.name, encode(repository.snapshot.value), force = true)
+    }
+
+    override suspend fun readLinked(): OpenedFile? {
+        val name = (mutable.value as? LinkedFileState.Changed)?.name ?: (mutable.value as? LinkedFileState.Linked)?.name ?: return null
+        val text = KairosWeb.linkRead().await<JsString?>()?.toString() ?: return null
+        return OpenedFile(name, text)
+    }
+
+    override suspend fun acknowledge(text: String) {
+        val current = mutable.value as? LinkedFileState.Changed ?: return
+        KairosWeb.linkHashSet(LinkHash.of(text)).await<JsAny?>()
+        mutable.value = LinkedFileState.Linked(current.name)
+        persist(repository.snapshot.value)
+    }
+
+    /** Sur le web, un échec d'écriture du fichier lié devient « accès à redonner » ([authorize]) : rien à réessayer ici. */
+    override suspend fun retry() = Unit
 }

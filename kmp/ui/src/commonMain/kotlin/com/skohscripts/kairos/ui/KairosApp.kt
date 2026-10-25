@@ -2,6 +2,7 @@ package com.skohscripts.kairos.ui
 
 import com.skohscripts.kairos.core.model.LevelNames
 import com.skohscripts.kairos.ui.day.LocalLevelNames
+import com.skohscripts.kairos.ui.day.LocalCalendarNames
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,7 +111,8 @@ fun KairosApp(
                         ready != null -> {
                             // Thème et langue des réglages dès qu'ils sont lus ; le miel de la charte et la langue du système
                             // pendant le chargement.
-                            val settings = ready.repository.snapshot.collectAsState().value.settings
+                            val stored = ready.repository.snapshot.collectAsState().value
+                            val settings = stored.settings
                             val themeColor = settings.themeColor
                             val dark = ThemeMode.isDark(settings.themeMode, systemIsDark)
                             val scheme = remember(themeColor, systemColorScheme, dark) { ThemeColors.schemeFor(themeColor, systemColorScheme, dark) }
@@ -129,6 +131,8 @@ fun KairosApp(
                                 LocalUiLanguage provides language,
                                 LocalSystemColorScheme provides systemColorScheme?.invoke(dark),
                                 LocalLevelNames provides levelNames,
+                                // Noms des calendriers importés : l'origine d'un créneau (docs/spec/connexions-externes.md § Interface).
+                                LocalCalendarNames provides remember(stored.calendarSources) { stored.calendarSources.associate { it.id to it.name } },
                             ) {
                                 KairosTheme(scheme, dark, light) { KairosShell(platform, ready, language, initialDestination, initialTeamDestination, initialSecondary) }
                             }

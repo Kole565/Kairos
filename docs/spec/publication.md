@@ -83,7 +83,9 @@ disposer d'une **page de téléchargement** claire pour toutes les plateformes.
   `changelogs/<versionCode>.txt` (≤ 500), `images/icon.png` (512 px,
   `make_app_icons.py`), `images/phoneScreenshots/1.png` à `8.png`.
 - La description présente la formule du score, le placement dans la journée, le chrono et
-  ses alertes, les statistiques, et l'absence de compte et de réseau.
+  ses alertes, les statistiques, et l'absence de compte et de réseau ; depuis la 3.10.0, le fichier lié et les
+  calendriers (fichier `.ics`, ou calendriers du téléphone avec l'autorisation **facultative** de lecture du
+  calendrier, `connexions-externes.md`).
 - **Une note de version par versionCode publié** (`29501` pour
   `3.0.0-beta.1`, `30000` pour `3.0.0`) : à chaque changement de version, en ajouter une dans les
   deux langues.

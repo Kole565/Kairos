@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.ui.day
 
+import com.skohscripts.kairos.core.model.BlockSource
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.ui.guide.RecurrenceCoach
 import com.skohscripts.kairos.ui.generated.resources.note_affinity_combined
@@ -175,7 +177,9 @@ fun DayScreen(
     onDiscover: () -> Unit = {},
 ) {
     val repository = services.repository
-    val snapshot by repository.personalSnapshot.collectAsState()
+    val stored by repository.personalSnapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, stored)
     val timeZone = remember { TimeZone.currentSystemDefault() }
     // L'heure avance à la minute : le placement part de maintenant (buildDaySchedule).
     val now by produceState(services.clock.now()) {
@@ -431,6 +435,8 @@ fun DayScreen(
                     GuideMark(GuideSection.DAY_AGENDA) {
                         Column(Modifier.padding(top = KairosListSectionExtra)) {
                             Text(stringResource(Res.string.agenda_title), style = MaterialTheme.typography.titleMedium)
+                            // Journées entières des calendriers importés : un badge, sans effet sur le planning (issue #136).
+                            DayMarkBadges(view.dayMarks, Modifier.padding(vertical = 4.dp))
                             Hint(stringResource(if (view.agenda.isEmpty()) Res.string.agenda_empty else Res.string.agenda_hint))
                         }
                     }
@@ -610,7 +616,14 @@ fun DayScreen(
             )
         }
     }
-    editingBlock?.let { block ->
+    editingBlock?.takeIf { it.template.source is BlockSource.Imported }?.let { block ->
+        ImportedBlockDeleteDialog(
+            block.template,
+            onDismiss = { editingBlock = null },
+            onDelete = { scope.launch { repository.deleteBlock(block.id) }; editingBlock = null },
+        )
+    }
+    editingBlock?.takeIf { !it.template.imported }?.let { block ->
         BlockDialog(
             block,
             day,

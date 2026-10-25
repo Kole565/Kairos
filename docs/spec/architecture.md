@@ -46,7 +46,7 @@ offrir une interface native plutôt qu'une page web rechargée.
 
 | Module | Plugin(s) | Cibles | Rôle |
 |---|---|---|---|
-| `core` | KMP + bibliothèque Android KMP + sérialisation | JVM, Android, wasmJs | Code métier **pur** : `AppVersion`, `KairosBuild` (version, générée), modèle (`model/`), données d'exemple, moteur (`engine/` : jours ouvrés, dépendances, récurrence, ancienneté, ordonnancement, temps réel, voir `ordonnancement.md` et `temps-reel-chrono.md`), seuils du chrono (`alerts/`), modèle de la vue Jour (`day/DayView`), statistiques (`stats/TaskStats`, `statistiques.md`), conversion d'une note (`notes/NoteConversion`), modèle de la vue Semaine (`week/WeekView`), champs et validation des réglages (`settings/SettingsForm`, `reglages.md`), lecture de la dernière version publiée (`updates/UpdateCheck`, `mises-a-jour.md`), espace Équipe (`team/` : membres, filtre `Workspaces`, suivi, charge ; `team/forecast/` : simulation Monte Carlo et scénarios, `equipe.md`). |
+| `core` | KMP + bibliothèque Android KMP + sérialisation | JVM, Android, wasmJs | Code métier **pur** : `AppVersion`, `KairosBuild` (version, générée), modèle (`model/`), données d'exemple, moteur (`engine/` : jours ouvrés, dépendances, récurrence, ancienneté, ordonnancement, temps réel, voir `ordonnancement.md` et `temps-reel-chrono.md`), seuils du chrono (`alerts/`), modèle de la vue Jour (`day/DayView`), statistiques (`stats/TaskStats`, `statistiques.md`), conversion d'une note (`notes/NoteConversion`), modèle de la vue Semaine (`week/WeekView`), champs et validation des réglages (`settings/SettingsForm`, `reglages.md`), lecture de la dernière version publiée (`updates/UpdateCheck`, `mises-a-jour.md`), lecture d'un calendrier `.ics` et calendriers du téléphone (`calendar/` : `IcsParser`, `IcsRule`, `IcsZones`, `CalendarImport`, `ExternalBlocks`, `connexions-externes.md`), espace Équipe (`team/` : membres, filtre `Workspaces`, suivi, charge ; `team/forecast/` : simulation Monte Carlo et scénarios, `equipe.md`). |
 | `data` | KMP + bibliothèque Android KMP + SQLDelight + sérialisation | JVM, Android, wasmJs | Schéma et requêtes SQLDelight (asynchrones), ouverture et migrations (`KairosStore`), dépôt (`KairosRepository`), format d'export (`ExportCodec`). Sans pilote : chaque application fournit le sien. |
 | `ui` | KMP + bibliothèque Android KMP + Compose | JVM, Android, wasmJs | Interface commune : thème, icônes, logo, navigation (espaces Perso et Équipe), écrans (dont `team/`, `equipe.md`), chaînes FR/EN, polices ; contrat des services de plateforme (`app/AppServices.kt`). |
 | `androidApp` | application Android + compilateur Compose | Android | Activité, services Android (pilote SQLite, sélecteurs de fichiers), ressources de lancement. |
@@ -58,7 +58,9 @@ Graphe : `androidApp`, `desktopApp` et `webApp` → `ui` → `data` → `core`
 
 **Services de plateforme** : l'interface reçoit un `AppServices` (dépôt
 ouvert, `FileService`, `BackupStore`, emplacement des données, fichier lié
-de la version web, horloge), construit par chaque application et passé à
+(`LinkedStorage` : web, et `LinkedFileSync` sur le bureau et Android,
+`export-import.md`), calendriers du téléphone (`CalendarService`, Android,
+`connexions-externes.md`), horloge…), construit par chaque application et passé à
 `KairosApp(platform) { … }` sous forme de fonction suspendue (ouverture
 asynchrone de la base).
 

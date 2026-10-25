@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.week
 
+import com.skohscripts.kairos.ui.app.withDeviceCalendars
+import com.skohscripts.kairos.ui.day.DayMarkBadges
+import com.skohscripts.kairos.ui.day.blockTitle
 import com.skohscripts.kairos.ui.app.uiLanguage
 import com.skohscripts.kairos.ui.theme.KairosButtonIconPadding
 import com.skohscripts.kairos.ui.theme.KairosOutlinedButton
@@ -113,7 +116,9 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WeekScreen(services: AppServices, nav: NavState, onOpenDay: (LocalDate) -> Unit) {
-    val snapshot by services.repository.personalSnapshot.collectAsState()
+    val stored by services.repository.personalSnapshot.collectAsState()
+    // Calendriers du téléphone (Android) : ajoutés pour le calcul, jamais écrits (docs/spec/connexions-externes.md).
+    val snapshot = withDeviceCalendars(services, stored)
     val timeZone = remember { TimeZone.currentSystemDefault() }
     val now = services.clock.now()
     val today = now.toLocalDateTime(timeZone).date
@@ -249,8 +254,12 @@ private fun DayCard(day: WeekDay, isToday: Boolean, move: MoveContext, modifier:
     ) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(Dates.dayShort(day.date, language), style = MaterialTheme.typography.titleSmall)
+            DayMarkBadges(day.marks)
             day.blocks.forEach { b ->
-                Badge(stringResource(Res.string.week_block, b.title, Dates.time(b.start, language), Dates.time(b.end, language)))
+                Badge(
+                    stringResource(Res.string.week_block, if (b.imported) blockTitle(b) else b.title, Dates.time(b.start, language), Dates.time(b.end, language)),
+                    icon = if (b.imported) KairosIcons.Event else null,
+                )
             }
             if (day.tasks.isEmpty() && day.done.isEmpty() && day.scheduled.isEmpty()) {
                 Text(stringResource(Res.string.week_nothing), color = scheme.onSurfaceVariant)

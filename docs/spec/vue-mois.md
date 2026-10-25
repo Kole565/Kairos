@@ -40,6 +40,8 @@ libres ou fériés, où les échéances s'accumulent, où tombe une série mensu
   temps disponible du jour : ses plages de travail (horaires par jour, `planning-personnalise.md`) moins les créneaux
   **occupés** (occurrences des récurrents comprises, mensuels et exceptions compris, `recurrence.md`). Un jour libre a
   0 min : une tâche qui y est prévue le rend trop chargé.
+- **Journée entière d'un calendrier importé** (3.10.0, `connexions-externes.md`) : icône `Event` dans la case, les
+  titres dans sa description d'accessibilité ; ni capacité ni surcharge. La légende sous le titre le dit.
 - Sous la grille, la même information en listes, chaque ligne ouvrant son jour : « Échéances du mois » (« 10 nov. :
   Rapport · Revue »), « Jours trop chargés » (« mar. 10/11 : 8 h 30 prévues pour 7 h disponibles »), « Fériés et jours
   libres » (« mer. 11/11 · férié », « sam. 14/11 · jour libre »). Rien de prévu ni d'échéance : « Rien de prévu ce

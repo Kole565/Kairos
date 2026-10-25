@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.android
 
+import com.skohscripts.kairos.ui.app.LinkedFileSync
 import android.content.Context
 import android.content.res.Resources
 import app.cash.sqldelight.db.AfterVersion
@@ -44,12 +45,18 @@ object AndroidServices {
         val driver = AndroidSqliteDriver(DeferredSchema, context, DATABASE_NAME)
         val opened = KairosStore.open(driver)
         val examples = { ExampleData.snapshot(clock.todayIn(TimeZone.currentSystemDefault()), clock.now(), language) }
-        val repository = KairosRepository.open(opened, examples = examples, clock = clock)
+        // Fichier lié (docs/spec/export-import.md § Fichier lié du bureau et d'Android) : branché sur chaque nouvel état.
+        val linked = LinkedFileSync(AndroidLinkedFile(context), KairosProcess.scope, clock)
+        val repository = KairosRepository.open(opened, examples = examples, clock = clock, onChanged = { linked.changed(it) })
+        linked.start(repository.snapshot.value)
         AppServices(
             repository = repository,
             files = files,
             backups = FolderBackups(File(context.filesDir, "backups")),
             dataLocation = null,
+            linkedStorage = linked,
+            // Calendriers du téléphone (docs/spec/connexions-externes.md § Android) : lus en direct, jamais stockés.
+            calendars = AndroidCalendarService(context, KairosProcess.scope, clock).also { it.refresh() },
             clock = clock,
             notifier = notifier,
             firstLaunch = opened.created,

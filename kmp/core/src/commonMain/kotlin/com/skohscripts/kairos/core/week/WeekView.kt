@@ -6,6 +6,7 @@ import com.skohscripts.kairos.core.engine.Schedule
 import com.skohscripts.kairos.core.engine.TimeTracking
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.DayMark
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -32,6 +33,8 @@ data class WeekDay(
     val scheduled: List<Task> = emptyList(),
     val holiday: Boolean = false,
     val dayOff: Boolean = false,
+    /** Journées entières des calendriers importés (badges, issue #136). */
+    val marks: List<DayMark> = emptyList(),
 )
 
 /**
@@ -72,6 +75,7 @@ data class WeekView(
                         .sortedWith(compareBy<Task>({ it.priority == null }, { it.priority ?: 999 }, { it.title })),
                     holiday = day in holidays,
                     dayOff = Schedule.windowsFor(day, snapshot.settings).isEmpty(),
+                    marks = snapshot.dayMarks.filter { it.covers(day) }.sortedBy { it.title },
                 )
             }
             val sessions = TimeTracking.sessionsInRange(snapshot.workSessions, monday, sunday, timeZone)

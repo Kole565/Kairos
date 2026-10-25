@@ -23,6 +23,9 @@ external object KairosWeb : JsAny {
     fun linkAuthorize(): Promise<JsBoolean>
     fun linkRead(): Promise<JsString?>
     fun linkWrite(text: String): Promise<JsBoolean>
+    fun linkForget(): Promise<JsAny?>
+    fun linkHashGet(): Promise<JsString?>
+    fun linkHashSet(hash: String): Promise<JsAny?>
     fun notifyState(): String
     fun notifyRequest(): Promise<JsString>
     fun notify(title: String, body: String, tag: String): Boolean

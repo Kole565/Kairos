@@ -34,6 +34,8 @@ class AppServices(
     val dataFolder: DataFolderService? = null,
     /** Journal de diagnostic (bureau, docs/spec/bureau-avance.md) ; `null` ailleurs. */
     val diagnostics: Diagnostics? = null,
+    /** Calendriers du téléphone (Android, docs/spec/connexions-externes.md § Étape 2) ; `null` ailleurs. */
+    val calendars: CalendarService? = null,
     /** Bureau, copie portable seulement : raccourci (docs/spec/raccourci-portable.md). */
     val shortcuts: ShortcutService? = null,
     /** Espace Équipe : sélection du Backlog, choix et résultats des Prévisions, graine injectable (tests). */

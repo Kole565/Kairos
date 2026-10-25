@@ -165,7 +165,8 @@ ferme toute session ouverte ; n'écrit rien s'il n'y en a pas.
   notifient, l'application n'ajoute que son bandeau). Autorisation demandée
   par `MainActivity` à l'opt-in ; état relu à chaque retour dans
   l'application. Son : `ToneGenerator`.
-- Manifeste : `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` ; icône de
+- Manifeste : `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` (et `READ_CALENDAR`, facultative, pour les calendriers du
+  téléphone, `connexions-externes.md`) ; icône de
   notification `ic_notification` (silhouette du cadran).
 
 ### Bureau

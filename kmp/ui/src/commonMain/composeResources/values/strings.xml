@@ -142,6 +142,15 @@
     <string name="web_authorize">Allow access</string>
     <string name="web_save_failed">Saving in the browser failed: %1$s. Export your data.</string>
     <string name="web_link_open_confirm_body">The data in this browser will be replaced by that of “%1$s”, which will then be kept up to date.</string>
+    <string name="linked_intro">Kairos can keep an up-to-date copy of your data in a file of your choice, for example in a Syncthing or Nextcloud folder. It opens anywhere with Import.</string>
+    <string name="linked_unlink">Unlink</string>
+    <string name="linked_changed">The linked file “%1$s” was changed elsewhere (another device?). Kairos no longer writes to it until you choose.</string>
+    <string name="linked_overwrite">Overwrite</string>
+    <string name="linked_import">Import it</string>
+    <string name="linked_write_failed">Kairos can no longer write to “%1$s”; your data is safe in Kairos.</string>
+    <string name="linked_retry">Retry</string>
+    <string name="linked_open_confirm_body">The data on this device will be replaced by that of “%1$s”, which will then be kept up to date. A backup is made just before.</string>
+    <string name="linked_import_confirm_body">The data on this device will be replaced by that of “%1$s”, changed elsewhere. A backup is made just before.</string>
 
     <!-- Vue Jour complète (M2) -->
     <string name="capture_title">Capture</string>
@@ -351,7 +360,7 @@
     <string name="title_month_of">Month · %1$s</string>
     <string name="month_prev">Previous month</string>
     <string name="month_next">Next month</string>
-    <string name="month_legend">In each day: the number of planned tasks, a flag for a deadline, a warning when the day is overloaded, an icon for a public holiday or a day off. Tap a day to open it.</string>
+    <string name="month_legend">In each day: the number of planned tasks, a flag for a deadline, a warning when the day is overloaded, an icon for a public holiday or a day off, a calendar for a whole-day event from an imported calendar. Tap a day to open it.</string>
     <string name="month_day_desc">%1$s. Planned tasks: %2$d. Deadlines: %3$d.</string>
     <string name="month_desc_overloaded">Overloaded.</string>
     <string name="month_desc_holiday">Public holiday.</string>
@@ -1448,6 +1457,10 @@
     <string name="card_holidays_slots_body">A recurring “weekdays” time slot, like the daily stand-up, no longer lands on a public holiday or on an extra day off set in Settings.</string>
     <string name="card_slots_month_title">Monthly slots, and one day apart</string>
     <string name="card_slots_month_body">A time slot can come back every month, on the 15th or on the 3rd Tuesday. On a recurring slot, “Only this one” skips that day or changes its hours, without touching the rest of the series.</string>
+    <string name="card_calendar_import_title">Import your meetings from a calendar</string>
+    <string name="card_calendar_import_body">Settings → Data → Calendars imports an .ics file from Outlook, Google Calendar or Thunderbird: each meeting becomes a busy slot, whole-day events a badge on the day. Import it again to update it. On Android, the phone’s calendars can also be read live.</string>
+    <string name="card_linked_file_title">A copy of your data in a synced folder</string>
+    <string name="card_linked_file_body">On the desktop and Android, Settings → Data → “Create a file” keeps an up-to-date copy of your data in a folder you choose (Syncthing, Nextcloud…). If another device changed it, Kairos asks before writing.</string>
     <string name="card_month_title">The month at a glance</string>
     <string name="card_month_body">In the Week view, “Month” shows every day of the month: planned tasks, deadlines, overloaded days, public holidays and days off. Tap a day to open it.</string>
     <string name="card_correct_title">Correct your estimates</string>
@@ -1535,7 +1548,7 @@
     <string name="settings_cat_team">Team</string>
     <string name="settings_cat_team_hint">Team management, follow-up, load and forecasts</string>
     <string name="settings_cat_data">Data</string>
-    <string name="settings_cat_data_hint">Export, import, default settings</string>
+    <string name="settings_cat_data_hint">Export, import, calendars, default settings</string>
     <string name="settings_cat_about">About</string>
     <string name="settings_cat_about_hint">Discover Kairos, guide, version</string>
     <string name="settings_cat_has_error">A field to fix</string>
@@ -1565,4 +1578,52 @@
     <string name="stats_export_image">Image: %1$s</string>
     <string name="stats_export_done">Statistics exported.</string>
     <string name="stats_image_done">Image saved.</string>
+    <!-- Calendriers importés (3.10.0, issue #136, docs/spec/connexions-externes.md) -->
+    <string name="calendar_import_title">Import a calendar</string>
+    <string name="calendar_import_body">Each event becomes a busy slot; whole-day events become a badge on the day, without blocking time. Description, location and attendees are never kept.</string>
+    <string name="calendar_name">Calendar name</string>
+    <string name="calendar_default_name">Imported calendar</string>
+    <string name="calendar_events">%1$d slots from %2$s to %3$s.</string>
+    <string name="calendar_events_none">No event to import.</string>
+    <string name="calendar_days">Whole-day events: %1$d, shown as a badge without blocking time.</string>
+    <string name="calendar_skipped_free">Free or working elsewhere, skipped: %1$d</string>
+    <string name="calendar_skipped_cancelled">Cancelled, skipped: %1$d</string>
+    <string name="calendar_skipped_past">Already over, skipped: %1$d</string>
+    <string name="calendar_skipped_beyond">More than 6 months away, skipped: %1$d</string>
+    <string name="calendar_skipped_rule">Repetition not supported, skipped: %1$d</string>
+    <string name="calendar_skipped_zone">Unknown time zone (%2$s), skipped: %1$d</string>
+    <string name="calendar_skipped_invalid">Unreadable, skipped: %1$d</string>
+    <string name="calendar_skipped_too_many">Over the limit, skipped: %1$d</string>
+    <string name="calendar_replaces">Replaces the %1$d upcoming slots of “%2$s”.</string>
+    <string name="calendar_hide_titles">Hide titles (the slots are called “Busy”)</string>
+    <string name="calendar_import_action">Import</string>
+    <string name="calendar_close">Close</string>
+    <string name="calendar_import_done">Calendar “%1$s” imported: %2$d slots.</string>
+    <string name="calendar_busy">Busy</string>
+    <string name="calendar_imported_from">Imported from “%1$s”</string>
+    <string name="calendar_block_delete">Delete the imported slot</string>
+    <string name="calendar_block_delete_title">Delete this imported slot?</string>
+    <string name="calendar_block_delete_body">“%1$s” will come back at the next import of “%2$s”.</string>
+    <string name="calendars_title">Calendars</string>
+    <string name="calendars_body">Imported events become busy slots, whole-day events a badge on the day. Kairos connects to no account.</string>
+    <string name="calendars_help">Get the .ics file: classic Outlook “File → Save Calendar”; Outlook on the web “Publish a calendar”, then open the ICS link; Google Calendar “Import &amp; export → Export”; Thunderbird, Nextcloud, Proton, Apple: “Export”.</string>
+    <string name="calendars_import">Import a calendar…</string>
+    <string name="calendars_row">%1$d upcoming slots · imported on %2$s</string>
+    <string name="calendars_reimport">Reimport</string>
+    <string name="calendars_remove">Remove</string>
+    <string name="calendars_remove_title">Remove “%1$s” and its %2$d slots?</string>
+    <string name="calendars_remove_body">Its past slots and its whole-day badges go too. Your own slots are not touched.</string>
+    <string name="calendars_removed">Calendar “%1$s” removed.</string>
+    <string name="calendars_not_calendar">This file is not a calendar (.ics).</string>
+    <string name="calendar_device_from">Phone calendar “%1$s”</string>
+    <string name="calendars_phone_title">Phone calendars</string>
+    <string name="calendars_phone_switch">Use my phone calendars</string>
+    <string name="calendars_phone_help">Events from the phone’s calendars (Google, Exchange, DAVx⁵, ICSx⁵, Outlook with “Sync calendars” on) show as read-only busy slots, read live and never stored or exported. Kairos asks for calendar access only when you turn this on, and still makes no network connection. If your organisation blocks Outlook’s copy, import a .ics file instead.</string>
+    <string name="calendars_phone_choose">Choose the calendars to use (none by default):</string>
+    <string name="calendars_phone_empty">No calendar on this phone.</string>
+    <string name="calendars_phone_denied">Kairos no longer has access to the phone calendars.</string>
+    <string name="calendars_phone_settings">Open system settings</string>
+    <string name="day_mark_all_day">All day</string>
+    <string name="day_marks_description">All day: %1$s</string>
+    <string name="hub_calendar_file">This file is a calendar, not a team exchange. To import it: Settings → Data → Import.</string>
 </resources>

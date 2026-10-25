@@ -6,6 +6,7 @@ import com.skohscripts.kairos.core.engine.Scheduling
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.DayMark
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Task
 import com.skohscripts.kairos.core.model.TaskStatus
@@ -32,6 +33,8 @@ data class MonthDay(
     val capacityMinutes: Int,
     val holiday: Boolean,
     val dayOff: Boolean,
+    /** Journées entières des calendriers importés (badges, issue #136) : ni capacité ni surcharge. */
+    val marks: List<DayMark> = emptyList(),
 ) {
     val overloaded: Boolean get() = plannedMinutes > capacityMinutes
 }
@@ -88,6 +91,7 @@ data class MonthView(
                     capacityMinutes = capacity,
                     holiday = day in holidays,
                     dayOff = windows.isEmpty(),
+                    marks = snapshot.dayMarks.filter { it.covers(day) }.sortedBy { it.title },
                 )
             }
             return MonthView(first, days)

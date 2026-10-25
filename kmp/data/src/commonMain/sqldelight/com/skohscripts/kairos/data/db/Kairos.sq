@@ -68,9 +68,36 @@ CREATE TABLE time_block (
     end TEXT NOT NULL,
     kind TEXT NOT NULL DEFAULT 'busy',
     recurrence TEXT NOT NULL DEFAULT '',
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    -- Calendrier importé dont vient le créneau (3.10.0, docs/spec/connexions-externes.md) : calendar_source.id et UID de
+    -- l'événement ; NULL = saisi à la main. Même définition que 10.sqm (en fin de table : insertTimeBlockWithId est positionnel).
+    source_id INTEGER,
+    source_uid TEXT
 );
 CREATE INDEX time_block_start ON time_block(start);
+CREATE INDEX time_block_source ON time_block(source_id);
+
+-- Calendriers importés (3.10.0) : le nom les identifie ; hide_titles = « Masquer les titres » du dernier import.
+-- Même définition que 10.sqm.
+CREATE TABLE calendar_source (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    hide_titles INTEGER NOT NULL DEFAULT 0,
+    imported_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+-- Journées entières des calendriers importés (3.10.0) : badges du jour, sans blocage. Dates « 2026-10-28 », fin incluse.
+-- Même définition que 10.sqm.
+CREATE TABLE day_mark (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL DEFAULT '',
+    start TEXT NOT NULL,
+    end TEXT NOT NULL,
+    source_id INTEGER NOT NULL,
+    source_uid TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
 
 -- Exceptions d'occurrences de créneaux récurrents (3.8.0, docs/spec/recurrence.md § Une seule occurrence) : au plus une
 -- par (modèle, jour). skipped = 1 : occurrence sautée ; sinon title / start / end (heures locales « 09:30 ») remplacent
@@ -220,7 +247,17 @@ allTimeBlocks:
 SELECT * FROM time_block ORDER BY start, id;
 
 insertTimeBlockWithId:
-INSERT INTO time_block VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO time_block VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+insertImportedBlock:
+INSERT INTO time_block (title, start, end, kind, recurrence, created_at, source_id, source_uid) VALUES (?, ?, ?, 'busy', '', ?, ?, ?);
+
+-- Réimport : les créneaux du calendrier qui commencent à partir d'aujourd'hui (début « AAAA-MM-JJTHH:MM », comparé en texte).
+deleteUpcomingBlocksOfSource:
+DELETE FROM time_block WHERE source_id = ? AND start >= ?;
+
+deleteBlocksOfSource:
+DELETE FROM time_block WHERE source_id = ?;
 
 insertTimeBlock:
 INSERT INTO time_block (title, start, end, kind, recurrence, created_at) VALUES (?, ?, ?, ?, ?, ?);
@@ -252,6 +289,46 @@ DELETE FROM time_block_exception WHERE block_id = ?;
 
 deleteAllBlockExceptions:
 DELETE FROM time_block_exception;
+
+allCalendarSources:
+SELECT * FROM calendar_source ORDER BY id;
+
+insertCalendarSourceWithId:
+INSERT INTO calendar_source VALUES (?, ?, ?, ?, ?);
+
+insertCalendarSource:
+INSERT INTO calendar_source (name, hide_titles, imported_at, created_at) VALUES (?, ?, ?, ?);
+
+lastCalendarSourceId:
+SELECT max(id) FROM calendar_source;
+
+updateCalendarSource:
+UPDATE calendar_source SET hide_titles = ?, imported_at = ? WHERE id = ?;
+
+deleteCalendarSource:
+DELETE FROM calendar_source WHERE id = ?;
+
+deleteAllCalendarSources:
+DELETE FROM calendar_source;
+
+allDayMarks:
+SELECT * FROM day_mark ORDER BY start, id;
+
+insertDayMarkWithId:
+INSERT INTO day_mark VALUES (?, ?, ?, ?, ?, ?, ?);
+
+insertDayMark:
+INSERT INTO day_mark (title, start, end, source_id, source_uid, created_at) VALUES (?, ?, ?, ?, ?, ?);
+
+-- Réimport : les journées du calendrier qui finissent à partir d'aujourd'hui (dates « AAAA-MM-JJ »).
+deleteUpcomingMarksOfSource:
+DELETE FROM day_mark WHERE source_id = ? AND end >= ?;
+
+deleteMarksOfSource:
+DELETE FROM day_mark WHERE source_id = ?;
+
+deleteAllDayMarks:
+DELETE FROM day_mark;
 
 -- Dépendances ------------------------------------------------------------------
 

@@ -7,6 +7,9 @@ import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
 import com.skohscripts.kairos.core.model.PRIORITY_VALUES
 import com.skohscripts.kairos.core.settings.SettingsForm
 import com.skohscripts.kairos.core.model.BlockRecurrence
+import com.skohscripts.kairos.core.model.DayMark
+import com.skohscripts.kairos.core.model.BlockSource
+import com.skohscripts.kairos.core.model.CalendarSource
 import com.skohscripts.kairos.core.model.KairosSnapshot
 import com.skohscripts.kairos.core.model.Note
 import com.skohscripts.kairos.core.model.NoteStatus
@@ -125,6 +128,14 @@ object ExportCodec {
             val (start, end) = x.start to x.end
             require(start == null || end == null || end > start) { "exception de créneau" }
         }
+        // Calendriers importés (3.10.0) : un nom, une source qui existe, des dates dans l'ordre.
+        unique(s.calendarSources.map { it.id }, "calendriers")
+        unique(s.dayMarks.map { it.id }, "journées de calendrier")
+        for (c in s.calendarSources) require(c.name.isNotBlank()) { "calendrier" }
+        val calendarIds = s.calendarSources.mapTo(HashSet()) { it.id }
+        fun known(src: BlockSource?) = src == null || (src is BlockSource.Imported && src.calendarId in calendarIds)
+        for (m in s.dayMarks) require(m.end >= m.start && known(m.source)) { "journée de calendrier" }
+        for (b in s.timeBlocks) require(known(b.source)) { "source de créneau" }
     }
 }
 
@@ -168,6 +179,9 @@ private data class ExportFile(
     // Exceptions d'occurrences de créneaux (3.8.0, issue #110) : nul tant qu'il n'y en a aucune, donc omis, et l'export
     // d'une base qui n'en a jamais posé reste celui d'avant. Ce n'est pas une donnée d'équipe : sans effet sur formatVersion.
     val blockExceptions: List<BlockExceptionJson>? = null,
+    // Calendriers importés et leurs journées entières (3.10.0, issue #136) : même règle, nuls tant qu'il n'y en a aucun.
+    val calendarSources: List<CalendarSourceJson>? = null,
+    val dayMarks: List<DayMarkJson>? = null,
 ) {
     fun toSnapshot() = KairosSnapshot(
         tasks = tasks.map { it.toModel() },
@@ -185,6 +199,8 @@ private data class ExportFile(
         teamEvents = teamEvents.orEmpty().map { it.toModel() },
         teamScenarios = teamScenarios.orEmpty().map { it.toModel() },
         blockExceptions = blockExceptions.orEmpty().map { it.toModel() },
+        calendarSources = calendarSources.orEmpty().map { it.toModel() },
+        dayMarks = dayMarks.orEmpty().map { it.toModel() },
     )
 
     companion object {
@@ -210,6 +226,8 @@ private data class ExportFile(
                 teamEvents = if (team) s.teamEvents.map { TeamEventJson.from(it) } else null,
                 teamScenarios = if (team) s.teamScenarios.map { ScenarioJson.from(it) } else null,
                 blockExceptions = s.blockExceptions.takeIf { it.isNotEmpty() }?.map { BlockExceptionJson.from(it) },
+                calendarSources = s.calendarSources.takeIf { it.isNotEmpty() }?.map { CalendarSourceJson.from(it) },
+                dayMarks = s.dayMarks.mapNotNull { DayMarkJson.from(it) }.takeIf { it.isNotEmpty() },
             )
         }
     }
@@ -330,16 +348,46 @@ private data class BlockJson(
     val kind: String = "busy",
     val recurrence: String = "",
     val createdAt: String,
+    // Calendrier importé d'origine (3.10.0, docs/spec/connexions-externes.md) : nuls, donc omis, pour un créneau saisi à la main.
+    val sourceId: Long? = null,
+    val sourceUid: String? = null,
 ) {
     fun toModel() = TimeBlock(
         id, title, LocalDateTime.parse(start), LocalDateTime.parse(end),
         BlockKind.fromCode(kind), BlockRecurrence.fromCode(recurrence), Instant.parse(createdAt),
+        sourceId?.let { BlockSource.Imported(it, sourceUid.orEmpty()) },
     )
 
     companion object {
-        fun from(b: TimeBlock) = BlockJson(
-            b.id, b.title, b.start.toString(), b.end.toString(), b.kind.code, b.recurrence.code, b.createdAt.toString(),
-        )
+        fun from(b: TimeBlock): BlockJson {
+            val src = b.source as? BlockSource.Imported
+            return BlockJson(
+                b.id, b.title, b.start.toString(), b.end.toString(), b.kind.code, b.recurrence.code, b.createdAt.toString(), src?.calendarId, src?.uid,
+            )
+        }
+    }
+}
+
+/** Calendrier importé (3.10.0) : `hideTitles` n'est écrit que s'il est vrai. */
+@Serializable
+private data class CalendarSourceJson(val id: Long, val name: String, val hideTitles: Boolean? = null, val importedAt: String, val createdAt: String) {
+    fun toModel() = CalendarSource(id, name, hideTitles == true, Instant.parse(importedAt), Instant.parse(createdAt))
+
+    companion object {
+        fun from(c: CalendarSource) = CalendarSourceJson(c.id, c.name, if (c.hideTitles) true else null, c.importedAt.toString(), c.createdAt.toString())
+    }
+}
+
+/** Journée entière d'un calendrier importé (3.10.0) : dates « 2026-10-28 », fin incluse. */
+@Serializable
+private data class DayMarkJson(val id: Long, val title: String = "", val start: String, val end: String, val sourceId: Long, val sourceUid: String = "", val createdAt: String) {
+    fun toModel() = DayMark(id, title, LocalDate.parse(start), LocalDate.parse(end), BlockSource.Imported(sourceId, sourceUid), Instant.parse(createdAt))
+
+    companion object {
+        fun from(m: DayMark): DayMarkJson? {
+            val src = m.source as? BlockSource.Imported ?: return null
+            return DayMarkJson(m.id, m.title, m.start.toString(), m.end.toString(), src.calendarId, src.uid, m.createdAt.toString())
+        }
     }
 }
 

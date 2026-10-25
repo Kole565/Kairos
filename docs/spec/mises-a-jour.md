@@ -59,7 +59,8 @@ savoir.
 - Android : à la main = installateur absent ou installateur de paquets du système (`com.google.android.packageinstaller`,
   `com.android.packageinstaller`, `com.android.shell` pour `adb`) ; tout autre installateur = un magasin
   (`InstallSourceTest`). La carte montre la version et ouvre la page de la langue de l'interface ; sans lien
-  (magasin), rien (`DownloadPageUiTest`). L'APK de release garde `POST_NOTIFICATIONS` et `RECEIVE_BOOT_COMPLETED`
+  (magasin), rien (`DownloadPageUiTest`). L'APK de release garde `POST_NOTIFICATIONS` et `RECEIVE_BOOT_COMPLETED` (et, depuis la 3.10.0, `READ_CALENDAR`
+  facultative, `connexions-externes.md`)
   seulement (`aapt2 dump permissions`).
 
 ### Hors périmètre / différé

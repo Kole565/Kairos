@@ -11,6 +11,10 @@ import com.skohscripts.kairos.ui.generated.resources.card_stats_explore_body
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_title
 import com.skohscripts.kairos.ui.generated.resources.card_holidays_slots_body
 import com.skohscripts.kairos.ui.generated.resources.card_slots_month_body
+import com.skohscripts.kairos.ui.generated.resources.card_calendar_import_body
+import com.skohscripts.kairos.ui.generated.resources.card_calendar_import_title
+import com.skohscripts.kairos.ui.generated.resources.card_linked_file_body
+import com.skohscripts.kairos.ui.generated.resources.card_linked_file_title
 import com.skohscripts.kairos.ui.generated.resources.card_month_body
 import com.skohscripts.kairos.ui.generated.resources.card_correct_body
 import com.skohscripts.kairos.ui.generated.resources.card_trends_body
@@ -162,6 +166,7 @@ object FeatureCatalog {
         FeatureCard("slots", GuideChapter.ORGANIZE, { KairosIcons.PushPin }, Res.string.card_slots_title, Res.string.card_slots_body, GuideTarget.Personal(Destination.DAY)),
         FeatureCard("holidays_slots", GuideChapter.ORGANIZE, { KairosIcons.EventBusy }, Res.string.card_holidays_slots_title, Res.string.card_holidays_slots_body, GuideTarget.Settings(GuideSection.SETTINGS_HOLIDAYS), since = "3.7.0"),
         FeatureCard("slots_month", GuideChapter.ORGANIZE, { KairosIcons.Repeat }, Res.string.card_slots_month_title, Res.string.card_slots_month_body, GuideTarget.Personal(Destination.DAY), since = "3.8.0"),
+        FeatureCard("calendar_import", GuideChapter.ORGANIZE, { KairosIcons.Event }, Res.string.card_calendar_import_title, Res.string.card_calendar_import_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), since = "3.10.0"),
         // --- Équipe
         FeatureCard("team_members", GuideChapter.TEAM, { KairosIcons.Groups }, Res.string.guide_team_members_title, Res.string.guide_team_members_body, GuideTarget.Team(TeamDestination.MEMBERS)),
         FeatureCard("team_backlog", GuideChapter.TEAM, { KairosIcons.Stacks }, Res.string.guide_team_backlog_title, Res.string.guide_team_backlog_body, GuideTarget.Team(TeamDestination.BACKLOG)),
@@ -175,6 +180,7 @@ object FeatureCatalog {
         FeatureCard("reminders", GuideChapter.SETTINGS, { KairosIcons.Alarm }, Res.string.card_reminders_title, Res.string.card_reminders_body, GuideTarget.Settings(GuideSection.SETTINGS_REMINDERS), since = "3.8.0"),
         FeatureCard("darktheme", GuideChapter.SETTINGS, { KairosIcons.DarkMode }, Res.string.card_darktheme_title, Res.string.card_darktheme_body, GuideTarget.Settings(GuideSection.SETTINGS_APPEARANCE), since = "3.7.0"),
         FeatureCard("data", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.guide_you_data_title, Res.string.guide_you_data_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), tour = true),
+        FeatureCard("linked_file", GuideChapter.SETTINGS, { KairosIcons.Description }, Res.string.card_linked_file_title, Res.string.card_linked_file_body, GuideTarget.Settings(GuideSection.SETTINGS_DATA), since = "3.10.0"),
     )
 
     /** Les cartes d'un chapitre, dans l'ordre. */
@@ -229,6 +235,8 @@ object FeatureCatalog {
         "Working days and holidays" to "hours",
         "Busy slots" to "slots",
         "Monthly slots, one day apart" to "slots_month",
+        "Calendar import" to "calendar_import",
+        "Phone calendars" to "calendar_import",
         "Deep work" to "slots",
         "Timeline" to "do",
         "Timer per task" to "time",
@@ -242,6 +250,7 @@ object FeatureCatalog {
         "When you work on each type" to "besthours",
         "Best hours" to "besthours_apply",
         "Web version" to "data",
+        "Linked file" to "linked_file",
         "Settings" to "settings",
         "Members" to "team_members",
         "Tracking" to "team_board",

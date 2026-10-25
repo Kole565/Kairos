@@ -10,6 +10,9 @@ import com.skohscripts.kairos.core.engine.Dependencies
 import com.skohscripts.kairos.core.engine.Recurrence
 import com.skohscripts.kairos.core.engine.Workdays
 import com.skohscripts.kairos.core.model.BlockException
+import com.skohscripts.kairos.core.calendar.CalendarPlan
+import com.skohscripts.kairos.core.calendar.ImportedCalendars
+import com.skohscripts.kairos.core.model.BlockSource
 import com.skohscripts.kairos.core.model.BlockKind
 import com.skohscripts.kairos.core.model.BlockRecurrence
 import com.skohscripts.kairos.core.model.FIBONACCI_SCALE
@@ -407,12 +410,50 @@ class KairosRepository(
      * restent, sauf s'il devient ponctuel (il n'a plus d'occurrence à remplacer).
      */
     suspend fun updateBlock(blockId: Long, edit: BlockEdit): Boolean {
-        if (edit.end <= edit.start || state.value.timeBlocks.none { it.id == blockId }) return false
+        // Un créneau importé ne se modifie pas : le prochain import l'écraserait (docs/spec/connexions-externes.md).
+        if (edit.end <= edit.start || state.value.timeBlocks.none { it.id == blockId && !it.imported }) return false
         write {
             queries.updateTimeBlock(edit.title.trim(), edit.start.toString(), edit.end.toString(), edit.kind.code, edit.recurrence.code, blockId)
             if (edit.recurrence == BlockRecurrence.NONE) queries.deleteExceptionsOfBlock(blockId)
         }
         return true
+    }
+
+    /**
+     * Importe un calendrier `.ics` déjà prévisualisé (docs/spec/connexions-externes.md § Stockage), en une transaction : le
+     * calendrier de ce nom est retrouvé ou créé, ses créneaux qui commencent à partir de [today] et ses journées qui finissent
+     * à partir de [today] sont remplacés par ceux de [plan] ; son passé, les créneaux manuels et les autres calendriers ne
+     * bougent pas. [hideTitles] : titres vides (affichés « Occupé »), retenu pour le prochain import. Rend l'identifiant du
+     * calendrier, ou `null` si le nom est vide.
+     */
+    suspend fun importCalendar(name: String, hideTitles: Boolean, plan: CalendarPlan, today: LocalDate): Long? {
+        val cleaned = name.trim()
+        if (cleaned.isEmpty()) return null
+        val existing = ImportedCalendars.named(state.value, cleaned)
+        val at = now()
+        var id = existing?.id ?: 0L
+        write {
+            if (existing == null) {
+                queries.insertCalendarSource(cleaned, if (hideTitles) 1L else 0L, at, at)
+                id = queries.lastCalendarSourceId().awaitAsOneOrNull()?.max ?: error("calendrier")
+            } else {
+                queries.updateCalendarSource(if (hideTitles) 1L else 0L, at, id)
+                queries.deleteUpcomingBlocksOfSource(id, today.atTime(0, 0).toString())
+                queries.deleteUpcomingMarksOfSource(id, today.toString())
+            }
+            for (e in plan.events) {
+                queries.insertImportedBlock(if (hideTitles) "" else e.title, e.start.toString(), e.end.toString(), at, id, e.uid)
+            }
+            for (d in plan.days) queries.insertDayMark(if (hideTitles) "" else d.title, d.start.toString(), d.end.toString(), id, d.uid, at)
+        }
+        return id
+    }
+
+    /** « Retirer » un calendrier importé : la source, tous ses créneaux et ses journées (passés compris), rien d'autre. */
+    suspend fun removeCalendar(calendarId: Long) = write {
+        queries.deleteBlocksOfSource(calendarId)
+        queries.deleteMarksOfSource(calendarId)
+        queries.deleteCalendarSource(calendarId)
     }
 
     /** Supprime le créneau ; pour un récurrent, toute la série et ses exceptions. */
@@ -458,7 +499,7 @@ class KairosRepository(
     }
 
     private fun hasOccurrence(blockId: Long, date: LocalDate): Boolean {
-        val template = state.value.timeBlocks.firstOrNull { it.id == blockId } ?: return false
+        val template = state.value.timeBlocks.firstOrNull { it.id == blockId && !it.imported } ?: return false
         return Recurrence.occursOn(template, date, Workdays.holidaysFor(date, state.value.settings.holidaysFr, state.value.settings.extraHolidays))
     }
 
@@ -1295,6 +1336,8 @@ class KairosRepository(
         queries.deleteAllTeamEvents()
         queries.deleteAllTeamScenarios()
         queries.deleteAllBlockExceptions()
+        queries.deleteAllDayMarks()
+        queries.deleteAllCalendarSources()
         queries.deleteSettings()
         for (t in snapshot.tasks) {
             queries.insertTaskWithId(
@@ -1327,7 +1370,16 @@ class KairosRepository(
         for (b in snapshot.timeBlocks) {
             queries.insertTimeBlockWithId(
                 b.id, b.title, b.start.toString(), b.end.toString(), b.kind.code, b.recurrence.code, b.createdAt.store(),
+                (b.source as? BlockSource.Imported)?.calendarId, (b.source as? BlockSource.Imported)?.uid,
             )
+        }
+        for (c in snapshot.calendarSources) {
+            queries.insertCalendarSourceWithId(c.id, c.name, if (c.hideTitles) 1L else 0L, c.importedAt.store(), c.createdAt.store())
+        }
+        // Seules les journées d'un calendrier importé sont stockées (celles du téléphone ne passent jamais par ici).
+        for (m in snapshot.dayMarks) {
+            val src = m.source as? BlockSource.Imported ?: continue
+            queries.insertDayMarkWithId(m.id, m.title, m.start.toString(), m.end.toString(), src.calendarId, src.uid, m.createdAt.store())
         }
         for (x in snapshot.blockExceptions) {
             queries.insertBlockExceptionWithId(
@@ -1480,6 +1532,8 @@ class KairosRepository(
         tasks = queries.allTasks().awaitAsList().map { it.toModel() },
         timeBlocks = queries.allTimeBlocks().awaitAsList().map { it.toModel() },
         blockExceptions = queries.allBlockExceptions().awaitAsList().map { it.toModel() },
+        calendarSources = queries.allCalendarSources().awaitAsList().map { it.toModel() },
+        dayMarks = queries.allDayMarks().awaitAsList().map { it.toModel() },
         dependencies = queries.allDependencies().awaitAsList().map { it.toModel() },
         workSessions = queries.allWorkSessions().awaitAsList().map { it.toModel() },
         notes = queries.allNotes().awaitAsList().map { it.toModel() },

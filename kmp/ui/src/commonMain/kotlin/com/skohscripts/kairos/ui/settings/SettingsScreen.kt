@@ -1,5 +1,8 @@
 package com.skohscripts.kairos.ui.settings
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import com.skohscripts.kairos.core.calendar.CalendarPlan
 import com.skohscripts.kairos.ui.guide.coachHighlight
 import com.skohscripts.kairos.ui.guide.SettingsTourPanel
 import com.skohscripts.kairos.ui.guide.SettingsTourEffect
@@ -255,6 +258,7 @@ fun SettingsScreen(services: AppServices, nav: SettingsNav = remember { Settings
                     SettingsCategory.TEAM -> TeamSettingsCard(values, errors, savedEnabled = current.teamModeEnabled, services = services, onChange = onChange)
                     SettingsCategory.DATA -> {
                         GuideSpot(GuideSection.SETTINGS_DATA) { DataCard(services) }
+                        CalendarsCard(services)
                         // Bureau : dossier des données choisi (docs/spec/bureau-avance.md).
                         services.dataFolder?.let { DataFolderCard(it) }
                         RestoreDefaultsCard {
@@ -547,6 +551,7 @@ private fun DataCard(services: AppServices) {
     var pending by remember { mutableStateOf<KairosSnapshot?>(null) }
     // Paquet ou rapport d'équipe reconnu par « Importer » : aperçu avant toute écriture (docs/spec/equipe-echanges.md).
     var exchange by remember { mutableStateOf<ExchangePreview?>(null) }
+    var calendar by remember { mutableStateOf<CalendarPlan?>(null) }
     // Origines des tâches reçues : « Renvoyer l'avancement… » n'apparaît qu'avec elles (sinon rien ne change en mode solo).
     val stored by services.repository.snapshot.collectAsState()
     val origins = remember(stored) { ReceivedTasks.origins(stored) }
@@ -580,9 +585,10 @@ private fun DataCard(services: AppServices) {
                         return@launch
                     } ?: return@launch
                     try {
-                        when (val file = readImportedFile(services, text)) {
+                        when (val file = withContext(Dispatchers.Default) { readImportedFile(services, text) }) {
                             is ImportedFile.Full -> pending = file.snapshot
                             is ImportedFile.Exchange -> exchange = file.preview
+                            is ImportedFile.Calendar -> calendar = file.plan
                         }
                     } catch (e: ImportException) {
                         services.diagnostics?.log("import ${e.reason.name.lowercase()}")
@@ -628,6 +634,7 @@ private fun DataCard(services: AppServices) {
             dismissButton = { KairosTextButton(onClick = { pending = null }) { Text(stringResource(Res.string.action_cancel)) } },
         )
     }
+    calendar?.let { plan -> CalendarImportDialog(services, plan, onDone = { calendar = null }) }
     exchange?.let { preview ->
         ExchangePreviewDialog(
             preview,

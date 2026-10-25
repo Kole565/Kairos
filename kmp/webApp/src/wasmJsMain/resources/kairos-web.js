@@ -16,6 +16,9 @@
   const DB_NAME = "kairos";
   const STORE = "handles";
   const LINK_KEY = "linked-file";
+  // Empreinte du dernier texte écrit ou adopté (LinkHash, docs/spec/export-import.md § Fichier lié) : garde contre une
+  // modification faite ailleurs.
+  const HASH_KEY = "linked-hash";
   const JSON_TYPES = [{ description: "Kairos", accept: { "application/json": [".json"] } }];
 
   async function opfsDir(sub) {
@@ -50,6 +53,7 @@
 
   const getLink = () => idbDo("readonly", (s) => s.get(LINK_KEY)).catch(() => undefined);
   const setLink = (h) => idbDo("readwrite", (s) => s.put(h, LINK_KEY));
+  const forgetLink = () => idbDo("readwrite", (s) => s.delete(LINK_KEY)).then(() => idbDo("readwrite", (s) => s.delete(HASH_KEY)));
 
   async function permission(handle, request) {
     const opts = { mode: "readwrite" };
@@ -114,7 +118,7 @@
       return new Promise((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
-        input.accept = ".json,application/json";
+        input.accept = ".json,.ics,application/json,text/calendar";
         input.onchange = async () => {
           const f = input.files && input.files[0];
           resolve(f ? await f.text() : null);
@@ -185,6 +189,24 @@
       const h = await getLink();
       if (!h || (await permission(h, false)) !== "granted") return null;
       return await (await h.getFile()).text();
+    },
+    // Oublie la poignée et l'empreinte : le fichier reste tel quel.
+    async linkForget() {
+      try {
+        await forgetLink();
+      } catch (e) {
+        // Rien à oublier.
+      }
+    },
+    async linkHashGet() {
+      return (await idbDo("readonly", (s) => s.get(HASH_KEY)).catch(() => undefined)) || null;
+    },
+    async linkHashSet(hash) {
+      try {
+        await idbDo("readwrite", (s) => s.put(hash, HASH_KEY));
+      } catch (e) {
+        // Sans empreinte gardée, la prochaine visite prendra le fichier pour modifié ailleurs : sans perte.
+      }
     },
     // Rend true si écrit, false si l'accord manque ou si l'écriture échoue.
     async linkWrite(text) {

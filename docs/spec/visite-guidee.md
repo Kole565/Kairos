@@ -164,6 +164,9 @@ since, tour)`, **dans l'ordre de la visite**.
   Planification, chapitre « Planifier », icône `Flag`), `besthours_efficiency` (meilleures heures v2, #105 ; section
   `STATS_HOURS`, chapitre « Suivre », icône `Timer`), `guided_walks` (récurrente et Réglages pas à pas, #98 ; Accueil,
   chapitre « Premiers pas », icône `Repeat`).
+- **Cartes de la 3.10.0** : `calendar_import` (import d'un calendrier `.ics` et calendriers du téléphone, #136 et
+  #138 ; section `SETTINGS_DATA`, chapitre « Organiser », icône `Event`), `linked_file` (fichier lié sur le bureau et
+  Android, #137 ; section `SETTINGS_DATA`, chapitre « Réglages », icône `Description`).
 - **Comptes de cartes dans les tests** : `M6GuideUiTest` tire les nombres de cartes par chapitre de `FeatureCatalog`
   (une carte ajoutée à une version ne casse plus le test du hub).
 - **Lien avec le README** : `FeatureCatalog.README_FEATURES` associe chaque fonctionnalité en gras de la section

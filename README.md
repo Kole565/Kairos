@@ -174,6 +174,20 @@ order (critical path). Cycles are refused.
   on a weekday ("the 3rd Tuesday", "the last Friday"). On any recurring slot,
   "Only this one" skips that day or changes its title and hours for that day
   only; "Restore" brings the series back.
+- **Calendar import**: Settings → Data → Calendars → "Import a calendar…" (or
+  Import) reads an `.ics` file (Outlook, Google Calendar, Thunderbird,
+  Nextcloud…). A preview comes first; each event becomes a read-only busy slot
+  in your time zone (repeating events unfolded over the next 6 months,
+  cancelled and "free" ones skipped, tentative ones kept, titles can be
+  hidden), whole-day events become a badge on the day without blocking time.
+  Description, location and attendees are never kept. "Reimport" replaces the
+  calendar's slots from today on, never yours; "Remove" takes it all away; an
+  imported slot can be deleted on its own. No network, no account.
+- **Phone calendars** (Android): Settings → Data → "Use my phone calendars"
+  shows the events of the calendars you tick (Google, Exchange, DAVx⁵,
+  ICSx⁵, Outlook with "Sync calendars" on) as read-only busy slots, read live
+  and never stored or exported. Kairos asks for calendar access only at that
+  moment (an optional permission, not a network one).
 - **Deep work**: a slot reserved for a single task, the most urgent one; the
   others work around it.
 - **Timeline** of the day: scheduled, busy, pinned, deep work, conflicts, and a
@@ -242,6 +256,11 @@ order (critical path). Cycles are refused.
   copied, never moved. Settings → About → **Diagnostics**: an optional local log
   (off by default, no task content) and "Copy diagnostics" for a bug report.
   The update check follows the system proxy.
+- **Linked file**: on the desktop and Android too, Settings → Data → "Create a
+  file" keeps an up-to-date copy of your data (an export, which opens anywhere)
+  in a folder of your choice, for example a Syncthing or Nextcloud folder,
+  written 2 seconds after each change. If another device changed the file,
+  Kairos stops writing to it and asks: overwrite, import it, or unlink.
 - **Web version**: data saved in the browser and, in Edge or Chrome, **linked
   to a file** kept up to date on every change.
 - Interface in **French** and **English**: the system language (French if the
@@ -379,7 +398,7 @@ you press "Save").
 | Timer and statistics | Timer alerts | Forgotten timer, suggested break, fallback sound | 180 min, 50 min, off |
 | | Statistics | Window of the indicators | 8 weeks |
 | Team | Team | Team management, then its thresholds, load and forecasts | off |
-| Data | Data, default settings | Export, import, restore the defaults | |
+| Data | Data, calendars, default settings | Export, import, import a calendar (reimport, remove), restore the defaults | |
 | | Data folder (desktop) | Change folder…, back to the default folder (next start) | system folder |
 | About | | Discover Kairos, About & guide, see the guide again from the start | |
 | | Diagnostics (desktop) | Keep a diagnostic log, copy diagnostics | off |

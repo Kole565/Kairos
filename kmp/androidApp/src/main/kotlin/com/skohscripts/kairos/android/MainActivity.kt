@@ -1,5 +1,6 @@
 package com.skohscripts.kairos.android
 
+import com.skohscripts.kairos.ui.app.LinkedFileSync
 import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
@@ -46,7 +47,7 @@ class MainActivity : ComponentActivity(), FileService {
         pendingOpen?.complete(it)
     }
     private var pendingPermission: CompletableDeferred<Boolean>? = null
-    private val notificationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+    private val permissionRequest = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         pendingPermission?.complete(it)
     }
 
@@ -96,8 +97,19 @@ class MainActivity : ComponentActivity(), FileService {
         super.onResume()
         KairosProcess.activity = this
         if (crashReport != null) return
-        // L'utilisateur a pu changer l'autorisation dans les réglages du système.
-        KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().notifier as? AndroidNotifier)?.refresh() }
+        // L'utilisateur a pu changer l'autorisation dans les réglages du système (notifications, calendrier).
+        KairosProcess.scope.launch {
+            val services = KairosProcess.services(this@MainActivity).await()
+            (services.notifier as? AndroidNotifier)?.refresh()
+            (services.calendars as? AndroidCalendarService)?.refresh()
+        }
+    }
+
+    // Arrière-plan : le fichier lié reçoit tout de suite ce qui attendait son délai (docs/spec/export-import.md).
+    override fun onStop() {
+        super.onStop()
+        if (crashReport != null) return
+        KairosProcess.scope.launch { (KairosProcess.services(this@MainActivity).await().linkedStorage as? LinkedFileSync)?.flush() }
     }
 
     override fun onDestroy() {
@@ -112,9 +124,12 @@ class MainActivity : ComponentActivity(), FileService {
     }
 
     /** Demande `POST_NOTIFICATIONS` (Android 13+) ; `true` si accordée. */
-    suspend fun requestNotificationPermission(): Boolean = withContext(Dispatchers.Main) {
+    suspend fun requestNotificationPermission(): Boolean = requestPermission(Manifest.permission.POST_NOTIFICATIONS)
+
+    /** Demande une autorisation d'exécution (notifications, lecture du calendrier) ; `true` si accordée. */
+    suspend fun requestPermission(permission: String): Boolean = withContext(Dispatchers.Main) {
         val result = CompletableDeferred<Boolean>().also { pendingPermission = it }
-        notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        permissionRequest.launch(permission)
         result.await()
     }
 
@@ -137,9 +152,30 @@ class MainActivity : ComponentActivity(), FileService {
         return true
     }
 
+    /**
+     * Sélecteur du fichier lié (docs/spec/export-import.md § Fichier lié) : créer (`kairos.json` proposé) ou ouvrir, puis
+     * accès persistant en lecture et écriture, pour écrire à chaque changement sans le redemander.
+     */
+    suspend fun pickLinkedFile(create: Boolean, suggestedName: String?): Uri? {
+        val uri = if (create) {
+            val result = CompletableDeferred<Uri?>().also { pendingSave = it }
+            createDocument.getValue("application/json").launch(suggestedName ?: "kairos.json")
+            result.await()
+        } else {
+            val result = CompletableDeferred<Uri?>().also { pendingOpen = it }
+            openDocument.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+            result.await()
+        } ?: return null
+        runCatching {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
+        return uri
+    }
+
     override suspend fun openText(): String? {
         val result = CompletableDeferred<Uri?>().also { pendingOpen = it }
-        openDocument.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+        // .ics (issue #136) : `text/calendar`, parfois annoncé `text/x-vcalendar`.
+        openDocument.launch(arrayOf("application/json", "text/plain", "text/calendar", "text/x-vcalendar", "application/octet-stream"))
         val uri = result.await() ?: return null
         return withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)!!.use { it.readBytes().decodeToString() }

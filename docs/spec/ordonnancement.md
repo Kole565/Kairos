@@ -87,7 +87,8 @@ traiter ».
 
 - Calibration des poids sur l'historique réel (jalon M4 et au-delà) ; les
   poids restent des réglages.
-- Événements de calendrier externes : hors périmètre de Kairos.
+- Événements de calendrier externes : par le réseau, hors périmètre ; importés d'un fichier `.ics` depuis la 3.10.0
+  (issue #136), ils deviennent des créneaux occupés comme les autres (`connexions-externes.md`).
 - Glisser-déposer dans la frise.
 
 ## 2. Solution technique

@@ -1,5 +1,7 @@
 package com.skohscripts.kairos.desktop
 
+import com.skohscripts.kairos.core.calendar.CalendarImport
+import com.skohscripts.kairos.ui.settings.CalendarImportDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -77,6 +79,19 @@ import kotlin.time.Clock
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 
+/** Un petit agenda d'exemple autour de [today] : réunion hebdomadaire, atelier provisoire, annulé, séminaire de deux jours. */
+private fun sampleCalendar(today: kotlinx.datetime.LocalDate): String {
+    fun d(n: Int) = today.plus(n, DateTimeUnit.DAY).let { "%04d%02d%02d".format(it.year, it.month.ordinal + 1, it.day) }
+    return listOf(
+        "BEGIN:VCALENDAR", "X-WR-CALNAME:Travail",
+        "BEGIN:VEVENT", "UID:1", "SUMMARY:Point d'équipe", "DTSTART:${d(0)}T100000", "DTEND:${d(0)}T110000", "RRULE:FREQ=WEEKLY;COUNT=6", "END:VEVENT",
+        "BEGIN:VEVENT", "UID:2", "SUMMARY:Atelier client", "STATUS:TENTATIVE", "DTSTART:${d(1)}T140000", "DTEND:${d(1)}T160000", "END:VEVENT",
+        "BEGIN:VEVENT", "UID:3", "SUMMARY:Annulé", "STATUS:CANCELLED", "DTSTART:${d(2)}T090000", "DTEND:${d(2)}T100000", "END:VEVENT",
+        "BEGIN:VEVENT", "UID:4", "SUMMARY:Séminaire", "DTSTART;VALUE=DATE:${d(0)}", "DTEND;VALUE=DATE:${d(2)}", "END:VEVENT",
+        "END:VCALENDAR",
+    ).joinToString("\r\n")
+}
+
 /**
  * `--self-test[=dossier]` (docs/spec/distribution.md § Auto-test) : vérifie,
  * SANS fenêtre, que l'application empaquetée démarre réellement : version
@@ -133,6 +148,13 @@ object SelfTest {
             }
         }
         val plannedSettings = settingsIn(planned, SettingsCategory.DAY)
+        // Calendrier importé (docs/spec/connexions-externes.md, issue #136) : réunions, un provisoire, deux journées entières.
+        val calendarZone = TimeZone.currentSystemDefault()
+        val calendarToday = Clock.System.todayIn(calendarZone)
+        val calendarPlan = CalendarImport.plan(sampleCalendar(calendarToday), calendarToday, calendarZone)
+        val calendar = runBlocking {
+            DesktopServices.open(dataDir, inMemory = true).also { s -> s.repository.importCalendar(calendarPlan.name ?: "Travail", false, calendarPlan, calendarToday) }
+        }
         val plannedDay: @Composable () -> Unit = { KairosApp(Platform.DESKTOP, Destination.DAY) { planned } }
         // Cinquième base : des sessions chronométrées à des heures variées sur trois types, pour la carte « Quand tu travailles chaque type ».
         val hoursServices = runBlocking {
@@ -323,6 +345,12 @@ object SelfTest {
             Shot("guide-spot", 900, 2600, spotted(settingsIn(services, SettingsCategory.PLANNING))),
             Shot("guide-spot-narrow", 360, 3400, spotted(settingsIn(services, SettingsCategory.PLANNING))),
             Shot("day-windows", 1200, 1400, plannedDay),
+            Shot("calendar-preview", 900, 1000, overScrim { CalendarImportDialog(calendar, calendarPlan, onDone = {}) }),
+            Shot("calendar-preview-narrow", 360, 1200, overScrim { CalendarImportDialog(calendar, calendarPlan, onDone = {}) }),
+            Shot("calendar-day", 1200, 1400, { KairosApp(Platform.DESKTOP, Destination.DAY) { calendar } }),
+            Shot("calendar-week", 1200, 1100, { KairosTheme { Surface { WeekScreen(calendar, NavState()) {} } } }),
+            Shot("calendar-month-narrow", 360, 1600, { KairosTheme { Surface { MonthScreen(calendar, NavState().apply { monthMode = true }) {} } } }),
+            Shot("calendar-settings", 900, 1600, settingsIn(calendar, SettingsCategory.DATA)),
             Shot("about", 900, 1000, about),
             // Page de démarrage figée : aiguille à mi-course, puis sur le logo avec « Chargement… » (docs/spec/demarrage.md).
             Shot("startup-splash", 900, 700) { KairosTheme { SplashFrame(progress = 0.5f) } },

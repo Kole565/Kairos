@@ -36,7 +36,10 @@ boîte de réception (priorité et taille), **faire** dans l'ordre du score.
 2. **Capture**, toujours visible, deux volets : « Tâche » (titre seul ;
    Entrée ajoute, le champ se vide et garde le curseur) et « Créneau / deep
    work » (titre, jour, début, fin, case deep work, récurrence ; puis la
-   liste des créneaux du jour, chacun modifiable).
+   liste des créneaux du jour, chacun modifiable ; un créneau importé d'un calendrier porte « Importé de « Nom » » et
+   se supprime seulement ; celui d'un calendrier du téléphone porte « Calendrier du téléphone « Nom » » et n'a aucune
+   action, `connexions-externes.md`). Les journées entières d'un calendrier importé sont des
+   pastilles sous le titre « Aujourd'hui, dans l'ordre », sans effet sur le planning.
 3. **À traiter** : toute tâche sans priorité **ou** sans points, avec ce qui
    manque, qualifiable en un clic par pastilles dont le sens est écrit
    (P0 Critique · P1 Important · P2 Utile ; 1 trivial … 21 énorme).
